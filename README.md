@@ -29,6 +29,7 @@ You can see an example of each one in the [examples](examples) directory.
   - `wsPort` : The WS port for this node. (`9944` by default).
   - `port` : The TCP port for this node. (`30444` by default).
   - `image` : Override default docker image to use for this node.
+  - `command`: Override default command.
   - `args` : Overrides the array of arguments to pass to the command.
   - `extra_args` : An array of arguments to `merge` into the final arguments to use.
 
@@ -50,6 +51,7 @@ You can see an example of each one in the [examples](examples) directory.
   - `wsPort` : The WS port for this node. (`9944` by default).
   - `port` : The TCP port for this node. (`30444` by default).
   - `image` : Override default docker image to use for this node.
+  - `command`: Override default command.
   - `args` : Overrides the array of arguments to pass to the command.
   - `extra_args` : An array of arguments to `merge` into the final arguments to use.
 
@@ -59,7 +61,8 @@ This is similar to `parachains` but for "simple" collators like the adder-collat
 collator that lives in the polkadot repo and is meant just for simple testing. It supports a subset
 of configuration values:
 
-- `bin`: The path to the collator binary.
+- `image`: The path to the collator binary.
+- `command`: Command to excecute.
 - `id`: The id to assign to this parachain. Must be unique.
 - `port`: The TCP port for this node.
 - `balance`: (Optional) Configure a starting amount of balance on the relay chain for this chain's account ID.
