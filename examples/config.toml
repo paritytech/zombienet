@@ -34,31 +34,17 @@ default_args = [
   extra_args = [ "merge with default args" ]
 
 [[parachains]]
-default_command = "polkadot-collator"
-default_image = "some/para_image:tag"
 id = "200"
 balance = "1000000000000000000000"
-default_args = [ "--force-authoring", "--", "--execution=wasm" ]
 genesis_wasm_path = "path to wasm"
 genesis_wasm_generator = "command to generate wasm"
 genesis_state_path = "path to state"
 genesis_state_generator = "command to generate state"
 
-  [[parachains.nodes]]
+  [parachains.collator]
   name = "alice"
   wsPort = 9_944
   port = 30_444
   image = "some/custom_para:tag"
   command = "custom_command"
   args = [ "override default args" ]
-  extra_args = [ "merge with default args" ]
-
-[[simpleParachains]]
-command = "adder-collator"
-image = "some/adder:tag"
-name = "alice"
-id = "400"
-balance = "1000000000000000000000"
-wsPort = 9_944
-port = 30_444
-
