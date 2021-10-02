@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 import { start } from "./orchestrator";
 import { resolve, dirname } from "path";
 import fs from "fs";

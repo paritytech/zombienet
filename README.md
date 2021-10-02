@@ -6,6 +6,12 @@ We support both `json` and `toml` format to define the Network you want to spawn
 
 You can see an example of each one in the [examples](examples) directory.
 
+## Usage as cli (not yet published)
+
+$ npm run build && node dist/cli.js <path to kube config> <path to config>
+
+**NOTE**: Final config spec is TBD, check [examples](examples).
+
 ### `settings`
 
 - `init_containers` : An array of initialization containers to run before bootstrap the Network.

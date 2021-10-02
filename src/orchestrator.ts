@@ -235,6 +235,16 @@ export async function start(
 }
 
 
+export async function test(credentials: string, networkConfig: LaunchConfig, cb: Function) {
+  try {
+    const network: Network = await start(credentials, networkConfig);
+    await cb(network);
+    network.stop();
+  }
+  catch(error) {
+    console.error(error);
+  }
+}
 
 async function staticSetup(client: KubeClient) {
   let storageFiles: string[] = (await client.runningOnMinikube())
