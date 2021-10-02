@@ -27,7 +27,7 @@ export async function start(
     const client = new KubeClient(credentials, namespace);
     network = new Network(client, namespace);
 
-    console.log(`Launching... namespace: ${networkSpec}`);
+    console.log(`Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
@@ -228,6 +228,7 @@ export async function start(
     return network;
   } catch (error) {
     console.error(error);
+    // Allow debug on error
     // if(network) await network.stop();
     process.exit(1);
   }
