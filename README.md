@@ -22,7 +22,7 @@ You can see an example of each one in the [examples](examples) directory.
 - `default_image` : The default image to use for the nodes of the `relaychain`. (TODO: define a default value)
 - `chain`: The chain you want to use to generate your spec (probably `rococo-local`).
 - `chain_spec_path` : Path to the chain spec file.
-- `chain_spec_command` : Command to generate the chain spec, **NOTE** can't be used in combination with  `chain_spec_path`.
+- `chain_spec_command` : Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
 - `default_args` : An array of arguments to use as default to pass to the `command`.
 - `nodes` :
   - `name` : Name to use.

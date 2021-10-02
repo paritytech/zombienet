@@ -1,55 +1,63 @@
 {
-    "settings": {
-        "init_containes" : [
-            {
-                "image": "some/init:tag",
-                "command": "some_command_to_run"
-            }
-        ],
-        "global_volumes": [
-            {
-                "name": "volume_name",
-                "fs_type": "empty_dir",
-                "mount_path": "path to mount"
-            }
-        ]
-    },
-    "relaychain": {
-        "default_command": "polkadot",
-        "default_image": "some/image:tag",
-        "chain": "rococo-local",
-        "chain_spec_path": "path_to_chain_spec",
-        "chain_spec_command": "command to generate spec",
-        "default_args": ["--prometheus-external", "--unsafe-rpc-external", "--rpc-cors", "all", "--rpc-methods", "unsafe", "--unsafe-ws-external", "--validator" ],
-        "nodes": [
-            {
-                "name": "alice",
-                "wsPort": 9944,
-                "port": 30444,
-                "image": "some/custom:tag",
-                "command": "custom_command",
-                "args": ["override default args"],
-                "extra_args": ["merge with default args"]
-            }
-        ]
-    },
-    "parachains": [
-        {
-            "id": "200",
-            "balance": "1000000000000000000000",
-            "genesis_wasm_path": "path to wasm",
-            "genesis_wasm_generator": "command to generate wasm",
-            "genesis_state_path": "path to state",
-            "genesis_state_generator": "command to generate state",
-            "collator" :
-                {
-                    "name": "alice",
-                    "wsPort": 9944,
-                    "port": 30444,
-                    "image": "some/custom_para:tag",
-                    "command": "custom_command",
-                    "args": ["override default args"]
-                }
-        }
+  "settings": {
+    "init_containes": [
+      {
+        "image": "some/init:tag",
+        "command": "some_command_to_run"
+      }
+    ],
+    "global_volumes": [
+      {
+        "name": "volume_name",
+        "fs_type": "empty_dir",
+        "mount_path": "path to mount"
+      }
     ]
+  },
+  "relaychain": {
+    "default_command": "polkadot",
+    "default_image": "some/image:tag",
+    "chain": "rococo-local",
+    "chain_spec_path": "path_to_chain_spec",
+    "chain_spec_command": "command to generate spec",
+    "default_args": [
+      "--prometheus-external",
+      "--unsafe-rpc-external",
+      "--rpc-cors",
+      "all",
+      "--rpc-methods",
+      "unsafe",
+      "--unsafe-ws-external",
+      "--validator"
+    ],
+    "nodes": [
+      {
+        "name": "alice",
+        "wsPort": 9944,
+        "port": 30444,
+        "image": "some/custom:tag",
+        "command": "custom_command",
+        "args": ["override default args"],
+        "extra_args": ["merge with default args"]
+      }
+    ]
+  },
+  "parachains": [
+    {
+      "id": "200",
+      "balance": "1000000000000000000000",
+      "genesis_wasm_path": "path to wasm",
+      "genesis_wasm_generator": "command to generate wasm",
+      "genesis_state_path": "path to state",
+      "genesis_state_generator": "command to generate state",
+      "collator": {
+        "name": "collator1",
+        "wsPort": 9944,
+        "port": 30444,
+        "image": "some/custom_para:tag",
+        "command": "custom_command",
+        "args": ["override default args"]
+      }
+    }
+  ]
 }
