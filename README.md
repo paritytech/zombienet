@@ -6,6 +6,12 @@ We support both `json` and `toml` format to define the Network you want to spawn
 
 You can see an example of each one in the [examples](examples) directory.
 
+## Usage as cli (not yet published)
+
+$ npm run build && node dist/cli.js <path to kube config> <path to config>
+
+**NOTE**: Final config spec is TBD, check [examples](examples).
+
 ### `settings`
 
 - `init_containers` : An array of initialization containers to run before bootstrap the Network.
@@ -22,7 +28,7 @@ You can see an example of each one in the [examples](examples) directory.
 - `default_image` : The default image to use for the nodes of the `relaychain`. (TODO: define a default value)
 - `chain`: The chain you want to use to generate your spec (probably `rococo-local`).
 - `chain_spec_path` : Path to the chain spec file.
-- `chain_spec_command` : Command to generate the chain spec, **NOTE** can't be used in combination with  `chain_spec_path`.
+- `chain_spec_command` : Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
 - `default_args` : An array of arguments to use as default to pass to the `command`.
 - `nodes` :
   - `name` : Name to use.
