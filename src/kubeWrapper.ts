@@ -27,7 +27,6 @@ export class KubeClient {
 
   // accept a json def
   async crateResource(resourseDef: any, scoped: boolean = false, waitReady: boolean = false): Promise<void> {
-    console.log(JSON.stringify(resourseDef));
     const pod = await this._kubectl(
       ["apply", "-f", "-"],
       JSON.stringify(resourseDef),
@@ -37,7 +36,6 @@ export class KubeClient {
     const name = resourseDef.metadata.name;
     const kind: string = resourseDef.kind.toLowerCase();
 
-    // console.log( pod );
     if( waitReady ) {
       // loop until ready
       let t = this.timeout;

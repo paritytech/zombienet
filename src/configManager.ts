@@ -13,6 +13,7 @@ export const RPC_HTTP_PORT = 9944;
 // The port substrate listens for p2p connections on
 export const P2P_PORT = 30333;
 
+export const DEFAULT_GLOBAL_TIMEOUT = 300; // seconds
 export const DEFAULT_COMMAND = 'polkadot';
 export const DEFAULT_IMAGE = 'parity/substrate:latest';
 export const DEFAULT_ARGS: string[] = [];
@@ -43,7 +44,11 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   const chainName = config.relaychain.chain || DEFAULT_CHAIN;
 
   // settings don't need transform
-  if (config.settings) networkSpec.settings = config.settings;
+  networkSpec.settings = {
+    timeout : DEFAULT_GLOBAL_TIMEOUT,
+    ...(config.settings) ? config.settings : {}
+  };
+
 
   for (const node of config.relaychain.nodes) {
     const command = node.command ? node.command : config.relaychain.default_command;
@@ -74,7 +79,8 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       validator: node.validator,
       args,
       env,
-      bootnodes
+      bootnodes,
+      autoConnectApi: node.autoConnectApi || false
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -182,7 +188,8 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
       "/ip4/0.0.0.0/tcp/30333"
      ],
     env: [],
-    bootnodes: []
+    bootnodes: [],
+    autoConnectApi: true
   }
 
   return nodeSetup;

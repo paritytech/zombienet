@@ -32,6 +32,7 @@ export interface Node {
   bootnodes: string[];
   substrateRole?: string;
   initContainers?: object[];
+  autoConnectApi: boolean;
   // command: Option<String>,
   // command_with_args: Option<String>,
   // subcommand: Option<String>,
@@ -103,6 +104,7 @@ export interface Settings {
   global_volumes: GlobalVolume[];
   bootnode: boolean;
   bootnode_domain?: string;
+  timeout: number;
 }
 
 export interface GlobalVolume {
@@ -136,6 +138,7 @@ export interface RelayChainConfig {
     env?: envVars[];
     bootnodes?: string[];
     initContainers?: object[];
+    autoConnectApi?: boolean;
   }[];
 }
 

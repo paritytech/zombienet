@@ -8,6 +8,7 @@ import { generateNamespace, sleep } from "./utils";
 import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
 import tmp from "tmp-promise";
 import fs from "fs";
+import { node } from "execa";
 
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo tar has finished`;
 
@@ -16,18 +17,26 @@ export async function start(
   networkConfig: LaunchConfig,
   withMetrics: boolean = false
 ) {
-  let network;
+  let network: Network;
   let transferIdentifier: string = '';
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = generateNetworkSpec(networkConfig);
+
+    // global timeout
+    setTimeout(() => {
+      if(!network.launched) {
+        console.log("GLOBAL TIMEOUT");
+        // throw new Error(`GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `);
+      }
+    }, networkSpec.settings.timeout * 1000);
 
     // Create namespace
     const namespace = generateNamespace();
     const client = new KubeClient(credentials, namespace);
     network = new Network(client, namespace);
 
-    console.log(`Launching network under namespace: ${namespace}`);
+    console.log(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
@@ -41,7 +50,7 @@ export async function start(
     // create tmp directory to store needed files
     const tempDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tempDir.path}/finished.txt`;
-    console.log( `Temp dir used for transfer: ${tempDir.path}`);
+    console.log( `\t Temp Dir: ${tempDir.path}`);
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, 'w');
 
@@ -68,7 +77,7 @@ export async function start(
     await client.crateResource( bootnodeDef, true, true );
 
     // make sure the bootnode is up and available over DNS
-    await sleep(3000);
+    await sleep(4000);
 
     const identifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
     const fwdPort = await startPortForwarding(9944, identifier, namespace);
@@ -79,7 +88,8 @@ export async function start(
     const networkNode: NetworkNode = {
       name: bootnodeDef.metadata.name,
       apiInstance: api,
-      wsUri
+      wsUri,
+      autoConnectApi: bootnodeSpec.autoConnectApi
     };
 
     network.addNode(networkNode);
@@ -93,7 +103,8 @@ export async function start(
         chain: networkSpec.relaychain.chain,
         bootnodes: [],
         args: [],
-        env: []
+        env: [],
+        autoConnectApi: false
       }
       const podDef = await genPodDef(client, node);
       await client.crateResource( podDef, true, true );
@@ -107,24 +118,35 @@ export async function start(
     for (const node of networkSpec.relaychain.nodes) {
       // create the node and attach to the network object
       const podDef = await genPodDef(client, node);
-      console.log( JSON.stringify(podDef));
+      console.log("-----DEBUG----\n");
+      console.log( "\t" + JSON.stringify(podDef));
+      console.log("\n");
       await client.crateResource( podDef, true, true );
-      await sleep(1000);
 
       const identifier = `${podDef.kind}/${podDef.metadata.name}`;
       const fwdPort = await startPortForwarding(9944, identifier, namespace);
       const wsUri =  `ws://127.0.0.1:${fwdPort}`; //TODO: change address
-      const provider = new WsProvider(wsUri);
-      const api = await ApiPromise.create({ provider });
 
       const networkNode: NetworkNode = {
         name: node.name,
-        apiInstance: api,
-        wsUri
+        wsUri,
+        autoConnectApi: node.autoConnectApi
       };
 
       network.addNode(networkNode);
     }
+
+    console.log("\t All relay chain nodes spawned...");
+    // sleep 2 secs before connect the api
+    await sleep(3000);
+
+    for(const node  of network.nodes) {
+      if(!node.autoConnectApi) continue;
+      const provider = new WsProvider(node.wsUri);
+      const api = await ApiPromise.create({ provider });
+      node.apiInstance = api;
+    }
+
 
     for( const parachain of networkSpec.parachains) {
       let wasmLocalFilePath, stateLocalFilePath;
@@ -143,7 +165,8 @@ export async function start(
           chain: networkSpec.relaychain.chain,
           bootnodes: [],
           args: [],
-          env: []
+          env: [],
+          autoConnectApi: false
         }
         const podDef = await genPodDef(client, node);
         await client.crateResource( podDef, true, true );
@@ -183,6 +206,7 @@ export async function start(
         bootnodes: [],
         args: [],
         env: [],
+        autoConnectApi: false
         // initContainers: [
         //   {
         //     name: "init-transfer",
@@ -224,7 +248,10 @@ export async function start(
     }
 
     // TODO: run test
-    console.log( network);
+    console.log(network);
+    // prevent global timeout
+    network.launched = true;
+    console.log("\t 🚀 LAUNCH COMPLETE 🚀");
     return network;
   } catch (error) {
     console.error(error);
@@ -235,7 +262,7 @@ export async function start(
 }
 
 
-export async function test(credentials: string, networkConfig: LaunchConfig, cb: Function) {
+export async function test(credentials: string, networkConfig: LaunchConfig, cb: (network: Network) => void) {
   try {
     const network: Network = await start(credentials, networkConfig);
     await cb(network);

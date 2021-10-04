@@ -6,9 +6,10 @@ import { readDataFile } from "./utils";
 
 export interface NetworkNode {
     name: string;
-    apiInstance: object;
     wsUri: string;
+    apiInstance?: ApiPromise;
     spec?: object;
+    autoConnectApi: boolean;
 }
 
 export interface NodeMapping {
@@ -20,10 +21,12 @@ export class Network {
     nodesByName: NodeMapping = {};
     namespace: string;
     client: KubeClient;
+    launched: boolean;
 
     constructor(client: KubeClient, namespace:string) {
         this.client = client;
         this.namespace = namespace;
+        this.launched = false;
     }
 
     addNode(node: NetworkNode) {

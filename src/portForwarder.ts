@@ -12,14 +12,24 @@ export async function startPortForwarding(port: number, identifier: string, name
 
         const subprocess = spawn("kubectl", args);
 
+        let resolved = false;
         subprocess.stdout.on('data', function (data) {
+            if( resolved ) return;
             const stdout = data.toString();
             const m = /.\d{1,3}:(\d+)/.exec(stdout);
             console.log('stdout: ' + stdout);
-            if(m) resolve(parseInt(m[1]));
+            if(m && !resolved) {
+                resolved = true;
+                resolve(parseInt(m[1]));
+            }
 
             reject( new Error(`ERR: port-fw for ${identifier}`));
         });
+
+        // subprocess.stderr.on('data', function (data) {
+        //     const s = data.toString();
+        //     if(resolved) console.log('stderr: ' + s);
+        // });
 
         subprocess.on('exit', function () {
             console.log('child process exited');
