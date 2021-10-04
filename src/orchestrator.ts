@@ -1,6 +1,14 @@
 import { KubeClient } from "./kubeWrapper";
 import { LaunchConfig, ComputedNetwork, Node } from "./types";
-import { generateNetworkSpec, generateBootnodeSpec, getUniqueName, FINISH_MAGIC_FILE, DEFAULT_COLLATOR_IMAGE, GENESIS_STATE_FILENAME, GENESIS_WASM_FILENAME } from "./configManager";
+import {
+  generateNetworkSpec,
+  generateBootnodeSpec,
+  getUniqueName,
+  FINISH_MAGIC_FILE,
+  DEFAULT_COLLATOR_IMAGE,
+  GENESIS_STATE_FILENAME,
+  GENESIS_WASM_FILENAME,
+} from "./configManager";
 import { Network, NetworkNode } from "./network";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
@@ -18,14 +26,14 @@ export async function start(
   withMetrics: boolean = false
 ) {
   let network: Network;
-  let transferIdentifier: string = '';
+  let transferIdentifier: string = "";
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = generateNetworkSpec(networkConfig);
 
     // global timeout
     setTimeout(() => {
-      if(!network.launched) {
+      if (!network.launched) {
         console.log("GLOBAL TIMEOUT");
         // throw new Error(`GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `);
       }
@@ -50,9 +58,9 @@ export async function start(
     // create tmp directory to store needed files
     const tempDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tempDir.path}/finished.txt`;
-    console.log( `\t Temp Dir: ${tempDir.path}`);
+    console.log(`\t Temp Dir: ${tempDir.path}`);
     // Create MAGIC file to stop temp/init containers
-    fs.openSync(localMagicFilepath, 'w');
+    fs.openSync(localMagicFilepath, "w");
 
     // create namespace
     const namespaceDef = {
@@ -66,22 +74,21 @@ export async function start(
     await client.crateResource(namespaceDef);
 
     // create basic infra metrics if needed
-    if(withMetrics) await staticSetup(client);
-
+    if (withMetrics) await staticSetup(client);
 
     // bootnode
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
-    const bootnodeDef = await genBootnodeDef(client,bootnodeSpec );
-    console.log( bootnodeDef );
-    await client.crateResource( bootnodeDef, true, true );
+    const bootnodeDef = await genBootnodeDef(client, bootnodeSpec);
+    console.log(bootnodeDef);
+    await client.crateResource(bootnodeDef, true, true);
 
     // make sure the bootnode is up and available over DNS
     await sleep(4000);
 
     const identifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
     const fwdPort = await startPortForwarding(9944, identifier, namespace);
-    const wsUri =  `ws://127.0.0.1:${fwdPort}`; //TODO: change address
+    const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
     const provider = new WsProvider(wsUri);
     const api = await ApiPromise.create({ provider });
 
@@ -89,29 +96,40 @@ export async function start(
       name: bootnodeDef.metadata.name,
       apiInstance: api,
       wsUri,
-      autoConnectApi: bootnodeSpec.autoConnectApi
+      autoConnectApi: bootnodeSpec.autoConnectApi,
     };
 
     network.addNode(networkNode);
 
-    if( networkSpec.relaychain.chainSpecCommand ) {
+    if (networkSpec.relaychain.chainSpecCommand) {
       let node: Node = {
         name: getUniqueName("temp"),
         validator: false,
         image: networkSpec.relaychain.defaultImage,
-        commandWithArgs: networkSpec.relaychain.chainSpecCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+        commandWithArgs:
+          networkSpec.relaychain.chainSpecCommand +
+          " && " +
+          WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
         chain: networkSpec.relaychain.chain,
         bootnodes: [],
         args: [],
         env: [],
-        autoConnectApi: false
-      }
+        autoConnectApi: false,
+      };
       const podDef = await genPodDef(client, node);
-      await client.crateResource( podDef, true, true );
+      await client.crateResource(podDef, true, true);
       const identifier = `${podDef.metadata.name}`;
-      const fileName = `${networkSpec.relaychain.chain}.json`
-      await client.copyFileFromPod(identifier,`/cfg/${fileName}`, `${tempDir.path}/${fileName}`);
-      await client.copyFileToPod(identifier, localMagicFilepath, FINISH_MAGIC_FILE);
+      const fileName = `${networkSpec.relaychain.chain}.json`;
+      await client.copyFileFromPod(
+        identifier,
+        `/cfg/${fileName}`,
+        `${tempDir.path}/${fileName}`
+      );
+      await client.copyFileToPod(
+        identifier,
+        localMagicFilepath,
+        FINISH_MAGIC_FILE
+      );
     }
 
     // Create nodes
@@ -119,18 +137,18 @@ export async function start(
       // create the node and attach to the network object
       const podDef = await genPodDef(client, node);
       console.log("-----DEBUG----\n");
-      console.log( "\t" + JSON.stringify(podDef));
+      console.log("\t" + JSON.stringify(podDef));
       console.log("\n");
-      await client.crateResource( podDef, true, true );
+      await client.crateResource(podDef, true, true);
 
       const identifier = `${podDef.kind}/${podDef.metadata.name}`;
       const fwdPort = await startPortForwarding(9944, identifier, namespace);
-      const wsUri =  `ws://127.0.0.1:${fwdPort}`; //TODO: change address
+      const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
 
       const networkNode: NetworkNode = {
         name: node.name,
         wsUri,
-        autoConnectApi: node.autoConnectApi
+        autoConnectApi: node.autoConnectApi,
       };
 
       network.addNode(networkNode);
@@ -140,21 +158,22 @@ export async function start(
     // sleep 2 secs before connect the api
     await sleep(3000);
 
-    for(const node  of network.nodes) {
-      if(!node.autoConnectApi) continue;
+    for (const node of network.nodes) {
+      if (!node.autoConnectApi) continue;
       const provider = new WsProvider(node.wsUri);
       const api = await ApiPromise.create({ provider });
       node.apiInstance = api;
     }
 
-
-    for( const parachain of networkSpec.parachains) {
+    for (const parachain of networkSpec.parachains) {
       let wasmLocalFilePath, stateLocalFilePath;
       // check if we need to create files
-      if( parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
+      if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
         let commands = [];
-        if(parachain.genesisStateGenerator) commands.push(parachain.genesisStateGenerator);
-        if(parachain.genesisWasmGenerator) commands.push(parachain.genesisWasmGenerator);
+        if (parachain.genesisStateGenerator)
+          commands.push(parachain.genesisStateGenerator);
+        if (parachain.genesisWasmGenerator)
+          commands.push(parachain.genesisWasmGenerator);
         commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
         let node: Node = {
@@ -166,47 +185,66 @@ export async function start(
           bootnodes: [],
           args: [],
           env: [],
-          autoConnectApi: false
-        }
+          autoConnectApi: false,
+        };
         const podDef = await genPodDef(client, node);
-        await client.crateResource( podDef, true, true );
+        await client.crateResource(podDef, true, true);
         const identifier = `${podDef.metadata.name}`;
-        if( parachain.genesisStateGenerator ) {
+        if (parachain.genesisStateGenerator) {
           stateLocalFilePath = `${tempDir.path}/${GENESIS_STATE_FILENAME}`;
-          await client.copyFileFromPod(identifier,`/cfg/${GENESIS_STATE_FILENAME}`, stateLocalFilePath);
+          await client.copyFileFromPod(
+            identifier,
+            `/cfg/${GENESIS_STATE_FILENAME}`,
+            stateLocalFilePath
+          );
         }
 
-        if( parachain.genesisWasmGenerator ) {
+        if (parachain.genesisWasmGenerator) {
           wasmLocalFilePath = `${tempDir.path}/${GENESIS_WASM_FILENAME}`;
-          await client.copyFileFromPod(identifier,`/cfg/${GENESIS_STATE_FILENAME}`, wasmLocalFilePath);
+          await client.copyFileFromPod(
+            identifier,
+            `/cfg/${GENESIS_STATE_FILENAME}`,
+            wasmLocalFilePath
+          );
         }
 
         // put file to terminate pod
-        await client.copyFileToPod(identifier, localMagicFilepath, FINISH_MAGIC_FILE);
+        await client.copyFileToPod(
+          identifier,
+          localMagicFilepath,
+          FINISH_MAGIC_FILE
+        );
       }
 
-      if( ! stateLocalFilePath ) stateLocalFilePath = parachain.genesisStatePath;
-      if( ! wasmLocalFilePath ) wasmLocalFilePath = parachain.genesisWasmPath;
+      if (!stateLocalFilePath) stateLocalFilePath = parachain.genesisStatePath;
+      if (!wasmLocalFilePath) wasmLocalFilePath = parachain.genesisWasmPath;
 
       // CHEKC
-      if( ! stateLocalFilePath || ! wasmLocalFilePath) throw new Error("Invalid state or wasm files");
+      if (!stateLocalFilePath || !wasmLocalFilePath)
+        throw new Error("Invalid state or wasm files");
 
       // register parachain
-      await network.registerParachain(parachain.id, wasmLocalFilePath, stateLocalFilePath);
+      await network.registerParachain(
+        parachain.id,
+        wasmLocalFilePath,
+        stateLocalFilePath
+      );
 
-      let finalCommandWithArgs = parachain.collator.commandWithArgs || parachain.collator.command;
+      let finalCommandWithArgs =
+        parachain.collator.commandWithArgs || parachain.collator.command;
 
       // create collator
       let collator: Node = {
         name: getUniqueName(parachain.collator.name),
         validator: false,
         image: parachain.collator.image,
-        commandWithArgs: WAIT_UNTIL_SCRIPT_SUFIX + " && " + finalCommandWithArgs,
+        commandWithArgs:
+          WAIT_UNTIL_SCRIPT_SUFIX + " && " + finalCommandWithArgs,
         chain: networkSpec.relaychain.chain,
         bootnodes: [],
         args: [],
         env: [],
-        autoConnectApi: false
+        autoConnectApi: false,
         // initContainers: [
         //   {
         //     name: "init-transfer",
@@ -222,14 +260,22 @@ export async function start(
         //     ],
         //   }
         // ]
-      }
+      };
       const podDef = await genPodDef(client, collator);
-      await client.crateResource( podDef, true, true );
+      await client.crateResource(podDef, true, true);
       await sleep(1000);
       const identifier = `${podDef.metadata.name}`;
-      const fileName = `${networkSpec.relaychain.chain}.json`
-      await client.copyFileToPod(identifier, `${tempDir.path}/${fileName}`, `/cfg/${fileName}`);
-      await client.copyFileToPod(identifier, localMagicFilepath, FINISH_MAGIC_FILE);
+      const fileName = `${networkSpec.relaychain.chain}.json`;
+      await client.copyFileToPod(
+        identifier,
+        `${tempDir.path}/${fileName}`,
+        `/cfg/${fileName}`
+      );
+      await client.copyFileToPod(
+        identifier,
+        localMagicFilepath,
+        FINISH_MAGIC_FILE
+      );
 
       // TODO: do we need to connect to the collector node?
       // const identifier = `${podDef.kind}/${podDef.metadata.name}`;
@@ -261,14 +307,16 @@ export async function start(
   }
 }
 
-
-export async function test(credentials: string, networkConfig: LaunchConfig, cb: (network: Network) => void) {
+export async function test(
+  credentials: string,
+  networkConfig: LaunchConfig,
+  cb: (network: Network) => void
+) {
   try {
     const network: Network = await start(credentials, networkConfig);
     await cb(network);
     network.stop();
-  }
-  catch(error) {
+  } catch (error) {
     console.error(error);
   }
 }
@@ -318,4 +366,3 @@ async function staticSetup(client: KubeClient) {
     }
   }
 }
-

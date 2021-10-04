@@ -26,7 +26,11 @@ export class KubeClient {
   }
 
   // accept a json def
-  async crateResource(resourseDef: any, scoped: boolean = false, waitReady: boolean = false): Promise<void> {
+  async crateResource(
+    resourseDef: any,
+    scoped: boolean = false,
+    waitReady: boolean = false
+  ): Promise<void> {
     const pod = await this._kubectl(
       ["apply", "-f", "-"],
       JSON.stringify(resourseDef),
@@ -36,22 +40,16 @@ export class KubeClient {
     const name = resourseDef.metadata.name;
     const kind: string = resourseDef.kind.toLowerCase();
 
-    if( waitReady ) {
+    if (waitReady) {
       // loop until ready
       let t = this.timeout;
-      const args = [
-        "get",
-        kind,
-        name,
-        "-o",
-        "jsonpath={.status.phase}"
-      ]
+      const args = ["get", kind, name, "-o", "jsonpath={.status.phase}"];
       do {
         const result = await this._kubectl(args, undefined, true);
         // console.log( result.stdout );
-        if(["Running", "Succeeded"].includes( result.stdout )) return;
+        if (["Running", "Succeeded"].includes(result.stdout)) return;
 
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         t -= 3;
       } while (t > 0);
 
@@ -68,22 +66,22 @@ export class KubeClient {
     await this._kubectl(["apply", "-f", "-"], resourceDef);
   }
 
-  async copyFileToPod(identifier: string, localFilePath: string, podFilePath: string) {
-    const args = [
-      "cp",
-      localFilePath,
-      `${identifier}:${podFilePath}`
-    ];
+  async copyFileToPod(
+    identifier: string,
+    localFilePath: string,
+    podFilePath: string
+  ) {
+    const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
     const result = await this._kubectl(args, undefined, true);
     // console.log(result);
   }
 
-  async copyFileFromPod(identifier: string, podFilePath: string, localFilePath: string,) {
-    const args = [
-      "cp",
-      `${identifier}:${podFilePath}`,
-      localFilePath
-    ];
+  async copyFileFromPod(
+    identifier: string,
+    podFilePath: string,
+    localFilePath: string
+  ) {
+    const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
     const result = await this._kubectl(args, undefined, true);
     // console.log(result);
   }
@@ -99,11 +97,7 @@ export class KubeClient {
   }
 
   async destroyNamespace() {
-    await this._kubectl([
-      "delete",
-      "namespace",
-      this.namespace
-    ]);
+    await this._kubectl(["delete", "namespace", this.namespace]);
   }
 
   // run kubectl

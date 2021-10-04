@@ -5,17 +5,16 @@ export interface KubectlResponse {
 
 // Computed Network (internal use)
 export interface ComputedNetwork {
-  settings: Settings,
+  settings: Settings;
   relaychain: {
-    defaultImage: string,
-    chain: string,
-    chainSpecPath?: string,
-    chainSpecCommand?: string,
-    nodes: Node[]
-  },
-  parachains: Parachain[]
+    defaultImage: string;
+    chain: string;
+    chainSpecPath?: string;
+    chainSpecCommand?: string;
+    nodes: Node[];
+  };
+  parachains: Parachain[];
 }
-
 
 export interface Node {
   name: string;
@@ -51,7 +50,6 @@ export interface Node {
   // fetch_files: Option<Vec<PathBuf>>,
   // env: Option<HashMap<String, String>>,
   // mdns: Option<bool>,
-
 }
 
 export interface Collator {
@@ -73,19 +71,17 @@ export interface Parachain {
   genesisStatePath?: string;
   genesisStateGenerator?: string;
   balance?: number;
-  collator: Collator
+  collator: Collator;
 }
 
 export interface CollatorNodeConfig {
   image?: string;
   command?: string;
-  commandWithArgs? :string;
+  commandWithArgs?: string;
   name?: string;
   args?: string[];
   initContainers?: object[];
 }
-
-
 
 export interface envVars {
   name: string;
@@ -149,11 +145,11 @@ export interface ParachainConfig {
   genesis_wasm_generator?: string;
   genesis_state_path?: string;
   genesis_state_generator?: string;
-  bootnodes?: string[],
+  bootnodes?: string[];
   collator: {
     image?: string;
     command?: string;
-    commandWithArgs? :string;
+    commandWithArgs?: string;
     name?: string;
     args?: string[];
   };
