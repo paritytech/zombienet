@@ -13,7 +13,7 @@ export class KubeClient {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
-    this.timeout = 21; // secs
+    this.timeout = 30; // secs
   }
 
   async validateAccess(): Promise<boolean> {
@@ -97,7 +97,7 @@ export class KubeClient {
   }
 
   async destroyNamespace() {
-    await this._kubectl(["delete", "namespace", this.namespace]);
+    await this._kubectl(["delete", "namespace", this.namespace], undefined, false);
   }
 
   // run kubectl

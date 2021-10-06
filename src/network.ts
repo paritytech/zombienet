@@ -3,17 +3,17 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
 import { readDataFile } from "./utils";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
+import { Metrics } from "./metrics";
+import { NetworkNode } from "./networkNode";
 
-export interface NetworkNode {
-  name: string;
-  wsUri: string;
-  apiInstance?: ApiPromise;
-  spec?: object;
-  autoConnectApi: boolean;
-}
 
 export interface NodeMapping {
   [propertyName: string]: NetworkNode;
+}
+
+export interface NodeMappingMetrics {
+  [propertyName: string]: Metrics;
 }
 
 export class Network {
@@ -22,11 +22,13 @@ export class Network {
   namespace: string;
   client: KubeClient;
   launched: boolean;
+  // cachedMetricByNode: NodeMappingMetrics;
 
   constructor(client: KubeClient, namespace: string) {
     this.client = client;
     this.namespace = namespace;
     this.launched = false;
+    // this.cachedMetricByNode = {}
   }
 
   addNode(node: NetworkNode) {
@@ -99,4 +101,61 @@ export class Network {
       nonce += 1;
     });
   }
+
+  getNodeByName(nodeName: string): NetworkNode {
+    const node = this.nodesByName[nodeName];
+    if( ! node ) throw new Error(`NODE: ${nodeName} not present`);
+    return node;
+  }
+
+  node(nodeName: string): NetworkNode {
+    const node = this.nodesByName[nodeName];
+    if( ! node ) throw new Error(`NODE: ${nodeName} not present`);
+    return node;
+  }
+
+  // Testing abstraction
+  async nodeIsUp(nodeName: string, timeout=DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
+    try{
+      const limitTimeout = setTimeout(() => {
+        throw new Error(`Timeout(${timeout}s)`);
+      }, timeout * 1000 );
+
+      const node = this.getNodeByName(nodeName);
+      await node.apiInstance.rpc.system.name();
+      return true;
+    } catch( err ) {
+      console.log(err);
+      return false;
+    }
+  }
+
+  // abstract over prometheus metrics
+  // if `desiredMetricValue` is passed keep getting the metrics until we get the value or the `timeout` is reached.
+  // async report(nodeName: string, metricName: string, desiredMetricValue: number|null = null, timeout=DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<number> {
+  //   const limitTimeout = setTimeout(() => {
+  //     throw new Error(`Timeout(${timeout}s)`);
+  //   }, timeout * 1000 );
+
+  //   const node = this.getNodeByName(nodeName);
+
+  //   const getMetric = async (useCache:boolean): Promise<number> => {
+  //     return await node.getMetric(metricName, useCache);
+  //   }
+
+  //   let value = await getMetric(desiredMetricValue === null );
+  //   if( desiredMetricValue === null || desiredMetricValue >= value ) return value;
+
+  //   // loop until get the desired value or timeout
+  //   let done = false;
+  //   while (!done) {
+  //     await new Promise((resolve) => setTimeout(resolve, 500));
+  //     value = await getMetric(false);
+  //     if( desiredMetricValue >= value ) {
+  //       clearTimeout(limitTimeout);
+  //       done = true;
+  //     }
+  //   }
+  //   return value;
+  // }
 }

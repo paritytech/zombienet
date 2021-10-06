@@ -90,10 +90,9 @@ async function gen_cmd(nodeSetup: Node): Promise<string[]> {
     chain,
     commandWithArgs,
     command,
-    // mdns,
-    // telemetry,
-    // telemetryUrl,
-    // prometheus,
+    telemetry,
+    telemetryUrl,
+    prometheus,
     validator,
     bootnodes,
     args,
@@ -136,10 +135,10 @@ async function gen_cmd(nodeSetup: Node): Promise<string[]> {
 
   // if (!mdns) args.push("--no-mdns");
 
-  // if (!telemetry) args.push("--no-telemetry");
-  // else args.push("--telemetry-url", telemetryUrl);
+  if (!telemetry) args.push("--no-telemetry");
+  else args.push("--telemetry-url", telemetryUrl);
 
-  // if (prometheus) args.push("--prometheus-external");
+  if (prometheus) args.push("--prometheus-external");
 
   if (validator) args.push("--validator");
 

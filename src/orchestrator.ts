@@ -8,15 +8,16 @@ import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  PROMETHEUS_PORT
 } from "./configManager";
-import { Network, NetworkNode } from "./network";
+import { Network } from "./network";
+import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { generateNamespace, sleep } from "./utils";
 import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
 import tmp from "tmp-promise";
 import fs from "fs";
-import { node } from "execa";
 
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo tar has finished`;
 
@@ -25,7 +26,7 @@ export async function start(
   networkConfig: LaunchConfig,
   withMetrics: boolean = false
 ) {
-  let network: Network;
+  let network: Network | undefined;
   let transferIdentifier: string = "";
   try {
     // Parse and build Network definition
@@ -33,14 +34,14 @@ export async function start(
 
     // global timeout
     setTimeout(() => {
-      if (!network.launched) {
+      if (network && !network.launched) {
         console.log("GLOBAL TIMEOUT");
         // throw new Error(`GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `);
       }
     }, networkSpec.settings.timeout * 1000);
 
     // Create namespace
-    const namespace = generateNamespace();
+    const namespace = `zombie-${generateNamespace()}`;
     const client = new KubeClient(credentials, namespace);
     network = new Network(client, namespace);
 
@@ -80,7 +81,6 @@ export async function start(
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
     const bootnodeDef = await genBootnodeDef(client, bootnodeSpec);
-    console.log(bootnodeDef);
     await client.crateResource(bootnodeDef, true, true);
 
     // make sure the bootnode is up and available over DNS
@@ -88,17 +88,14 @@ export async function start(
 
     const identifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
     const fwdPort = await startPortForwarding(9944, identifier, namespace);
+    const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, namespace);
     const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
+    const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`; //TODO: change address
     const provider = new WsProvider(wsUri);
     const api = await ApiPromise.create({ provider });
 
-    const networkNode: NetworkNode = {
-      name: bootnodeDef.metadata.name,
-      apiInstance: api,
-      wsUri,
-      autoConnectApi: bootnodeSpec.autoConnectApi,
-    };
-
+    const networkNode: NetworkNode = new NetworkNode(bootnodeDef.metadata.name, wsUri, prometheusUri);
+    networkNode.apiInstance = api;
     network.addNode(networkNode);
 
     if (networkSpec.relaychain.chainSpecCommand) {
@@ -115,6 +112,7 @@ export async function start(
         args: [],
         env: [],
         autoConnectApi: false,
+        telemetryUrl: ""
       };
       const podDef = await genPodDef(client, node);
       await client.crateResource(podDef, true, true);
@@ -143,14 +141,11 @@ export async function start(
 
       const identifier = `${podDef.kind}/${podDef.metadata.name}`;
       const fwdPort = await startPortForwarding(9944, identifier, namespace);
+      const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, namespace);
       const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
+      const prometheusUri = `ws://127.0.0.1:${prometheusPort}`; //TODO: change address
 
-      const networkNode: NetworkNode = {
-        name: node.name,
-        wsUri,
-        autoConnectApi: node.autoConnectApi,
-      };
-
+      const networkNode: NetworkNode = new NetworkNode(node.name, wsUri, prometheusUri, node.autoConnectApi);
       network.addNode(networkNode);
     }
 
@@ -159,10 +154,7 @@ export async function start(
     await sleep(3000);
 
     for (const node of network.nodes) {
-      if (!node.autoConnectApi) continue;
-      const provider = new WsProvider(node.wsUri);
-      const api = await ApiPromise.create({ provider });
-      node.apiInstance = api;
+      if (node.autoConnectApi) await node.connectApi();
     }
 
     for (const parachain of networkSpec.parachains) {
@@ -186,6 +178,7 @@ export async function start(
           args: [],
           env: [],
           autoConnectApi: false,
+          telemetryUrl: ""
         };
         const podDef = await genPodDef(client, node);
         await client.crateResource(podDef, true, true);
@@ -245,6 +238,7 @@ export async function start(
         args: [],
         env: [],
         autoConnectApi: false,
+        telemetryUrl: ""
         // initContainers: [
         //   {
         //     name: "init-transfer",
@@ -301,8 +295,7 @@ export async function start(
     return network;
   } catch (error) {
     console.error(error);
-    // Allow debug on error
-    // if(network) await network.stop();
+    if(network) await network.stop();
     process.exit(1);
   }
 }
