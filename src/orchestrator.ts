@@ -14,12 +14,19 @@ import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { generateNamespace, sleep } from "./utils";
+import { generateNamespace, sleep, filterConsole } from "./utils";
 import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
 import tmp from "tmp-promise";
 import fs from "fs";
 
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo tar has finished`;
+
+// Hide some warning messages that are coming from Polkadot JS API.
+// TODO: Make configurable.
+filterConsole([
+	`code: '1006' reason: 'connection failed'`,
+  `API-WS: disconnected`
+]);
 
 export async function start(
   credentials: string,
@@ -35,8 +42,7 @@ export async function start(
     // global timeout
     setTimeout(() => {
       if (network && !network.launched) {
-        console.log("GLOBAL TIMEOUT");
-        // throw new Error(`GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `);
+        throw new Error(`GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `);
       }
     }, networkSpec.settings.timeout * 1000);
 
@@ -134,16 +140,16 @@ export async function start(
     for (const node of networkSpec.relaychain.nodes) {
       // create the node and attach to the network object
       const podDef = await genPodDef(client, node);
-      console.log("-----DEBUG----\n");
-      console.log("\t" + JSON.stringify(podDef));
-      console.log("\n");
+      // console.log("-----DEBUG----\n");
+      // console.log("\t" + JSON.stringify(podDef));
+      // console.log("\n");
       await client.crateResource(podDef, true, true);
 
       const identifier = `${podDef.kind}/${podDef.metadata.name}`;
       const fwdPort = await startPortForwarding(9944, identifier, namespace);
       const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, namespace);
       const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
-      const prometheusUri = `ws://127.0.0.1:${prometheusPort}`; //TODO: change address
+      const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`; //TODO: change address
 
       const networkNode: NetworkNode = new NetworkNode(node.name, wsUri, prometheusUri, node.autoConnectApi);
       network.addNode(networkNode);
@@ -287,7 +293,6 @@ export async function start(
       // network.addNode(networkNode);
     }
 
-    // TODO: run test
     console.log(network);
     // prevent global timeout
     network.launched = true;
@@ -305,12 +310,14 @@ export async function test(
   networkConfig: LaunchConfig,
   cb: (network: Network) => void
 ) {
+  let network: Network|undefined;
   try {
-    const network: Network = await start(credentials, networkConfig);
+    network = await start(credentials, networkConfig);
     await cb(network);
-    network.stop();
   } catch (error) {
     console.error(error);
+  } finally {
+    if(network) await network.stop();
   }
 }
 
