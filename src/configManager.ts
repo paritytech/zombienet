@@ -14,6 +14,7 @@ export const RPC_HTTP_PORT = 9944;
 export const P2P_PORT = 30333;
 
 export const DEFAULT_GLOBAL_TIMEOUT = 300; // seconds
+export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 export const DEFAULT_COMMAND = "polkadot";
 export const DEFAULT_IMAGE = "parity/substrate:latest";
 export const DEFAULT_ARGS: string[] = [];
@@ -86,7 +87,10 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       args,
       env,
       bootnodes,
-      autoConnectApi: node.autoConnectApi || false,
+      autoConnectApi: (node.autoConnectApi !== undefined ) ? node.autoConnectApi : true, // by default connect
+      telemetryUrl: (config.settings?.telemetry) ? "ws://telemetry:8000/submit 0" : "",
+      telemetry: (config.settings?.telemetry) ? true : false,
+      prometheus: (config.settings?.prometheus) ? true : false
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -223,6 +227,7 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     env: [],
     bootnodes: [],
     autoConnectApi: true,
+    telemetryUrl: ""
   };
 
   return nodeSetup;

@@ -21,7 +21,7 @@ export async function startPortForwarding(
       if (resolved) return;
       const stdout = data.toString();
       const m = /.\d{1,3}:(\d+)/.exec(stdout);
-      console.log("stdout: " + stdout);
+      // console.log("stdout: " + stdout);
       if (m && !resolved) {
         resolved = true;
         resolve(parseInt(m[1]));

@@ -25,6 +25,7 @@ export interface Node {
   chainSpec?: string; // path to the json spec
   port?: number;
   wsPort?: number;
+  // run with `--validator`-flag
   validator: boolean;
   args: string[];
   env: envVars[];
@@ -32,12 +33,14 @@ export interface Node {
   substrateRole?: string;
   initContainers?: object[];
   autoConnectApi: boolean;
-  // command: Option<String>,
-  // command_with_args: Option<String>,
+  telemetry?: boolean,
+  /// URL for telemetry
+  telemetryUrl: string,
+  /// run with `--prometheus-external`-flag
+  prometheus?: boolean,
   // subcommand: Option<String>,
   // init: Option<CustomInit>,
   // extra_args: Option<Vec<String>>,
-  // validator: Option<bool>,
   // chain_name: Option<String>,
   // binary: Option<PathBuf>,
   // chain_spec: Option<String>,
@@ -101,6 +104,9 @@ export interface Settings {
   bootnode: boolean;
   bootnode_domain?: string;
   timeout: number;
+  grafana?: boolean;
+  telemetry?: boolean;
+  prometheus?: boolean;
 }
 
 export interface GlobalVolume {

@@ -51,12 +51,13 @@ let network: Network;
 (async () => {
   network = await start(credsFile, config);
   for (const node of network.nodes) {
-    console.log(`Node name: ${node.name}`);
+    console.log("\n");
+    console.log(`\t\t Node name: ${node.name}`);
     console.log(
       `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
         node.wsUri
-      )}#/explorer`
-    );
+      )}#/explorer\n`);
+    console.log(`Node prometheus link: ${node.prometheusUri}\n`);
     console.log("---\n");
   }
 })();

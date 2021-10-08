@@ -16,6 +16,7 @@
     "@polkadot/keyring": "^7.4.1",
     "@polkadot/util-crypto": "^7.4.1",
     "execa": "^5.1.1",
+    "node-fetch": "^2.6.5",
     "tmp-promise": "^3.0.2",
     "toml": "^3.0.0",
     "typescript": "^4.1.5",
@@ -30,6 +31,8 @@
   "devDependencies": {
     "@types/node": "^16.4.12",
     "@types/tmp": "^0.2.1",
+    "chai": "^4.3.4",
+    "mocha": "^9.1.2",
     "prettier": "2.2.1"
   }
 }
