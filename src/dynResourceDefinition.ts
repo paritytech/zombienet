@@ -18,6 +18,7 @@ export async function genBootnodeDef(
       },
     },
     spec: {
+      hostname: "bootnode",
       containers: [container],
       restartPolicy: "OnFailure",
     },
@@ -46,6 +47,7 @@ export async function genPodDef(
       },
     },
     spec: {
+      hostname: nodeSetup.name,
       containers: [container],
       initContainers: nodeSetup.initContainers || [],
       restartPolicy: "OnFailure",
@@ -118,21 +120,6 @@ async function gen_cmd(nodeSetup: Node): Promise<string[]> {
     return finalCommand;
   }
 
-  const finalaArgs = [
-    command,
-    "--chain",
-    chain,
-    "--name",
-    name,
-    "--rpc-cors",
-    "all",
-    "--unsafe-rpc-external",
-    "--rpc-methods",
-    "unsafe",
-    "--unsafe-ws-external",
-    ...args,
-  ];
-
   // if (!mdns) args.push("--no-mdns");
 
   if (!telemetry) args.push("--no-telemetry");
@@ -180,6 +167,21 @@ async function gen_cmd(nodeSetup: Node): Promise<string[]> {
   //         args
   //     };
   // }
+
+  const finalaArgs = [
+    command,
+    "--chain",
+    chain,
+    "--name",
+    name,
+    "--rpc-cors",
+    "all",
+    "--unsafe-rpc-external",
+    "--rpc-methods",
+    "unsafe",
+    "--unsafe-ws-external",
+    ...args,
+  ];
 
   return ["bash", "-c", finalaArgs.join(" ")];
 }

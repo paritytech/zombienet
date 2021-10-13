@@ -20,6 +20,11 @@ export function readDataFile(filepath: string): string {
   }
 }
 
+export function addMinutes( howMany: number, baseDate?: Date ): number {
+	const baseHours = baseDate ? baseDate.getUTCMinutes() : (new Date()).getUTCMinutes();
+	return ((baseHours +59) + howMany) % 59;
+}
+
 export function filterConsole(excludePatterns: string[], options?:any) {
 	options = {
 		console,
