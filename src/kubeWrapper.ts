@@ -3,6 +3,10 @@ import { KubectlResponse } from "./types";
 
 const fs = require("fs").promises;
 
+export interface ReplaceMapping {
+  [propertyName: string]: string;
+}
+
 export class KubeClient {
   namespace: string;
   configPath: string;
@@ -66,6 +70,20 @@ export class KubeClient {
     await this._kubectl(["apply", "-f", "-"], resourceDef);
   }
 
+  async updateResource(filename: string, replacements: ReplaceMapping = {}): Promise<void> {
+    const filePath = `static-configs/${filename}`;
+    const fileContent = await fs.readFile(filePath);
+    let resourceDef = fileContent
+      .toString("utf-8")
+      .replace(new RegExp("{{namespace}}", "g"), this.namespace);
+
+    for(const replaceKey of Object.keys(replacements)) {
+      resourceDef = resourceDef.replace(new RegExp(`{{${replaceKey}}}`, "g"), replacements[replaceKey]);
+    }
+
+    await this._kubectl(["apply", "-f", "-"], resourceDef);
+  }
+
   async copyFileToPod(
     identifier: string,
     localFilePath: string,
@@ -98,6 +116,18 @@ export class KubeClient {
 
   async destroyNamespace() {
     await this._kubectl(["delete", "namespace", this.namespace], undefined, false);
+  }
+
+  async getBootnodeIP(): Promise<string>{
+    const args = [
+      "get",
+      "pod",
+      "bootnode",
+      "-o",
+      "jsonpath='{.status.podIP}'"
+    ];
+    const result = await this._kubectl(args, undefined, true);
+    return result.stdout;
   }
 
   // run kubectl

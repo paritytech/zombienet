@@ -8,13 +8,14 @@ import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  PROMETHEUS_PORT
+  PROMETHEUS_PORT,
+  DEFAULT_BOOTNODE_PEER_ID
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { generateNamespace, sleep, filterConsole } from "./utils";
+import { generateNamespace, sleep, filterConsole, addMinutes } from "./utils";
 import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
 import tmp from "tmp-promise";
 import fs from "fs";
@@ -35,6 +36,7 @@ export async function start(
 ) {
   let network: Network | undefined;
   let transferIdentifier: string = "";
+  let cronInterval = undefined;
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = generateNetworkSpec(networkConfig);
@@ -83,6 +85,12 @@ export async function start(
     // create basic infra metrics if needed
     if (withMetrics) await staticSetup(client);
 
+    // create CronJob cleanner for namespace
+    await cronJobCleanerSetup(client);
+    await upsertCronJob(client);
+
+    cronInterval = setInterval(async () => await upsertCronJob(client), 15 * 60 * 1000 );
+
     // bootnode
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
@@ -93,8 +101,8 @@ export async function start(
     await sleep(4000);
 
     const identifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await startPortForwarding(9944, identifier, namespace);
-    const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, namespace);
+    const fwdPort = await startPortForwarding(9944, identifier, client);
+    const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, client);
     const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
     const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`; //TODO: change address
     const provider = new WsProvider(wsUri);
@@ -138,6 +146,9 @@ export async function start(
 
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
+      // TODO: k8s don't see pods by name so in here we inject the bootnode ip
+      const bootnodeIP = await client.getBootnodeIP();
+      node.bootnodes = [`/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`]
       // create the node and attach to the network object
       const podDef = await genPodDef(client, node);
       // console.log("-----DEBUG----\n");
@@ -146,8 +157,8 @@ export async function start(
       await client.crateResource(podDef, true, true);
 
       const identifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const fwdPort = await startPortForwarding(9944, identifier, namespace);
-      const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, namespace);
+      const fwdPort = await startPortForwarding(9944, identifier, client);
+      const prometheusPort = await startPortForwarding(PROMETHEUS_PORT, identifier, client);
       const wsUri = `ws://127.0.0.1:${fwdPort}`; //TODO: change address
       const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`; //TODO: change address
 
@@ -245,21 +256,6 @@ export async function start(
         env: [],
         autoConnectApi: false,
         telemetryUrl: ""
-        // initContainers: [
-        //   {
-        //     name: "init-transfer",
-        //     image: "busybox:1.28",
-        //     command: ['sh', '-c', WAIT_UNTIL_SCRIPT_SUFIX],
-        //     volumeMounts:
-        //     [
-        //         {
-        //             "name": "tmp-cfg",
-        //             "mountPath": "/cfg",
-        //             "readOnly": false
-        //         }
-        //     ],
-        //   }
-        // ]
       };
       const podDef = await genPodDef(client, collator);
       await client.crateResource(podDef, true, true);
@@ -301,6 +297,7 @@ export async function start(
   } catch (error) {
     console.error(error);
     if(network) await network.stop();
+    if(cronInterval) clearInterval(cronInterval);
     process.exit(1);
   }
 }
@@ -346,7 +343,7 @@ async function staticSetup(client: KubeClient) {
       files: [
         "bootnode-service.yaml",
         "telemetry-service.yaml",
-        "prometheus-service.yaml",
+        "prometheus-service.yaml"
       ],
     },
     {
@@ -354,9 +351,9 @@ async function staticSetup(client: KubeClient) {
       files: [
         "prometheus-deployment.yaml",
         "grafana-deployment.yaml",
-        "telemetry-deployment.yaml",
+        "telemetry-deployment.yaml"
       ],
-    },
+    }
   ];
 
   for (const resourceType of resources) {
@@ -365,4 +362,14 @@ async function staticSetup(client: KubeClient) {
       await client.crateStaticResource(file);
     }
   }
+}
+
+async function cronJobCleanerSetup(client: KubeClient) {
+  await client.crateStaticResource("job-svc-account.yaml");
+}
+
+async function upsertCronJob(client: KubeClient) {
+  const scheduleMinutes = addMinutes(20);
+  const schedule = `${scheduleMinutes} * * * *`;
+  await client.updateResource( "job-delete-namespace.yaml", { schedule });
 }
