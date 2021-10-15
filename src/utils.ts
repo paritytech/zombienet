@@ -76,3 +76,16 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
 
   return config;
 }
+
+export function getCredsFilePath(credsFile: string): string|undefined {
+  if (fs.existsSync(credsFile)) return credsFile;
+
+  const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
+  let credsFileExistInPath: string | undefined = possiblePaths.find(
+    (path) => {
+      const t = `${path}/${credsFile}`;
+      return fs.existsSync(t);
+    }
+  );
+  if (credsFileExistInPath) return `${credsFileExistInPath}/${credsFile}`;
+}
