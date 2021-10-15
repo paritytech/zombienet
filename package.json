@@ -15,6 +15,7 @@
     "@polkadot/api": "^6.1.2",
     "@polkadot/keyring": "^7.4.1",
     "@polkadot/util-crypto": "^7.4.1",
+    "@types/mocha": "^9.0.0",
     "execa": "^5.1.1",
     "node-fetch": "^2.6.5",
     "tmp-promise": "^3.0.2",
