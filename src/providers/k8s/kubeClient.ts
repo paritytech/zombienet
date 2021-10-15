@@ -1,7 +1,11 @@
 import execa from "execa";
-import { KubectlResponse } from "./types";
-
+import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
+
+export interface KubectlResponse {
+  exitCode: number;
+  stdout: string;
+}
 
 export interface ReplaceMapping {
   [propertyName: string]: string;
@@ -70,15 +74,21 @@ export class KubeClient {
     await this._kubectl(["apply", "-f", "-"], resourceDef);
   }
 
-  async updateResource(filename: string, replacements: ReplaceMapping = {}): Promise<void> {
+  async updateResource(
+    filename: string,
+    replacements: ReplaceMapping = {}
+  ): Promise<void> {
     const filePath = `static-configs/${filename}`;
     const fileContent = await fs.readFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
 
-    for(const replaceKey of Object.keys(replacements)) {
-      resourceDef = resourceDef.replace(new RegExp(`{{${replaceKey}}}`, "g"), replacements[replaceKey]);
+    for (const replaceKey of Object.keys(replacements)) {
+      resourceDef = resourceDef.replace(
+        new RegExp(`{{${replaceKey}}}`, "g"),
+        replacements[replaceKey]
+      );
     }
 
     await this._kubectl(["apply", "-f", "-"], resourceDef);
@@ -115,19 +125,85 @@ export class KubeClient {
   }
 
   async destroyNamespace() {
-    await this._kubectl(["delete", "namespace", this.namespace], undefined, false);
+    await this._kubectl(
+      ["delete", "namespace", this.namespace],
+      undefined,
+      false
+    );
   }
 
-  async getBootnodeIP(): Promise<string>{
-    const args = [
-      "get",
-      "pod",
-      "bootnode",
-      "-o",
-      "jsonpath='{.status.podIP}'"
-    ];
+  async getBootnodeIP(): Promise<string> {
+    const args = ["get", "pod", "bootnode", "-o", "jsonpath='{.status.podIP}'"];
     const result = await this._kubectl(args, undefined, true);
     return result.stdout;
+  }
+
+  async staticSetup() {
+    let storageFiles: string[] = (await this.runningOnMinikube())
+      ? [
+          "node-data-tmp-storage-class-minikube.yaml",
+          "node-data-persistent-storage-class-minikube.yaml",
+        ]
+      : [
+          "node-data-tmp-storage-class.yaml",
+          "node-data-persistent-storage-class.yaml",
+        ];
+
+    const resources = [
+      { type: "role", files: ["prometheus-role.yaml"] },
+      { type: "binding", files: ["prometheus-role-binding.yaml"] },
+      { type: "binding", files: ["prometheus-role-binding.yaml"] },
+      { type: "data-storage-classes", files: storageFiles },
+      {
+        type: "configs",
+        files: ["prometheus-config.yaml", "grafana-config.yaml"],
+      },
+      {
+        type: "services",
+        files: [
+          "bootnode-service.yaml",
+          "telemetry-service.yaml",
+          "prometheus-service.yaml",
+        ],
+      },
+      {
+        type: "deployment",
+        files: [
+          "prometheus-deployment.yaml",
+          "grafana-deployment.yaml",
+          "telemetry-deployment.yaml",
+        ],
+      },
+    ];
+
+    for (const resourceType of resources) {
+      console.log(`adding ${resourceType.type}`);
+      for (const file of resourceType.files) {
+        await this.crateStaticResource(file);
+      }
+    }
+  }
+
+  async setupCleaner() {
+    // create CronJob cleanner for namespace
+    await this.cronJobCleanerSetup();
+    await this.upsertCronJob();
+
+    let cronInterval = setInterval(
+      async () => await this.upsertCronJob(),
+      8 * 60 * 1000
+    );
+    return cronInterval;
+  }
+
+  async cronJobCleanerSetup() {
+    await this.crateStaticResource("job-svc-account.yaml");
+  }
+
+  async upsertCronJob() {
+    const scheduleMinutes = addMinutes(10);
+    const schedule = `${scheduleMinutes} * * * *`;
+    await this.updateResource("job-delete-namespace.yaml", { schedule });
   }
 
   // run kubectl

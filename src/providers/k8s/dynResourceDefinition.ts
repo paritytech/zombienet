@@ -1,6 +1,6 @@
-import { PROMETHEUS_PORT } from "./configManager";
-import { KubeClient } from "./kubeWrapper";
-import { Node } from "./types";
+import { PROMETHEUS_PORT } from "../../configManager";
+import { KubeClient } from "./kubeClient";
+import { Node } from "../../types";
 
 export async function genBootnodeDef(
   client: KubeClient,

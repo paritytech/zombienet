@@ -14,10 +14,10 @@ spec:
         spec:
           serviceAccountName: zombie-internal-kubectl
           containers:
-          - name: namespace-cleaner-job
-            image: bitnami/kubectl:1.17.3
-            command:
-            - "bin/bash"
-            - "-c"
-            - "kubectl delete namespace {{namespace}}"
+            - name: namespace-cleaner-job
+              image: bitnami/kubectl:1.17.3
+              command:
+                - "bin/bash"
+                - "-c"
+                - "kubectl delete namespace {{namespace}}"
           restartPolicy: Never

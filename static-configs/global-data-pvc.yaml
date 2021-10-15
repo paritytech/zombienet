@@ -11,4 +11,4 @@ spec:
     - ReadOnlyMany
   resources:
     requests:
-      storage: {storage}
+      storage: { storage }

@@ -1,54 +1,59 @@
 #!/usr/bin/env node
 
 import { start } from "./orchestrator";
-import { resolve, dirname } from "path";
+import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
+import { readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
-import toml from "toml";
+import { run } from "./test-runner";
+import { Command } from 'commander';
+import { debug } from "console";
 
-if (process.argv.length !== 4) {
-  console.error("  ⚠ Missing creds or config file argument...");
-  process.exit();
-}
-
-const credsFile = process.argv[2];
-const configFile = process.argv[3];
-
-for (const file of [credsFile, configFile]) {
-  if (!file) {
-    console.error("  ⚠ Missing creds/config file argument...");
-    process.exit();
-  }
-}
-
-const configPath = resolve(process.cwd(), configFile);
-if (!fs.existsSync(configPath)) {
-  console.error("  ⚠ Config file does not exist: ", configPath);
-  process.exit();
-}
-
-// TODO: add better file recognition
-const fileType = configFile.split(".").pop();
-let config: LaunchConfig =
-  fileType?.toLocaleLowerCase() === "json"
-    ? require(configPath)
-    : toml.parse(fs.readFileSync(configPath).toString());
-
-process.on("exit", async function () {
-  if (network) await network.stop();
-  process.exit(2);
-});
-
-// Handle ctrl+c to trigger `exit`.
-process.on("SIGINT", async function () {
-  if (network) await network.stop();
-  process.exit(2);
-});
+const program = new Command("zombie-net");
 
 let network: Network;
 
-(async () => {
+// Handle ctrl+c to trigger `exit`.
+process.on("SIGINT", async function () {
+  if (network) {
+    debug('removing namespace: ' + network.namespace);
+    await network.stop();
+  }
+  process.exit(2);
+});
+
+process.on("exit", async function () {
+  if (network) {
+    debug('removing namespace: ' + network.namespace);
+    await network.stop();
+  }
+  process.exit(2);
+});
+
+
+program
+  .command("spawn")
+  .description("Spawn the network defined in the config")
+  .argument("<creds>", "kubeclt credentials file")
+  .argument("<networkConfig>", "network ")
+  .action(spawn);
+
+program
+  .command("test")
+  .description("Run tests on the network defined")
+  .argument("<testFile>", "Feature file describing the tests")
+  .action(test);
+
+// spawn
+async function spawn(credsFile: string, configFile: string) {
+  const configPath = resolve(process.cwd(), configFile);
+  if (!fs.existsSync(configPath)) {
+    console.error("  ⚠ Config file does not exist: ", configPath);
+    process.exit();
+  }
+
+  const config = readNetworkConfig(configFile);
   network = await start(credsFile, config);
   for (const node of network.nodes) {
     console.log("\n");
@@ -56,8 +61,17 @@ let network: Network;
     console.log(
       `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
         node.wsUri
-      )}#/explorer\n`);
+      )}#/explorer\n`
+    );
     console.log(`Node prometheus link: ${node.prometheusUri}\n`);
     console.log("---\n");
   }
-})();
+}
+
+// test
+async function test(testFile: string) {
+  process.env.DEBUG = 'zombie';
+  await run(testFile);
+}
+
+program.parse(process.argv);

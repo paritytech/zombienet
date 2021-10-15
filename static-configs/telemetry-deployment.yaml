@@ -24,19 +24,19 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-      - name: telemetry-backend
-        image: parity/substrate-telemetry-backend
-        args:
-          - '--listen'
-          - '0.0.0.0:8000'
-        ports:
-        - name: web
-          containerPort: 8000
-        env:
-          - name: SUBSTRATE_TELEMETRY_URL
-            value: "ws://localhost:10001/feed"
-      - name: telemetry-frontend
-        image: parity/substrate-telemetry-frontend
-        ports:
-        - name: web
-          containerPort: 80
+        - name: telemetry-backend
+          image: parity/substrate-telemetry-backend
+          args:
+            - "--listen"
+            - "0.0.0.0:8000"
+          ports:
+            - name: web
+              containerPort: 8000
+          env:
+            - name: SUBSTRATE_TELEMETRY_URL
+              value: "ws://localhost:10001/feed"
+        - name: telemetry-frontend
+          image: parity/substrate-telemetry-frontend
+          ports:
+            - name: web
+              containerPort: 80
