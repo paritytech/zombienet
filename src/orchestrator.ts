@@ -19,6 +19,8 @@ import { generateNamespace, sleep, filterConsole } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 
+var debug = require('debug')('zombie');
+
 // For now the only provider is k8s
 const { KubeClient, genBootnodeDef, genPodDef } = Providers.Kubernetes;
 
@@ -57,7 +59,7 @@ export async function start(
     const client = new KubeClient(credentials, namespace);
     network = new Network(client, namespace);
 
-    console.log(`\t Launching network under namespace: ${namespace}`);
+    debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
@@ -71,7 +73,7 @@ export async function start(
     // create tmp directory to store needed files
     const tempDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tempDir.path}/finished.txt`;
-    console.log(`\t Temp Dir: ${tempDir.path}`);
+    debug(`\t Temp Dir: ${tempDir.path}`);
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
@@ -162,9 +164,6 @@ export async function start(
       ];
       // create the node and attach to the network object
       const podDef = await genPodDef(client, node);
-      // console.log("-----DEBUG----\n");
-      // console.log("\t" + JSON.stringify(podDef));
-      // console.log("\n");
       await client.crateResource(podDef, true, true);
 
       const identifier = `${podDef.kind}/${podDef.metadata.name}`;
@@ -186,7 +185,7 @@ export async function start(
       network.addNode(networkNode);
     }
 
-    console.log("\t All relay chain nodes spawned...");
+    debug("\t All relay chain nodes spawned...");
     // sleep 2 secs before connect the api
     await sleep(3000);
 
@@ -309,10 +308,10 @@ export async function start(
       // network.addNode(networkNode);
     }
 
-    console.log(network);
+    // console.log(network);
     // prevent global timeout
     network.launched = true;
-    console.log("\t 🚀 LAUNCH COMPLETE 🚀");
+    debug("\t 🚀 LAUNCH COMPLETE 🚀");
     return network;
   } catch (error) {
     console.error(error);

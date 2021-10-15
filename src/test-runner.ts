@@ -49,12 +49,14 @@ export async function run(testFile: string) {
   const suite = Suite.create(mocha.suite, suiteName);
 
   suite.beforeAll("launching", async function () {
+    console.log(`\t Launching network... this can take a while.`);
     this.timeout(300 * 1000);
     network = await zombie.start(creds, config);
     return;
   });
 
   suite.afterAll("teardown", async function () {
+    console.log(`\t Deleting network`);
     this.timeout(120 * 1000);
     if (network) await network.stop();
     return;

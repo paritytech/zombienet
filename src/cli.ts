@@ -7,46 +7,53 @@ import { Network } from "./network";
 import { readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
+import { Command } from 'commander';
+import { debug } from "console";
+
+const program = new Command("zombie-net");
 
 let network: Network;
 
 // Handle ctrl+c to trigger `exit`.
 process.on("SIGINT", async function () {
-  if (network) await network.stop();
+  if (network) {
+    debug('removing namespace: ' + network.namespace);
+    await network.stop();
+  }
   process.exit(2);
 });
 
 process.on("exit", async function () {
-  if (network) await network.stop();
+  if (network) {
+    debug('removing namespace: ' + network.namespace);
+    await network.stop();
+  }
   process.exit(2);
 });
 
-// // Args parsing
-// if (process.argv.length !== 4) {
-//   console.error("  ⚠ Missing creds or config file argument...");
-//   process.exit();
-// }
 
-// const credsFile = process.argv[2];
-// const configFile = process.argv[3];
+program
+  .command("spawn")
+  .description("Spawn the network defined in the config")
+  .argument("<creds>", "kubeclt credentials file")
+  .argument("<networkConfig>", "network ")
+  .action(spawn);
 
-// for (const file of [credsFile, configFile]) {
-//   if (!file) {
-//     console.error("  ⚠ Missing creds/config file argument...");
-//     process.exit();
-//   }
-// }
-
-// const configPath = resolve(process.cwd(), configFile);
-// if (!fs.existsSync(configPath)) {
-//   console.error("  ⚠ Config file does not exist: ", configPath);
-//   process.exit();
-// }
-
-// const config = readNetworkConfig(configFile);
+program
+  .command("test")
+  .description("Run tests on the network defined")
+  .argument("<testFile>", "Feature file describing the tests")
+  .action(test);
 
 // spawn
-async function spawn(credsFile: string, config: LaunchConfig) {
+async function spawn(credsFile: string, configFile: string) {
+  const configPath = resolve(process.cwd(), configFile);
+  if (!fs.existsSync(configPath)) {
+    console.error("  ⚠ Config file does not exist: ", configPath);
+    process.exit();
+  }
+
+  const config = readNetworkConfig(configFile);
   network = await start(credsFile, config);
   for (const node of network.nodes) {
     console.log("\n");
@@ -61,21 +68,10 @@ async function spawn(credsFile: string, config: LaunchConfig) {
   }
 }
 
+// test
 async function test(testFile: string) {
+  process.env.DEBUG = 'zombie';
   await run(testFile);
 }
 
-test(process.argv[2]);
-// (async () => {
-//   network = await start(credsFile, config);
-//   for (const node of network.nodes) {
-//     console.log("\n");
-//     console.log(`\t\t Node name: ${node.name}`);
-//     console.log(
-//       `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-//         node.wsUri
-//       )}#/explorer\n`);
-//     console.log(`Node prometheus link: ${node.prometheusUri}\n`);
-//     console.log("---\n");
-//   }
-// })();
+program.parse(process.argv);
