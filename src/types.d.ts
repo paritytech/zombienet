@@ -1,8 +1,3 @@
-export interface KubectlResponse {
-  exitCode: number;
-  stdout: string;
-}
-
 // Computed Network (internal use)
 export interface ComputedNetwork {
   settings: Settings;
@@ -33,11 +28,11 @@ export interface Node {
   substrateRole?: string;
   initContainers?: object[];
   autoConnectApi: boolean;
-  telemetry?: boolean,
+  telemetry?: boolean;
   /// URL for telemetry
-  telemetryUrl: string,
+  telemetryUrl: string;
   /// run with `--prometheus-external`-flag
-  prometheus?: boolean,
+  prometheus?: boolean;
   // subcommand: Option<String>,
   // init: Option<CustomInit>,
   // extra_args: Option<Vec<String>>,

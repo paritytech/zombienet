@@ -26,4 +26,3 @@ roleRef:
   kind: Role
   name: delete-namespaces
   apiGroup: rbac.authorization.k8s.io
-

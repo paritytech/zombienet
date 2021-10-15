@@ -1,4 +1,4 @@
-import { KubeClient } from "./kubeWrapper";
+import { KubeClient } from "./providers/k8s";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
@@ -6,7 +6,6 @@ import { readDataFile } from "./utils";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
-
 
 export interface NodeMapping {
   [propertyName: string]: NetworkNode;
@@ -102,27 +101,30 @@ export class Network {
 
   getNodeByName(nodeName: string): NetworkNode {
     const node = this.nodesByName[nodeName];
-    if( ! node ) throw new Error(`NODE: ${nodeName} not present`);
+    if (!node) throw new Error(`NODE: ${nodeName} not present`);
     return node;
   }
 
   node(nodeName: string): NetworkNode {
     const node = this.nodesByName[nodeName];
-    if( ! node ) throw new Error(`NODE: ${nodeName} not present`);
+    if (!node) throw new Error(`NODE: ${nodeName} not present`);
     return node;
   }
 
   // Testing abstraction
-  async nodeIsUp(nodeName: string, timeout=DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
-    try{
+  async nodeIsUp(
+    nodeName: string,
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+  ): Promise<boolean> {
+    try {
       const limitTimeout = setTimeout(() => {
         throw new Error(`Timeout(${timeout}s)`);
-      }, timeout * 1000 );
+      }, timeout * 1000);
 
       const node = this.getNodeByName(nodeName);
       await node.apiInstance.rpc.system.name();
       return true;
-    } catch( err ) {
+    } catch (err) {
       console.log(err);
       return false;
     }

@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { KubeClient } from "./kubeWrapper";
+import { KubeClient } from "./providers/k8s";
 export async function startPortForwarding(
   port: number,
   identifier: string,
@@ -14,7 +14,7 @@ export async function startPortForwarding(
       "--namespace",
       client.namespace,
       "--kubeconfig",
-      client.configPath
+      client.configPath,
     ];
 
     const subprocess = spawn("kubectl", args);

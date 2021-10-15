@@ -87,10 +87,13 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       args,
       env,
       bootnodes,
-      autoConnectApi: (node.autoConnectApi !== undefined ) ? node.autoConnectApi : true, // by default connect
-      telemetryUrl: (config.settings?.telemetry) ? "ws://telemetry:8000/submit 0" : "",
-      telemetry: (config.settings?.telemetry) ? true : false,
-      prometheus: (config.settings?.prometheus) ? true : false
+      autoConnectApi:
+        node.autoConnectApi !== undefined ? node.autoConnectApi : true, // by default connect
+      telemetryUrl: config.settings?.telemetry
+        ? "ws://telemetry:8000/submit 0"
+        : "",
+      telemetry: config.settings?.telemetry ? true : false,
+      prometheus: config.settings?.prometheus ? true : false,
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -227,7 +230,7 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     env: [],
     bootnodes: [],
     autoConnectApi: true,
-    telemetryUrl: ""
+    telemetryUrl: "",
   };
 
   return nodeSetup;
