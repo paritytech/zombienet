@@ -4,11 +4,12 @@ import { start } from "./orchestrator";
 import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
-import { readNetworkConfig } from "./utils";
+import { getCredsFilePath, readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command } from 'commander';
 import { debug } from "console";
+const path = require("path");
 
 const program = new Command("zombie-net");
 
@@ -53,8 +54,17 @@ async function spawn(credsFile: string, configFile: string) {
     process.exit();
   }
 
-  const config = readNetworkConfig(configFile);
-  network = await start(credsFile, config);
+  const filePath = path.resolve(configFile);
+  const config = readNetworkConfig(filePath);
+  const creds = getCredsFilePath(credsFile);
+
+  if( !creds ) {
+    console.error("  ⚠ I can't find the Creds file: ", credsFile);
+    process.exit();
+  }
+
+  network = await start(creds, config);
+
   for (const node of network.nodes) {
     console.log("\n");
     console.log(`\t\t Node name: ${node.name}`);

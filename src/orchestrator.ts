@@ -59,6 +59,7 @@ export async function start(
     const client = new KubeClient(credentials, namespace);
     network = new Network(client, namespace);
 
+    console.log(`\t Launching network under namespace: ${namespace}`);
     debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
@@ -185,6 +186,7 @@ export async function start(
       network.addNode(networkNode);
     }
 
+    console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
     // sleep 2 secs before connect the api
     await sleep(3000);
