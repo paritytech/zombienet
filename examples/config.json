@@ -17,6 +17,10 @@
   "relaychain": {
     "default_command": "polkadot",
     "default_image": "some/image:tag",
+    "override_binary": {
+      "local_path": "local path to polkadot binary",
+      "remote_path": "path to polkadot binary in node"
+    },
     "chain": "rococo-local",
     "chain_spec_path": "path_to_chain_spec",
     "chain_spec_command": "command to generate spec",

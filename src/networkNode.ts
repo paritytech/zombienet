@@ -2,6 +2,8 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Metrics, fetchMetrics, getMetricName } from "./metrics";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
 
+const debug = require('debug')('zombie');
+
 export interface NetworkNodeInterface {
   name: string;
   wsUri: string;
@@ -66,7 +68,7 @@ export class NetworkNode implements NetworkNodeInterface {
       }, timeout * 1000);
 
       if (desiredMetricValue === null || !this.cachedMetrics) {
-        console.log("reloading cache");
+        debug("reloading cache");
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
       }
       const metricName = getMetricName(rawmetricName);
