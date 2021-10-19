@@ -19,7 +19,7 @@ import { generateNamespace, sleep, filterConsole } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 
-var debug = require('debug')('zombie');
+const debug = require('debug')('zombie');
 
 // For now the only provider is k8s
 const { KubeClient, genBootnodeDef, genPodDef } = Providers.Kubernetes;

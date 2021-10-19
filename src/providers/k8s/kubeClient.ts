@@ -1,6 +1,8 @@
 import execa from "execa";
+import { resolve } from "path";
 import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
+
 
 export interface KubectlResponse {
   exitCode: number;
@@ -66,7 +68,7 @@ export class KubeClient {
   }
 
   async crateStaticResource(filename: string): Promise<void> {
-    const filePath = `static-configs/${filename}`;
+    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
     const resourceDef = fileContent
       .toString("utf-8")
@@ -78,7 +80,8 @@ export class KubeClient {
     filename: string,
     replacements: ReplaceMapping = {}
   ): Promise<void> {
-    const filePath = `static-configs/${filename}`;
+    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
+    // const filePath = `static-configs/${filename}`;
     const fileContent = await fs.readFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
@@ -133,7 +136,7 @@ export class KubeClient {
   }
 
   async getBootnodeIP(): Promise<string> {
-    const args = ["get", "pod", "bootnode", "-o", "jsonpath='{.status.podIP}'"];
+    const args = ["get", "pod", "bootnode", "-o", "jsonpath={.status.podIP}"];
     const result = await this._kubectl(args, undefined, true);
     return result.stdout;
   }
@@ -201,9 +204,19 @@ export class KubeClient {
   }
 
   async upsertCronJob() {
-    const scheduleMinutes = addMinutes(10);
-    const schedule = `${scheduleMinutes} * * * *`;
-    await this.updateResource("job-delete-namespace.yaml", { schedule });
+      const isActive = await this.isNamespaceActive();
+      if(isActive) {
+        const scheduleMinutes = addMinutes(10);
+        const schedule = `${scheduleMinutes} * * * *`;
+        await this.updateResource("job-delete-namespace.yaml", { schedule });
+    }
+  }
+
+  async isNamespaceActive(): Promise<boolean> {
+    const args = ["get", "namespace", this.namespace, "-o", "jsonpath={.status.phase}"];
+    const result = await this._kubectl(args, undefined, false);
+    if(result.exitCode !== 0 || result.stdout !== "Active" ) return false;
+    return true;
   }
 
   // run kubectl

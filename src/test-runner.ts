@@ -32,7 +32,7 @@ export async function run(testFile: string) {
   let creds: string | undefined;
   if (fs.existsSync(testDef.creds)) creds = testDef.creds;
   else {
-    const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
+    const possiblePaths = [".", "..", `${process.env.HOME}/.kube`, "/etc/zombie-net"];
     let credsFileExistInPath: string | undefined = possiblePaths.find(
       (path) => {
         const t = `${path}/${testDef.creds}`;
@@ -106,7 +106,7 @@ const exitMocha = (code: number) => {
 function parseAssertionLine(assertion: string) {
   const isUpRegex = new RegExp(/^([\w]+): is up$/i);
   const isReportsWithin = new RegExp(
-    /^([\w]+) reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+)$/i
+    /^([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) within *(\d+) (seconds|secs|s)?$/i
   );
   const isReports = new RegExp(
     /^([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+)$/i
@@ -118,6 +118,19 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network) => {
       const isUp = await network.node(nodeName).isUp();
       expect(isUp).to.be.ok;
+    };
+  }
+
+  m = isReportsWithin.exec(assertion);
+  if (m && m[1] && m[2] && m[4]) {
+    const nodeName = m[1];
+    const metricName = m[2];
+    const comparatorFn = getComparatorFn(m[3] || "");
+    const targetValue = parseInt(m[4]);
+    const timeWithin = parseInt(m[5]);
+    return async (network: Network) => {
+      const value = await network.node(nodeName).getMetric(metricName, targetValue, timeWithin);
+      assert[comparatorFn](value, targetValue);
     };
   }
 
@@ -169,7 +182,9 @@ function getComparatorFn(comparator: string) {
 }
 
 function getTestNameFromFileName(testFile: string): string {
-  const parts = testFile.split("-");
+  const fileWithOutExt = testFile.split(".")[0];
+  const fileName: string = fileWithOutExt.split("/").pop() || "";
+  const parts = fileName.split("-");
   const name = parts[0].match(/\d/)
     ? parts.slice(1).join(" ")
     : parts.join(" ");
