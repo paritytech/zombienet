@@ -63,23 +63,3 @@ USER nonroot
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
 ENTRYPOINT ["tini", "--", "bash"]
 
-
-
-# ### Run gurke inside a container at localhost
-# 1. Download service account key from 1password -> Simnet-Team -> gurke-service-key.json
-
-# 2. Place the key the a dir that the you will mount in the container
-# sudo mkdir -p /etc/gurke-container
-# cp gurke-service-key.json /etc/gurke-container
-
-# 3. Change ownership of key dir to match the nonroot user in the container
-# sudo chown -R 10000:10000 /etc/gurke-container
-
-# 4. Finally you can run a test like so
-# docker run  --rm --name gurke  \
-#             -v /etc/gurke-container/:/etc/gurke/ \
-#             --device /dev/fuse   \
-#             --privileged   \
-#              paritytech/pickle_rick:latest  \
-#                 ./run-test-scripts/run-gurke-test.sh --container --testdir=features
-
