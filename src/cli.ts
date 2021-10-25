@@ -29,7 +29,8 @@ process.on("exit", async function () {
     debug('removing namespace: ' + network.namespace);
     await network.stop();
   }
-  process.exit(process.exitCode || 2); // use exitCode set by mocha or 2 as default.
+  const exitCode =  process.exitCode !== undefined ? process.exitCode : 2
+  process.exit(exitCode); // use exitCode set by mocha or 2 as default.
 });
 
 
