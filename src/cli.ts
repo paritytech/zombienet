@@ -29,7 +29,7 @@ process.on("exit", async function () {
     debug('removing namespace: ' + network.namespace);
     await network.stop();
   }
-  process.exit(2);
+  process.exit(process.exitCode || 2); // use exitCode set by mocha or 2 as default.
 });
 
 
@@ -81,7 +81,8 @@ async function spawn(credsFile: string, configFile: string) {
 // test
 async function test(testFile: string) {
   process.env.DEBUG = 'zombie';
-  await run(testFile);
+  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  await run(testFile, inCI);
 }
 
 program.parse(process.argv);
