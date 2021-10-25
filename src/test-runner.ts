@@ -4,6 +4,7 @@ import fs from "fs";
 import { LaunchConfig } from "./types";
 import { readNetworkConfig } from "./utils";
 import { Network } from "./network";
+import path from "path";
 const zombie = require("../");
 
 const { expect, assert } = chai;
@@ -17,33 +18,43 @@ interface TestDefinition {
   assertions: string[];
 }
 
-export async function run(testFile: string) {
+export async function run(testFile: string, isCI: boolean = false) {
   let network: Network;
   // read test file
   const testDef = parseTestFile(testFile);
   const testName = getTestNameFromFileName(testFile);
   let suiteName: string = testName;
-  if (testDef.description) suiteName += `( testDef.description )`;
+  if (testDef.description) suiteName += `( ${testDef.description} )`;
 
   // read network file
-  const config = readNetworkConfig(testDef.networkConfig);
+  let config: LaunchConfig;
+  if(fs.existsSync(testDef.networkConfig)) {
+    config = readNetworkConfig(testDef.networkConfig);
+  } else {
+    // the path is relative to the test file
+    const fileTestPath = path.dirname(testFile);
+    const resolvedFilePath = path.resolve(fileTestPath, testDef.networkConfig);
+    config = readNetworkConfig(resolvedFilePath);
+  }
+
 
   // find creds file
+  let credsFile = isCI ? "config" : testDef.creds;
   let creds: string | undefined;
-  if (fs.existsSync(testDef.creds)) creds = testDef.creds;
+  if (fs.existsSync(credsFile)) creds = credsFile;
   else {
     const possiblePaths = [".", "..", `${process.env.HOME}/.kube`, "/etc/zombie-net"];
     let credsFileExistInPath: string | undefined = possiblePaths.find(
       (path) => {
-        const t = `${path}/${testDef.creds}`;
+        const t = `${path}/${credsFile}`;
         return fs.existsSync(t);
       }
     );
     if (credsFileExistInPath)
-      creds = credsFileExistInPath + "/" + testDef.creds;
+      creds = credsFileExistInPath + "/" + credsFile;
   }
 
-  if (!creds) throw new Error(`Invalid credential file path: ${testDef.creds}`);
+  if (!creds) throw new Error(`Invalid credential file path: ${credsFile}`);
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);
@@ -76,6 +87,7 @@ export async function run(testFile: string) {
 
 // extracted from mocha test runner helper.
 const exitMocha = (code: number) => {
+  console.log('exit code', code);
   const clampedCode = Math.min(code, 255);
   let draining = 0;
 

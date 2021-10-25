@@ -9,7 +9,20 @@ RUN npm run build
 # Our Second stage, that creates an image for production
 FROM node:16-buster-slim AS runtime
 RUN apt-get update && \
-     apt-get install -y curl gnupg lsb-release jq tini
+     apt-get install -y curl gnupg lsb-release jq tini && \
+# install github cli
+# https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+    echo "deb https://cli.github.com/packages buster main" > /etc/apt/sources.list.d/gh.list && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0 && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gh  && \
+# apt clean up
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+
 
 # install kubectl
 # RUN curl -L -o /usr/local/bin/kubectl  \
@@ -42,6 +55,7 @@ RUN groupadd --gid 10001 nonroot && \
 WORKDIR /home/nonroot/zombie-net
 COPY --from=builder ./app/dist ./dist
 COPY static-configs ./static-configs
+COPY scripts ./scripts
 COPY package* ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
