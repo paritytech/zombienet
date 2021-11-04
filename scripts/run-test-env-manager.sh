@@ -39,10 +39,18 @@ function main {
   # Main entry point for the script
   set_defaults_for_globals
   parse_args "$@"
+  create_isolated_dir
   download_from_remote
   run_test
   log INFO "Exit status is ${EXIT_STATUS}"
   exit "${EXIT_STATUS}"
+}
+
+function create_isolated_dir {
+  TS=$(date +%s)
+  ISOLATED=${OUTPUT_DIR}/${TS}
+  mkdir -p ${ISOLATED}
+  OUTPUT_DIR="${ISOLATED}"
 }
 
 function set_defaults_for_globals {
@@ -204,13 +212,15 @@ function run_test {
   fi
   cd "${OUTPUT_DIR}"
   set -x
-  if [[ ! -z TEST_TO_RUN ]]; then
+  set +e
+  if [[ ! -z $TEST_TO_RUN ]]; then
     for i in $(find ${OUTPUT_DIR} -name "${TEST_TO_RUN}"| head -1); do
       zombie test $i
       EXIT_STATUS=$?
     done;
   else
-    for i in $(find ${OUTPUT_DIR} -name *.feature); do
+    for i in $(find ${OUTPUT_DIR} -name *.feature | sort); do
+      echo "running test: ${i}"
       zombie test $i
       TEST_EXIT_STATUS=$?
       EXIT_STATUS=$((EXIT_STATUS+TEST_EXIT_STATUS))
@@ -218,6 +228,7 @@ function run_test {
   fi
 
   set +x
+  set -e
 }
 
 function log {

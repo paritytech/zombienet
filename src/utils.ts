@@ -67,12 +67,22 @@ export function filterConsole(excludePatterns: string[], options?: any) {
 }
 
 export function readNetworkConfig(filepath: string): LaunchConfig {
+  let content = fs.readFileSync(filepath).toString();
+  let replacements = getReplacementInText(content);
+
+  for(const replacement of replacements) {
+
+    const replacementValue = process.env[replacement];
+    if(replacementValue === undefined) throw new Error(`Environment not set for : ${replacement}`);
+    content = content.replace(new RegExp(`{{${replacement}}}`, "gi"), replacementValue);
+  }
+
   // TODO: add better file recognition
   const fileType = filepath.split(".").pop();
   const config: LaunchConfig =
     fileType?.toLocaleLowerCase() === "json"
-      ? require(filepath)
-      : toml.parse(fs.readFileSync(filepath).toString());
+      ? JSON.parse(content) //require(filepath)
+      : toml.parse(content);
 
   return config;
 }
@@ -88,4 +98,19 @@ export function getCredsFilePath(credsFile: string): string|undefined {
     }
   );
   if (credsFileExistInPath) return `${credsFileExistInPath}/${credsFile}`;
+}
+
+function getReplacementInText(content:string): string[] {
+  const replacements: string[] = [];
+  // allow to replace with env vars, to make more dynamic usage of ci.
+  const replacementRegex = /{{([A-Za-z-_\.]+)}}/gmi;
+  for( const match of content.matchAll(replacementRegex)) {
+    replacements.push(match[1]);
+  }
+
+  return replacements;
+}
+
+export function writeLocalJsonFile(path: string, fileName: string, content: any) {
+  fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }

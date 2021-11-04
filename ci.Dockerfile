@@ -10,13 +10,13 @@ RUN npm run build
 FROM node:16-buster-slim AS runtime
 RUN apt-get update && \
      apt-get install -y curl gnupg lsb-release jq tini && \
-# install github cli
-# https://github.com/cli/cli/blob/trunk/docs/install_linux.md
-    echo "deb https://cli.github.com/packages buster main" > /etc/apt/sources.list.d/gh.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-        gh  && \
+# # install github cli
+# # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+#     echo "deb https://cli.github.com/packages buster main" > /etc/apt/sources.list.d/gh.list && \
+#     apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0 && \
+#     apt-get update && \
+#     apt-get install -y --no-install-recommends \
+#         gh  && \
 # apt clean up
     apt-get autoremove -y && \
     apt-get clean && \

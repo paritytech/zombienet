@@ -1,4 +1,6 @@
-const fetch = require("node-fetch");
+//const fetch = require("node-fetch");
+const debug = require('debug')('zombie::metrics');
+import axios from "axios";
 
 // metrics can have namespace
 export interface Metrics {
@@ -15,10 +17,19 @@ enum metricKeysMapping {
 }
 
 export async function fetchMetrics(metricUri: string): Promise<Metrics> {
-  const response = await fetch(metricUri);
-  const body = await response.text();
-  const metrics = _extractMetrics(body);
-  return metrics;
+  try {
+    debug(`fetching: ${metricUri}`);
+    //const response = await fetch(metricUri);
+    const response = await axios.get(metricUri, {timeout: 1000});
+    debug("fetched");
+    //const body = await response.text();
+    //const metrics = _extractMetrics(body);
+    const metrics = _extractMetrics(response.data);
+    return metrics;
+  } catch( err ) {
+    debug(`ERR: ${err}`);
+    throw new Error(`Error fetching metrics from: ${metricUri}`);
+  }
 }
 
 export function getMetricName(metricName: string): string {

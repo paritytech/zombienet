@@ -1,7 +1,11 @@
 import execa from "execa";
+import { stat } from "fs";
 import { resolve } from "path";
+import { resourceLimits } from "worker_threads";
+import { TRANSFER_CONTAINER_NAME } from "../../configManager";
 import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
+const debug = require('debug')('zombie::kube::client');
 
 
 export interface KubectlResponse {
@@ -18,12 +22,15 @@ export class KubeClient {
   configPath: string;
   debug: boolean;
   timeout: number;
+  command: string = "kubectl"
+  tmpDir: string;
 
-  constructor(configPath: string, namespace: string) {
+  constructor(configPath: string, namespace: string, tmpDir: string) {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
     this.timeout = 30; // secs
+    this.tmpDir = tmpDir;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -36,7 +43,7 @@ export class KubeClient {
   }
 
   // accept a json def
-  async crateResource(
+  async createResource(
     resourseDef: any,
     scoped: boolean = false,
     waitReady: boolean = false
@@ -53,11 +60,17 @@ export class KubeClient {
     if (waitReady) {
       // loop until ready
       let t = this.timeout;
-      const args = ["get", kind, name, "-o", "jsonpath={.status.phase}"];
+      const args = ["get", kind, name, "-o", "jsonpath={.status}"];
       do {
         const result = await this._kubectl(args, undefined, true);
-        // console.log( result.stdout );
-        if (["Running", "Succeeded"].includes(result.stdout)) return;
+        //debug( result.stdout );
+        const status = JSON.parse(result.stdout);
+        if (["Running", "Succeeded"].includes(status.phase)) return;
+
+        // check if we are waiting init container
+        for(const s of  status.initContainerStatuses){
+          if( s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
+        }
 
         await new Promise((resolve) => setTimeout(resolve, 3000));
         t -= 3;
@@ -65,6 +78,46 @@ export class KubeClient {
 
       throw new Error(`Timeout(${this.timeout}) for ${kind} : ${name}`);
     }
+  }
+
+  async wait_pod_ready(podName:string): Promise<void> {
+
+      // loop until ready
+      let t = this.timeout;
+      const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
+      do {
+        const result = await this._kubectl(args, undefined, true);
+        //debug( result.stdout );
+        if (["Running", "Succeeded"].includes(result.stdout)) return;
+
+
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        t -= 3;
+      } while (t > 0);
+
+      throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
+
+  }
+  async wait_transfer_container(podName:string): Promise<void> {
+    // loop until ready
+    let t = this.timeout;
+    const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
+    do {
+      const result = await this._kubectl(args, undefined, true);
+      //debug( result.stdout );
+      const status = JSON.parse(result.stdout);
+
+      // check if we are waiting init container
+      for(const s of  status.initContainerStatuses){
+        if( s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      t -= 3;
+    } while (t > 0);
+
+    throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
+
   }
 
   async crateStaticResource(filename: string): Promise<void> {
@@ -100,21 +153,26 @@ export class KubeClient {
   async copyFileToPod(
     identifier: string,
     localFilePath: string,
-    podFilePath: string
+    podFilePath: string,
+    container: string|undefined = undefined
   ) {
     const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
+    if(container) args.push("-c", container);
     const result = await this._kubectl(args, undefined, true);
-    // console.log(result);
+    debug("copyFileToPod");
+    //debug(result);
   }
 
   async copyFileFromPod(
     identifier: string,
     podFilePath: string,
-    localFilePath: string
+    localFilePath: string,
+    container: string|undefined = undefined
   ) {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
+    if(container) args.push("-c", container);
     const result = await this._kubectl(args, undefined, true);
-    // console.log(result);
+    //debug(result);
   }
 
   async runningOnMinikube(): Promise<boolean> {
