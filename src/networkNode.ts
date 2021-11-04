@@ -1,8 +1,9 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Metrics, fetchMetrics, getMetricName } from "./metrics";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
+import { time } from "console";
 
-const debug = require('debug')('zombie');
+const debug = require('debug')('zombie::network-node');
 
 export interface NetworkNodeInterface {
   name: string;
@@ -62,9 +63,12 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
   ): Promise<number> {
     let limitTimeout;
+    let expired: boolean = false;
     try {
+      debug(`timeout passed: ${timeout}`);
       limitTimeout = setTimeout(() => {
-        throw new Error(`Timeout(${timeout}s)`);
+        debug(`Timeout getting metric ${rawmetricName} (${timeout})`);
+        expired = true;
       }, timeout * 1000);
 
       if (desiredMetricValue === null || !this.cachedMetrics) {
@@ -72,37 +76,46 @@ export class NetworkNode implements NetworkNodeInterface {
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
       }
       const metricName = getMetricName(rawmetricName);
-      let value = this._getMetric(metricName);
-      if (desiredMetricValue === null || desiredMetricValue >= value) {
-        clearTimeout(limitTimeout);
-        return value;
+      let value = this._getMetric(metricName, desiredMetricValue === null);
+      if( value !== undefined) {
+        if (desiredMetricValue === null || value >= desiredMetricValue ) {
+          debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
+          clearTimeout(limitTimeout);
+          return value;
+        }
       }
 
       // loop until get the desired value or timeout
       let done = false;
+      let c = 0;
       while (!done) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        if( expired ) throw new Error(`Timeout(${timeout}s)`);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        c+=1;
         // refresh metrics
+        debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
-        value = this._getMetric(metricName);
-        if (desiredMetricValue <= value) {
+        debug('metric fetched');
+        value = this._getMetric(metricName, desiredMetricValue === null);
+        if (value !== undefined && desiredMetricValue !== null && desiredMetricValue <= value) {
+          debug('done');
           done = true;
         } else {
           // debug
-          console.log(`current value: ${value}, keep trying...`);
+          debug(`current value: ${value}, keep trying...`);
         }
       }
 
+      debug('returning: ' + value);
       clearTimeout(limitTimeout);
-      return value;
+      return value||0;
     } catch (err) {
-      throw new Error(`Error getting metric: ${rawmetricName}`);
-    } finally {
       if (limitTimeout) clearTimeout(limitTimeout);
+      throw new Error(`Error getting metric: ${rawmetricName}`);
     }
   }
 
-  _getMetric(metricName: string): number {
+  _getMetric(metricName: string, metricShouldExists: boolean = true): number|undefined {
     if (!this.cachedMetrics) throw new Error("Metrics not availables");
 
     // loops over namespaces first
@@ -113,6 +126,6 @@ export class NetworkNode implements NetworkNodeInterface {
       )
         return this.cachedMetrics[namespace][metricName];
     }
-    throw new Error("Metric not found!");
+    if(metricShouldExists) throw new Error("Metric not found!");
   }
 }

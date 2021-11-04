@@ -1,0 +1,50 @@
+[settings]
+timeout = 1000
+
+[relaychain]
+default_image = "{{SYNTHIMAGE}}"
+chain = "wococo-local"
+chain_spec_command = "polkadot build-spec --chain wococo-local --disable-default-bootnode --raw > /cfg/wococo-local.json"
+command = "polkadot"
+  # [[relaychain.default_overrides]]
+  #   local_path = "/Users/pepo/parity/zombie-net/bins/polkadot"
+  #   remote_path = "/cfg/polkadot"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+  command = "polkadot"
+  extra_args = [ "--alice", "-lparachain=debug" ]
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+  command = "polkadot"
+  extra_args = [ "--bob", "-lparachain=debug" ]
+
+  [[relaychain.nodes]]
+  name = "charlie"
+  validator = true
+  command = "polkadot"
+  extra_args = [ "--charlie", "-lparachain=debug" ]
+
+  [[relaychain.nodes]]
+  name = "david"
+  validator = true
+  command = "malus dispute-ancestor"
+  extra_args = ["--dave", "-lparachain=debug"]
+  image = "{{MALUSIMAGE}}"
+  autoConnectApi = false
+    # [[relaychain.nodes.overrides]]
+    #   local_path = "/Users/pepo/parity/zombie-net/bins/malus"
+    #   remote_path = "/cfg/malus"
+
+
+[[parachains]]
+id = 100
+
+  [parachains.collator]
+  name = "collator01"
+  image = "{{COLIMAGE}}"
+  command = "/usr/local/bin/adder-collator"
+  args = ["-lparachain=debug"]

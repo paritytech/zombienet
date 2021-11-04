@@ -7,6 +7,7 @@ export interface ComputedNetwork {
     chainSpecPath?: string;
     chainSpecCommand?: string;
     nodes: Node[];
+    overrides: Override[];
   };
   parachains: Parachain[];
 }
@@ -15,6 +16,7 @@ export interface Node {
   name: string;
   command?: string;
   commandWithArgs?: string;
+  fullCommand?: string;
   image: string;
   chain: string;
   chainSpec?: string; // path to the json spec
@@ -48,6 +50,7 @@ export interface Node {
   // fetch_files: Option<Vec<PathBuf>>,
   // env: Option<HashMap<String, String>>,
   // mdns: Option<bool>,
+  overrides: Override[];
 }
 
 export interface Collator {
@@ -115,6 +118,11 @@ export interface InitContainer {
   command: string;
 }
 
+export interface Override {
+  local_path: string,
+  remote_path: string
+}
+
 export interface RelayChainConfig {
   default_command?: string;
   default_image?: string;
@@ -122,11 +130,13 @@ export interface RelayChainConfig {
   chain_spec_path?: string;
   chain_spec_command?: string;
   default_args?: string[];
+  default_overrides?: Override[];
   nodes: {
     name: string;
     image?: string;
     command?: string;
     commandWithArgs?: string;
+    fullCommand?: string,
     wsPort?: number;
     port?: number;
     args?: string[];
@@ -136,6 +146,7 @@ export interface RelayChainConfig {
     bootnodes?: string[];
     initContainers?: object[];
     autoConnectApi?: boolean;
+    overrides?: Override[];
   }[];
 }
 

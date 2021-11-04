@@ -15,6 +15,34 @@ const program = new Command("zombie-net");
 
 let network: Network;
 
+// Ensure to log the uncaught exceptions
+// to debug the problem, also exit because we don't know
+// what happens there.
+process.on( 'uncaughtException', async err => {
+  if (network) {
+    debug('removing namespace: ' + network.namespace);
+    await network.stop();
+  }
+  console.log( `uncaughtException` );
+  console.log( err);
+  debug(err);
+  process.exit( 100 );
+} );
+
+// Ensure that we know about any exception thrown in a promise that we
+// accidentally don't have a 'catch' for.
+// http://www.hacksrus.net/blog/2015/08/a-solution-to-swallowed-exceptions-in-es6s-promises/
+process.on( 'unhandledRejection', async err => {
+  if (network) {
+    debug('removing namespace: ' + network.namespace);
+    await network.stop();
+  }
+  debug(err);
+  console.log( `unhandledRejection` );
+  console.log( err);
+  process.exit( 1001 );
+} );
+
 // Handle ctrl+c to trigger `exit`.
 process.on("SIGINT", async function () {
   if (network) {
@@ -38,7 +66,8 @@ program
   .command("spawn")
   .description("Spawn the network defined in the config")
   .argument("<creds>", "kubeclt credentials file")
-  .argument("<networkConfig>", "network ")
+  .argument("<networkConfig>", "network")
+  .argument("[monitor]", "Monitor flag, don't teardown the network with the cronjob.")
   .action(spawn);
 
 program
@@ -48,7 +77,7 @@ program
   .action(test);
 
 // spawn
-async function spawn(credsFile: string, configFile: string) {
+async function spawn(credsFile: string, configFile: string, monitor: string|undefined) {
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error("  ⚠ Config file does not exist: ", configPath);
@@ -64,7 +93,7 @@ async function spawn(credsFile: string, configFile: string) {
     process.exit();
   }
 
-  network = await start(creds, config);
+  network = await start(creds, config, monitor !== undefined);
 
   for (const node of network.nodes) {
     console.log("\n");

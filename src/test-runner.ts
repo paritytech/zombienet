@@ -7,8 +7,8 @@ import { Network } from "./network";
 import path from "path";
 const zombie = require("../");
 
-const { expect, assert } = chai;
-const { Test, Suite, before, after } = Mocha;
+const { assert } = chai;
+const { Test, Suite } = Mocha;
 const mocha = new Mocha();
 
 interface TestDefinition {
@@ -63,6 +63,20 @@ export async function run(testFile: string, isCI: boolean = false) {
     console.log(`\t Launching network... this can take a while.`);
     this.timeout(300 * 1000);
     network = await zombie.start(creds, config);
+
+    // PRINT FOR EASY DEBUG
+    for (const node of network.nodes) {
+      console.log("\n");
+      console.log(`\t\t Node name: ${node.name}`);
+      console.log(
+        `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+          node.wsUri
+        )}#/explorer\n`
+      );
+      console.log(`Node prometheus link: ${node.prometheusUri}\n`);
+      console.log("---\n");
+    }
+
     return;
   });
 
@@ -117,6 +131,7 @@ const exitMocha = (code: number) => {
 
 function parseAssertionLine(assertion: string) {
   const isUpRegex = new RegExp(/^([\w]+): is up$/i);
+  const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
   const isReportsWithin = new RegExp(
     /^([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) within *(\d+) (seconds|secs|s)?$/i
   );
@@ -128,8 +143,10 @@ function parseAssertionLine(assertion: string) {
   if (m && m[1] !== null) {
     const nodeName = m[1];
     return async (network: Network) => {
-      const isUp = await network.node(nodeName).isUp();
-      expect(isUp).to.be.ok;
+      // const isUp = await network.node(nodeName).isUp();
+      // expect(isUp).to.be.ok;
+      const value = await network.node(nodeName).getMetric("process_start_time_seconds");
+      return true;
     };
   }
 
@@ -141,8 +158,8 @@ function parseAssertionLine(assertion: string) {
     const targetValue = parseInt(m[4]);
     const timeWithin = parseInt(m[5]);
     return async (network: Network) => {
-      const value = await network.node(nodeName).getMetric(metricName, targetValue, timeWithin);
-      assert[comparatorFn](value, targetValue);
+        const value = await network.node(nodeName).getMetric(metricName, targetValue, timeWithin);
+        assert[comparatorFn](value, targetValue);
     };
   }
 

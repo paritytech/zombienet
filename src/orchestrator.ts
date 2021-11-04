@@ -10,12 +10,14 @@ import {
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   DEFAULT_BOOTNODE_PEER_ID,
+  WAIT_UNTIL_SCRIPT_SUFIX,
+  TRANSFER_CONTAINER_NAME
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { generateNamespace, sleep, filterConsole } from "./utils";
+import { generateNamespace, sleep, filterConsole, writeLocalJsonFile } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 
@@ -24,7 +26,6 @@ const debug = require('debug')('zombie');
 // For now the only provider is k8s
 const { KubeClient, genBootnodeDef, genPodDef } = Providers.Kubernetes;
 
-const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo tar has finished`;
 
 // Hide some warning messages that are coming from Polkadot JS API.
 // TODO: Make configurable.
@@ -36,10 +37,10 @@ filterConsole([
 export async function start(
   credentials: string,
   networkConfig: LaunchConfig,
+  monitor: boolean = false,
   withMetrics: boolean = false
 ) {
   let network: Network | undefined;
-  let transferIdentifier: string = "";
   let cronInterval = undefined;
   try {
     // Parse and build Network definition
@@ -56,7 +57,13 @@ export async function start(
 
     // Create namespace
     const namespace = `zombie-${generateNamespace()}`;
-    const client = new KubeClient(credentials, namespace);
+
+    // create tmp directory to store needed files
+    const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
+    const localMagicFilepath = `${tmpDir.path}/finished.txt`;
+    debug(`\t Temp Dir: ${tmpDir.path}`);
+
+    const client = new KubeClient(credentials, namespace, tmpDir.path);
     network = new Network(client, namespace);
 
     console.log(`\t Launching network under namespace: ${namespace}`);
@@ -65,16 +72,11 @@ export async function start(
     // validate access to cluster
     const isValid = await client.validateAccess();
     if (!isValid) {
-      console.error(
-        "  ⚠ Can not access k8s cluster, please check your config."
-      );
+      console.error("  ⚠ Can not access k8s cluster, please check your config.");
       process.exit(1);
     }
 
-    // create tmp directory to store needed files
-    const tempDir = await tmp.dir({ prefix: `${namespace}_` });
-    const localMagicFilepath = `${tempDir.path}/finished.txt`;
-    debug(`\t Temp Dir: ${tempDir.path}`);
+
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
@@ -87,33 +89,135 @@ export async function start(
       },
     };
 
-    await client.crateResource(namespaceDef);
+    writeLocalJsonFile(tmpDir.path, 'namespace', namespaceDef );
+    await client.createResource(namespaceDef);
 
     // create basic infra metrics if needed
     if (withMetrics) await client.staticSetup();
 
     // setup cleaner
-    cronInterval = await client.setupCleaner();
+    if(! monitor) cronInterval = await client.setupCleaner();
+
+    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+
+    if (networkSpec.relaychain.chainSpecCommand) {
+      let node: Node = {
+        name: getUniqueName("temp"),
+        validator: false,
+        image: networkSpec.relaychain.defaultImage,
+        fullCommand:
+          networkSpec.relaychain.chainSpecCommand +
+          " && " +
+          WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+        chain: networkSpec.relaychain.chain,
+        bootnodes: [],
+        args: [],
+        env: [],
+        autoConnectApi: false,
+        telemetryUrl: "",
+        overrides: []
+      };
+
+      const podDef = await genPodDef(client, node);
+      debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+      debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+      writeLocalJsonFile(tmpDir.path, 'temp', podDef );
+
+      await client.createResource(podDef, true, false);
+      await client.wait_transfer_container(podDef.metadata.name);
+
+      for( const override of networkSpec.relaychain.overrides) {
+        await client.copyFileToPod(
+          podDef.metadata.name,
+          override.local_path,
+          override.remote_path,
+          TRANSFER_CONTAINER_NAME
+        );
+      }
+
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        localMagicFilepath,
+        FINISH_MAGIC_FILE,
+        TRANSFER_CONTAINER_NAME
+      );
+
+      await client.wait_pod_ready(podDef.metadata.name);
+      const fileName = `${networkSpec.relaychain.chain}.json`;
+      debug("copy file from pod");
+
+      await client.copyFileFromPod(
+        podDef.metadata.name,
+        `/cfg/${fileName}`,
+        `${tmpDir.path}/${fileName}`,
+        podDef.metadata.name
+      );
+
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        localMagicFilepath,
+        FINISH_MAGIC_FILE
+      );
+      sleep(300 * 1000);
+    } else {
+      if(networkSpec.relaychain.chainSpecPath) {
+        // copy file to temp to use
+        fs.copyFileSync(networkSpec.relaychain.chainSpecPath, `${tmpDir.path}/${chainSpecFileName}`);
+      }
+    }
+
+    // check if we have the chain spec file
+    if( ! fs.existsSync(`${tmpDir.path}/${chainSpecFileName}`) ) throw new Error("Can't find chain spec file!");
+
+
 
     // bootnode
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
     const bootnodeDef = await genBootnodeDef(client, bootnodeSpec);
-    await client.crateResource(bootnodeDef, true, true);
+    // debug(JSON.stringify(bootnodeDef, null, 4 ));
+    debug(`launching ${bootnodeDef.metadata.name} pod with image ${bootnodeDef.spec.containers[0].image}` );
+    debug(`command: ${bootnodeDef.spec.containers[0].command.join(" ")}`);
+    writeLocalJsonFile(tmpDir.path, 'bootnode', bootnodeDef );
+    await client.createResource(bootnodeDef, true, false);
+    await client.wait_transfer_container(bootnodeDef.metadata.name);
+
+    await client.copyFileToPod(
+      bootnodeDef.metadata.name,
+      `${tmpDir.path}/${chainSpecFileName}`,
+      `/cfg/${chainSpecFileName}`,
+      TRANSFER_CONTAINER_NAME
+    );
+
+    await client.copyFileToPod(
+      bootnodeDef.metadata.name,
+      localMagicFilepath,
+      FINISH_MAGIC_FILE,
+      TRANSFER_CONTAINER_NAME
+    );
+
+    await client.wait_pod_ready(bootnodeDef.metadata.name);
+
+    await client.copyFileToPod(
+      bootnodeDef.metadata.name,
+      localMagicFilepath,
+      FINISH_MAGIC_FILE
+    );
 
     // make sure the bootnode is up and available over DNS
-    await sleep(4000);
+    await sleep(5000);
 
-    const identifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await startPortForwarding(9944, identifier, client);
+    const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
+    const fwdPort = await startPortForwarding(9944, bootnodeIdentifier, client);
     const prometheusPort = await startPortForwarding(
       PROMETHEUS_PORT,
-      identifier,
+      bootnodeIdentifier,
       client
     );
     const wsUri = `ws://127.0.0.1:${fwdPort}`;
     const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`;
     const provider = new WsProvider(wsUri);
+    debug(`creating api connection for ${bootnodeDef.metadata.name}`);
     const api = await ApiPromise.create({ provider });
 
     const networkNode: NetworkNode = new NetworkNode(
@@ -124,63 +228,65 @@ export async function start(
     networkNode.apiInstance = api;
     network.addNode(networkNode);
 
-    if (networkSpec.relaychain.chainSpecCommand) {
-      let node: Node = {
-        name: getUniqueName("temp"),
-        validator: false,
-        image: networkSpec.relaychain.defaultImage,
-        commandWithArgs:
-          networkSpec.relaychain.chainSpecCommand +
-          " && " +
-          WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
-        chain: networkSpec.relaychain.chain,
-        bootnodes: [],
-        args: [],
-        env: [],
-        autoConnectApi: false,
-        telemetryUrl: "",
-      };
-      const podDef = await genPodDef(client, node);
-      await client.crateResource(podDef, true, true);
-      const identifier = `${podDef.metadata.name}`;
-      const fileName = `${networkSpec.relaychain.chain}.json`;
-      await client.copyFileFromPod(
-        identifier,
-        `/cfg/${fileName}`,
-        `${tempDir.path}/${fileName}`
-      );
-      await client.copyFileToPod(
-        identifier,
-        localMagicFilepath,
-        FINISH_MAGIC_FILE
-      );
-    }
-
+    const bootnodeIP = await client.getBootnodeIP();
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
+
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
-      const bootnodeIP = await client.getBootnodeIP();
       node.bootnodes = [
         `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
       ];
       // create the node and attach to the network object
+      debug(`creating node: ${node.name}`);
       const podDef = await genPodDef(client, node);
-      await client.crateResource(podDef, true, true);
 
-      const identifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const fwdPort = await startPortForwarding(9944, identifier, client);
-      const prometheusPort = await startPortForwarding(
+      debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+      debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+
+      writeLocalJsonFile(tmpDir.path, node.name, podDef );
+      await client.createResource(podDef, true, false);
+      await client.wait_transfer_container(podDef.metadata.name);
+
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        `${tmpDir.path}/${chainSpecFileName}`,
+        `/cfg/${chainSpecFileName}`,
+        TRANSFER_CONTAINER_NAME
+      );
+
+      for( const override of node.overrides) {
+        await client.copyFileToPod(
+          podDef.metadata.name,
+          override.local_path,
+          override.remote_path,
+          TRANSFER_CONTAINER_NAME
+        );
+      }
+
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        localMagicFilepath,
+        FINISH_MAGIC_FILE,
+        TRANSFER_CONTAINER_NAME
+      );
+
+      await client.wait_pod_ready(podDef.metadata.name);
+      debug(`${podDef.metadata.name} pod is ready!`);
+
+      const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
+      const fwdPort = await startPortForwarding(9944, nodeIdentifier, client);
+      const nodePrometheusPort = await startPortForwarding(
         PROMETHEUS_PORT,
-        identifier,
+        nodeIdentifier,
         client
       );
       const wsUri = `ws://127.0.0.1:${fwdPort}`;
-      const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`;
+      const nodePrometheusUri = `http://127.0.0.1:${nodePrometheusPort}/metrics`;
 
       const networkNode: NetworkNode = new NetworkNode(
         node.name,
         wsUri,
-        prometheusUri,
+        nodePrometheusUri,
         node.autoConnectApi
       );
       network.addNode(networkNode);
@@ -189,7 +295,7 @@ export async function start(
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
     // sleep 2 secs before connect the api
-    await sleep(3000);
+    await sleep(2000);
 
     for (const node of network.nodes) {
       if (node.autoConnectApi) await node.connectApi();
@@ -207,41 +313,56 @@ export async function start(
         commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
         let node: Node = {
-          name: getUniqueName("temp"),
+          name: getUniqueName("temp-collator"),
           validator: false,
           image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
-          commandWithArgs: commands.join(" && "),
+          fullCommand: commands.join(" && "),
           chain: networkSpec.relaychain.chain,
           bootnodes: [],
           args: [],
           env: [],
           autoConnectApi: false,
           telemetryUrl: "",
+          overrides: []
         };
         const podDef = await genPodDef(client, node);
-        await client.crateResource(podDef, true, true);
-        const identifier = `${podDef.metadata.name}`;
+
+        debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+        debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+
+        await client.createResource(podDef, true, false);
+        await client.wait_transfer_container(podDef.metadata.name);
+
+        await client.copyFileToPod(
+          podDef.metadata.name,
+          localMagicFilepath,
+          FINISH_MAGIC_FILE,
+          TRANSFER_CONTAINER_NAME
+        );
+
+        await client.wait_pod_ready(podDef.metadata.name);
+
         if (parachain.genesisStateGenerator) {
-          stateLocalFilePath = `${tempDir.path}/${GENESIS_STATE_FILENAME}`;
+          stateLocalFilePath = `${tmpDir.path}/${GENESIS_STATE_FILENAME}`;
           await client.copyFileFromPod(
-            identifier,
+            podDef.metadata.name,
             `/cfg/${GENESIS_STATE_FILENAME}`,
             stateLocalFilePath
           );
         }
 
         if (parachain.genesisWasmGenerator) {
-          wasmLocalFilePath = `${tempDir.path}/${GENESIS_WASM_FILENAME}`;
+          wasmLocalFilePath = `${tmpDir.path}/${GENESIS_WASM_FILENAME}`;
           await client.copyFileFromPod(
-            identifier,
-            `/cfg/${GENESIS_STATE_FILENAME}`,
+            podDef.metadata.name,
+            `/cfg/${GENESIS_WASM_FILENAME}`,
             wasmLocalFilePath
           );
         }
 
         // put file to terminate pod
         await client.copyFileToPod(
-          identifier,
+          podDef.metadata.name,
           localMagicFilepath,
           FINISH_MAGIC_FILE
         );
@@ -250,7 +371,7 @@ export async function start(
       if (!stateLocalFilePath) stateLocalFilePath = parachain.genesisStatePath;
       if (!wasmLocalFilePath) wasmLocalFilePath = parachain.genesisWasmPath;
 
-      // CHEKC
+      // CHECK
       if (!stateLocalFilePath || !wasmLocalFilePath)
         throw new Error("Invalid state or wasm files");
 
@@ -261,38 +382,47 @@ export async function start(
         stateLocalFilePath
       );
 
-      let finalCommandWithArgs =
-        parachain.collator.commandWithArgs || parachain.collator.command;
+      // let finalCommandWithArgs =
+      //   parachain.collator.commandWithArgs || parachain.collator.command;
 
       // create collator
       let collator: Node = {
         name: getUniqueName(parachain.collator.name),
         validator: false,
         image: parachain.collator.image,
-        commandWithArgs:
-          WAIT_UNTIL_SCRIPT_SUFIX + " && " + finalCommandWithArgs,
+        command: parachain.collator.command,
         chain: networkSpec.relaychain.chain,
-        bootnodes: [],
+        bootnodes: [`/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`],
         args: [],
         env: [],
         autoConnectApi: false,
         telemetryUrl: "",
+        overrides: []
       };
       const podDef = await genPodDef(client, collator);
-      await client.crateResource(podDef, true, true);
-      await sleep(1000);
-      const identifier = `${podDef.metadata.name}`;
-      const fileName = `${networkSpec.relaychain.chain}.json`;
+
+      debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+      debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+
+      writeLocalJsonFile(tmpDir.path, parachain.collator.name, podDef );
+      await client.createResource(podDef, true, false);
+      await client.wait_transfer_container(podDef.metadata.name);
+
       await client.copyFileToPod(
-        identifier,
-        `${tempDir.path}/${fileName}`,
-        `/cfg/${fileName}`
+        podDef.metadata.name,
+        `${tmpDir.path}/${chainSpecFileName}`,
+        `/cfg/${chainSpecFileName}`,
+        TRANSFER_CONTAINER_NAME
       );
+
       await client.copyFileToPod(
-        identifier,
+        podDef.metadata.name,
         localMagicFilepath,
-        FINISH_MAGIC_FILE
+        FINISH_MAGIC_FILE,
+        TRANSFER_CONTAINER_NAME
       );
+
+      await client.wait_pod_ready(podDef.metadata.name);
 
       // TODO: do we need to connect to the collector node?
       // const identifier = `${podDef.kind}/${podDef.metadata.name}`;
@@ -310,7 +440,6 @@ export async function start(
       // network.addNode(networkNode);
     }
 
-    // console.log(network);
     // prevent global timeout
     network.launched = true;
     debug("\t 🚀 LAUNCH COMPLETE 🚀");

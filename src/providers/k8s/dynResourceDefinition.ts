@@ -1,4 +1,4 @@
-import { PROMETHEUS_PORT } from "../../configManager";
+import { PROMETHEUS_PORT, FINISH_MAGIC_FILE, TRANSFER_CONTAINER_NAME, DEFAULT_COMMAND } from "../../configManager";
 import { KubeClient } from "./kubeClient";
 import { Node } from "../../types";
 
@@ -6,7 +6,9 @@ export async function genBootnodeDef(
   client: KubeClient,
   nodeSetup: Node
 ): Promise<any> {
-  const container = await make_main_container(nodeSetup, []);
+  const [volume_mounts, devices] = await make_volume_mounts();
+  const container = await make_main_container(nodeSetup, volume_mounts);
+  const transferContainter = make_transfer_containter();
   return {
     apiVersion: "v1",
     kind: "Pod",
@@ -20,17 +22,20 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
+      initContainers: nodeSetup.initContainers?.concat([transferContainter]) || [transferContainter],
       restartPolicy: "OnFailure",
+      volumes: devices
     },
   };
 }
 
-export async function genPodDef(
+export function genPodDef(
   client: KubeClient,
   nodeSetup: Node
-): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts();
-  const container = await make_main_container(nodeSetup, volume_mounts);
+): any {
+  const [volume_mounts, devices] =  make_volume_mounts();
+  const container =  make_main_container(nodeSetup, volume_mounts);
+  const transferContainter = make_transfer_containter();
 
   return {
     apiVersion: "v1",
@@ -49,14 +54,29 @@ export async function genPodDef(
     spec: {
       hostname: nodeSetup.name,
       containers: [container],
-      initContainers: nodeSetup.initContainers || [],
+      initContainers: nodeSetup.initContainers?.concat([transferContainter]) || [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
   };
 }
 
-async function make_volume_mounts(): Promise<[any, any]> {
+function make_transfer_containter(): any {
+  return {
+    "name": TRANSFER_CONTAINER_NAME,
+    "image": "alpine",
+    "imagePullPolicy": "Always",
+    "volumeMounts": [
+        {"name": "tmp-cfg",  "mountPath": "/cfg", "readOnly": false}
+    ],
+    "command": [
+        "ash",
+        "-c",
+        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`
+    ],
+  }
+}
+function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
   ];
@@ -66,12 +86,12 @@ async function make_volume_mounts(): Promise<[any, any]> {
   return [volume_mounts, devices];
 }
 
-async function make_main_container(
+function make_main_container(
   nodeSetup: Node,
   volume_mounts: any[]
-): Promise<any> {
+): any {
   const ports = [{ containerPort: PROMETHEUS_PORT }];
-  const command = await gen_cmd(nodeSetup);
+  const command = gen_cmd(nodeSetup);
 
   let containerDef = {
     image: nodeSetup.image,
@@ -86,19 +106,25 @@ async function make_main_container(
   return containerDef;
 }
 
-async function gen_cmd(nodeSetup: Node): Promise<string[]> {
+
+
+
+function gen_cmd(nodeSetup: Node): string[] {
   let {
     name,
     chain,
     commandWithArgs,
+    fullCommand,
     command,
     telemetry,
     telemetryUrl,
     prometheus,
     validator,
     bootnodes,
-    args,
+    args
   } = nodeSetup;
+
+  if(fullCommand) return ["bash", "-c", fullCommand];
 
   if (commandWithArgs) {
     const parts = commandWithArgs.split(" ");
@@ -117,10 +143,12 @@ async function gen_cmd(nodeSetup: Node): Promise<string[]> {
     } else {
       finalCommand = ["bash", "-c", commandWithArgs];
     }
+
     return finalCommand;
   }
 
   // if (!mdns) args.push("--no-mdns");
+  args.push("--no-mdns");
 
   if (!telemetry) args.push("--no-telemetry");
   else args.push("--telemetry-url", telemetryUrl);
@@ -168,20 +196,21 @@ async function gen_cmd(nodeSetup: Node): Promise<string[]> {
   //     };
   // }
 
-  const finalaArgs = [
+  if(! command ) command = DEFAULT_COMMAND;
+  const finalArgs: string[] = [
     command,
     "--chain",
-    chain,
+    `/cfg/${chain}.json`,
     "--name",
     name,
     "--rpc-cors",
     "all",
-    "--unsafe-rpc-external",
-    "--rpc-methods",
-    "unsafe",
-    "--unsafe-ws-external",
+    // "--unsafe-rpc-external",
+    // "--rpc-methods",
+    // "unsafe",
+    // "--unsafe-ws-external",
     ...args,
   ];
 
-  return ["bash", "-c", finalaArgs.join(" ")];
+  return ["bash", "-c", finalArgs.join(" ")  ];
 }

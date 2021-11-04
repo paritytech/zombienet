@@ -1,6 +1,7 @@
 import { LaunchConfig, ComputedNetwork, Node, Parachain } from "./types";
 import { resolve } from "path";
 import fs from "fs";
+import { debug } from "console";
 
 // CONSTANTS
 export const REGULAR_BIN_PATH = "/usr/local/bin/substrate";
@@ -29,10 +30,14 @@ export const DEFAULT_GENESIS_GENERATE_COMMAND =
 export const DEFAULT_WASM_GENERATE_COMMAND =
   "/usr/local/bin/adder-collator export-genesis-wasm > /cfg/genesis-wasm";
 export const DEFAULT_COLLATOR_COMMAND = "/usr/local/bin/adder-collator";
-export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:3639-7edc6602";
+export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
 export const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 export const GENESIS_STATE_FILENAME = "genesis-state";
 export const GENESIS_WASM_FILENAME = "genesis-wasm";
+
+export const _WAIT_UNTIL_SCRIPT_SUFIX = 'echo pase';
+export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`;
+export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 
 export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   let networkSpec: any = {
@@ -40,6 +45,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       nodes: [],
       chain: config.relaychain.chain,
+      overrides: config.relaychain.default_overrides || []
     },
     parachains: [],
   };
@@ -52,6 +58,31 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
     ...(config.settings ? config.settings : {}),
   };
 
+  // if we don't have a path to the chain-spec leave undefined to create
+  if (config.relaychain.chain_spec_path) {
+    const chainSpecPath = resolve(
+      process.cwd(),
+      config.relaychain.chain_spec_path
+    );
+    if (!fs.existsSync(chainSpecPath)) {
+      console.error("Chain spec provided does not exist: ", chainSpecPath);
+      process.exit();
+    } else {
+      networkSpec.relaychain.chainSpecPath = chainSpecPath;
+    }
+  } else {
+    // Create the chain spec
+    networkSpec.relaychain.chainSpecCommand = config.relaychain
+      .chain_spec_command
+      ? config.relaychain.chain_spec_command
+      : DEFAULT_CHAIN_SPEC_COMMAND.replace(
+          new RegExp("{{chainName}}", "g"),
+          chainName
+        );
+  }
+
+  debug(JSON.stringify(networkSpec.relaychain, null, 4));
+
   for (const node of config.relaychain.nodes) {
     const command = node.command
       ? node.command
@@ -63,7 +94,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
 
     const env = [
       { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-      { name: "RUST_BACKTRACE", value: "FULL" },
+      { name: "RUST_BACKTRACE", value: "FULL" }
     ];
     if (node.env) env.push(...node.env);
 
@@ -79,6 +110,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       name: getUniqueName(node.name),
       command: command || DEFAULT_COMMAND,
       commandWithArgs: node.commandWithArgs,
+      fullCommand: node.fullCommand,
       image: image || DEFAULT_IMAGE,
       wsPort: node.wsPort ? node.wsPort : RPC_WS_PORT,
       port: node.port ? node.port : P2P_PORT,
@@ -94,35 +126,14 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
         : "",
       telemetry: config.settings?.telemetry ? true : false,
       prometheus: config.settings?.prometheus ? true : false,
+      overrides: node.overrides || config.relaychain.default_overrides || []
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
   }
 
-  if (config.parachains && config.parachains.length) {
-    // if we don't have a path to the chain-spec leave undefined to create
-    if (config.relaychain.chain_spec_path) {
-      const chainSpecPath = resolve(
-        process.cwd(),
-        config.relaychain.chain_spec_path
-      );
-      if (!fs.existsSync(chainSpecPath)) {
-        console.error("Chain spec provided does not exist: ", chainSpecPath);
-        process.exit();
-      } else {
-        networkSpec.relaychain.chainSpecPath = chainSpecPath;
-      }
-    } else {
-      // Create the chain spec
-      networkSpec.relaychain.chainSpecCommand = config.relaychain
-        .chain_spec_command
-        ? config.relaychain.chain_spec_command
-        : DEFAULT_CHAIN_SPEC_COMMAND.replace(
-            new RegExp("{{chainName}}", "g"),
-            chainName
-          );
-    }
 
+  if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
       let computedStatePath,
         computedStateCommand,
@@ -174,6 +185,9 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
           ? parachain.genesis_wasm_generator
           : DEFAULT_WASM_GENERATE_COMMAND;
       }
+
+      let args = DEFAULT_ARGS;
+      if (parachain.collator.args) args = args.concat(parachain.collator.args);
 
       let parachainSetup: Parachain = {
         id: parachain.id,
@@ -231,6 +245,7 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     bootnodes: [],
     autoConnectApi: true,
     telemetryUrl: "",
+    overrides: []
   };
 
   return nodeSetup;
