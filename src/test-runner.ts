@@ -83,7 +83,10 @@ export async function run(testFile: string, isCI: boolean = false) {
   suite.afterAll("teardown", async function () {
     console.log(`\t Deleting network`);
     this.timeout(120 * 1000);
-    if (network) await network.stop();
+    if (network) {
+      await network.uploadLogs();
+      await network.stop();
+    }
     return;
   });
 
@@ -158,7 +161,13 @@ function parseAssertionLine(assertion: string) {
     const targetValue = parseInt(m[4]);
     const timeWithin = parseInt(m[5]);
     return async (network: Network) => {
-        const value = await network.node(nodeName).getMetric(metricName, targetValue, timeWithin);
+        let value;
+        try {
+          value = await network.node(nodeName).getMetric(metricName, targetValue, timeWithin);
+        } catch( err ) {
+          if( comparatorFn === "equal" && targetValue === 0) value = 0;
+          else throw err;
+        }
         assert[comparatorFn](value, targetValue);
     };
   }
@@ -170,7 +179,13 @@ function parseAssertionLine(assertion: string) {
     const comparatorFn = getComparatorFn(m[3] || "");
     const targetValue = parseInt(m[4]);
     return async (network: Network) => {
-      const value = await network.node(nodeName).getMetric(metricName);
+      let value;
+      try {
+        value = await network.node(nodeName).getMetric(metricName);
+      } catch( err ) {
+        if( comparatorFn === "equal" && targetValue === 0) value = 0;
+        else throw err;
+      }
       assert[comparatorFn](value, targetValue);
     };
   }
