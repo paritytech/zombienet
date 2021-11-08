@@ -55,6 +55,7 @@ process.on("SIGINT", async function () {
 process.on("exit", async function () {
   if (network) {
     debug('removing namespace: ' + network.namespace);
+    await network.uploadLogs();
     await network.stop();
   }
   const exitCode =  process.exitCode !== undefined ? process.exitCode : 2

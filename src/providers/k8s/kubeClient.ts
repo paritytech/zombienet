@@ -5,6 +5,7 @@ import { resourceLimits } from "worker_threads";
 import { TRANSFER_CONTAINER_NAME } from "../../configManager";
 import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
+import { spawn } from "child_process";
 const debug = require('debug')('zombie::kube::client');
 
 
@@ -16,6 +17,7 @@ export interface KubectlResponse {
 export interface ReplaceMapping {
   [propertyName: string]: string;
 }
+
 
 export class KubeClient {
   namespace: string;
@@ -160,7 +162,6 @@ export class KubeClient {
     if(container) args.push("-c", container);
     const result = await this._kubectl(args, undefined, true);
     debug("copyFileToPod");
-    //debug(result);
   }
 
   async copyFileFromPod(
@@ -277,6 +278,60 @@ export class KubeClient {
     return true;
   }
 
+  async startPortForwarding(
+    port: number,
+    identifier: string,
+  ): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const mapping = `:${port}`;
+      const args = [
+        "port-forward",
+        identifier,
+        mapping,
+        "--namespace",
+        this.namespace,
+        "--kubeconfig",
+        this.configPath,
+      ];
+
+      const subprocess = spawn("kubectl", args);
+
+      let resolved = false;
+      subprocess.stdout.on("data", function (data) {
+        if (resolved) return;
+        const stdout = data.toString();
+        const m = /.\d{1,3}:(\d+)/.exec(stdout);
+        debug("stdout: " + stdout);
+        if (m && !resolved) {
+          resolved = true;
+          resolve(parseInt(m[1]));
+        }
+
+        reject(new Error(`ERR: port-fw for ${identifier}`));
+      });
+
+      subprocess.stderr.on('data', function (data) {
+          const s = data.toString();
+          if(resolved && s.includes('error')) {
+            reject(new Error(`ERR: port-fw for ${identifier} : ${s}`));
+            debug('stderr: ' + s);
+          }
+      });
+
+      subprocess.on("exit", function () {
+        console.log("child process exited");
+        reject(new Error(`ERR: port-fw for ${identifier}`));
+      });
+    });
+  }
+
+  async dumpLogs(path: string, podName: string) {
+    const dstFileName = `${path}/logs/${podName}.log`;
+    const args = ["logs", podName, "--namespace", this.namespace];
+    const result = await this._kubectl(args, undefined, false);
+    await fs.writeFile(dstFileName, result.stdout);
+  }
+
   // run kubectl
   async _kubectl(
     args: string[],
@@ -284,12 +339,14 @@ export class KubeClient {
     scoped: boolean = true
   ): Promise<KubectlResponse> {
     try {
-      const augmentedCmd: string[] = [...args, "--kubeconfig", this.configPath];
+      const augmentedCmd: string[] = ["--kubeconfig", this.configPath];
       if (scoped) augmentedCmd.push("--namespace", this.namespace);
+
+      const finalArgs = [...augmentedCmd, ...args];
 
       // if (this.debug) console.log(augmentedCmd.join(" "));
 
-      const result = await execa("kubectl", augmentedCmd, {
+      const result = await execa("kubectl", finalArgs, {
         input: resourceDef,
       });
       // console.log(result);

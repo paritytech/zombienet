@@ -1,11 +1,13 @@
 import { KubeClient } from "./providers/k8s";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { cryptoWaitReady, keyExtractPath } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
 import { readDataFile } from "./utils";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, ZOMBIE_BUCKET } from "./configManager";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
+import fs  from "fs";
+import execa from "execa";
 
 export interface NodeMapping {
   [propertyName: string]: NetworkNode;
@@ -21,11 +23,13 @@ export class Network {
   namespace: string;
   client: KubeClient;
   launched: boolean;
+  tmpDir: string;
 
-  constructor(client: KubeClient, namespace: string) {
+  constructor(client: KubeClient, namespace: string, tmpDir: string) {
     this.client = client;
     this.namespace = namespace;
     this.launched = false;
+    this.tmpDir = tmpDir;
   }
 
   addNode(node: NetworkNode) {
@@ -35,6 +39,17 @@ export class Network {
 
   async stop() {
     await this.client.destroyNamespace();
+  }
+
+  async uploadLogs() {
+    // create dump directory in local temp
+    fs.mkdirSync(`${this.tmpDir}/logs`);
+    const dumpsPromises = this.nodes.map(node => {
+      node.client.dumpLogs(this.tmpDir, node.name);
+    });
+    await Promise.all(dumpsPromises);
+    const args = ["cp", "-r", `${this.tmpDir}/*`, `gs://${ZOMBIE_BUCKET}/${this.namespace}/`]
+    await execa("gsutil", args);
   }
 
   async registerParachain(

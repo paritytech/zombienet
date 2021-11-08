@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Metrics, fetchMetrics, getMetricName } from "./metrics";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
-import { time } from "console";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./configManager";
+import { KubeClient } from "./providers/k8s";
 
 const debug = require('debug')('zombie::network-node');
 
@@ -12,6 +12,7 @@ export interface NetworkNodeInterface {
   apiInstance?: ApiPromise;
   spec?: object;
   autoConnectApi: boolean;
+  client: KubeClient;
 }
 
 export class NetworkNode implements NetworkNodeInterface {
@@ -22,17 +23,20 @@ export class NetworkNode implements NetworkNodeInterface {
   spec?: object | undefined;
   autoConnectApi: boolean;
   cachedMetrics?: Metrics;
+  client: KubeClient;
 
   constructor(
     name: string,
     wsUri: string,
     prometheusUri: string,
+    client: KubeClient,
     autoConnectApi = false
   ) {
     this.name = name;
     this.wsUri = wsUri;
     this.prometheusUri = prometheusUri;
     this.autoConnectApi = autoConnectApi;
+    this.client = client;
   }
 
   async connectApi() {
@@ -65,7 +69,6 @@ export class NetworkNode implements NetworkNodeInterface {
     let limitTimeout;
     let expired: boolean = false;
     try {
-      debug(`timeout passed: ${timeout}`);
       limitTimeout = setTimeout(() => {
         debug(`Timeout getting metric ${rawmetricName} (${timeout})`);
         expired = true;
@@ -93,16 +96,24 @@ export class NetworkNode implements NetworkNodeInterface {
         await new Promise((resolve) => setTimeout(resolve, 1000));
         c+=1;
         // refresh metrics
-        debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
-        this.cachedMetrics = await fetchMetrics(this.prometheusUri);
-        debug('metric fetched');
+        try {
+          debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
+          this.cachedMetrics = await fetchMetrics(this.prometheusUri);
+          debug('metric fetched');
+        } catch( err ) {
+          debug(`Error fetching metrics, recreating port-fw`);
+          debug( err );
+          // re-create port-fw
+          const newPort = await this.client.startPortForwarding(PROMETHEUS_PORT,`Pod/${this.name}`);
+          this.prometheusUri = `http://127.0.0.1:${newPort}/metrics`;
+          continue;
+        }
         value = this._getMetric(metricName, desiredMetricValue === null);
         if (value !== undefined && desiredMetricValue !== null && desiredMetricValue <= value) {
-          debug('done');
           done = true;
         } else {
           // debug
-          debug(`current value: ${value}, keep trying...`);
+          debug(`current value: ${value} for metric ${rawmetricName}, keep trying...`);
         }
       }
 

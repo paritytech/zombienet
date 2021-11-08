@@ -64,7 +64,7 @@ export async function start(
     debug(`\t Temp Dir: ${tmpDir.path}`);
 
     const client = new KubeClient(credentials, namespace, tmpDir.path);
-    network = new Network(client, namespace);
+    network = new Network(client, namespace, tmpDir.path);
 
     console.log(`\t Launching network under namespace: ${namespace}`);
     debug(`\t Launching network under namespace: ${namespace}`);
@@ -223,7 +223,8 @@ export async function start(
     const networkNode: NetworkNode = new NetworkNode(
       bootnodeDef.metadata.name,
       wsUri,
-      prometheusUri
+      prometheusUri,
+      client
     );
     networkNode.apiInstance = api;
     network.addNode(networkNode);
@@ -287,6 +288,7 @@ export async function start(
         node.name,
         wsUri,
         nodePrometheusUri,
+        client,
         node.autoConnectApi
       );
       network.addNode(networkNode);
@@ -424,29 +426,25 @@ export async function start(
 
       await client.wait_pod_ready(podDef.metadata.name);
 
-      // TODO: do we need to connect to the collector node?
-      // const identifier = `${podDef.kind}/${podDef.metadata.name}`;
-      // const fwdPort = await startPortForwarding(9944, identifier, namespace);
-      // const wsUri =  `ws://127.0.0.1:${fwdPort}`; //TODO: change address
-      // const provider = new WsProvider(wsUri);
-      // const api = await ApiPromise.create({ provider });
+      const networkNode: NetworkNode = new NetworkNode(
+        podDef.metadata.name,
+        "", // TODO: needs to connect to rpc?
+        "", // TODO: needs to connect for metrics?
+        client);
 
-      // const networkNode: NetworkNode = {
-      //   name: collator.name,
-      //   apiInstance: api,
-      //   wsUri
-      // };
-
-      // network.addNode(networkNode);
+      network.addNode(networkNode);
     }
 
     // prevent global timeout
     network.launched = true;
-    debug("\t 🚀 LAUNCH COMPLETE 🚀");
+    debug(`\t 🚀 LAUNCH COMPLETE under namespace ${namespace} 🚀`);
     return network;
   } catch (error) {
     console.error(error);
-    if (network) await network.stop();
+    if (network) {
+      await network.uploadLogs();
+      await network.stop();
+    }
     if (cronInterval) clearInterval(cronInterval);
     process.exit(1);
   }
@@ -464,6 +462,9 @@ export async function test(
   } catch (error) {
     console.error(error);
   } finally {
-    if (network) await network.stop();
+    if (network) {
+      await network.uploadLogs();
+      await network.stop();
+    }
   }
 }

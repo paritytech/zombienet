@@ -38,6 +38,7 @@ export const GENESIS_WASM_FILENAME = "genesis-wasm";
 export const _WAIT_UNTIL_SCRIPT_SUFIX = 'echo pase';
 export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`;
 export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
+export const ZOMBIE_BUCKET = "zombienet-logs";
 
 export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   let networkSpec: any = {

@@ -20,7 +20,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   try {
     debug(`fetching: ${metricUri}`);
     //const response = await fetch(metricUri);
-    const response = await axios.get(metricUri, {timeout: 1000});
+    const response = await axios.get(metricUri, {timeout: 2000});
     debug("fetched");
     //const body = await response.text();
     //const metrics = _extractMetrics(body);
