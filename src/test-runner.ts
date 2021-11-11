@@ -7,7 +7,7 @@ import { Network } from "./network";
 import path from "path";
 const zombie = require("../");
 
-const { assert } = chai;
+const { assert, expect } = chai;
 const { Test, Suite } = Mocha;
 const mocha = new Mocha();
 
@@ -133,55 +133,82 @@ const exitMocha = (code: number) => {
 };
 
 function parseAssertionLine(assertion: string) {
+  // const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
+
+  // parachains smoke test
   const isUpRegex = new RegExp(/^([\w]+): is up$/i);
-  const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
-  const isReportsWithin = new RegExp(
-    /^([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) within *(\d+) (seconds|secs|s)?$/i
-  );
+  const parachainIsRegistered = new RegExp(/^(([\w]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i);
+  const parachainBlockHeight = new RegExp(/^(([\w]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i);
+
+  // Metrics
   const isReports = new RegExp(
-    /^([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+)$/i
+    /^(([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
 
-  let m = isUpRegex.exec(assertion);
+  // Matchs
+  let m: string[] | null;
+
+  m = parachainIsRegistered.exec(assertion);
+  if( m && m[2] && m[3]) {
+    const nodeName = m[2];
+    const parachainId = parseInt(m[3],10);
+    let timeout: number;
+    if( m[5]) timeout = parseInt(m[5],10);
+
+    return async (network: Network) => {
+      const parachainIsRegistered = (timeout) ?
+        await network.node(nodeName).parachainIsRegistered(parachainId, timeout) :
+        await network.node(nodeName).parachainIsRegistered(parachainId);
+
+      expect(parachainIsRegistered).to.be.ok;
+    };
+  }
+
+  m = parachainBlockHeight.exec(assertion);
+  if( m && m[2] && m[3] && m[4] && m[5]) {
+    let timeout: number;
+    const nodeName = m[2];
+    const parachainId = parseInt(m[3],10);
+    const comparatorFn = getComparatorFn(m[4] || "");
+    const targetValue = parseInt(m[5]);
+    if( m[7]) timeout = parseInt(m[7],10);
+
+    return async (network: Network) => {
+      const value = (timeout) ?
+        await network.node(nodeName).parachainBlockHeight(parachainId, targetValue, timeout) :
+        await network.node(nodeName).parachainBlockHeight(parachainId, targetValue);
+
+        assert[comparatorFn](value, targetValue);
+    };
+
+  }
+
+  m = isUpRegex.exec(assertion);
   if (m && m[1] !== null) {
     const nodeName = m[1];
     return async (network: Network) => {
       // const isUp = await network.node(nodeName).isUp();
       // expect(isUp).to.be.ok;
-      const value = await network.node(nodeName).getMetric("process_start_time_seconds");
+      await network.node(nodeName).getMetric("process_start_time_seconds");
       return true;
     };
   }
 
-  m = isReportsWithin.exec(assertion);
-  if (m && m[1] && m[2] && m[4]) {
-    const nodeName = m[1];
-    const metricName = m[2];
-    const comparatorFn = getComparatorFn(m[3] || "");
-    const targetValue = parseInt(m[4]);
-    const timeWithin = parseInt(m[5]);
-    return async (network: Network) => {
-        let value;
-        try {
-          value = await network.node(nodeName).getMetric(metricName, targetValue, timeWithin);
-        } catch( err ) {
-          if( comparatorFn === "equal" && targetValue === 0) value = 0;
-          else throw err;
-        }
-        assert[comparatorFn](value, targetValue);
-    };
-  }
-
   m = isReports.exec(assertion);
-  if (m && m[1] && m[2] && m[4]) {
-    const nodeName = m[1];
-    const metricName = m[2];
-    const comparatorFn = getComparatorFn(m[3] || "");
-    const targetValue = parseInt(m[4]);
+  if (m && m[2] && m[3] && m[5]) {
+    let timeout: number;
+    let value: number;
+    const nodeName = m[2];
+    const metricName = m[3];
+    const comparatorFn = getComparatorFn(m[4] || "");
+    const targetValue = parseInt(m[5]);
+    if( m[7]) timeout = parseInt(m[7],10);
     return async (network: Network) => {
       let value;
       try {
-        value = await network.node(nodeName).getMetric(metricName);
+        value = (timeout) ?
+        await network.node(nodeName).getMetric(metricName, targetValue, timeout) :
+        await network.node(nodeName).getMetric(metricName);
       } catch( err ) {
         if( comparatorFn === "equal" && targetValue === 0) value = 0;
         else throw err;
@@ -289,3 +316,4 @@ function parseTestFile(testFile: string): TestDefinition {
     throw new Error(`Invalid test definition, file: ${testFile}`);
   return testDefinition;
 }
+

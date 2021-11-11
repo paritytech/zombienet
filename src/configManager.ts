@@ -1,7 +1,7 @@
 import { LaunchConfig, ComputedNetwork, Node, Parachain } from "./types";
 import { resolve } from "path";
 import fs from "fs";
-import { debug } from "console";
+const debug = require('debug')('zombie::config-manager');
 
 // CONSTANTS
 export const REGULAR_BIN_PATH = "/usr/local/bin/substrate";
@@ -81,8 +81,6 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
           chainName
         );
   }
-
-  debug(JSON.stringify(networkSpec.relaychain, null, 4));
 
   for (const node of config.relaychain.nodes) {
     const command = node.command
@@ -221,6 +219,8 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       networkSpec.parachains.push(parachainSetup);
     }
   }
+
+  networkSpec.types = config.types ? config.types : {};
 
   return networkSpec;
 }

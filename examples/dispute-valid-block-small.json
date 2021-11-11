@@ -3,7 +3,7 @@
     "timeout": 3600
   },
   "relaychain": {
-    "default_image": "paritypr/synth-wave:3639-0.9.9-7edc6602-ed5fb773",
+    "default_image": "paritypr/synth-wave:4131-0.9.11-7ac2a855-60b70c6d",
     "chain": "rococo-local",
     "command": "polkadot",
     "nodes": [
@@ -21,7 +21,7 @@
         "name": "david",
         "validator": true,
         "commandWithArgs": "/usr/local/bin/malus dispute-ancestor --dave -lparachain=debug",
-        "image": "paritypr/malus:3639-7edc6602",
+        "image": "paritypr/malus:4131-7ac2a855",
         "autoConnectApi": false
       }
     ]

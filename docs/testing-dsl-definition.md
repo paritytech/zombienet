@@ -20,7 +20,11 @@ Then each line define a test assertion with the following patterns:
 - Reports interface to get metrics from prometheus
   - <node-name>: reports <metric name> <comparator>(e.g "is at least x", "is greater than x") [within x seconds]
 - Access to Jaeger spans (TBD)
-  - <node-name>: register <span query>
+  - <node-name>: register <span query> [TODO]
+- Backchannel assert through api
+  - <node-name>:
+
+
 
 ## Test Name
 

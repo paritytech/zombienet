@@ -137,7 +137,7 @@ export class Network {
       }, timeout * 1000);
 
       const node = this.getNodeByName(nodeName);
-      await node.apiInstance.rpc.system.name();
+      await node.apiInstance?.rpc.system.name();
       return true;
     } catch (err) {
       console.log(err);
