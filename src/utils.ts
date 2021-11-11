@@ -114,3 +114,18 @@ function getReplacementInText(content:string): string[] {
 export function writeLocalJsonFile(path: string, fileName: string, content: any) {
   fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
+
+export function loadTypeDef(types: string | object): object {
+	if (typeof types === "string") {
+		// Treat types as a json file path
+		try {
+			const rawdata = fs.readFileSync(types, { encoding: "utf-8" });
+			return JSON.parse(rawdata);
+		} catch {
+			console.error("failed to load parachain typedef file");
+			process.exit(1);
+		}
+	} else {
+		return types;
+	}
+}

@@ -18,7 +18,7 @@ Usage: ${SCRIPT_NAME} OPTION
 
 OPTION
  -t, --test          OPTIONAL Test file to run
-                     If omitted "all" tag will be used
+                     If omitted "all" test in the directory will be used.
   -g, --github-remote-dir
                      OPTIONAL URL to a directory hosted on github, e.g.:
                      https://github.com/paritytech/polkadot/tree/master/simnet_tests

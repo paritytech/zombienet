@@ -17,7 +17,7 @@ import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { generateNamespace, sleep, filterConsole, writeLocalJsonFile } from "./utils";
+import { generateNamespace, sleep, filterConsole, writeLocalJsonFile, loadTypeDef } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 
@@ -45,6 +45,7 @@ export async function start(
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = generateNetworkSpec(networkConfig);
+    debug(JSON.stringify(networkSpec, null, 4));
 
     // global timeout
     setTimeout(() => {
@@ -57,6 +58,9 @@ export async function start(
 
     // Create namespace
     const namespace = `zombie-${generateNamespace()}`;
+
+    // get user defined types
+    const userDefinedTypes: any = loadTypeDef(networkSpec.types);
 
     // create tmp directory to store needed files
     const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
@@ -79,6 +83,7 @@ export async function start(
 
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
+
 
     // create namespace
     const namespaceDef = {
@@ -218,7 +223,7 @@ export async function start(
     const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`;
     const provider = new WsProvider(wsUri);
     debug(`creating api connection for ${bootnodeDef.metadata.name}`);
-    const api = await ApiPromise.create({ provider });
+    const api = await ApiPromise.create({ provider, types: userDefinedTypes });
 
     const networkNode: NetworkNode = new NetworkNode(
       bootnodeDef.metadata.name,
@@ -289,6 +294,7 @@ export async function start(
         wsUri,
         nodePrometheusUri,
         client,
+        userDefinedTypes,
         node.autoConnectApi
       );
       network.addNode(networkNode);

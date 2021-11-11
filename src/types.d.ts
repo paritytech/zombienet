@@ -10,6 +10,7 @@ export interface ComputedNetwork {
     overrides: Override[];
   };
   parachains: Parachain[];
+  types: any;
 }
 
 export interface Node {
@@ -94,6 +95,7 @@ export interface LaunchConfig {
   settings?: Settings;
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
+  types: any;
 }
 
 export interface Settings {
