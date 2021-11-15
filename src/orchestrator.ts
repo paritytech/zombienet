@@ -127,7 +127,6 @@ export async function start(
         bootnodes: [],
         args: [],
         env: [],
-        // autoConnectApi: false,
         telemetryUrl: "",
         overrides: []
       };
@@ -299,8 +298,7 @@ export async function start(
         node.name,
         WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
         METRICS_URI_PATTERN.replace("{{PORT}}", nodePrometheusPort.toString()),
-        userDefinedTypes,
-        // node.autoConnectApi
+        userDefinedTypes
       );
       network.addNode(networkNode);
     }
@@ -334,7 +332,6 @@ export async function start(
           bootnodes: [],
           args: [],
           env: [],
-          // autoConnectApi: false,
           telemetryUrl: "",
           overrides: []
         };
@@ -408,7 +405,6 @@ export async function start(
         bootnodes: [`/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`],
         args: [],
         env: [],
-        // autoConnectApi: false,
         telemetryUrl: "",
         overrides: []
       };
