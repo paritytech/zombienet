@@ -1,4 +1,4 @@
-import { KubeClient } from "./kubeClient";
+import { KubeClient, getClient, initClient } from "./kubeClient";
 import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
 
-export { KubeClient, genBootnodeDef, genPodDef };
+export { KubeClient, genBootnodeDef, genPodDef, getClient, initClient };

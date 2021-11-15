@@ -35,10 +35,15 @@ export const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 export const GENESIS_STATE_FILENAME = "genesis-state";
 export const GENESIS_WASM_FILENAME = "genesis-wasm";
 
-export const _WAIT_UNTIL_SCRIPT_SUFIX = 'echo pase';
 export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`;
 export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 export const ZOMBIE_BUCKET = "zombienet-logs";
+export const WS_URI_PATTERN = "ws://127.0.0.1:{{PORT}}";
+export const METRICS_URI_PATTERN = "http://127.0.0.1:{{PORT}}/metrics";
+export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
+export const BAKCCHANNEL_PORT = 3000;
+export const BAKCCHANNEL_POD_NAME = "backchannel";
+
 
 export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   let networkSpec: any = {
@@ -118,8 +123,6 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
       args,
       env,
       bootnodes,
-      autoConnectApi:
-        node.autoConnectApi !== undefined ? node.autoConnectApi : true, // by default connect
       telemetryUrl: config.settings?.telemetry
         ? "ws://telemetry:8000/submit 0"
         : "",
@@ -244,7 +247,6 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     ],
     env: [],
     bootnodes: [],
-    autoConnectApi: true,
     telemetryUrl: "",
     overrides: []
   };

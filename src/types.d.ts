@@ -30,7 +30,6 @@ export interface Node {
   bootnodes: string[];
   substrateRole?: string;
   initContainers?: object[];
-  autoConnectApi: boolean;
   telemetry?: boolean;
   /// URL for telemetry
   telemetryUrl: string;
@@ -147,7 +146,6 @@ export interface RelayChainConfig {
     env?: envVars[];
     bootnodes?: string[];
     initContainers?: object[];
-    autoConnectApi?: boolean;
     overrides?: Override[];
   }[];
 }

@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Metrics, fetchMetrics, getMetricName } from "./metrics";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./configManager";
-import { KubeClient } from "./providers/k8s";
+import { getClient } from "./providers/k8s";
 import type { HeadData, ParaId } from "@polkadot/types/interfaces";
 import type { Option, Vec } from "@polkadot/types";
 
@@ -9,12 +9,9 @@ const debug = require('debug')('zombie::network-node');
 
 export interface NetworkNodeInterface {
   name: string;
-  wsUri: string;
-  prometheusUri: string;
+  wsUri?: string;
+  prometheusUri?: string;
   apiInstance?: ApiPromise;
-  spec?: object;
-  autoConnectApi: boolean;
-  client: KubeClient;
 }
 
 export class NetworkNode implements NetworkNodeInterface {
@@ -23,24 +20,18 @@ export class NetworkNode implements NetworkNodeInterface {
   prometheusUri: string;
   apiInstance?: ApiPromise;
   spec?: object | undefined;
-  autoConnectApi: boolean;
   cachedMetrics?: Metrics;
-  client: KubeClient;
   userDefinedTypes: any;
 
   constructor(
     name: string,
     wsUri: string,
     prometheusUri: string,
-    client: KubeClient,
     userDefinedTypes: any = null,
-    autoConnectApi = false
   ) {
     this.name = name;
     this.wsUri = wsUri;
     this.prometheusUri = prometheusUri;
-    this.autoConnectApi = autoConnectApi;
-    this.client = client;
 
     if(userDefinedTypes) this.userDefinedTypes = userDefinedTypes;
 
@@ -181,7 +172,8 @@ export class NetworkNode implements NetworkNodeInterface {
           debug(`Error fetching metrics, recreating port-fw`);
           debug( err );
           // re-create port-fw
-          const newPort = await this.client.startPortForwarding(PROMETHEUS_PORT,`Pod/${this.name}`);
+          const client = getClient();
+          const newPort = await client.startPortForwarding(PROMETHEUS_PORT,`Pod/${this.name}`);
           this.prometheusUri = `http://127.0.0.1:${newPort}/metrics`;
           continue;
         }
