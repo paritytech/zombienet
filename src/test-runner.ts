@@ -6,6 +6,7 @@ import { readNetworkConfig } from "./utils";
 import { Network } from "./network";
 import path from "path";
 const zombie = require("../");
+const debug = require('debug')('zombie::test-runner');
 
 const { assert, expect } = chai;
 const { Test, Suite } = Mocha;
@@ -18,8 +19,13 @@ interface TestDefinition {
   assertions: string[];
 }
 
+export interface BackchannelMap {
+  [propertyName: string]: any;
+}
+
 export async function run(testFile: string, isCI: boolean = false) {
   let network: Network;
+  let backchannelMap: BackchannelMap = {};
   // read test file
   const testDef = parseTestFile(testFile);
   const testName = getTestNameFromFileName(testFile);
@@ -93,7 +99,7 @@ export async function run(testFile: string, isCI: boolean = false) {
   for (const assertion of testDef.assertions) {
     const testFn = parseAssertionLine(assertion);
     if (!testFn) continue;
-    const test = new Test(assertion, async () => await testFn(network));
+    const test = new Test(assertion, async () => await testFn(network, backchannelMap));
     suite.addTest(test);
     test.timeout(0);
   }
@@ -145,6 +151,13 @@ function parseAssertionLine(assertion: string) {
     /^(([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
 
+  // Backchannel
+  // alice: wait for name and use as X within 30s
+  const backchannelWait = new RegExp(/^([\w]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i);
+
+  // Alice: ensure var:X is used
+  const isEnsure = new RegExp(/^([\w]+): ensure var:([\w]+) is used$/i);
+
   // Matchs
   let m: string[] | null;
 
@@ -184,7 +197,7 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = isUpRegex.exec(assertion);
-  if (m && m[1] !== null) {
+  if(m && m[1] !== null) {
     const nodeName = m[1];
     return async (network: Network) => {
       // const isUp = await network.node(nodeName).isUp();
@@ -195,7 +208,7 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = isReports.exec(assertion);
-  if (m && m[2] && m[3] && m[5]) {
+  if(m && m[2] && m[3] && m[5]) {
     let timeout: number;
     let value: number;
     const nodeName = m[2];
@@ -203,7 +216,7 @@ function parseAssertionLine(assertion: string) {
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
     if( m[7]) timeout = parseInt(m[7],10);
-    return async (network: Network) => {
+    return async (network: Network, backchannelMap: BackchannelMap) => {
       let value;
       try {
         value = (timeout) ?
@@ -215,6 +228,33 @@ function parseAssertionLine(assertion: string) {
       }
       assert[comparatorFn](value, targetValue);
     };
+  }
+
+  m = backchannelWait.exec(assertion);
+  if(m && m[1] && m[2] && m[3]) {
+    let timeout: number;
+    const backchannelKey = m[2];
+    const backchannelMapKey = m[3]; // for use locally after with `var:KEY`
+    if(m[4]) timeout = parseInt(m[4]);
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      try {
+        const value = await network.getBackchannelValue(backchannelKey, timeout);
+        backchannelMap[backchannelMapKey] = value;
+        // return ok
+        assert.equal(0, 0);
+      } catch(err) {
+        throw new Error(`Error getting ${backchannelKey} from backchannel`);
+      }
+    }
+  }
+
+  m = isEnsure.exec(assertion);
+  if(m && m[1] && m[2]) {
+    const backchannelMapKey = m[2]; // for use locally after with `var:KEY`
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      const defined = backchannelMap[backchannelMapKey] !== undefined;
+      expect(defined).to.be.ok;
+    }
   }
 
   // if we can't match let produce a fail test
@@ -273,8 +313,8 @@ function parseTestFile(testFile: string): TestDefinition {
   for (let line of content.split("\n")) {
     line = line.trim();
     if (line[0] === "#" || line.length === 0) continue; // skip comments and empty lines;
-    const parts = line.split(":");
-    if (parts.length !== 2) continue; // bad line
+    let parts = line.split(":");
+    if (parts.length < 2) continue; // bad line
     switch (parts[0].toLocaleLowerCase()) {
       case "network":
         networkConfig = parts[1].trim();

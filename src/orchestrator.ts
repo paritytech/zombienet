@@ -11,7 +11,9 @@ import {
   PROMETHEUS_PORT,
   DEFAULT_BOOTNODE_PEER_ID,
   WAIT_UNTIL_SCRIPT_SUFIX,
-  TRANSFER_CONTAINER_NAME
+  TRANSFER_CONTAINER_NAME,
+  WS_URI_PATTERN,
+  METRICS_URI_PATTERN
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -24,7 +26,7 @@ import fs from "fs";
 const debug = require('debug')('zombie');
 
 // For now the only provider is k8s
-const { KubeClient, genBootnodeDef, genPodDef } = Providers.Kubernetes;
+const { genBootnodeDef, genPodDef, initClient } = Providers.Kubernetes;
 
 
 // Hide some warning messages that are coming from Polkadot JS API.
@@ -67,7 +69,8 @@ export async function start(
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
     debug(`\t Temp Dir: ${tmpDir.path}`);
 
-    const client = new KubeClient(credentials, namespace, tmpDir.path);
+    // const client = new KubeClient(credentials, namespace, tmpDir.path);
+    const client = initClient(credentials, namespace, tmpDir.path);
     network = new Network(client, namespace, tmpDir.path);
 
     console.log(`\t Launching network under namespace: ${namespace}`);
@@ -94,8 +97,14 @@ export async function start(
       },
     };
 
-    writeLocalJsonFile(tmpDir.path, 'namespace', namespaceDef );
+    writeLocalJsonFile(tmpDir.path, "namespace", namespaceDef );
     await client.createResource(namespaceDef);
+
+    // Create bootnode and backchannel services
+    debug(`Creating bootnode and backchannel services`);
+    await client.crateStaticResource("bootnode-service.yaml");
+    await client.crateStaticResource("backchannel-service.yaml");
+    await client.crateStaticResource("backchannel-pod.yaml");
 
     // create basic infra metrics if needed
     if (withMetrics) await client.staticSetup();
@@ -118,7 +127,7 @@ export async function start(
         bootnodes: [],
         args: [],
         env: [],
-        autoConnectApi: false,
+        // autoConnectApi: false,
         telemetryUrl: "",
         overrides: []
       };
@@ -225,14 +234,13 @@ export async function start(
     debug(`creating api connection for ${bootnodeDef.metadata.name}`);
     const api = await ApiPromise.create({ provider, types: userDefinedTypes });
 
-    const networkNode: NetworkNode = new NetworkNode(
+    const bootnodeNode: NetworkNode = new NetworkNode(
       bootnodeDef.metadata.name,
-      wsUri,
-      prometheusUri,
-      client
+      WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
+      METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString()),
     );
-    networkNode.apiInstance = api;
-    network.addNode(networkNode);
+
+    network.addNode(bootnodeNode);
 
     const bootnodeIP = await client.getBootnodeIP();
     // Create nodes
@@ -286,16 +294,13 @@ export async function start(
         nodeIdentifier,
         client
       );
-      const wsUri = `ws://127.0.0.1:${fwdPort}`;
-      const nodePrometheusUri = `http://127.0.0.1:${nodePrometheusPort}/metrics`;
 
       const networkNode: NetworkNode = new NetworkNode(
         node.name,
-        wsUri,
-        nodePrometheusUri,
-        client,
+        WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
+        METRICS_URI_PATTERN.replace("{{PORT}}", nodePrometheusPort.toString()),
         userDefinedTypes,
-        node.autoConnectApi
+        // node.autoConnectApi
       );
       network.addNode(networkNode);
     }
@@ -306,7 +311,7 @@ export async function start(
     await sleep(2000);
 
     for (const node of network.nodes) {
-      if (node.autoConnectApi) await node.connectApi();
+      await node.connectApi();
     }
 
     for (const parachain of networkSpec.parachains) {
@@ -329,7 +334,7 @@ export async function start(
           bootnodes: [],
           args: [],
           env: [],
-          autoConnectApi: false,
+          // autoConnectApi: false,
           telemetryUrl: "",
           overrides: []
         };
@@ -403,7 +408,7 @@ export async function start(
         bootnodes: [`/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`],
         args: [],
         env: [],
-        autoConnectApi: false,
+        // autoConnectApi: false,
         telemetryUrl: "",
         overrides: []
       };
@@ -436,7 +441,7 @@ export async function start(
         podDef.metadata.name,
         "", // TODO: needs to connect to rpc?
         "", // TODO: needs to connect for metrics?
-        client);
+        );
 
       network.addNode(networkNode);
     }

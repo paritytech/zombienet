@@ -18,6 +18,16 @@ export interface ReplaceMapping {
   [propertyName: string]: string;
 }
 
+let client: KubeClient;
+export function getClient(): KubeClient {
+  if(! client ) throw new Error("Client not initialized");
+  return client;
+}
+
+export function initClient(configPath: string, namespace: string, tmpDir: string): KubeClient {
+  client = new KubeClient(configPath, namespace, tmpDir);
+  return client;
+}
 
 export class KubeClient {
   namespace: string;
