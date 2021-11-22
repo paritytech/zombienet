@@ -52,4 +52,4 @@ RUN chown nonroot:nonroot backchannel
 USER nonroot
 EXPOSE 3000
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
-ENTRYPOINT ["tini", "--", "bash"]x`
+ENTRYPOINT ["tini", "--", "bash"]
