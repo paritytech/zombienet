@@ -2,7 +2,7 @@ const chai = require("chai");
 import Mocha from "mocha";
 import fs from "fs";
 import { LaunchConfig } from "./types";
-import { readNetworkConfig } from "./utils";
+import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import path from "path";
 const zombie = require("../");
@@ -139,8 +139,6 @@ const exitMocha = (code: number) => {
 };
 
 function parseAssertionLine(assertion: string) {
-  // const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
-
   // parachains smoke test
   const isUpRegex = new RegExp(/^([\w]+): is up$/i);
   const parachainIsRegistered = new RegExp(/^(([\w]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i);
@@ -157,6 +155,14 @@ function parseAssertionLine(assertion: string) {
 
   // Alice: ensure var:X is used
   const isEnsure = new RegExp(/^([\w]+): ensure var:([\w]+) is used$/i);
+
+  // Commands
+  const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
+  const restartRegex = new RegExp(/^(([\w]+): restart)+( after (\d+) (seconds|secs|s))?$/i);
+  const pauseRegex = new RegExp(/^([\w]+): pause$/i);
+  const resumeRegex = new RegExp(/^([\w]+): resume$/i);
+
+
 
   // Matchs
   let m: string[] | null;
@@ -257,6 +263,45 @@ function parseAssertionLine(assertion: string) {
     }
   }
 
+  m = restartRegex.exec(assertion);
+  if(m && m[2]) {
+    const nodeName = m[2];
+    let timeout: number;
+    if( m[4]) timeout = parseInt(m[4],10);
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      if(timeout) await network.node(nodeName).restart(timeout);
+      else await network.node(nodeName).restart();
+      expect(true).to.be.ok;
+    }
+  }
+
+  m = pauseRegex.exec(assertion);
+  if(m && m[2]) {
+    const nodeName = m[2];
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      await network.node(nodeName).pause();
+      expect(true).to.be.ok;
+    }
+  }
+
+  m = resumeRegex.exec(assertion);
+  if(m && m[2]) {
+    const nodeName = m[2];
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      await network.node(nodeName).resume();
+      expect(true).to.be.ok;
+    }
+  }
+
+  m = sleepRegex.exec(assertion);
+  if( m && m[1]) {
+    const timeout = parseInt(m[1],10);
+    return async () => {
+      await sleep( timeout * 1000);
+      expect(true).to.be.ok;
+    }
+  }
+
   // if we can't match let produce a fail test
   return async (network: Network) => {
     assert.equal(0, 1);
@@ -314,7 +359,7 @@ function parseTestFile(testFile: string): TestDefinition {
     line = line.trim();
     if (line[0] === "#" || line.length === 0) continue; // skip comments and empty lines;
     let parts = line.split(":");
-    if (parts.length < 2) continue; // bad line
+    if (parts.length < 2 && ! line.includes("sleep")) continue; // bad line
     switch (parts[0].toLocaleLowerCase()) {
       case "network":
         networkConfig = parts[1].trim();

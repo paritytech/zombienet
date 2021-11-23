@@ -22,11 +22,14 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { generateNamespace, sleep, filterConsole, writeLocalJsonFile, loadTypeDef } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
+import { resolve } from "path";
 
 const debug = require('debug')('zombie');
 
 // For now the only provider is k8s
 const { genBootnodeDef, genPodDef, initClient } = Providers.Kubernetes;
+
+const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 
 
 // Hide some warning messages that are coming from Polkadot JS API.
@@ -87,6 +90,7 @@ export async function start(
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
+    const zombieWrapperPath = resolve(__dirname, `../scripts/${ZOMBIE_WRAPPER}`);
 
     // create namespace
     const namespaceDef = {
@@ -204,6 +208,13 @@ export async function start(
 
     await client.copyFileToPod(
       bootnodeDef.metadata.name,
+      zombieWrapperPath,
+      `/cfg/${ZOMBIE_WRAPPER}`,
+      TRANSFER_CONTAINER_NAME
+    );
+
+    await client.copyFileToPod(
+      bootnodeDef.metadata.name,
       localMagicFilepath,
       FINISH_MAGIC_FILE,
       TRANSFER_CONTAINER_NAME
@@ -227,11 +238,11 @@ export async function start(
       bootnodeIdentifier,
       client
     );
-    const wsUri = `ws://127.0.0.1:${fwdPort}`;
-    const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`;
-    const provider = new WsProvider(wsUri);
-    debug(`creating api connection for ${bootnodeDef.metadata.name}`);
-    const api = await ApiPromise.create({ provider, types: userDefinedTypes });
+    // const wsUri = `ws://127.0.0.1:${fwdPort}`;
+    // const prometheusUri = `http://127.0.0.1:${prometheusPort}/metrics`;
+    // const provider = new WsProvider(wsUri);
+    // debug(`creating api connection for ${bootnodeDef.metadata.name}`);
+    // const api = await ApiPromise.create({ provider, types: userDefinedTypes });
 
     const bootnodeNode: NetworkNode = new NetworkNode(
       bootnodeDef.metadata.name,
@@ -264,6 +275,13 @@ export async function start(
         podDef.metadata.name,
         `${tmpDir.path}/${chainSpecFileName}`,
         `/cfg/${chainSpecFileName}`,
+        TRANSFER_CONTAINER_NAME
+      );
+
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        zombieWrapperPath,
+        `/cfg/${ZOMBIE_WRAPPER}`,
         TRANSFER_CONTAINER_NAME
       );
 
@@ -421,6 +439,13 @@ export async function start(
         podDef.metadata.name,
         `${tmpDir.path}/${chainSpecFileName}`,
         `/cfg/${chainSpecFileName}`,
+        TRANSFER_CONTAINER_NAME
+      );
+
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        zombieWrapperPath,
+        `/cfg/${ZOMBIE_WRAPPER}`,
         TRANSFER_CONTAINER_NAME
       );
 

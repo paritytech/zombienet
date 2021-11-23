@@ -42,6 +42,30 @@ export class NetworkNode implements NetworkNodeInterface {
     this.apiInstance = await ApiPromise.create({ provider, types: this.userDefinedTypes });
   }
 
+  async restart(timeout:number|null = null) {
+    const client = getClient();
+    const args = ["exec", this.name, "--",  "/bin/bash", "-c"];
+    const cmd = (timeout) ?
+      `echo restart ${timeout} > /tmp/zombiepipe` :
+      `echo restart > /tmp/zombiepipe`;
+    args.push(cmd);
+
+    await client._kubectl(args, undefined, true);
+  }
+
+  async pause() {
+    const client = getClient();
+    const args = ["exec", this.name, "--",  "/bin/bash", "-c", "echo pause > /tmp/zombiepipe"];
+    await client._kubectl(args, undefined, true);
+  }
+
+  async resume() {
+    const client = getClient();
+    const args = ["exec", this.name, "--",  "/bin/bash", "-c", "echo pause > /tmp/zombiepipe"];
+    await client._kubectl(args, undefined, true);
+  }
+
+
   async isUp(timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
     let limitTimeout;
     try {

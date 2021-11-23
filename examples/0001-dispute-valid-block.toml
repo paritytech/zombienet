@@ -4,41 +4,31 @@ timeout = 1000
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 chain = "wococo-local"
-#chain_spec_path = "<path to local>/wococo-local.json"
+chain_spec_command = "polkadot build-spec --chain wococo-local --disable-default-bootnode --raw > /cfg/wococo-local.json"
 command = "polkadot"
-  # [[relaychain.default_overrides]]
-  #   local_path = "<path to local>/polkadot"
-  #   remote_path = "/cfg/polkadot"
 
   [[relaychain.nodes]]
   name = "alice"
   validator = true
-  command = "polkadot"
   extra_args = [ "--alice", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "bob"
   validator = true
-  command = "polkadot"
   extra_args = [ "--bob", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "charlie"
   validator = true
-  command = "polkadot"
   extra_args = [ "--charlie", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "david"
   validator = true
-  command = "/cfg/malus dispute-ancestor"
+  command = "/usr/local/bin/malus dispute-ancestor"
   extra_args = ["--dave", "-lparachain=debug"]
   image = "{{MALUS_IMAGE}}"
   autoConnectApi = false
-#    [[relaychain.nodes.overrides]]
-#      local_path = "<path to local>/malus"
-#      remote_path = "/cfg/malus"
-
 
 [[parachains]]
 id = 100
