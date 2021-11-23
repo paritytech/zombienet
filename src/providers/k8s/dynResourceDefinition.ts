@@ -212,5 +212,7 @@ function gen_cmd(nodeSetup: Node): string[] {
     ...args,
   ];
 
-  return ["bash", "-c", finalArgs.join(" ")  ];
+  //DEBUG
+  // return ["bash", "-c", finalArgs.join(" ")  ];
+  return ["/cfg/zombie-wrapper.sh", finalArgs.join(" ")  ];
 }
