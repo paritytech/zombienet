@@ -96,7 +96,12 @@ async fn kv_set(
     ContentLengthLimit(bytes): ContentLengthLimit<Bytes, { 1024 * 10_000 }>, // ~10mb
     Extension(state): Extension<Arc<AppState>>,
 ) {
+    let item: DbItem = DbItem {
+        key: key.clone(),
+        value: String::from_utf8(bytes.to_vec()).unwrap()
+    };
     state.db.write().unwrap().insert(key, bytes);
+    let _ = state.tx.send(serde_json::to_string(&item).unwrap());
 }
 
 async fn list_keys(Extension(state): Extension<Arc<AppState>>) -> String {
