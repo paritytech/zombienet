@@ -125,7 +125,6 @@ publish-test:
         --build-arg VCS_REF="${CI_COMMIT_SHA}"
         --build-arg BUILD_DATE="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
         --build-arg VERSION="${CI_COMMIT_SHORT_SHA}"
-        --tag "$IMAGE_NAME:$VERSION"
         --tag "$IMAGE_NAME:latest"
         --file "$DOCKERFILE" .
 
