@@ -8,6 +8,7 @@ RUN npm run build
 
 # Our Second stage, that creates an image for production
 FROM node:16-buster-slim AS runtime
+
 RUN apt-get update && \
      apt-get install -y curl gnupg lsb-release jq tini && \
 # # install github cli
