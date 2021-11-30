@@ -2,6 +2,7 @@ stages:
   - lint
   - test
   - build
+  - publish
 
 variables:
   CI_IMAGE:                        "node:16.10"
@@ -111,7 +112,7 @@ build:
 
 #check that the image can be build
 publish-test:
-  stage: publish
+  stage:                           publish
   <<:                              *test-refs
   <<:                              *kubernetes-env
   variables:
