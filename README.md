@@ -1,3 +1,5 @@
+[![GitLab Status](https://gitlab.parity.io/parity/zombienet/badges/main/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+
 # zombie-net
 
 ## Configuration Files
