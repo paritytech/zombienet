@@ -1,3 +1,5 @@
+[![GitLab Status](https://gitlab.parity.io/parity/zombienet/badges/main/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+
 # Zombienet
 
 Zombienet project allows to easily spawn networks and perform tests against them, providing two entry points to perform the `spawning` and `testing` phase.
