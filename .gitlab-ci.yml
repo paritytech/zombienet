@@ -17,6 +17,9 @@ variables:
   VAULT_SERVER_URL:                "https://vault.parity-mgmt-vault.parity.io"
   VAULT_AUTH_PATH:                 "gitlab-parity-io-jwt"
   VAULT_AUTH_ROLE:                 "cicd_gitlab_parity_${CI_PROJECT_NAME}"
+  DOCKERFILE:                      scripts/docker/zombienet_injected.Dockerfile
+  DOCKERHUB_REPO:                  paritytech
+  IMAGE_NAME:                      $DOCKERHUB_REPO/zombienet
 
 .kubernetes-env:                   &kubernetes-env
   image:                           $CI_IMAGE
@@ -125,8 +128,6 @@ publish-test:
   <<:                              *kubernetes-env
   variables:
     CI_IMAGE:                      quay.io/buildah/stable
-    IMAGE_NAME:                    zombienet
-    DOCKERFILE:                    scripts/docker/zombienet_injected.Dockerfile
   script:
     - buildah bud
         --format=docker
@@ -140,9 +141,6 @@ publish-docker:
   stage:                           publish
   variables:
     CI_IMAGE:                      quay.io/buildah/stable
-    IMAGE_NAME:                    zombienet
-    DOCKERFILE:                    scripts/docker/zombienet_injected.Dockerfile
-    DOCKERHUB_REPO:                paritytech
   <<:                              *kubernetes-env
   <<:                              *publish-refs
   <<:                              *build-push-docker-image
