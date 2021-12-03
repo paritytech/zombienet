@@ -1,5 +1,5 @@
 //const fetch = require("node-fetch");
-const debug = require('debug')('zombie::metrics');
+const debug = require("debug")("zombie::metrics");
 import axios from "axios";
 
 // metrics can have namespace
@@ -20,13 +20,13 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   try {
     debug(`fetching: ${metricUri}`);
     //const response = await fetch(metricUri);
-    const response = await axios.get(metricUri, {timeout: 2000});
+    const response = await axios.get(metricUri, { timeout: 2000 });
     debug("fetched");
     //const body = await response.text();
     //const metrics = _extractMetrics(body);
     const metrics = _extractMetrics(response.data);
     return metrics;
-  } catch( err ) {
+  } catch (err) {
     debug(`ERR: ${err}`);
     throw new Error(`Error fetching metrics from: ${metricUri}`);
   }

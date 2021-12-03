@@ -120,8 +120,8 @@ export interface InitContainer {
 }
 
 export interface Override {
-  local_path: string,
-  remote_path: string
+  local_path: string;
+  remote_path: string;
 }
 
 export interface RelayChainConfig {
@@ -137,7 +137,7 @@ export interface RelayChainConfig {
     image?: string;
     command?: string;
     commandWithArgs?: string;
-    fullCommand?: string,
+    fullCommand?: string;
     wsPort?: number;
     port?: number;
     args?: string[];

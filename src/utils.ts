@@ -70,11 +70,14 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
   let content = fs.readFileSync(filepath).toString();
   let replacements = getReplacementInText(content);
 
-  for(const replacement of replacements) {
-
+  for (const replacement of replacements) {
     const replacementValue = process.env[replacement];
-    if(replacementValue === undefined) throw new Error(`Environment not set for : ${replacement}`);
-    content = content.replace(new RegExp(`{{${replacement}}}`, "gi"), replacementValue);
+    if (replacementValue === undefined)
+      throw new Error(`Environment not set for : ${replacement}`);
+    content = content.replace(
+      new RegExp(`{{${replacement}}}`, "gi"),
+      replacementValue
+    );
   }
 
   // TODO: add better file recognition
@@ -87,45 +90,47 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
   return config;
 }
 
-export function getCredsFilePath(credsFile: string): string|undefined {
+export function getCredsFilePath(credsFile: string): string | undefined {
   if (fs.existsSync(credsFile)) return credsFile;
 
   const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
-  let credsFileExistInPath: string | undefined = possiblePaths.find(
-    (path) => {
-      const t = `${path}/${credsFile}`;
-      return fs.existsSync(t);
-    }
-  );
+  let credsFileExistInPath: string | undefined = possiblePaths.find((path) => {
+    const t = `${path}/${credsFile}`;
+    return fs.existsSync(t);
+  });
   if (credsFileExistInPath) return `${credsFileExistInPath}/${credsFile}`;
 }
 
-function getReplacementInText(content:string): string[] {
+function getReplacementInText(content: string): string[] {
   const replacements: string[] = [];
   // allow to replace with env vars, to make more dynamic usage of ci.
-  const replacementRegex = /{{([A-Za-z-_\.]+)}}/gmi;
-  for( const match of content.matchAll(replacementRegex)) {
+  const replacementRegex = /{{([A-Za-z-_\.]+)}}/gim;
+  for (const match of content.matchAll(replacementRegex)) {
     replacements.push(match[1]);
   }
 
   return replacements;
 }
 
-export function writeLocalJsonFile(path: string, fileName: string, content: any) {
+export function writeLocalJsonFile(
+  path: string,
+  fileName: string,
+  content: any
+) {
   fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
 
 export function loadTypeDef(types: string | object): object {
-	if (typeof types === "string") {
-		// Treat types as a json file path
-		try {
-			const rawdata = fs.readFileSync(types, { encoding: "utf-8" });
-			return JSON.parse(rawdata);
-		} catch {
-			console.error("failed to load parachain typedef file");
-			process.exit(1);
-		}
-	} else {
-		return types;
-	}
+  if (typeof types === "string") {
+    // Treat types as a json file path
+    try {
+      const rawdata = fs.readFileSync(types, { encoding: "utf-8" });
+      return JSON.parse(rawdata);
+    } catch {
+      console.error("failed to load parachain typedef file");
+      process.exit(1);
+    }
+  } else {
+    return types;
+  }
 }

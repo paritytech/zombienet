@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# add /cfg as first `looking dir` to allow to overrides commands.
+export PATH="/cfg":$PATH
+
 # setup pipe
 pipe=/tmp/zombiepipe
 trap "rm -f $pipe" EXIT

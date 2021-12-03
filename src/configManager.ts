@@ -1,7 +1,7 @@
 import { LaunchConfig, ComputedNetwork, Node, Parachain } from "./types";
 import { resolve } from "path";
 import fs from "fs";
-const debug = require('debug')('zombie::config-manager');
+const debug = require("debug")("zombie::config-manager");
 
 // CONSTANTS
 export const REGULAR_BIN_PATH = "/usr/local/bin/substrate";
@@ -35,7 +35,7 @@ export const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 export const GENESIS_STATE_FILENAME = "genesis-state";
 export const GENESIS_WASM_FILENAME = "genesis-wasm";
 
-export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`;
+export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
 export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 export const ZOMBIE_BUCKET = "zombienet-logs";
 export const WS_URI_PATTERN = "ws://127.0.0.1:{{PORT}}";
@@ -44,14 +44,13 @@ export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
 export const BAKCCHANNEL_PORT = 3000;
 export const BAKCCHANNEL_POD_NAME = "backchannel";
 
-
 export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   let networkSpec: any = {
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       nodes: [],
       chain: config.relaychain.chain,
-      overrides: config.relaychain.default_overrides || []
+      overrides: config.relaychain.default_overrides || [],
     },
     parachains: [],
   };
@@ -98,7 +97,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
 
     const env = [
       { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-      { name: "RUST_BACKTRACE", value: "FULL" }
+      { name: "RUST_BACKTRACE", value: "FULL" },
     ];
     if (node.env) env.push(...node.env);
 
@@ -128,12 +127,11 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
         : "",
       telemetry: config.settings?.telemetry ? true : false,
       prometheus: config.settings?.prometheus ? true : false,
-      overrides: node.overrides || config.relaychain.default_overrides || []
+      overrides: node.overrides || config.relaychain.default_overrides || [],
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
   }
-
 
   if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
@@ -248,7 +246,7 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     env: [],
     bootnodes: [],
     telemetryUrl: "",
-    overrides: []
+    overrides: [],
   };
 
   return nodeSetup;

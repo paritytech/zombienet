@@ -1,4 +1,9 @@
-import { PROMETHEUS_PORT, FINISH_MAGIC_FILE, TRANSFER_CONTAINER_NAME, DEFAULT_COMMAND } from "../../configManager";
+import {
+  PROMETHEUS_PORT,
+  FINISH_MAGIC_FILE,
+  TRANSFER_CONTAINER_NAME,
+  DEFAULT_COMMAND,
+} from "../../configManager";
 import { KubeClient } from "./kubeClient";
 import { Node } from "../../types";
 
@@ -22,19 +27,18 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([transferContainter]) || [transferContainter],
+      initContainers: nodeSetup.initContainers?.concat([
+        transferContainter,
+      ]) || [transferContainter],
       restartPolicy: "OnFailure",
-      volumes: devices
+      volumes: devices,
     },
   };
 }
 
-export function genPodDef(
-  client: KubeClient,
-  nodeSetup: Node
-): any {
-  const [volume_mounts, devices] =  make_volume_mounts();
-  const container =  make_main_container(nodeSetup, volume_mounts);
+export function genPodDef(client: KubeClient, nodeSetup: Node): any {
+  const [volume_mounts, devices] = make_volume_mounts();
+  const container = make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
 
   return {
@@ -54,7 +58,9 @@ export function genPodDef(
     spec: {
       hostname: nodeSetup.name,
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([transferContainter]) || [transferContainter],
+      initContainers: nodeSetup.initContainers?.concat([
+        transferContainter,
+      ]) || [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
@@ -63,18 +69,16 @@ export function genPodDef(
 
 function make_transfer_containter(): any {
   return {
-    "name": TRANSFER_CONTAINER_NAME,
-    "image": "alpine",
-    "imagePullPolicy": "Always",
-    "volumeMounts": [
-        {"name": "tmp-cfg",  "mountPath": "/cfg", "readOnly": false}
+    name: TRANSFER_CONTAINER_NAME,
+    image: "alpine",
+    imagePullPolicy: "Always",
+    volumeMounts: [{ name: "tmp-cfg", mountPath: "/cfg", readOnly: false }],
+    command: [
+      "ash",
+      "-c",
+      `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
     ],
-    "command": [
-        "ash",
-        "-c",
-        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`
-    ],
-  }
+  };
 }
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
@@ -86,10 +90,7 @@ function make_volume_mounts(): [any, any] {
   return [volume_mounts, devices];
 }
 
-function make_main_container(
-  nodeSetup: Node,
-  volume_mounts: any[]
-): any {
+function make_main_container(nodeSetup: Node, volume_mounts: any[]): any {
   const ports = [{ containerPort: PROMETHEUS_PORT }];
   const command = gen_cmd(nodeSetup);
 
@@ -106,9 +107,6 @@ function make_main_container(
   return containerDef;
 }
 
-
-
-
 function gen_cmd(nodeSetup: Node): string[] {
   let {
     name,
@@ -121,10 +119,10 @@ function gen_cmd(nodeSetup: Node): string[] {
     prometheus,
     validator,
     bootnodes,
-    args
+    args,
   } = nodeSetup;
 
-  if(fullCommand) return ["bash", "-c", fullCommand];
+  if (fullCommand) return ["bash", "-c", fullCommand];
 
   if (commandWithArgs) {
     const parts = commandWithArgs.split(" ");
@@ -196,7 +194,7 @@ function gen_cmd(nodeSetup: Node): string[] {
   //     };
   // }
 
-  if(! command ) command = DEFAULT_COMMAND;
+  if (!command) command = DEFAULT_COMMAND;
   const finalArgs: string[] = [
     command,
     "--chain",
@@ -214,5 +212,5 @@ function gen_cmd(nodeSetup: Node): string[] {
 
   //DEBUG
   // return ["bash", "-c", finalArgs.join(" ")  ];
-  return ["/cfg/zombie-wrapper.sh", finalArgs.join(" ")  ];
+  return ["/cfg/zombie-wrapper.sh", finalArgs.join(" ")];
 }
