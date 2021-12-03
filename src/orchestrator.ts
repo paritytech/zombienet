@@ -13,24 +13,29 @@ import {
   WAIT_UNTIL_SCRIPT_SUFIX,
   TRANSFER_CONTAINER_NAME,
   WS_URI_PATTERN,
-  METRICS_URI_PATTERN
+  METRICS_URI_PATTERN,
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import { generateNamespace, sleep, filterConsole, writeLocalJsonFile, loadTypeDef } from "./utils";
+import {
+  generateNamespace,
+  sleep,
+  filterConsole,
+  writeLocalJsonFile,
+  loadTypeDef,
+} from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { resolve } from "path";
 
-const debug = require('debug')('zombie');
+const debug = require("debug")("zombie");
 
 // For now the only provider is k8s
 const { genBootnodeDef, genPodDef, initClient } = Providers.Kubernetes;
 
 const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
-
 
 // Hide some warning messages that are coming from Polkadot JS API.
 // TODO: Make configurable.
@@ -82,15 +87,19 @@ export async function start(
     // validate access to cluster
     const isValid = await client.validateAccess();
     if (!isValid) {
-      console.error("  ⚠ Can not access k8s cluster, please check your config.");
+      console.error(
+        "  ⚠ Can not access k8s cluster, please check your config."
+      );
       process.exit(1);
     }
-
 
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
-    const zombieWrapperPath = resolve(__dirname, `../scripts/${ZOMBIE_WRAPPER}`);
+    const zombieWrapperPath = resolve(
+      __dirname,
+      `../scripts/${ZOMBIE_WRAPPER}`
+    );
 
     // create namespace
     const namespaceDef = {
@@ -101,7 +110,7 @@ export async function start(
       },
     };
 
-    writeLocalJsonFile(tmpDir.path, "namespace", namespaceDef );
+    writeLocalJsonFile(tmpDir.path, "namespace", namespaceDef);
     await client.createResource(namespaceDef);
 
     // Create bootnode and backchannel services
@@ -114,7 +123,7 @@ export async function start(
     if (withMetrics) await client.staticSetup();
 
     // setup cleaner
-    if(! monitor) cronInterval = await client.setupCleaner();
+    if (!monitor) cronInterval = await client.setupCleaner();
 
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
 
@@ -132,18 +141,20 @@ export async function start(
         args: [],
         env: [],
         telemetryUrl: "",
-        overrides: []
+        overrides: [],
       };
 
       const podDef = await genPodDef(client, node);
-      debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+      debug(
+        `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+      );
       debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
-      writeLocalJsonFile(tmpDir.path, 'temp', podDef );
+      writeLocalJsonFile(tmpDir.path, "temp", podDef);
 
       await client.createResource(podDef, true, false);
       await client.wait_transfer_container(podDef.metadata.name);
 
-      for( const override of networkSpec.relaychain.overrides) {
+      for (const override of networkSpec.relaychain.overrides) {
         await client.copyFileToPod(
           podDef.metadata.name,
           override.local_path,
@@ -177,25 +188,29 @@ export async function start(
       );
       sleep(300 * 1000);
     } else {
-      if(networkSpec.relaychain.chainSpecPath) {
+      if (networkSpec.relaychain.chainSpecPath) {
         // copy file to temp to use
-        fs.copyFileSync(networkSpec.relaychain.chainSpecPath, `${tmpDir.path}/${chainSpecFileName}`);
+        fs.copyFileSync(
+          networkSpec.relaychain.chainSpecPath,
+          `${tmpDir.path}/${chainSpecFileName}`
+        );
       }
     }
 
     // check if we have the chain spec file
-    if( ! fs.existsSync(`${tmpDir.path}/${chainSpecFileName}`) ) throw new Error("Can't find chain spec file!");
-
-
+    if (!fs.existsSync(`${tmpDir.path}/${chainSpecFileName}`))
+      throw new Error("Can't find chain spec file!");
 
     // bootnode
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
     const bootnodeDef = await genBootnodeDef(client, bootnodeSpec);
     // debug(JSON.stringify(bootnodeDef, null, 4 ));
-    debug(`launching ${bootnodeDef.metadata.name} pod with image ${bootnodeDef.spec.containers[0].image}` );
+    debug(
+      `launching ${bootnodeDef.metadata.name} pod with image ${bootnodeDef.spec.containers[0].image}`
+    );
     debug(`command: ${bootnodeDef.spec.containers[0].command.join(" ")}`);
-    writeLocalJsonFile(tmpDir.path, 'bootnode', bootnodeDef );
+    writeLocalJsonFile(tmpDir.path, "bootnode", bootnodeDef);
     await client.createResource(bootnodeDef, true, false);
     await client.wait_transfer_container(bootnodeDef.metadata.name);
 
@@ -247,7 +262,7 @@ export async function start(
     const bootnodeNode: NetworkNode = new NetworkNode(
       bootnodeDef.metadata.name,
       WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
-      METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString()),
+      METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString())
     );
 
     network.addNode(bootnodeNode);
@@ -255,7 +270,6 @@ export async function start(
     const bootnodeIP = await client.getBootnodeIP();
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
-
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
       node.bootnodes = [
         `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
@@ -264,10 +278,12 @@ export async function start(
       debug(`creating node: ${node.name}`);
       const podDef = await genPodDef(client, node);
 
-      debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+      debug(
+        `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+      );
       debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
-      writeLocalJsonFile(tmpDir.path, node.name, podDef );
+      writeLocalJsonFile(tmpDir.path, node.name, podDef);
       await client.createResource(podDef, true, false);
       await client.wait_transfer_container(podDef.metadata.name);
 
@@ -285,7 +301,7 @@ export async function start(
         TRANSFER_CONTAINER_NAME
       );
 
-      for( const override of node.overrides) {
+      for (const override of node.overrides) {
         await client.copyFileToPod(
           podDef.metadata.name,
           override.local_path,
@@ -351,11 +367,13 @@ export async function start(
           args: [],
           env: [],
           telemetryUrl: "",
-          overrides: []
+          overrides: [],
         };
         const podDef = await genPodDef(client, node);
 
-        debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+        debug(
+          `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+        );
         debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
         await client.createResource(podDef, true, false);
@@ -420,18 +438,22 @@ export async function start(
         image: parachain.collator.image,
         command: parachain.collator.command,
         chain: networkSpec.relaychain.chain,
-        bootnodes: [`/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`],
+        bootnodes: [
+          `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
+        ],
         args: [],
         env: [],
         telemetryUrl: "",
-        overrides: []
+        overrides: [],
       };
       const podDef = await genPodDef(client, collator);
 
-      debug(`launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}` );
+      debug(
+        `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+      );
       debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
-      writeLocalJsonFile(tmpDir.path, parachain.collator.name, podDef );
+      writeLocalJsonFile(tmpDir.path, parachain.collator.name, podDef);
       await client.createResource(podDef, true, false);
       await client.wait_transfer_container(podDef.metadata.name);
 
@@ -461,8 +483,8 @@ export async function start(
       const networkNode: NetworkNode = new NetworkNode(
         podDef.metadata.name,
         "", // TODO: needs to connect to rpc?
-        "", // TODO: needs to connect for metrics?
-        );
+        "" // TODO: needs to connect for metrics?
+      );
 
       network.addNode(networkNode);
     }

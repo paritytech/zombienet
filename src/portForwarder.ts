@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { KubeClient } from "./providers/k8s";
-const debug = require('debug')('zombie::port-forwarder');
+const debug = require("debug")("zombie::port-forwarder");
 
 export async function startPortForwarding(
   port: number,
@@ -35,12 +35,12 @@ export async function startPortForwarding(
       reject(new Error(`ERR: port-fw for ${identifier}`));
     });
 
-    subprocess.stderr.on('data', function (data) {
-        const s = data.toString();
-        if(resolved && s.includes('error')) {
-          reject(new Error(`ERR: port-fw for ${identifier} : ${s}`));
-          debug('stderr: ' + s);
-        }
+    subprocess.stderr.on("data", function (data) {
+      const s = data.toString();
+      if (resolved && s.includes("error")) {
+        reject(new Error(`ERR: port-fw for ${identifier} : ${s}`));
+        debug("stderr: " + s);
+      }
     });
 
     subprocess.on("exit", function () {

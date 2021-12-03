@@ -6,8 +6,7 @@ import { TRANSFER_CONTAINER_NAME } from "../../configManager";
 import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
-const debug = require('debug')('zombie::kube::client');
-
+const debug = require("debug")("zombie::kube::client");
 
 export interface KubectlResponse {
   exitCode: number;
@@ -20,11 +19,15 @@ export interface ReplaceMapping {
 
 let client: KubeClient;
 export function getClient(): KubeClient {
-  if(! client ) throw new Error("Client not initialized");
+  if (!client) throw new Error("Client not initialized");
   return client;
 }
 
-export function initClient(configPath: string, namespace: string, tmpDir: string): KubeClient {
+export function initClient(
+  configPath: string,
+  namespace: string,
+  tmpDir: string
+): KubeClient {
   client = new KubeClient(configPath, namespace, tmpDir);
   return client;
 }
@@ -34,7 +37,7 @@ export class KubeClient {
   configPath: string;
   debug: boolean;
   timeout: number;
-  command: string = "kubectl"
+  command: string = "kubectl";
   tmpDir: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
@@ -80,8 +83,8 @@ export class KubeClient {
         if (["Running", "Succeeded"].includes(status.phase)) return;
 
         // check if we are waiting init container
-        for(const s of  status.initContainerStatuses){
-          if( s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
+        for (const s of status.initContainerStatuses) {
+          if (s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
         }
 
         await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -92,44 +95,43 @@ export class KubeClient {
     }
   }
 
-  async wait_pod_ready(podName:string): Promise<void> {
-
-      // loop until ready
-      let t = this.timeout;
-      const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
-      do {
-        const result = await this._kubectl(args, undefined, true);
-        //debug( result.stdout );
-        if (["Running", "Succeeded"].includes(result.stdout)) return;
-
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        t -= 3;
-      } while (t > 0);
-
-      throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
-
-  }
-  async wait_transfer_container(podName:string): Promise<void> {
+  async wait_pod_ready(podName: string): Promise<void> {
     // loop until ready
     let t = this.timeout;
-    const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
+    const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
     do {
       const result = await this._kubectl(args, undefined, true);
       //debug( result.stdout );
-      const status = JSON.parse(result.stdout);
-
-      // check if we are waiting init container
-      for(const s of  status.initContainerStatuses){
-        if( s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
-      }
+      if (["Running", "Succeeded"].includes(result.stdout)) return;
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       t -= 3;
     } while (t > 0);
 
     throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
+  }
+  async wait_transfer_container(podName: string): Promise<void> {
+    // loop until ready
+    let t = this.timeout;
+    const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
+    do {
+      const result = await this._kubectl(args, undefined, true);
+      const status = JSON.parse(result.stdout);
 
+      // check if we are waiting init container
+      if (status.initContainerStatuses) {
+        for (const s of status.initContainerStatuses) {
+          if (s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
+        }
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      t -= 3;
+    } while (t > 0);
+
+    throw new Error(
+      `Timeout(${this.timeout}) for transfer container for pod : ${podName}`
+    );
   }
 
   async crateStaticResource(filename: string): Promise<void> {
@@ -166,24 +168,24 @@ export class KubeClient {
     identifier: string,
     localFilePath: string,
     podFilePath: string,
-    container: string|undefined = undefined
+    container: string | undefined = undefined
   ) {
     const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
-    if(container) args.push("-c", container);
+    if (container) args.push("-c", container);
     const result = await this._kubectl(args, undefined, true);
-    debug("copyFileToPod");
+    debug("copyFileToPod", args);
   }
 
   async copyFileFromPod(
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container: string|undefined = undefined
+    container: string | undefined = undefined
   ) {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
-    if(container) args.push("-c", container);
+    if (container) args.push("-c", container);
     const result = await this._kubectl(args, undefined, true);
-    //debug(result);
+    debug(result);
   }
 
   async runningOnMinikube(): Promise<boolean> {
@@ -224,7 +226,6 @@ export class KubeClient {
     const resources = [
       { type: "role", files: ["prometheus-role.yaml"] },
       { type: "binding", files: ["prometheus-role-binding.yaml"] },
-      { type: "binding", files: ["prometheus-role-binding.yaml"] },
       { type: "data-storage-classes", files: storageFiles },
       {
         type: "configs",
@@ -243,7 +244,7 @@ export class KubeClient {
         files: [
           "prometheus-deployment.yaml",
           "grafana-deployment.yaml",
-          "telemetry-deployment.yaml",
+          //"telemetry-deployment.yaml",
         ],
       },
     ];
@@ -273,25 +274,28 @@ export class KubeClient {
   }
 
   async upsertCronJob() {
-      const isActive = await this.isNamespaceActive();
-      if(isActive) {
-        const scheduleMinutes = addMinutes(10);
-        const schedule = `${scheduleMinutes} * * * *`;
-        await this.updateResource("job-delete-namespace.yaml", { schedule });
+    const isActive = await this.isNamespaceActive();
+    if (isActive) {
+      const scheduleMinutes = addMinutes(10);
+      const schedule = `${scheduleMinutes} * * * *`;
+      await this.updateResource("job-delete-namespace.yaml", { schedule });
     }
   }
 
   async isNamespaceActive(): Promise<boolean> {
-    const args = ["get", "namespace", this.namespace, "-o", "jsonpath={.status.phase}"];
+    const args = [
+      "get",
+      "namespace",
+      this.namespace,
+      "-o",
+      "jsonpath={.status.phase}",
+    ];
     const result = await this._kubectl(args, undefined, false);
-    if(result.exitCode !== 0 || result.stdout !== "Active" ) return false;
+    if (result.exitCode !== 0 || result.stdout !== "Active") return false;
     return true;
   }
 
-  async startPortForwarding(
-    port: number,
-    identifier: string,
-  ): Promise<number> {
+  async startPortForwarding(port: number, identifier: string): Promise<number> {
     return new Promise((resolve, reject) => {
       const mapping = `:${port}`;
       const args = [
@@ -320,12 +324,12 @@ export class KubeClient {
         reject(new Error(`ERR: port-fw for ${identifier}`));
       });
 
-      subprocess.stderr.on('data', function (data) {
-          const s = data.toString();
-          if(resolved && s.includes('error')) {
-            reject(new Error(`ERR: port-fw for ${identifier} : ${s}`));
-            debug('stderr: ' + s);
-          }
+      subprocess.stderr.on("data", function (data) {
+        const s = data.toString();
+        if (resolved && s.includes("error")) {
+          reject(new Error(`ERR: port-fw for ${identifier} : ${s}`));
+          debug("stderr: " + s);
+        }
       });
 
       subprocess.on("exit", function () {

@@ -6,7 +6,7 @@ import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import path from "path";
 const zombie = require("../");
-const debug = require('debug')('zombie::test-runner');
+const debug = require("debug")("zombie::test-runner");
 
 const { assert, expect } = chai;
 const { Test, Suite } = Mocha;
@@ -34,7 +34,7 @@ export async function run(testFile: string, isCI: boolean = false) {
 
   // read network file
   let config: LaunchConfig;
-  if(fs.existsSync(testDef.networkConfig)) {
+  if (fs.existsSync(testDef.networkConfig)) {
     config = readNetworkConfig(testDef.networkConfig);
   } else {
     // the path is relative to the test file
@@ -43,21 +43,24 @@ export async function run(testFile: string, isCI: boolean = false) {
     config = readNetworkConfig(resolvedFilePath);
   }
 
-
   // find creds file
   let credsFile = isCI ? "config" : testDef.creds;
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {
-    const possiblePaths = [".", "..", `${process.env.HOME}/.kube`, "/etc/zombie-net"];
+    const possiblePaths = [
+      ".",
+      "..",
+      `${process.env.HOME}/.kube`,
+      "/etc/zombie-net",
+    ];
     let credsFileExistInPath: string | undefined = possiblePaths.find(
       (path) => {
         const t = `${path}/${credsFile}`;
         return fs.existsSync(t);
       }
     );
-    if (credsFileExistInPath)
-      creds = credsFileExistInPath + "/" + credsFile;
+    if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
 
   if (!creds) throw new Error(`Invalid credential file path: ${credsFile}`);
@@ -91,7 +94,7 @@ export async function run(testFile: string, isCI: boolean = false) {
     this.timeout(120 * 1000);
     if (network) {
       await network.uploadLogs();
-      await network.stop();
+      // await network.stop();
     }
     return;
   });
@@ -99,7 +102,10 @@ export async function run(testFile: string, isCI: boolean = false) {
   for (const assertion of testDef.assertions) {
     const testFn = parseAssertionLine(assertion);
     if (!testFn) continue;
-    const test = new Test(assertion, async () => await testFn(network, backchannelMap));
+    const test = new Test(
+      assertion,
+      async () => await testFn(network, backchannelMap)
+    );
     suite.addTest(test);
     test.timeout(0);
   }
@@ -110,7 +116,7 @@ export async function run(testFile: string, isCI: boolean = false) {
 
 // extracted from mocha test runner helper.
 const exitMocha = (code: number) => {
-  console.log('exit code', code);
+  console.log("exit code", code);
   const clampedCode = Math.min(code, 255);
   let draining = 0;
 
@@ -141,8 +147,12 @@ const exitMocha = (code: number) => {
 function parseAssertionLine(assertion: string) {
   // parachains smoke test
   const isUpRegex = new RegExp(/^([\w]+): is up$/i);
-  const parachainIsRegistered = new RegExp(/^(([\w]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i);
-  const parachainBlockHeight = new RegExp(/^(([\w]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i);
+  const parachainIsRegistered = new RegExp(
+    /^(([\w]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i
+  );
+  const parachainBlockHeight = new RegExp(
+    /^(([\w]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
+  );
 
   // Metrics
   const isReports = new RegExp(
@@ -151,59 +161,66 @@ function parseAssertionLine(assertion: string) {
 
   // Backchannel
   // alice: wait for name and use as X within 30s
-  const backchannelWait = new RegExp(/^([\w]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i);
+  const backchannelWait = new RegExp(
+    /^([\w]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i
+  );
 
   // Alice: ensure var:X is used
   const isEnsure = new RegExp(/^([\w]+): ensure var:([\w]+) is used$/i);
 
   // Commands
   const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
-  const restartRegex = new RegExp(/^(([\w]+): restart)+( after (\d+) (seconds|secs|s))?$/i);
+  const restartRegex = new RegExp(
+    /^(([\w]+): restart)+( after (\d+) (seconds|secs|s))?$/i
+  );
   const pauseRegex = new RegExp(/^([\w]+): pause$/i);
   const resumeRegex = new RegExp(/^([\w]+): resume$/i);
-
-
 
   // Matchs
   let m: string[] | null;
 
   m = parachainIsRegistered.exec(assertion);
-  if( m && m[2] && m[3]) {
+  if (m && m[2] && m[3]) {
     const nodeName = m[2];
-    const parachainId = parseInt(m[3],10);
+    const parachainId = parseInt(m[3], 10);
     let timeout: number;
-    if( m[5]) timeout = parseInt(m[5],10);
+    if (m[5]) timeout = parseInt(m[5], 10);
 
     return async (network: Network) => {
-      const parachainIsRegistered = (timeout) ?
-        await network.node(nodeName).parachainIsRegistered(parachainId, timeout) :
-        await network.node(nodeName).parachainIsRegistered(parachainId);
+      const parachainIsRegistered = timeout
+        ? await network
+            .node(nodeName)
+            .parachainIsRegistered(parachainId, timeout)
+        : await network.node(nodeName).parachainIsRegistered(parachainId);
 
       expect(parachainIsRegistered).to.be.ok;
     };
   }
 
   m = parachainBlockHeight.exec(assertion);
-  if( m && m[2] && m[3] && m[4] && m[5]) {
+  if (m && m[2] && m[3] && m[4] && m[5]) {
     let timeout: number;
     const nodeName = m[2];
-    const parachainId = parseInt(m[3],10);
+    const parachainId = parseInt(m[3], 10);
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
-    if( m[7]) timeout = parseInt(m[7],10);
+    if (m[7]) timeout = parseInt(m[7], 10);
 
     return async (network: Network) => {
-      const value = (timeout) ?
-        await network.node(nodeName).parachainBlockHeight(parachainId, targetValue, timeout) :
-        await network.node(nodeName).parachainBlockHeight(parachainId, targetValue);
+      const value = timeout
+        ? await network
+            .node(nodeName)
+            .parachainBlockHeight(parachainId, targetValue, timeout)
+        : await network
+            .node(nodeName)
+            .parachainBlockHeight(parachainId, targetValue);
 
-        assert[comparatorFn](value, targetValue);
+      assert[comparatorFn](value, targetValue);
     };
-
   }
 
   m = isUpRegex.exec(assertion);
-  if(m && m[1] !== null) {
+  if (m && m[1] !== null) {
     const nodeName = m[1];
     return async (network: Network) => {
       // const isUp = await network.node(nodeName).isUp();
@@ -214,22 +231,24 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = isReports.exec(assertion);
-  if(m && m[2] && m[3] && m[5]) {
+  if (m && m[2] && m[3] && m[5]) {
     let timeout: number;
     let value: number;
     const nodeName = m[2];
     const metricName = m[3];
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
-    if( m[7]) timeout = parseInt(m[7],10);
+    if (m[7]) timeout = parseInt(m[7], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       let value;
       try {
-        value = (timeout) ?
-        await network.node(nodeName).getMetric(metricName, targetValue, timeout) :
-        await network.node(nodeName).getMetric(metricName);
-      } catch( err ) {
-        if( comparatorFn === "equal" && targetValue === 0) value = 0;
+        value = timeout
+          ? await network
+              .node(nodeName)
+              .getMetric(metricName, targetValue, timeout)
+          : await network.node(nodeName).getMetric(metricName);
+      } catch (err) {
+        if (comparatorFn === "equal" && targetValue === 0) value = 0;
         else throw err;
       }
       assert[comparatorFn](value, targetValue);
@@ -237,69 +256,72 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = backchannelWait.exec(assertion);
-  if(m && m[1] && m[2] && m[3]) {
+  if (m && m[1] && m[2] && m[3]) {
     let timeout: number;
     const backchannelKey = m[2];
     const backchannelMapKey = m[3]; // for use locally after with `var:KEY`
-    if(m[4]) timeout = parseInt(m[4]);
+    if (m[4]) timeout = parseInt(m[4]);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       try {
-        const value = await network.getBackchannelValue(backchannelKey, timeout);
+        const value = await network.getBackchannelValue(
+          backchannelKey,
+          timeout
+        );
         backchannelMap[backchannelMapKey] = value;
         // return ok
         assert.equal(0, 0);
-      } catch(err) {
+      } catch (err) {
         throw new Error(`Error getting ${backchannelKey} from backchannel`);
       }
-    }
+    };
   }
 
   m = isEnsure.exec(assertion);
-  if(m && m[1] && m[2]) {
+  if (m && m[1] && m[2]) {
     const backchannelMapKey = m[2]; // for use locally after with `var:KEY`
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const defined = backchannelMap[backchannelMapKey] !== undefined;
       expect(defined).to.be.ok;
-    }
+    };
   }
 
   m = restartRegex.exec(assertion);
-  if(m && m[2]) {
+  if (m && m[2]) {
     const nodeName = m[2];
     let timeout: number;
-    if( m[4]) timeout = parseInt(m[4],10);
+    if (m[4]) timeout = parseInt(m[4], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      if(timeout) await network.node(nodeName).restart(timeout);
+      if (timeout) await network.node(nodeName).restart(timeout);
       else await network.node(nodeName).restart();
       expect(true).to.be.ok;
-    }
+    };
   }
 
   m = pauseRegex.exec(assertion);
-  if(m && m[2]) {
+  if (m && m[2]) {
     const nodeName = m[2];
     return async (network: Network, backchannelMap: BackchannelMap) => {
       await network.node(nodeName).pause();
       expect(true).to.be.ok;
-    }
+    };
   }
 
   m = resumeRegex.exec(assertion);
-  if(m && m[2]) {
+  if (m && m[2]) {
     const nodeName = m[2];
     return async (network: Network, backchannelMap: BackchannelMap) => {
       await network.node(nodeName).resume();
       expect(true).to.be.ok;
-    }
+    };
   }
 
   m = sleepRegex.exec(assertion);
-  if( m && m[1]) {
-    const timeout = parseInt(m[1],10);
+  if (m && m[1]) {
+    const timeout = parseInt(m[1], 10);
     return async () => {
-      await sleep( timeout * 1000);
+      await sleep(timeout * 1000);
       expect(true).to.be.ok;
-    }
+    };
   }
 
   // if we can't match let produce a fail test
@@ -359,7 +381,7 @@ function parseTestFile(testFile: string): TestDefinition {
     line = line.trim();
     if (line[0] === "#" || line.length === 0) continue; // skip comments and empty lines;
     let parts = line.split(":");
-    if (parts.length < 2 && ! line.includes("sleep")) continue; // bad line
+    if (parts.length < 2 && !line.includes("sleep")) continue; // bad line
     switch (parts[0].toLocaleLowerCase()) {
       case "network":
         networkConfig = parts[1].trim();
@@ -401,4 +423,3 @@ function parseTestFile(testFile: string): TestDefinition {
     throw new Error(`Invalid test definition, file: ${testFile}`);
   return testDefinition;
 }
-
