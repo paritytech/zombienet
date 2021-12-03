@@ -43,7 +43,7 @@ Zombienet project has it's own k8s cluster in GCP, to use it please ping [Javier
 
 ## Configuration files and usage
 
-Zombiente support both `json` and `toml` format to define the Network you want to spawn. Yo can check the [definition spec](../docs/network-definition-spec.md) to view the available options.
+Zombiente support both `json` and `toml` format to define the Network you want to spawn. Yo can check the [definition spec](/docs/network-definition-spec.md) to view the available options.
 
 A **minimal** configuration example:
 
