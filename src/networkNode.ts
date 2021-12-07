@@ -41,10 +41,12 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async connectApi() {
     const provider = new WsProvider(this.wsUri);
+    debug(`Connecting api for ${this.name}...`);
     this.apiInstance = await ApiPromise.create({
       provider,
       types: this.userDefinedTypes,
     });
+    debug(`Connected to ${this.name}`);
   }
 
   async restart(timeout: number | null = null) {
@@ -55,7 +57,7 @@ export class NetworkNode implements NetworkNodeInterface {
       : `echo restart > /tmp/zombiepipe`;
     args.push(cmd);
 
-    await client._kubectl(args, undefined, true);
+    await client.kubectl(args, undefined, true);
   }
 
   async pause() {
@@ -68,7 +70,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    await client._kubectl(args, undefined, true);
+    await client.kubectl(args, undefined, true);
   }
 
   async resume() {
@@ -81,7 +83,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    await client._kubectl(args, undefined, true);
+    await client.kubectl(args, undefined, true);
   }
 
   async isUp(timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {

@@ -89,6 +89,28 @@ export interface envVars {
   value: string;
 }
 
+export interface ChainSpec {
+	name: string;
+	id: string;
+	chainType: string;
+	bootNodes: string[];
+	telemetryEndpoints: null;
+	protocolId: string;
+	properties: null;
+	forkBlocks: null;
+	badBlocks: null;
+	consensusEngine: null;
+	lightSyncState: null;
+	genesis: {
+		runtime: any; // this can change depending on the versions
+		raw: {
+			top: {
+				[key: string]: string;
+			};
+		};
+	};
+}
+
 // Launch Config ( user provided config )
 export interface LaunchConfig {
   settings?: Settings;

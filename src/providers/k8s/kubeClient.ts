@@ -1,7 +1,5 @@
 import execa from "execa";
-import { stat } from "fs";
 import { resolve } from "path";
-import { resourceLimits } from "worker_threads";
 import { TRANSFER_CONTAINER_NAME } from "../../configManager";
 import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
@@ -50,7 +48,7 @@ export class KubeClient {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this._kubectl(["cluster-info"], undefined, false);
+      const result = await this.kubectl(["cluster-info"], undefined, false);
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -63,7 +61,7 @@ export class KubeClient {
     scoped: boolean = false,
     waitReady: boolean = false
   ): Promise<void> {
-    const pod = await this._kubectl(
+    await this.kubectl(
       ["apply", "-f", "-"],
       JSON.stringify(resourseDef),
       scoped
@@ -77,7 +75,7 @@ export class KubeClient {
       let t = this.timeout;
       const args = ["get", kind, name, "-o", "jsonpath={.status}"];
       do {
-        const result = await this._kubectl(args, undefined, true);
+        const result = await this.kubectl(args, undefined, true);
         //debug( result.stdout );
         const status = JSON.parse(result.stdout);
         if (["Running", "Succeeded"].includes(status.phase)) return;
@@ -100,7 +98,7 @@ export class KubeClient {
     let t = this.timeout;
     const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
     do {
-      const result = await this._kubectl(args, undefined, true);
+      const result = await this.kubectl(args, undefined, true);
       //debug( result.stdout );
       if (["Running", "Succeeded"].includes(result.stdout)) return;
 
@@ -115,7 +113,7 @@ export class KubeClient {
     let t = this.timeout;
     const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
     do {
-      const result = await this._kubectl(args, undefined, true);
+      const result = await this.kubectl(args, undefined, true);
       const status = JSON.parse(result.stdout);
 
       // check if we are waiting init container
@@ -140,7 +138,7 @@ export class KubeClient {
     const resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
-    await this._kubectl(["apply", "-f", "-"], resourceDef);
+    await this.kubectl(["apply", "-f", "-"], resourceDef);
   }
 
   async updateResource(
@@ -161,7 +159,7 @@ export class KubeClient {
       );
     }
 
-    await this._kubectl(["apply", "-f", "-"], resourceDef);
+    await this.kubectl(["apply", "-f", "-"], resourceDef);
   }
 
   async copyFileToPod(
@@ -172,7 +170,7 @@ export class KubeClient {
   ) {
     const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
     if (container) args.push("-c", container);
-    const result = await this._kubectl(args, undefined, true);
+    const result = await this.kubectl(args, undefined, true);
     debug("copyFileToPod", args);
   }
 
@@ -184,12 +182,12 @@ export class KubeClient {
   ) {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
     if (container) args.push("-c", container);
-    const result = await this._kubectl(args, undefined, true);
+    const result = await this.kubectl(args, undefined, true);
     debug(result);
   }
 
   async runningOnMinikube(): Promise<boolean> {
-    const result = await this._kubectl([
+    const result = await this.kubectl([
       "get",
       "sc",
       "-o",
@@ -199,7 +197,7 @@ export class KubeClient {
   }
 
   async destroyNamespace() {
-    await this._kubectl(
+    await this.kubectl(
       ["delete", "namespace", this.namespace],
       undefined,
       false
@@ -208,7 +206,7 @@ export class KubeClient {
 
   async getBootnodeIP(): Promise<string> {
     const args = ["get", "pod", "bootnode", "-o", "jsonpath={.status.podIP}"];
-    const result = await this._kubectl(args, undefined, true);
+    const result = await this.kubectl(args, undefined, true);
     return result.stdout;
   }
 
@@ -290,7 +288,7 @@ export class KubeClient {
       "-o",
       "jsonpath={.status.phase}",
     ];
-    const result = await this._kubectl(args, undefined, false);
+    const result = await this.kubectl(args, undefined, false);
     if (result.exitCode !== 0 || result.stdout !== "Active") return false;
     return true;
   }
@@ -342,12 +340,12 @@ export class KubeClient {
   async dumpLogs(path: string, podName: string) {
     const dstFileName = `${path}/logs/${podName}.log`;
     const args = ["logs", podName, "--namespace", this.namespace];
-    const result = await this._kubectl(args, undefined, false);
+    const result = await this.kubectl(args, undefined, false);
     await fs.writeFile(dstFileName, result.stdout);
   }
 
   // run kubectl
-  async _kubectl(
+  async kubectl(
     args: string[],
     resourceDef?: string,
     scoped: boolean = true

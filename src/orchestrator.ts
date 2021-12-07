@@ -14,21 +14,25 @@ import {
   TRANSFER_CONTAINER_NAME,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
+  DEFAULT_CHAIN_SPEC_PATH,
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
 import { startPortForwarding } from "./portForwarder";
-import { ApiPromise, WsProvider } from "@polkadot/api";
+//import { ApiPromise, WsProvider } from "@polkadot/api";
+import { clearAuthorities, addAuthority, changeGenesisConfig, addParachainToGenesis } from "./chain-spec";
 import {
   generateNamespace,
   sleep,
   filterConsole,
   writeLocalJsonFile,
   loadTypeDef,
+  createTempNodeDef,
 } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { resolve } from "path";
+import { generateParachainFiles } from "./paras";
 
 const debug = require("debug")("zombie");
 
@@ -96,6 +100,7 @@ export async function start(
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
+    // get the path of the zombie wrapper
     const zombieWrapperPath = resolve(
       __dirname,
       `../scripts/${ZOMBIE_WRAPPER}`
@@ -125,26 +130,38 @@ export async function start(
     // setup cleaner
     if (!monitor) cronInterval = await client.setupCleaner();
 
+    // -- Start Get chain spec file --
+    const chainName = networkSpec.relaychain.chain;
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+    const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
+
+    // We have two options to get the chain-spec file, neither should use the `raw` file/argument
+    // 1: User provide the chainSpecCommand (without the --raw option)
+    // 2: User provide the file (we DON'T expect the raw file)
 
     if (networkSpec.relaychain.chainSpecCommand) {
-      let node: Node = {
-        name: getUniqueName("temp"),
-        validator: false,
-        image: networkSpec.relaychain.defaultImage,
-        fullCommand:
-          networkSpec.relaychain.chainSpecCommand +
-          " && " +
-          WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
-        chain: networkSpec.relaychain.chain,
-        bootnodes: [],
-        args: [],
-        env: [],
-        telemetryUrl: "",
-        overrides: [],
-      };
+      // let node: Node = {
+      //   name: getUniqueName("temp"),
+      //   validator: false,
+      //   image: networkSpec.relaychain.defaultImage,
+      //   fullCommand:
+      //     networkSpec.relaychain.chainSpecCommand +
+      //     " && " +
+      //     WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+      //   chain: networkSpec.relaychain.chain,
+      //   bootnodes: [],
+      //   args: [],
+      //   env: [],
+      //   telemetryUrl: "",
+      //   overrides: [],
+      // };
 
-      const podDef = await genPodDef(client, node);
+      const { defaultImage, chain, chainSpecCommand } = networkSpec.relaychain;
+      // set output of command
+      const fullCommand = `${chainSpecCommand} > ${DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName)}`;
+      const node = createTempNodeDef("temp", defaultImage, chain, fullCommand);
+
+      const podDef = await genPodDef(namespace, node);
       debug(
         `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
       );
@@ -171,13 +188,13 @@ export async function start(
       );
 
       await client.wait_pod_ready(podDef.metadata.name);
-      const fileName = `${networkSpec.relaychain.chain}.json`;
+      //const fileName = `${networkSpec.relaychain.chain}.json`;
       debug("copy file from pod");
 
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `/cfg/${fileName}`,
-        `${tmpDir.path}/${fileName}`,
+        `/cfg/${chainSpecFileName}`,
+        chainSpecFullPath,
         podDef.metadata.name
       );
 
@@ -186,25 +203,95 @@ export async function start(
         localMagicFilepath,
         FINISH_MAGIC_FILE
       );
-      sleep(300 * 1000);
     } else {
       if (networkSpec.relaychain.chainSpecPath) {
         // copy file to temp to use
         fs.copyFileSync(
           networkSpec.relaychain.chainSpecPath,
-          `${tmpDir.path}/${chainSpecFileName}`
+          chainSpecFullPath
         );
       }
     }
 
     // check if we have the chain spec file
-    if (!fs.existsSync(`${tmpDir.path}/${chainSpecFileName}`))
+    if (!fs.existsSync(chainSpecFullPath))
       throw new Error("Can't find chain spec file!");
+
+    // -- End get chain spec file --
+
+    // -- Start Chain spec logic --
+
+    clearAuthorities(chainSpecFullPath);
+    for (const node of networkSpec.relaychain.nodes) {
+      await addAuthority(chainSpecFullPath, node.name);
+    }
+
+    for(const parachain of networkSpec.parachains) {
+      const parachainFilesPath = await generateParachainFiles(namespace, tmpDir.path, chainName,parachain);
+      const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
+      const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
+      await addParachainToGenesis(chainSpecFullPath, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
+    }
+    // -- End Chain Spec Modify --
+
+    // generate the raw chain spec
+    fs.copyFileSync(
+      chainSpecFullPath,
+      `${tmpDir.path}/r-${chainSpecFileName}`
+    );
+
+    const { defaultImage, chain, chainSpecCommand } = networkSpec.relaychain;
+    const fullCommand = `${chainSpecCommand}  --raw > ${DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName)}`;
+    const node = createTempNodeDef("temp", defaultImage, chain, fullCommand );
+
+    const podDef = await genPodDef(namespace, node);
+    debug(
+      `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+    );
+    debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+    writeLocalJsonFile(tmpDir.path, "temp", podDef);
+
+    await client.createResource(podDef, true, false);
+    await client.wait_transfer_container(podDef.metadata.name);
+
+    for (const override of networkSpec.relaychain.overrides) {
+      await client.copyFileToPod(
+        podDef.metadata.name,
+        override.local_path,
+        override.remote_path,
+        TRANSFER_CONTAINER_NAME
+      );
+    }
+
+    await client.copyFileToPod(
+      podDef.metadata.name,
+      localMagicFilepath,
+      FINISH_MAGIC_FILE,
+      TRANSFER_CONTAINER_NAME
+    );
+
+    await client.wait_pod_ready(podDef.metadata.name);
+    debug("copy file from pod");
+
+    await client.copyFileFromPod(
+      podDef.metadata.name,
+      `/cfg/${chainSpecFileName}`,
+      chainSpecFullPath,
+      podDef.metadata.name
+    );
+
+    await client.copyFileToPod(
+      podDef.metadata.name,
+      localMagicFilepath,
+      FINISH_MAGIC_FILE
+    );
+
+    // -- finishe get chain spec raw --
 
     // bootnode
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
-    const bootnodeDef = await genBootnodeDef(client, bootnodeSpec);
+    const bootnodeDef = await genBootnodeDef(namespace, bootnodeSpec);
     // debug(JSON.stringify(bootnodeDef, null, 4 ));
     debug(
       `launching ${bootnodeDef.metadata.name} pod with image ${bootnodeDef.spec.containers[0].image}`
@@ -276,7 +363,7 @@ export async function start(
       ];
       // create the node and attach to the network object
       debug(`creating node: ${node.name}`);
-      const podDef = await genPodDef(client, node);
+      const podDef = await genPodDef(namespace, node);
 
       debug(
         `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
@@ -347,86 +434,86 @@ export async function start(
     }
 
     for (const parachain of networkSpec.parachains) {
-      let wasmLocalFilePath, stateLocalFilePath;
-      // check if we need to create files
-      if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
-        let commands = [];
-        if (parachain.genesisStateGenerator)
-          commands.push(parachain.genesisStateGenerator);
-        if (parachain.genesisWasmGenerator)
-          commands.push(parachain.genesisWasmGenerator);
-        commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
+    //   let wasmLocalFilePath, stateLocalFilePath;
+    //   // check if we need to create files
+    //   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
+    //     let commands = [];
+    //     if (parachain.genesisStateGenerator)
+    //       commands.push(parachain.genesisStateGenerator);
+    //     if (parachain.genesisWasmGenerator)
+    //       commands.push(parachain.genesisWasmGenerator);
+    //     commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
-        let node: Node = {
-          name: getUniqueName("temp-collator"),
-          validator: false,
-          image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
-          fullCommand: commands.join(" && "),
-          chain: networkSpec.relaychain.chain,
-          bootnodes: [],
-          args: [],
-          env: [],
-          telemetryUrl: "",
-          overrides: [],
-        };
-        const podDef = await genPodDef(client, node);
+    //     let node: Node = {
+    //       name: getUniqueName("temp-collator"),
+    //       validator: false,
+    //       image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
+    //       fullCommand: commands.join(" && "),
+    //       chain: networkSpec.relaychain.chain,
+    //       bootnodes: [],
+    //       args: [],
+    //       env: [],
+    //       telemetryUrl: "",
+    //       overrides: [],
+    //     };
+    //     const podDef = await genPodDef(client, node);
 
-        debug(
-          `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
-        );
-        debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+    //     debug(
+    //       `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+    //     );
+    //     debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
-        await client.createResource(podDef, true, false);
-        await client.wait_transfer_container(podDef.metadata.name);
+    //     await client.createResource(podDef, true, false);
+    //     await client.wait_transfer_container(podDef.metadata.name);
 
-        await client.copyFileToPod(
-          podDef.metadata.name,
-          localMagicFilepath,
-          FINISH_MAGIC_FILE,
-          TRANSFER_CONTAINER_NAME
-        );
+    //     await client.copyFileToPod(
+    //       podDef.metadata.name,
+    //       localMagicFilepath,
+    //       FINISH_MAGIC_FILE,
+    //       TRANSFER_CONTAINER_NAME
+    //     );
 
-        await client.wait_pod_ready(podDef.metadata.name);
+    //     await client.wait_pod_ready(podDef.metadata.name);
 
-        if (parachain.genesisStateGenerator) {
-          stateLocalFilePath = `${tmpDir.path}/${GENESIS_STATE_FILENAME}`;
-          await client.copyFileFromPod(
-            podDef.metadata.name,
-            `/cfg/${GENESIS_STATE_FILENAME}`,
-            stateLocalFilePath
-          );
-        }
+    //     if (parachain.genesisStateGenerator) {
+    //       stateLocalFilePath = `${tmpDir.path}/${GENESIS_STATE_FILENAME}`;
+    //       await client.copyFileFromPod(
+    //         podDef.metadata.name,
+    //         `/cfg/${GENESIS_STATE_FILENAME}`,
+    //         stateLocalFilePath
+    //       );
+    //     }
 
-        if (parachain.genesisWasmGenerator) {
-          wasmLocalFilePath = `${tmpDir.path}/${GENESIS_WASM_FILENAME}`;
-          await client.copyFileFromPod(
-            podDef.metadata.name,
-            `/cfg/${GENESIS_WASM_FILENAME}`,
-            wasmLocalFilePath
-          );
-        }
+    //     if (parachain.genesisWasmGenerator) {
+    //       wasmLocalFilePath = `${tmpDir.path}/${GENESIS_WASM_FILENAME}`;
+    //       await client.copyFileFromPod(
+    //         podDef.metadata.name,
+    //         `/cfg/${GENESIS_WASM_FILENAME}`,
+    //         wasmLocalFilePath
+    //       );
+    //     }
 
-        // put file to terminate pod
-        await client.copyFileToPod(
-          podDef.metadata.name,
-          localMagicFilepath,
-          FINISH_MAGIC_FILE
-        );
-      }
+    //     // put file to terminate pod
+    //     await client.copyFileToPod(
+    //       podDef.metadata.name,
+    //       localMagicFilepath,
+    //       FINISH_MAGIC_FILE
+    //     );
+    //   }
 
-      if (!stateLocalFilePath) stateLocalFilePath = parachain.genesisStatePath;
-      if (!wasmLocalFilePath) wasmLocalFilePath = parachain.genesisWasmPath;
+    //   if (!stateLocalFilePath) stateLocalFilePath = parachain.genesisStatePath;
+    //   if (!wasmLocalFilePath) wasmLocalFilePath = parachain.genesisWasmPath;
 
-      // CHECK
-      if (!stateLocalFilePath || !wasmLocalFilePath)
-        throw new Error("Invalid state or wasm files");
+    //   // CHECK
+    //   if (!stateLocalFilePath || !wasmLocalFilePath)
+    //     throw new Error("Invalid state or wasm files");
 
       // register parachain
-      await network.registerParachain(
-        parachain.id,
-        wasmLocalFilePath,
-        stateLocalFilePath
-      );
+      // await network.registerParachain(
+      //   parachain.id,
+      //   `${tmpDir.path}/${parachain.id}/${GENESIS_WASM_FILENAME}`,
+      //   `${tmpDir.path}/${parachain.id}/${GENESIS_STATE_FILENAME}`
+      // );
 
       // let finalCommandWithArgs =
       //   parachain.collator.commandWithArgs || parachain.collator.command;
@@ -446,7 +533,7 @@ export async function start(
         telemetryUrl: "",
         overrides: [],
       };
-      const podDef = await genPodDef(client, collator);
+      const podDef = await genPodDef(namespace, collator);
 
       debug(
         `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`

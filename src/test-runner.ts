@@ -70,7 +70,7 @@ export async function run(testFile: string, isCI: boolean = false) {
 
   suite.beforeAll("launching", async function () {
     console.log(`\t Launching network... this can take a while.`);
-    this.timeout(300 * 1000);
+    this.timeout(600 * 1000);
     network = await zombie.start(creds, config);
 
     // PRINT FOR EASY DEBUG

@@ -4,11 +4,10 @@ import {
   TRANSFER_CONTAINER_NAME,
   DEFAULT_COMMAND,
 } from "../../configManager";
-import { KubeClient } from "./kubeClient";
 import { Node } from "../../types";
 
 export async function genBootnodeDef(
-  client: KubeClient,
+  namespace: string,
   nodeSetup: Node
 ): Promise<any> {
   const [volume_mounts, devices] = await make_volume_mounts();
@@ -20,8 +19,10 @@ export async function genBootnodeDef(
     metadata: {
       name: "bootnode",
       labels: {
+        "app.kubernetes.io/name" : namespace,
+        "app.kubernetes.io/instance" : "bootnode",
         "node-role": "bootnode",
-        app: "substrate",
+        app: "zombienet",
       },
     },
     spec: {
@@ -36,7 +37,7 @@ export async function genBootnodeDef(
   };
 }
 
-export function genPodDef(client: KubeClient, nodeSetup: Node): any {
+export function genPodDef(namespace: string, nodeSetup: Node): any {
   const [volume_mounts, devices] = make_volume_mounts();
   const container = make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
@@ -47,8 +48,10 @@ export function genPodDef(client: KubeClient, nodeSetup: Node): any {
     metadata: {
       name: nodeSetup.name,
       labels: {
+        "app.kubernetes.io/name" : namespace,
+        "app.kubernetes.io/instance" : "bootnode",
         "node-role": nodeSetup.validator ? "validator" : "full-node",
-        app: "substrate",
+        app: "zombienet",
       },
       annotations: {
         "prometheus.io/scrape": "true",
