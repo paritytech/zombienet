@@ -225,7 +225,6 @@ export class NetworkNode implements NetworkNodeInterface {
         try {
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
           this.cachedMetrics = await fetchMetrics(this.prometheusUri);
-          debug("metric fetched");
         } catch (err) {
           debug(`Error fetching metrics, recreating port-fw`);
           debug(err);
