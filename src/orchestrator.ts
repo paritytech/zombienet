@@ -15,6 +15,8 @@ import {
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
   DEFAULT_CHAIN_SPEC_PATH,
+  DEFAULT_CHAIN_SPEC_RAW_PATH,
+  DEFAULT_CHAIN_SPEC_COMMAND,
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -135,6 +137,9 @@ export async function start(
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
     const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
 
+    const remoteChainSpecFullPath = DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName);
+    const remoteChainSpecRawFullPath = DEFAULT_CHAIN_SPEC_RAW_PATH.replace(/{{chainName}}/ig, chainName);
+
     // We have two options to get the chain-spec file, neither should use the `raw` file/argument
     // 1: User provide the chainSpecCommand (without the --raw option)
     // 2: User provide the file (we DON'T expect the raw file)
@@ -230,7 +235,7 @@ export async function start(
       const parachainFilesPath = await generateParachainFiles(namespace, tmpDir.path, chainName,parachain);
       const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
       const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-      await addParachainToGenesis(chainSpecFullPath, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
+      // await addParachainToGenesis(chainSpecFullPath, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
     }
     // -- End Chain Spec Modify --
 
@@ -240,8 +245,9 @@ export async function start(
       `${tmpDir.path}/r-${chainSpecFileName}`
     );
 
-    const { defaultImage, chain, chainSpecCommand } = networkSpec.relaychain;
-    const fullCommand = `${chainSpecCommand}  --raw > ${DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName)}`;
+    const { defaultImage, chain } = networkSpec.relaychain;
+    const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(/{{chainName}}/ig, remoteChainSpecFullPath);
+    const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
     const node = createTempNodeDef("temp", defaultImage, chain, fullCommand );
 
     const podDef = await genPodDef(namespace, node);
@@ -265,6 +271,13 @@ export async function start(
 
     await client.copyFileToPod(
       podDef.metadata.name,
+      `${tmpDir.path}/${chainSpecFileName}`,
+      remoteChainSpecFullPath,
+      TRANSFER_CONTAINER_NAME
+    );
+
+    await client.copyFileToPod(
+      podDef.metadata.name,
       localMagicFilepath,
       FINISH_MAGIC_FILE,
       TRANSFER_CONTAINER_NAME
@@ -275,7 +288,7 @@ export async function start(
 
     await client.copyFileFromPod(
       podDef.metadata.name,
-      `/cfg/${chainSpecFileName}`,
+      remoteChainSpecRawFullPath,
       chainSpecFullPath,
       podDef.metadata.name
     );
@@ -509,11 +522,11 @@ export async function start(
     //     throw new Error("Invalid state or wasm files");
 
       // register parachain
-      // await network.registerParachain(
-      //   parachain.id,
-      //   `${tmpDir.path}/${parachain.id}/${GENESIS_WASM_FILENAME}`,
-      //   `${tmpDir.path}/${parachain.id}/${GENESIS_STATE_FILENAME}`
-      // );
+      await network.registerParachain(
+        parachain.id,
+        `${tmpDir.path}/${parachain.id}/${GENESIS_WASM_FILENAME}`,
+        `${tmpDir.path}/${parachain.id}/${GENESIS_STATE_FILENAME}`
+      );
 
       // let finalCommandWithArgs =
       //   parachain.collator.commandWithArgs || parachain.collator.command;

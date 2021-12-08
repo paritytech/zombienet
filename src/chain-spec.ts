@@ -84,7 +84,7 @@ export async function addAuthority(spec: string, name: string) {
 
 	let data = JSON.stringify(chainSpec, null, 2);
 	fs.writeFileSync(spec, data);
-	console.log(`  👤 Added Genesis Authority ${name}`);
+	console.log(`  👤 Added Genesis Authority ${name} - ${sr_stash.address}`);
 }
 
 // Add parachains to the chain spec at genesis.

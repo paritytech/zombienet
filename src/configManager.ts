@@ -25,6 +25,7 @@ export const DEFAULT_BOOTNODE_PEER_ID =
 export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
 export const DEFAULT_CHAIN_SPEC_COMMAND = "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
 export const DEFAULT_CHAIN_SPEC_PATH =  "/cfg/{{chainName}}.json";
+export const DEFAULT_CHAIN_SPEC_RAW_PATH =  "/cfg/{{chainName}}-raw.json";
 export const DEFAULT_GENESIS_GENERATE_COMMAND =
   "/usr/local/bin/adder-collator export-genesis-state > /cfg/genesis-state";
 export const DEFAULT_WASM_GENERATE_COMMAND =
