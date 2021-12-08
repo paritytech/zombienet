@@ -273,10 +273,10 @@ export class KubeClient {
     await this.crateStaticResource("job-svc-account.yaml");
   }
 
-  async upsertCronJob() {
+  async upsertCronJob(minutes = 10) {
     const isActive = await this.isNamespaceActive();
     if (isActive) {
-      const scheduleMinutes = addMinutes(10);
+      const scheduleMinutes = addMinutes(minutes);
       const schedule = `${scheduleMinutes} * * * *`;
       await this.updateResource("job-delete-namespace.yaml", { schedule });
     }
