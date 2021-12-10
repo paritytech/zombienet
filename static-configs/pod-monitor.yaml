@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: "{{namespace}}"
+  labels:
+    app.kubernetes.io/instance: "{{namespace}}"
+spec:
+  podMetricsEndpoints:
+    - interval: 5s
+      path: /metrics
+      port: prometheus
+  namespaceSelector:
+      matchNames:
+      - "{{namespace}}"
+  selector:
+      matchLabels:
+        role: authority
+  podTargetLabels:
+    - instance
+    - role

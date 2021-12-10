@@ -69,6 +69,7 @@ export class KubeClient {
       scoped
     );
 
+    debug(resourseDef);
     const name = resourseDef.metadata.name;
     const kind: string = resourseDef.kind.toLowerCase();
 
@@ -141,6 +142,16 @@ export class KubeClient {
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
     await this._kubectl(["apply", "-f", "-"], resourceDef);
+  }
+
+  async createPodMonitor(filename: string, chain: string): Promise<void> {
+    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
+    const fileContent = await fs.readFile(filePath);
+    const resourceDef = fileContent
+      .toString("utf-8")
+      .replace(/{{namespace}}/ig, this.namespace)
+      .replace(/{{chain}}/ig, chain);
+      await this._kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
   async updateResource(
@@ -276,8 +287,8 @@ export class KubeClient {
   async upsertCronJob(minutes = 10) {
     const isActive = await this.isNamespaceActive();
     if (isActive) {
-      const scheduleMinutes = addMinutes(minutes);
-      const schedule = `${scheduleMinutes} * * * *`;
+      const nsCleanerMinutes = addMinutes(minutes);
+      const schedule = `${nsCleanerMinutes} * * * *`;
       await this.updateResource("job-delete-namespace.yaml", { schedule });
     }
   }

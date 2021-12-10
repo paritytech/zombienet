@@ -5,7 +5,7 @@ metadata:
 data:
   prometheus.yml: |-
     global:
-      scrape_interval: 15s
+      scrape_interval: 5s
       external_labels:
         monitor: 'substrate-monitor'
     # Scraping Prometheus itself
@@ -15,7 +15,7 @@ data:
       static_configs:
       - targets: ['localhost:9090']
     - job_name: 'kubernetes-pods'
-      scrape_interval: 15s
+      scrape_interval: 5s
       kubernetes_sd_configs:
       - role: pod
         namespaces:
