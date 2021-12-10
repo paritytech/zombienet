@@ -69,6 +69,10 @@ export async function start(
     // Create namespace
     const namespace = `zombie-${generateNamespace()}`;
 
+    // Chain name and file name
+    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+    const chainName = networkSpec.relaychain.chain;
+
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
 
@@ -120,12 +124,15 @@ export async function start(
     await client.crateStaticResource("backchannel-pod.yaml");
 
     // create basic infra metrics if needed
-    if (withMetrics) await client.staticSetup();
+    // if (withMetrics) await client.staticSetup();
+    await client.createPodMonitor("pod-monitor.yaml", chainName);
+
+
 
     // setup cleaner
     if (!monitor) cronInterval = await client.setupCleaner();
 
-    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+
 
     if (networkSpec.relaychain.chainSpecCommand) {
       let node: Node = {
@@ -144,7 +151,7 @@ export async function start(
         overrides: [],
       };
 
-      const podDef = await genPodDef(client, node);
+      const podDef = await genPodDef(namespace, node);
       debug(
         `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
       );
@@ -176,6 +183,13 @@ export async function start(
 
       await client.copyFileFromPod(
         podDef.metadata.name,
+        `/cfg/${networkSpec.relaychain.chain}-plain.json`,
+        `${tmpDir.path}/${networkSpec.relaychain.chain}-plain.json`,
+        podDef.metadata.name
+      );
+
+      await client.copyFileFromPod(
+        podDef.metadata.name,
         `/cfg/${fileName}`,
         `${tmpDir.path}/${fileName}`,
         podDef.metadata.name
@@ -204,7 +218,7 @@ export async function start(
     // bootnode
     // TODO: allow to customize the bootnode
     const bootnodeSpec = await generateBootnodeSpec(networkSpec);
-    const bootnodeDef = await genBootnodeDef(client, bootnodeSpec);
+    const bootnodeDef = await genBootnodeDef(namespace, bootnodeSpec);
     // debug(JSON.stringify(bootnodeDef, null, 4 ));
     debug(
       `launching ${bootnodeDef.metadata.name} pod with image ${bootnodeDef.spec.containers[0].image}`
@@ -276,7 +290,7 @@ export async function start(
       ];
       // create the node and attach to the network object
       debug(`creating node: ${node.name}`);
-      const podDef = await genPodDef(client, node);
+      const podDef = await genPodDef(namespace, node);
 
       debug(
         `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
@@ -369,7 +383,7 @@ export async function start(
           telemetryUrl: "",
           overrides: [],
         };
-        const podDef = await genPodDef(client, node);
+        const podDef = await genPodDef(namespace, node);
 
         debug(
           `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
@@ -446,7 +460,7 @@ export async function start(
         telemetryUrl: "",
         overrides: [],
       };
-      const podDef = await genPodDef(client, collator);
+      const podDef = await genPodDef(namespace, collator);
 
       debug(
         `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
