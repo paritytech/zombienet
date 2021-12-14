@@ -2,7 +2,6 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: cleaner-{{namespace}}
-#  namespace: {{namespace}}
 spec:
   schedule: "{{schedule}}"
   successfulJobsHistoryLimit: 1

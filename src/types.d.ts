@@ -188,3 +188,9 @@ export interface ParachainConfig {
     args?: string[];
   };
 }
+
+// name: path
+export interface fileMap {
+  localFilePath: string,
+  remoteFilePath: string
+}

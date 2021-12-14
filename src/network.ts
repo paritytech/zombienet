@@ -66,6 +66,10 @@ export class Network {
     await execa("gsutil", args);
   }
 
+  async upsertCronJob(minutes = 10) {
+    await this.client.upsertCronJob(minutes);
+  }
+
   async registerParachain(
     id: number,
     wasmPath: string,

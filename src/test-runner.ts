@@ -70,7 +70,8 @@ export async function run(testFile: string, isCI: boolean = false) {
 
   suite.beforeAll("launching", async function () {
     console.log(`\t Launching network... this can take a while.`);
-    this.timeout(600 * 1000);
+    const launchTimeout = config.settings?.timeout || 500;
+    this.timeout(launchTimeout * 1000);
     network = await zombie.start(creds, config);
 
     // PRINT FOR EASY DEBUG
@@ -90,11 +91,21 @@ export async function run(testFile: string, isCI: boolean = false) {
   });
 
   suite.afterAll("teardown", async function () {
-    console.log(`\t Deleting network`);
-    this.timeout(120 * 1000);
+    this.timeout(180 * 1000);
     if (network) {
       await network.uploadLogs();
-      // await network.stop();
+      const tests = this.test?.parent?.tests;
+      if(tests) {
+        const fail = tests.find(test => {test.state !== "passed"});
+        if(fail) {
+          // keep the namespace up for 1 hour
+          console.log(`\t Some test fail, we will keep the namespace up for 30 more minutes`);
+          await network.upsertCronJob(30);
+        } else {
+          console.log(`\t Deleting network`);
+          await network.stop();
+        }
+      }
     }
     return;
   });

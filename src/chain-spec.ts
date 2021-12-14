@@ -13,7 +13,7 @@ function nameCase(string: string) {
 function getAuthorityKeys(chainSpec: ChainSpec) {
 	// Check runtime_genesis_config key for rococo compatibility.
 	const runtimeConfig =
-		chainSpec.genesis.runtime.runtime_genesis_config ||
+		chainSpec.genesis.runtime?.runtime_genesis_config ||
 		chainSpec.genesis.runtime;
 	if (runtimeConfig && runtimeConfig.session) {
 		return runtimeConfig.session.keys;
@@ -100,7 +100,7 @@ export async function addParachainToGenesis(
 
 	// Check runtime_genesis_config key for rococo compatibility.
 	const runtimeConfig =
-		chainSpec.genesis.runtime.runtime_genesis_config ||
+		chainSpec.genesis.runtime?.runtime_genesis_config ||
 		chainSpec.genesis.runtime;
 	let paras = undefined;
 	if (runtimeConfig.paras) {

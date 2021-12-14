@@ -1,6 +1,6 @@
-//const fetch = require("node-fetch");
 const debug = require("debug")("zombie::metrics");
 import axios from "axios";
+import { parseLine } from "./parse-line";
 
 // metrics can have namespace
 export interface Metrics {
@@ -57,11 +57,39 @@ function _extractMetrics(text: string): Metrics {
   let rawMetrics: Metrics = {};
   for (const line of text.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
-    const [key, value] = line.split(" ", 2);
+    const [key] = line.split(" ", 1);
+    const parsedLine = parseLine(line);
+    const metricValue = parseInt(parsedLine.value);
+
     // get the namespace of the key
-    const parts = key.split("_");
-    if (!rawMetrics[parts[0]]) rawMetrics[parts[0]] = {};
-    rawMetrics[parts[0]][parts.slice(1).join("_")] = parseInt(value);
+    const parts = parsedLine.name.split("_");
+    const ns = parts[0];
+    const rawMetricNameWithOutNs = parts.slice(1).join("_");
+
+    let labelStrings = [];
+    let labelStringsWithOutChain = [];
+    for(const [k,v] of parsedLine.labels.entries()) {
+      labelStrings.push(`${k}="${v}"`);
+      if(k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);
+    }
+
+    if (!rawMetrics[ns]) rawMetrics[ns] = {};
+
+    // store the metric with and without the chain
+    if(labelStrings.length > 0) {
+      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`] = metricValue;
+    } else {
+      rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
+    }
+    if(labelStringsWithOutChain.length > 0) {
+      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`] = metricValue;
+    } else {
+      rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
+    }
+
+    // store the metrics as is in _raw
+    rawMetrics["_raw"] = {};
+    rawMetrics["_raw"][key] = metricValue;
   }
 
   return rawMetrics;

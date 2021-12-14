@@ -21,7 +21,7 @@ export async function genBootnodeDef(
       labels: {
         "app.kubernetes.io/name" : namespace,
         "app.kubernetes.io/instance" : "bootnode",
-        "node-role": "bootnode",
+        role: "bootnode",
         app: "zombienet",
       },
     },
@@ -48,10 +48,10 @@ export function genPodDef(namespace: string, nodeSetup: Node): any {
     metadata: {
       name: nodeSetup.name,
       labels: {
-        "app.kubernetes.io/name" : namespace,
-        "app.kubernetes.io/instance" : "bootnode",
-        "node-role": nodeSetup.validator ? "validator" : "full-node",
+        role: nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
+        "app.kubernetes.io/name" : namespace,
+        "app.kubernetes.io/instance" : nodeSetup.name,
       },
       annotations: {
         "prometheus.io/scrape": "true",

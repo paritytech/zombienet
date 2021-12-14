@@ -227,7 +227,6 @@ export class NetworkNode implements NetworkNodeInterface {
         try {
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
           this.cachedMetrics = await fetchMetrics(this.prometheusUri);
-          debug("metric fetched");
         } catch (err) {
           debug(`Error fetching metrics, recreating port-fw`);
           debug(err);
@@ -272,11 +271,13 @@ export class NetworkNode implements NetworkNodeInterface {
 
     // loops over namespaces first
     for (const namespace of Object.keys(this.cachedMetrics)) {
-      if (
-        this.cachedMetrics[namespace] &&
-        this.cachedMetrics[namespace][metricName] !== undefined
-      )
+      // debug(`looking in ns ${namespace}`);
+      // debug(`for key: ${metricName}`);
+      if ( this.cachedMetrics[namespace] && this.cachedMetrics[namespace][metricName] !== undefined ) {
+        debug("returning for: " + metricName);
+        debug("returning: " + this.cachedMetrics[namespace][metricName]);
         return this.cachedMetrics[namespace][metricName];
+      }
     }
     if (metricShouldExists) throw new Error("Metric not found!");
   }
