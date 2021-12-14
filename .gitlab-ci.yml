@@ -10,6 +10,7 @@ stages:
   - lint
   - test
   - build
+  - check
   - publish
 
 variables:
@@ -88,21 +89,8 @@ build:
 
 # template task for building and pushing an image
 .build-push-docker-image:          &build-push-docker-image
-  secrets:
-    DOCKER_HUB_USER:
-      vault:                       cicd/gitlab/parity/DOCKER_HUB_USER@kv
-      file:                        false
-    DOCKER_HUB_PASS:
-      vault:                       cicd/gitlab/parity/DOCKER_HUB_PASS@kv
-      file:                        false
-  before_script:
-    - if [[ "${CI_COMMIT_TAG}" ]]; then
-        VERSION=${CI_COMMIT_TAG};
-      elif [[ "${CI_COMMIT_SHORT_SHA}" ]]; then
-        VERSION=${CI_COMMIT_SHORT_SHA};
-      fi
-    - echo "Effective tags = ${VERSION} sha-${CI_COMMIT_SHORT_SHA} latest"
   script:
+    - export VERSION=${CI_COMMIT_SHORT_SHA};
     - test "$DOCKER_HUB_USER" -a "$DOCKER_HUB_PASS" ||
         ( echo "no docker credentials provided"; exit 1 )
     - buildah bud
@@ -123,7 +111,7 @@ build:
 
 #check that the image can be build
 publish-test:
-  stage:                           publish
+  stage:                           check
   <<:                              *test-refs
   <<:                              *kubernetes-env
   variables:
@@ -137,8 +125,24 @@ publish-test:
         --tag "$IMAGE_NAME:latest"
         --file "$DOCKERFILE" .
 
+publish-docker-pr:
+  stage:                           publish
+  variables:
+    CI_IMAGE:                      quay.io/buildah/stable
+    DOCKERHUB_REPO:                paritypr
+  <<:                              *kubernetes-env
+  <<:                              *test-refs
+  <<:                              *build-push-docker-image
+
 publish-docker:
   stage:                           publish
+  secrets:
+    DOCKER_HUB_USER:
+      vault:                       cicd/gitlab/parity/DOCKER_HUB_USER@kv
+      file:                        false
+    DOCKER_HUB_PASS:
+      vault:                       cicd/gitlab/parity/DOCKER_HUB_PASS@kv
+      file:                        false
   variables:
     CI_IMAGE:                      quay.io/buildah/stable
   <<:                              *kubernetes-env
