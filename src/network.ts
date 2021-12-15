@@ -63,7 +63,12 @@ export class Network {
       `${this.tmpDir}/*`,
       `gs://${ZOMBIE_BUCKET}/${this.namespace}/`,
     ];
-    await execa("gsutil", args);
+    try {
+      await execa("gsutil", args);
+    } catch(err) {
+      console.log(`Could NOT upload logs to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`);
+    }
+
   }
 
   async upsertCronJob(minutes = 10) {

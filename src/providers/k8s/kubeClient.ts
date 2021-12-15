@@ -1,11 +1,10 @@
 import execa from "execa";
-import { stat } from "fs";
 import { resolve } from "path";
-import { resourceLimits } from "worker_threads";
 import { TRANSFER_CONTAINER_NAME } from "../../configManager";
 import { addMinutes } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
+import { availableNetworks } from "@polkadot/util-crypto";
 const debug = require("debug")("zombie::kube::client");
 
 export interface KubectlResponse {
@@ -39,6 +38,7 @@ export class KubeClient {
   timeout: number;
   command: string = "kubectl";
   tmpDir: string;
+  podMonitorAvailable: boolean = false;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     this.configPath = configPath;
@@ -145,6 +145,11 @@ export class KubeClient {
   }
 
   async createPodMonitor(filename: string, chain: string): Promise<void> {
+    this.podMonitorAvailable = await this._isPodMonitorAvailable();
+    if( ! this.podMonitorAvailable ) {
+      debug("PodMonitor is NOT available in the cluster");
+      return;
+    }
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
     const resourceDef = fileContent
@@ -382,6 +387,20 @@ export class KubeClient {
     } catch (error) {
       console.log(error);
       throw error;
+    }
+  }
+
+  async _isPodMonitorAvailable() {
+    let available = false;
+    try {
+      const result = await execa.command("kubectl api-resources -o name");
+      if( result.exitCode == 0 ) {
+        if(result.stdout.includes("podmonitor")) available = true;
+      }
+    } catch(err) {
+      console.log(err);
+    } finally{
+      return available;
     }
   }
 }
