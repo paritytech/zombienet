@@ -135,13 +135,18 @@ export class KubeClient {
     );
   }
 
-  async crateStaticResource(filename: string): Promise<void> {
+  async createStaticResource(filename: string, scopeNamespace?: string): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
     const resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
-    await this._kubectl(["apply", "-f", "-"], resourceDef);
+
+    if(scopeNamespace) {
+      await this._kubectl(["-n", scopeNamespace, "apply", "-f", "-"], resourceDef);
+    } else {
+      await this._kubectl(["apply", "-f", "-"], resourceDef);
+    }
   }
 
   async createPodMonitor(filename: string, chain: string): Promise<void> {
@@ -156,7 +161,7 @@ export class KubeClient {
       .toString("utf-8")
       .replace(/{{namespace}}/ig, this.namespace)
       .replace(/{{chain}}/ig, chain);
-      await this._kubectl(["apply", "-f", "-"], resourceDef, true);
+      await this._kubectl(["-n", "monitoring", "apply", "-f", "-"], resourceDef, false);
   }
 
   async updateResource(
@@ -268,7 +273,7 @@ export class KubeClient {
     for (const resourceType of resources) {
       console.log(`adding ${resourceType.type}`);
       for (const file of resourceType.files) {
-        await this.crateStaticResource(file);
+        await this.createStaticResource(file);
       }
     }
   }
@@ -286,15 +291,23 @@ export class KubeClient {
   }
 
   async cronJobCleanerSetup() {
-    await this.crateStaticResource("job-svc-account.yaml");
+    await this.createStaticResource("job-svc-account.yaml");
+    if( this.podMonitorAvailable) await this.createStaticResource("job-delete-podmonitor-role.yaml", "monitoring");
   }
 
   async upsertCronJob(minutes = 10) {
     const isActive = await this.isNamespaceActive();
     if (isActive) {
+      if(this.podMonitorAvailable) {
+        const podMonitorCleanerMinutes = addMinutes(minutes);
+        let schedule = `${podMonitorCleanerMinutes} * * * *`;
+        await this.updateResource("job-delete-podmonitor.yaml", { schedule });
+      }
+
+      minutes += 1;
       const nsCleanerMinutes = addMinutes(minutes);
-      const schedule = `${nsCleanerMinutes} * * * *`;
-      await this.updateResource("job-delete-namespace.yaml", { schedule });
+      const nsSchedule = `${nsCleanerMinutes} * * * *`;
+      await this.updateResource("job-delete-namespace.yaml", { schedule: nsSchedule });
     }
   }
 
