@@ -201,6 +201,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
 
       let parachainSetup: Parachain = {
         id: parachain.id,
+        addToGenesis: parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
         collator: {
           name: getUniqueName("collator"),
           command: parachain.collator.command || DEFAULT_COLLATOR_COMMAND,

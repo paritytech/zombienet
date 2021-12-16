@@ -138,7 +138,7 @@ export async function start(
       const parachainFilesPath = await generateParachainFiles(namespace, tmpDir.path, chainName,parachain);
       const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
       const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-      await addParachainToGenesis(chainSpecFullPath, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
+      if(parachain.addToGenesis) await addParachainToGenesis(chainSpecFullPath, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
     }
 
     // generate the raw chain spec
@@ -220,12 +220,14 @@ export async function start(
     }
 
     for (const parachain of networkSpec.parachains) {
-      // register parachain
-      // await network.registerParachain(
-      //   parachain.id,
-      //   `${tmpDir.path}/${parachain.id}/${GENESIS_WASM_FILENAME}`,
-      //   `${tmpDir.path}/${parachain.id}/${GENESIS_STATE_FILENAME}`
-      // );
+      if(!parachain.addToGenesis) {
+        // register parachain on a running network
+        await network.registerParachain(
+          parachain.id,
+          `${tmpDir.path}/${parachain.id}/${GENESIS_WASM_FILENAME}`,
+          `${tmpDir.path}/${parachain.id}/${GENESIS_STATE_FILENAME}`
+        );
+      }
 
       // create collator
       let collator: Node = {

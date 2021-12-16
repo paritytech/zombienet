@@ -67,6 +67,7 @@ export interface Collator {
 
 export interface Parachain {
   id: number;
+  addToGenesis: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
   genesisStatePath?: string;
@@ -174,6 +175,7 @@ export interface RelayChainConfig {
 
 export interface ParachainConfig {
   id: number;
+  addToGenesis?: boolean;
   balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
