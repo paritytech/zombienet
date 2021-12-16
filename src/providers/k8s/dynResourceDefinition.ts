@@ -4,7 +4,6 @@ import {
   TRANSFER_CONTAINER_NAME,
   DEFAULT_COMMAND,
 } from "../../configManager";
-import { KubeClient } from "./kubeClient";
 import { Node } from "../../types";
 
 export async function genBootnodeDef(

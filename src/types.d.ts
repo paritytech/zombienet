@@ -67,6 +67,7 @@ export interface Collator {
 
 export interface Parachain {
   id: number;
+  addToGenesis: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
   genesisStatePath?: string;
@@ -87,6 +88,28 @@ export interface CollatorNodeConfig {
 export interface envVars {
   name: string;
   value: string;
+}
+
+export interface ChainSpec {
+	name: string;
+	id: string;
+	chainType: string;
+	bootNodes: string[];
+	telemetryEndpoints: null;
+	protocolId: string;
+	properties: null;
+	forkBlocks: null;
+	badBlocks: null;
+	consensusEngine: null;
+	lightSyncState: null;
+	genesis: {
+		runtime: any; // this can change depending on the versions
+		raw: {
+			top: {
+				[key: string]: string;
+			};
+		};
+	};
 }
 
 // Launch Config ( user provided config )
@@ -152,6 +175,7 @@ export interface RelayChainConfig {
 
 export interface ParachainConfig {
   id: number;
+  addToGenesis?: boolean;
   balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
@@ -165,4 +189,10 @@ export interface ParachainConfig {
     name?: string;
     args?: string[];
   };
+}
+
+// name: path
+export interface fileMap {
+  localFilePath: string,
+  remoteFilePath: string
 }

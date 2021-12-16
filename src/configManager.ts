@@ -23,8 +23,11 @@ export const DEFAULT_CHAIN = "rococo-local";
 export const DEFAULT_BOOTNODE_PEER_ID =
   "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
 export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
-export const DEFAULT_CHAIN_SPEC_COMMAND =
-  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode > /cfg/{{chainName}}-plain.json && polkadot build-spec --chain {{chainName}} --disable-default-bootnode --raw > /cfg/{{chainName}}.json";
+export const DEFAULT_CHAIN_SPEC_PATH =  "/cfg/{{chainName}}.json";
+export const DEFAULT_CHAIN_SPEC_RAW_PATH =  "/cfg/{{chainName}}-raw.json";
+//export const DEFAULT_CHAIN_SPEC_COMMAND =
+//  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode > /cfg/{{chainName}}-plain.json && polkadot build-spec --chain {{chainName}} --disable-default-bootnode --raw > /cfg/{{chainName}}.json";
+export const DEFAULT_CHAIN_SPEC_COMMAND = "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
 export const DEFAULT_GENESIS_GENERATE_COMMAND =
   "/usr/local/bin/adder-collator export-genesis-state > /cfg/genesis-state";
 export const DEFAULT_WASM_GENERATE_COMMAND =
@@ -43,6 +46,13 @@ export const METRICS_URI_PATTERN = "http://127.0.0.1:{{PORT}}/metrics";
 export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
 export const BAKCCHANNEL_PORT = 3000;
 export const BAKCCHANNEL_POD_NAME = "backchannel";
+
+export const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
+// get the path of the zombie wrapper
+export const zombieWrapperPath = resolve(
+  __dirname,
+  `../scripts/${ZOMBIE_WRAPPER}`
+);
 
 export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   let networkSpec: any = {
@@ -191,6 +201,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
 
       let parachainSetup: Parachain = {
         id: parachain.id,
+        addToGenesis: parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
         collator: {
           name: getUniqueName("collator"),
           command: parachain.collator.command || DEFAULT_COLLATOR_COMMAND,
