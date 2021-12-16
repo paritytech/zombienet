@@ -1,8 +1,9 @@
 import { randomBytes } from "crypto";
 import fs from "fs";
 import { format } from "util";
-import { LaunchConfig } from "./types";
+import { LaunchConfig, Node } from "./types";
 import toml from "toml";
+import { getUniqueName, WAIT_UNTIL_SCRIPT_SUFIX } from "./configManager";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -133,4 +134,23 @@ export function loadTypeDef(types: string | object): object {
   } else {
     return types;
   }
+}
+
+export function createTempNodeDef(name: string, image: string, chain: string, fullCommand: string) {
+  let node: Node = {
+    name: getUniqueName("temp"),
+    image,
+    fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+    chain,
+    validator: false,
+    bootnodes: [],
+    args: [],
+    env: [],
+    telemetryUrl: "",
+    overrides: [],
+  };
+
+  return node;
+
+
 }
