@@ -227,8 +227,9 @@ export class KubeClient {
   ) {
     const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
     if (container) args.push("-c", container);
-    const result = await this.kubectl(args, undefined, true);
     debug("copyFileToPod", args);
+    const result = await this.kubectl(args, undefined, true);
+    debug(result);
   }
 
   async copyFileFromPod(
@@ -239,6 +240,7 @@ export class KubeClient {
   ) {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
     if (container) args.push("-c", container);
+    debug("copyFileFromPod", args);
     const result = await this.kubectl(args, undefined, true);
     debug(result);
   }
