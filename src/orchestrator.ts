@@ -113,9 +113,12 @@ export async function start(
 
     // Create bootnode and backchannel services
     debug(`Creating bootnode and backchannel services`);
-    await client.crateStaticResource("bootnode-service.yaml");
-    await client.crateStaticResource("backchannel-service.yaml");
-    await client.crateStaticResource("backchannel-pod.yaml");
+    await client.createStaticResource("bootnode-service.yaml");
+    await client.createStaticResource("backchannel-service.yaml");
+    await client.createStaticResource("backchannel-pod.yaml");
+
+    // create basic infra metrics if needed
+    // if (withMetrics) await client.staticSetup();
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
     // setup cleaner

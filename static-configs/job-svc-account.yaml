@@ -9,7 +9,7 @@ metadata:
   name: delete-namespaces
 rules:
   - apiGroups: [""]
-    resources: ["namespaces", "podmonitors"]
+    resources: ["namespaces"]
     verbs: ["get", "list", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -22,4 +22,17 @@ subjects:
 roleRef:
   kind: Role
   name: delete-namespaces
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: delete-podmonitor-to-sa
+subjects:
+  - kind: ServiceAccount
+    name: zombie-internal-kubectl
+    namespace: zombie-561bd6264d4126d4b2631cfb2fabff84
+roleRef:
+  kind: ClusterRole
+  name: delete-podmonitors
   apiGroup: rbac.authorization.k8s.io

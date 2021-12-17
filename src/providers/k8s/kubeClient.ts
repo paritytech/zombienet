@@ -4,7 +4,9 @@ import { FINISH_MAGIC_FILE, TRANSFER_CONTAINER_NAME } from "../../configManager"
 import { addMinutes, writeLocalJsonFile } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
+import { availableNetworks } from "@polkadot/util-crypto";
 import { fileMap } from "../../types";
+
 const debug = require("debug")("zombie::kube::client");
 
 export interface KubectlResponse {
@@ -38,6 +40,7 @@ export class KubeClient {
   timeout: number;
   command: string = "kubectl";
   tmpDir: string;
+  podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
@@ -179,23 +182,33 @@ export class KubeClient {
     );
   }
 
-  async crateStaticResource(filename: string): Promise<void> {
+  async createStaticResource(filename: string, scopeNamespace?: string): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
     const resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
-    await this.kubectl(["apply", "-f", "-"], resourceDef);
+
+    if(scopeNamespace) {
+      await this.kubectl(["-n", scopeNamespace, "apply", "-f", "-"], resourceDef);
+    } else {
+      await this.kubectl(["apply", "-f", "-"], resourceDef);
+    }
   }
 
   async createPodMonitor(filename: string, chain: string): Promise<void> {
+    this.podMonitorAvailable = await this._isPodMonitorAvailable();
+    if( ! this.podMonitorAvailable ) {
+      debug("PodMonitor is NOT available in the cluster");
+      return;
+    }
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
     const resourceDef = fileContent
       .toString("utf-8")
       .replace(/{{namespace}}/ig, this.namespace)
       .replace(/{{chain}}/ig, chain);
-      await this.kubectl(["apply", "-f", "-"], resourceDef, true);
+      await this.kubectl(["-n", "monitoring", "apply", "-f", "-"], resourceDef, false);
   }
 
   async updateResource(
@@ -309,7 +322,7 @@ export class KubeClient {
     for (const resourceType of resources) {
       console.log(`adding ${resourceType.type}`);
       for (const file of resourceType.files) {
-        await this.crateStaticResource(file);
+        await this.createStaticResource(file);
       }
     }
   }
@@ -327,15 +340,23 @@ export class KubeClient {
   }
 
   async cronJobCleanerSetup() {
-    await this.crateStaticResource("job-svc-account.yaml");
+    await this.createStaticResource("job-svc-account.yaml");
+    if( this.podMonitorAvailable) await this.createStaticResource("job-delete-podmonitor-role.yaml", "monitoring");
   }
 
   async upsertCronJob(minutes = 10) {
     const isActive = await this.isNamespaceActive();
     if (isActive) {
+      if(this.podMonitorAvailable) {
+        const podMonitorCleanerMinutes = addMinutes(minutes);
+        let schedule = `${podMonitorCleanerMinutes} * * * *`;
+        await this.updateResource("job-delete-podmonitor.yaml", { schedule });
+      }
+
+      minutes += 1;
       const nsCleanerMinutes = addMinutes(minutes);
-      const schedule = `${nsCleanerMinutes} * * * *`;
-      await this.updateResource("job-delete-namespace.yaml", { schedule });
+      const nsSchedule = `${nsCleanerMinutes} * * * *`;
+      await this.updateResource("job-delete-namespace.yaml", { schedule: nsSchedule });
     }
   }
 
@@ -428,6 +449,20 @@ export class KubeClient {
     } catch (error) {
       console.log(error);
       throw error;
+    }
+  }
+
+  async _isPodMonitorAvailable() {
+    let available = false;
+    try {
+      const result = await execa.command("kubectl api-resources -o name");
+      if( result.exitCode == 0 ) {
+        if(result.stdout.includes("podmonitor")) available = true;
+      }
+    } catch(err) {
+      console.log(err);
+    } finally{
+      return available;
     }
   }
 }
