@@ -90,7 +90,6 @@ build:
 # template task for building and pushing an image
 .build-push-docker-image:          &build-push-docker-image
   script:
-    - export VERSION=${CI_COMMIT_SHORT_SHA};
     - test "$DOCKER_HUB_USER" -a "$DOCKER_HUB_PASS" ||
         ( echo "no docker credentials provided"; exit 1 )
     - buildah bud
@@ -130,6 +129,8 @@ publish-docker-pr:
   variables:
     CI_IMAGE:                      quay.io/buildah/stable
     DOCKERHUB_REPO:                paritypr
+  before_script:
+    - export VERSION=${CI_COMMIT_SHORT_SHA}
   <<:                              *kubernetes-env
   <<:                              *test-refs
   <<:                              *build-push-docker-image
@@ -145,6 +146,13 @@ publish-docker:
       file:                        false
   variables:
     CI_IMAGE:                      quay.io/buildah/stable
+  before_script:
+    - if [[ "${CI_COMMIT_TAG}" ]]; then
+        VERSION=${CI_COMMIT_TAG};
+      elif [[ "${CI_COMMIT_SHORT_SHA}" ]]; then
+        VERSION=${CI_COMMIT_SHORT_SHA};
+      fi
+    - echo "Effective tags = ${VERSION} sha-${CI_COMMIT_SHORT_SHA} latest"
   <<:                              *kubernetes-env
   <<:                              *publish-refs
   <<:                              *build-push-docker-image
