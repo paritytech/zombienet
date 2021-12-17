@@ -147,6 +147,11 @@ export async function start(
     // generate the raw chain spec
     await getChainSpecRaw(namespace, networkSpec.relaychain.defaultImage, chainName, chainSpecFullPath);
 
+    // ensure chain raw is ok
+    const chainRawContent = require(chainSpecFullPath);
+    debug(`Chain name: ${chainRawContent.name}`);
+
+
     // files to include in each node
     const filesToCopyToNodes = [
       {
