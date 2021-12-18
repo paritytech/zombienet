@@ -31,7 +31,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: zombie-internal-kubectl
-    namespace: zombie-561bd6264d4126d4b2631cfb2fabff84
+    namespace: "{{namespace}}"
 roleRef:
   kind: ClusterRole
   name: delete-podmonitors
