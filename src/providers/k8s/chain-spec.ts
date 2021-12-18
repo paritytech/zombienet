@@ -1,8 +1,8 @@
-import { debug } from "console";
 import { genPodDef, getClient } from ".";
 import { DEFAULT_CHAIN_SPEC_PATH, TRANSFER_CONTAINER_NAME, FINISH_MAGIC_FILE, DEFAULT_CHAIN_SPEC_COMMAND, DEFAULT_CHAIN_SPEC_RAW_PATH } from "../../configManager";
 import { ComputedNetwork } from "../../types";
 import { createTempNodeDef, sleep, writeLocalJsonFile } from "../../utils";
+const debug = require("debug")("zombie::kube::client");
 
 import fs from "fs";
 
@@ -63,13 +63,35 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
         }
     ]);
 
-    debug("copy raw chain spec file from pod");
+    debug("Getting the raw chain spec file from pod to the local environment.");
     await client.copyFileFromPod(
         podName,
         remoteChainSpecRawFullPath,
         chainFullPath,
         podName
     );
+
+    // We had some issues where the `raw` file is empty
+    // let's add some extra checks here to ensure we are ok.
+    let isValid = false;
+    try {
+        let content = require(chainFullPath);
+        isValid = true;
+    } catch(_) {}
+
+    if(!isValid) {
+        try {
+            const result = await client.kubectl(["exec", podName, "--", "cat", remoteChainSpecRawFullPath]);
+            if(result.exitCode === 0 && result.stdout.length > 0) {
+                // TODO: remove this debug when we get this fixed.
+                debug(result.stdout);
+                fs.writeFileSync(chainFullPath, result.stdout);
+                isValid = true;
+            }
+        } catch(_){}
+    }
+
+    if(!isValid) throw new Error(`Invalid chain spec raw file generated.`);
 
     await client.putLocalMagicFile(podName, podName);
 }
