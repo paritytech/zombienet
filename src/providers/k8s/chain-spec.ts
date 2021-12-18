@@ -2,7 +2,7 @@ import { genPodDef, getClient } from ".";
 import { DEFAULT_CHAIN_SPEC_PATH, TRANSFER_CONTAINER_NAME, FINISH_MAGIC_FILE, DEFAULT_CHAIN_SPEC_COMMAND, DEFAULT_CHAIN_SPEC_RAW_PATH } from "../../configManager";
 import { ComputedNetwork } from "../../types";
 import { createTempNodeDef, sleep, writeLocalJsonFile } from "../../utils";
-const debug = require("debug")("zombie::kube::client");
+const debug = require("debug")("zombie::kube::chain-spec");
 
 import fs from "fs";
 
