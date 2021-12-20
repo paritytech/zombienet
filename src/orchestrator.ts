@@ -61,7 +61,7 @@ export async function start(
   let cronInterval = undefined;
   try {
     // Parse and build Network definition
-    const networkSpec: ComputedNetwork = generateNetworkSpec(networkConfig);
+    const networkSpec: ComputedNetwork = await generateNetworkSpec(networkConfig);
     debug(JSON.stringify(networkSpec, null, 4));
 
     // global timeout to spin the network
@@ -209,20 +209,8 @@ export async function start(
 
       let finalFilesToCopyToNode = filesToCopyToNodes;
       for (const override of node.overrides) {
-        // let check if local_path is full or relative
-        let local_real_path = "";
-        if( fs.existsSync(override.local_path) ){
-          local_real_path = override.local_path;
-        } else {
-          // check relative to config
-          local_real_path = path.join(networkSpec.configBasePath, override.local_path);
-          console.log(local_real_path);
-          if(! fs.existsSync(local_real_path)) throw new Error("Invalid override config, only fullpaths or relative paths (from the config) are allowed");
-        }
-
-        console.log('es: ' +local_real_path);
         finalFilesToCopyToNode.push({
-          localFilePath: local_real_path,
+          localFilePath: override.local_path,
           remoteFilePath: `/cfg/${override.remote_name}`
         });
       }
