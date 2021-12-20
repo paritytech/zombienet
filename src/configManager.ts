@@ -14,7 +14,7 @@ export const RPC_HTTP_PORT = 9944;
 // The port substrate listens for p2p connections on
 export const P2P_PORT = 30333;
 
-export const DEFAULT_GLOBAL_TIMEOUT = 300; // seconds
+export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 export const DEFAULT_COMMAND = "polkadot";
 export const DEFAULT_IMAGE = "parity/substrate:latest";
