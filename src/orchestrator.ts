@@ -103,6 +103,12 @@ export async function start(
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
+    const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
+    await fs.promises.copyFile(zombieWrapperPath,zombieWrapperLocalPath);
+
+    // const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
+    // await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent);
+
     // Define chain name and file name to use.
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
     const chainName = networkSpec.relaychain.chain;
@@ -158,7 +164,7 @@ export async function start(
       localFilePath: `${tmpDir.path}/${chainSpecFileName}`,
       remoteFilePath: `/cfg/${chainSpecFileName}`
       }, {
-        localFilePath: zombieWrapperPath,
+        localFilePath: zombieWrapperLocalPath,
         remoteFilePath: `/cfg/${ZOMBIE_WRAPPER}`
       }
     ];
@@ -199,7 +205,15 @@ export async function start(
       // create the node and attach to the network object
       debug(`creating node: ${node.name}`);
       const podDef = await genPodDef(namespace, node);
-      await client.spawnFromDef(podDef, filesToCopyToNodes);
+
+      let finalFilesToCopyToNode = filesToCopyToNodes;
+      for (const override of node.overrides) {
+        finalFilesToCopyToNode.push({
+          localFilePath: override.local_path,
+          remoteFilePath: `/cfg/${override.remote_name}`
+        });
+      }
+      await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
       const fwdPort = await startPortForwarding(9944, nodeIdentifier, client);

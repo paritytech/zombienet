@@ -216,7 +216,6 @@ export class KubeClient {
     replacements: ReplaceMapping = {}
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    // const filePath = `static-configs/${filename}`;
     const fileContent = await fs.readFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")

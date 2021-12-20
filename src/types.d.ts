@@ -142,10 +142,6 @@ export interface InitContainer {
   command: string;
 }
 
-export interface Override {
-  local_path: string;
-  remote_path: string;
-}
 
 export interface RelayChainConfig {
   default_command?: string;
@@ -195,4 +191,9 @@ export interface ParachainConfig {
 export interface fileMap {
   localFilePath: string,
   remoteFilePath: string
+}
+
+export interface Override {
+  local_path: string;
+  remote_name: string;
 }
