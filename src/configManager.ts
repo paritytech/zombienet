@@ -1,5 +1,5 @@
-import { LaunchConfig, ComputedNetwork, Node, Parachain } from "./types";
-import { resolve } from "path";
+import { LaunchConfig, ComputedNetwork, Node, Parachain, Override } from "./types";
+import path, { resolve } from "path";
 import fs from "fs";
 const debug = require("debug")("zombie::config-manager");
 
@@ -54,13 +54,28 @@ export const zombieWrapperPath = resolve(
   `../scripts/${ZOMBIE_WRAPPER}`
 );
 
-export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
+export async function generateNetworkSpec(config: LaunchConfig): Promise<ComputedNetwork> {
+  let globalOverrides: Override[] = [];
+  if(config.relaychain.default_overrides) {
+    globalOverrides = await Promise.all(config.relaychain.default_overrides.map( async override => {
+     const valid_local_path = await getLocalOverridePath(config.configBasePath, override.local_path);
+     return {
+       local_path: valid_local_path,
+       remote_name: override.remote_name
+     };
+   }));
+  };
+
+
+
+  console.log( "globalOverrides" );
+  console.log( globalOverrides );
   let networkSpec: any = {
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       nodes: [],
       chain: config.relaychain.chain,
-      overrides: config.relaychain.default_overrides || [],
+      overrides: Promise.all(globalOverrides)
     },
     parachains: [],
   };
@@ -118,6 +133,17 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
             `/dns/${DEFAULT_BOOTNODE_DOMAIN}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
           ];
 
+    let nodeOverrides: Override[] = [];
+    if(node.overrides) {
+      nodeOverrides = await Promise.all(node.overrides.map( async override => {
+        const valid_local_path = await getLocalOverridePath(config.configBasePath, override.local_path);
+        return {
+          local_path: valid_local_path,
+          remote_name: override.remote_name
+        };
+      }));
+     }
+
     // build node Setup
     const nodeSetup: Node = {
       name: getUniqueName(node.name),
@@ -137,7 +163,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
         : "",
       telemetry: config.settings?.telemetry ? true : false,
       prometheus: config.settings?.prometheus ? true : false,
-      overrides: node.overrides || config.relaychain.default_overrides || [],
+      overrides: [...globalOverrides, ...nodeOverrides]
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -280,4 +306,16 @@ export function getUniqueName(name: string): string {
     mUsedNames[name] += 1;
   }
   return uniqueName;
+}
+
+async function getLocalOverridePath(configBasePath:string, definedLocalPath: string): Promise<string> {
+  // let check if local_path is full or relative
+  let local_real_path = definedLocalPath;
+  if(! fs.existsSync(definedLocalPath) ){
+    // check relative to config
+    local_real_path = path.join(configBasePath, definedLocalPath);
+    if(! fs.existsSync(local_real_path)) throw new Error("Invalid override config, only fullpaths or relative paths (from the config) are allowed");
+  }
+
+  return local_real_path;
 }
