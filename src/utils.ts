@@ -4,6 +4,7 @@ import { format } from "util";
 import { LaunchConfig, Node } from "./types";
 import toml from "toml";
 import { getUniqueName, WAIT_UNTIL_SCRIPT_SUFIX } from "./configManager";
+import path from "path";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -68,6 +69,7 @@ export function filterConsole(excludePatterns: string[], options?: any) {
 }
 
 export function readNetworkConfig(filepath: string): LaunchConfig {
+  const configBasePath = path.dirname(filepath);
   let content = fs.readFileSync(filepath).toString();
   let replacements = getReplacementInText(content);
 
@@ -88,6 +90,8 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
       ? JSON.parse(content) //require(filepath)
       : toml.parse(content);
 
+
+  config.configBasePath = configBasePath;
   return config;
 }
 
