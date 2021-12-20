@@ -233,6 +233,7 @@ export function generateNetworkSpec(config: LaunchConfig): ComputedNetwork {
   }
 
   networkSpec.types = config.types ? config.types : {};
+  networkSpec.configBasePath = config.configBasePath;
 
   return networkSpec;
 }

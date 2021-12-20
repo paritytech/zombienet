@@ -11,6 +11,7 @@ export interface ComputedNetwork {
   };
   parachains: Parachain[];
   types: any;
+  configBasePath: string;
 }
 
 export interface Node {
@@ -118,6 +119,7 @@ export interface LaunchConfig {
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;
+  configBasePath: string;
 }
 
 export interface Settings {

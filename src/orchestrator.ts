@@ -35,7 +35,7 @@ import {
 } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
-import { resolve } from "path";
+import path, { resolve } from "path";
 import { generateParachainFiles } from "./paras";
 import { setupChainSpec } from "./providers/k8s";
 import { getChainSpecRaw } from "./providers/k8s/chain-spec";
@@ -104,10 +104,8 @@ export async function start(
     fs.openSync(localMagicFilepath, "w");
 
     const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
-    await fs.promises.copyFile(zombieWrapperPath,zombieWrapperLocalPath);
-
-    // const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
-    // await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent);
+    const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
+    await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent, {mode: 0o755 });
 
     // Define chain name and file name to use.
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
@@ -211,8 +209,20 @@ export async function start(
 
       let finalFilesToCopyToNode = filesToCopyToNodes;
       for (const override of node.overrides) {
+        // let check if local_path is full or relative
+        let local_real_path = "";
+        if( fs.existsSync(override.local_path) ){
+          local_real_path = override.local_path;
+        } else {
+          // check relative to config
+          local_real_path = path.join(networkSpec.configBasePath, override.local_path);
+          console.log(local_real_path);
+          if(! fs.existsSync(local_real_path)) throw new Error("Invalid override config, only fullpaths or relative paths (from the config) are allowed");
+        }
+
+        console.log('es: ' +local_real_path);
         finalFilesToCopyToNode.push({
-          localFilePath: override.local_path,
+          localFilePath: local_real_path,
           remoteFilePath: `/cfg/${override.remote_name}`
         });
       }
