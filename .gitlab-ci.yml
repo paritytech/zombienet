@@ -203,7 +203,7 @@ zombienet-tests-integration:
   script:
     - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
         --github-remote-dir="${GH_DIR}"
-        --test=""0001-parachains-smoke-test.feature"
+        --test="0001-parachains-smoke-test.feature"
   allow_failure:                   true
   retry: 2
   tags:
