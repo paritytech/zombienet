@@ -201,9 +201,10 @@ zombienet-tests-integration:
     - export COL_IMAGE='docker.io/paritypr/colander:master'
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
-        --github-remote-dir="${GH_DIR}"
-        --test="0001-parachains-smoke-test.feature"
+    - sleep 360
+    # - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
+    #     --github-remote-dir="${GH_DIR}"
+    #     --test="0001-parachains-smoke-test.feature"
   allow_failure:                   true
   retry: 2
   tags:
