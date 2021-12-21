@@ -10,7 +10,8 @@
     "clean": "rm -rf ./dist/* ",
     "build": "tsc",
     "start": "yarn build && node dist/cli.js",
-    "lint": "npx prettier --write ."
+    "lint": "npx prettier --write .",
+    "package": "pkg ."
   },
   "dependencies": {
     "@polkadot/api": "^6.1.2",
@@ -46,6 +47,7 @@
     "@types/tmp": "^0.2.1",
     "prettier": "2.2.1",
     "typescript": "^4.1.5",
-    "yarn": "^1.22.10"
+    "yarn": "^1.22.10",
+    "pkg": "~5.5.1"
   }
 }

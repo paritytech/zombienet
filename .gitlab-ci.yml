@@ -8,8 +8,9 @@ default:
 
 stages:
   - lint
-  - test
   - build
+  - test
+  - package
   - check
   - publish
 
@@ -31,7 +32,9 @@ variables:
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/                         # PRs
+    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
 
 .common-refs:                      &common-refs
   rules:
@@ -86,6 +89,19 @@ build:
     - npm run build
     - cp -r dist/ artifacts/
     - cp package* artifacts/
+
+package:
+  stage:                           package
+  <<:                              *kubernetes-env
+  <<:                              *common-refs
+  <<:                              *collect-artifacts
+  script:
+    - mkdir -p artifacts
+    - npm install
+    - npm run clean
+    - npm run build
+    - npm run package
+    - cp zombienet-* artifacts/
 
 
 # template task for building and pushing an image
@@ -157,3 +173,36 @@ publish-docker:
   <<:                              *kubernetes-env
   <<:                              *publish-refs
   <<:                              *build-push-docker-image
+
+
+ zombienet-tests-malus-dispute-valid:
+  stage:                           publish
+  image:                           "docker.io/paritytech/zombienet:v1.0.2"
+  <<:                              *kubernetes-env
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_REF_NAME == "master"
+    - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/                         # PRs
+    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
+  needs:
+    - job:                         publish-docker-pr
+
+  variables:
+    GH_DIR:                        'https://github.com/paritytech/polkadot/tree/${CI_COMMIT_SHORT_SHA}/zombienet_tests/parachains'
+
+  before_script:
+    - echo "Zombie-net Tests Config"
+    - echo "docker.io/paritytech/zombienet:v1.0.2"
+    - echo "${GH_DIR}"
+    - export DEBUG=zombie*
+    - export ZOMBIENET_INTEGRATION_TEST_IMAGE=${PARACHAINS_IMAGE_NAME}:${PARACHAINS_IMAGE_TAG}
+    - export COL_IMAGE=${COLLATOR_IMAGE_NAME}:${COLLATOR_IMAGE_TAG}
+
+  script:
+    - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
+        --github-remote-dir="${GH_DIR}"
+        --test=""0001-parachains-smoke-test.feature"
+  allow_failure:                   true
+  retry: 2
+  tags:
+    - zombienet-polkadot-integration-test
