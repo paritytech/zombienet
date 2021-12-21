@@ -13,6 +13,7 @@ stages:
   - package
   - check
   - publish
+  - deploy
 
 variables:
   CI_IMAGE:                        "node:16.10"
@@ -174,9 +175,8 @@ publish-docker:
   <<:                              *publish-refs
   <<:                              *build-push-docker-image
 
-
- zombienet-tests-malus-dispute-valid:
-  stage:                           publish
+ zombienet-tests-integration:
+  stage:                           deploy
   image:                           "docker.io/paritytech/zombienet:v1.0.2"
   <<:                              *kubernetes-env
   rules:
