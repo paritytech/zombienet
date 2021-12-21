@@ -19,6 +19,7 @@ import {
   DEFAULT_CHAIN_SPEC_COMMAND,
   zombieWrapperPath,
   ZOMBIE_WRAPPER,
+  LOKI_URL_FOR_NODE,
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -39,6 +40,7 @@ import path, { resolve } from "path";
 import { generateParachainFiles } from "./paras";
 import { setupChainSpec } from "./providers/k8s";
 import { getChainSpecRaw } from "./providers/k8s/chain-spec";
+import { decorators } from "./colors";
 
 const debug = require("debug")("zombie");
 
@@ -116,13 +118,13 @@ export async function start(
     await client.createNamespace();
 
     // Create bootnode and backchannel services
-    debug(`Creating bootnode and backchannel services`);
-    await client.createStaticResource("bootnode-service.yaml");
-    await client.createStaticResource("backchannel-service.yaml");
-    await client.createStaticResource("backchannel-pod.yaml");
+    debug(`Creating static resources (bootnode and backchannel services)`);
+    // await client.createStaticResource("bootnode-service.yaml");
+    // await client.createStaticResource("backchannel-service.yaml");
+    // await client.createStaticResource("backchannel-pod.yaml");
 
     // create basic infra metrics if needed
-    // if (withMetrics) await client.staticSetup();
+    await client.staticSetup();
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
     // setup cleaner
@@ -197,6 +199,8 @@ export async function start(
 
     const bootnodeIP = await client.getBootnodeIP();
 
+    const monitorIsAvailable = await client._isPodMonitorAvailable();
+
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
@@ -231,6 +235,24 @@ export async function start(
         userDefinedTypes
       );
       network.addNode(networkNode);
+
+      // Display info about the current node
+      let msg = `\n\t${decorators.green(node.name)} running`;
+      if(node.overrides) {
+        msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
+        for(const override of node.overrides){
+            msg += `\t\t local_path: ${override.local_path}\n`;
+            msg += `\t\t remote name: ${override.remote_name}`;
+        }
+      }
+
+      console.log(msg);
+      console.log("\n");
+      if(monitorIsAvailable) {
+        const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace).replace(/{{podName}}/, podDef.metadata.name);
+        console.log(`\t${decorators.green("Grafana logs url:")}`);
+        console.log(`\t\t${decorators.magenta(loki_url)}`);
+      }
     }
 
     console.log("\t All relay chain nodes spawned...");

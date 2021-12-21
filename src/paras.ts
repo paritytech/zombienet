@@ -21,7 +21,7 @@ export async function generateParachainFiles(
   const parachainFilesPath = `${tmpDir}/${parachain.id}`;
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-  const localMagicFilepath = `${tmpDir}/finished.txt`;
+  // const localMagicFilepath = `${tmpDir}/finished.txt`;
   const client = getClient();
 
   fs.mkdirSync(parachainFilesPath);
@@ -48,23 +48,25 @@ export async function generateParachainFiles(
       overrides: [],
     };
     const podDef = await genPodDef(namespace, node);
+    const podName = podDef.metadata.name;
 
     debug(
-      `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+      `launching ${podName} pod with image ${podDef.spec.containers[0].image}`
     );
     debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
     await client.createResource(podDef, true, false);
-    await client.wait_transfer_container(podDef.metadata.name);
+    await client.wait_transfer_container(podName);
 
-    await client.copyFileToPod(
-      podDef.metadata.name,
-      localMagicFilepath,
-      FINISH_MAGIC_FILE,
-      TRANSFER_CONTAINER_NAME
-    );
+    // await client.copyFileToPod(
+    //   podDef.metadata.name,
+    //   localMagicFilepath,
+    //   FINISH_MAGIC_FILE,
+    //   TRANSFER_CONTAINER_NAME
+    // );
+    await client.putLocalMagicFile(podName,TRANSFER_CONTAINER_NAME);
 
-    await client.wait_pod_ready(podDef.metadata.name);
+    await client.wait_pod_ready(podName);
 
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
@@ -82,12 +84,13 @@ export async function generateParachainFiles(
       );
     }
 
-    // put file to terminate pod
-    await client.copyFileToPod(
-      podDef.metadata.name,
-      localMagicFilepath,
-      FINISH_MAGIC_FILE
-    );
+    // // put file to terminate pod
+    // await client.copyFileToPod(
+    //   podDef.metadata.name,
+    //   localMagicFilepath,
+    //   FINISH_MAGIC_FILE
+    // );
+    await client.putLocalMagicFile(podName, podName);
   }
 
   if (parachain.genesisStatePath) {

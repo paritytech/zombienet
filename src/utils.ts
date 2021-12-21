@@ -5,6 +5,7 @@ import { LaunchConfig, Node } from "./types";
 import toml from "toml";
 import { getUniqueName, WAIT_UNTIL_SCRIPT_SUFIX } from "./configManager";
 import path from "path";
+import { createHash } from "crypto";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -155,6 +156,8 @@ export function createTempNodeDef(name: string, image: string, chain: string, fu
   };
 
   return node;
+}
 
-
+export function getSha256(input: string): string {
+  return createHash('sha256').update(input).digest('hex');
 }
