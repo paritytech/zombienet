@@ -92,7 +92,7 @@ build:
     - cp package* artifacts/
 
 package:
-  stage:                           build
+  stage:                           package
   <<:                              *kubernetes-env
   <<:                              *common-refs
   <<:                              *collect-artifacts
