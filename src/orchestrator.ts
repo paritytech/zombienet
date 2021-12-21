@@ -241,7 +241,7 @@ export async function start(
       if(node.overrides) {
         msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
         for(const override of node.overrides){
-            msg += `\t\t local_path: ${override.local_path}`;
+            msg += `\t\t local_path: ${override.local_path}\n`;
             msg += `\t\t remote name: ${override.remote_name}`;
         }
       }
