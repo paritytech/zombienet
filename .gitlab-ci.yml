@@ -92,10 +92,12 @@ build:
     - cp package* artifacts/
 
 package:
-  stage:                           package
+  stage:                           build
   <<:                              *kubernetes-env
   <<:                              *common-refs
   <<:                              *collect-artifacts
+  needs:
+    - job:                         build
   script:
     - mkdir -p artifacts
     - npm install

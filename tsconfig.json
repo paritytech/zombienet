@@ -11,5 +11,5 @@
     "declaration": true,
     "rootDir": "./src"
   },
-  "exclude": ["node_modules", "dist", "test", "local-utils"]
+  "exclude": ["node_modules", "dist", "test", "local-utils", "artifacts"]
 }
