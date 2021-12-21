@@ -175,7 +175,7 @@ publish-docker:
   <<:                              *publish-refs
   <<:                              *build-push-docker-image
 
- zombienet-tests-integration:
+zombienet-tests-integration:
   stage:                           deploy
   image:                           "docker.io/paritytech/zombienet:v1.0.2"
   <<:                              *kubernetes-env
