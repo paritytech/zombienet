@@ -86,9 +86,18 @@ function make_transfer_containter(): any {
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
+    // { name: "shared", mountPath: "/shared", readOnly: true },
   ];
 
-  const devices = [{ name: "tmp-cfg" }];
+  const devices = [
+    { name: "tmp-cfg" },
+    // {
+    //   "name": "shared",
+    //   "persistentVolumeClaim": {
+    //     "claimName": "shared-pv-claim"
+    //   }
+    // }
+  ];
 
   return [volume_mounts, devices];
 }

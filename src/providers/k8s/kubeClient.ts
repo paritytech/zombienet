@@ -1,7 +1,7 @@
 import execa from "execa";
 import { resolve } from "path";
 import { FINISH_MAGIC_FILE, TRANSFER_CONTAINER_NAME } from "../../configManager";
-import { addMinutes, writeLocalJsonFile } from "../../utils";
+import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
 import { availableNetworks } from "@polkadot/util-crypto";
@@ -32,6 +32,10 @@ export function initClient(
   client = new KubeClient(configPath, namespace, tmpDir);
   return client;
 }
+
+// Here we cache each file we upload from local
+// to just cp between pods and not upload again the same file.
+const fileUploadCache: any = {};
 
 export class KubeClient {
   namespace: string;
@@ -96,12 +100,14 @@ export class KubeClient {
 
   async putLocalMagicFile(name: string, container?: string) {
     const target = container? container : TRANSFER_CONTAINER_NAME;
-    await client.copyFileToPod(
-      name,
-      this.localMagicFilepath,
-      FINISH_MAGIC_FILE,
-      target
-    );
+    const r = await this.kubectl(["exec", name, "-c", target, "--", "/bin/touch", FINISH_MAGIC_FILE]);
+    debug(r);
+    // await client.copyFileToPod(
+    //   name,
+    //   this.localMagicFilepath,
+    //   FINISH_MAGIC_FILE,
+    //   target
+    // );
   }
 
   // accept a json def
@@ -237,10 +243,31 @@ export class KubeClient {
     podFilePath: string,
     container: string | undefined = undefined
   ) {
-    const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
-    if (container) args.push("-c", container);
-    debug("copyFileToPod", args);
-    const result = await this.kubectl(args, undefined, true);
+    const hashedName = getSha256(localFilePath);
+    const parts = localFilePath.split("/");
+    const fileName = parts[parts.length -1];
+    if(! fileUploadCache[hashedName]) {
+      console.log("es: "+localFilePath);
+      const args = ["cp", localFilePath, `fileserver:/usr/share/nginx/html/${hashedName}`];
+      // if (container) args.push("-c", container);
+      debug("copyFileToPod", args);
+      const result = await this.kubectl(args, undefined, true);
+      debug(result);
+      fileUploadCache[hashedName] = fileName;
+    }
+
+    // download the file in the container
+    const args = ["exec", identifier];
+    if(container) args.push("-c", container);
+    let extraArgs = ["--", "/usr/bin/wget", "-O", podFilePath, `http://fileserver/${hashedName}`];
+    debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
+    let result = await this.kubectl([...args, ...extraArgs], undefined, true);
+    debug(result);
+
+    if(container) args.push("-c", container);
+    extraArgs = ["--", "/bin/chmod", "+x", podFilePath];
+    debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
+    result = await this.kubectl([...args, ...extraArgs], undefined, true);
     debug(result);
   }
 
@@ -293,29 +320,28 @@ export class KubeClient {
         ];
 
     const resources = [
-      { type: "role", files: ["prometheus-role.yaml"] },
-      { type: "binding", files: ["prometheus-role-binding.yaml"] },
       { type: "data-storage-classes", files: storageFiles },
-      {
-        type: "configs",
-        files: ["prometheus-config.yaml", "grafana-config.yaml"],
-      },
       {
         type: "services",
         files: [
           "bootnode-service.yaml",
-          "telemetry-service.yaml",
-          "prometheus-service.yaml",
+          "backchannel-service.yaml",
+          "fileserver-service.yaml"
         ],
       },
       {
         type: "deployment",
         files: [
-          "prometheus-deployment.yaml",
-          "grafana-deployment.yaml",
-          //"telemetry-deployment.yaml",
+          "backchannel-pod.yaml",
+          "fileserver-pod.yaml"
         ],
       },
+      // {
+      //   type: "pvc",
+      //   files: [
+      //     "shared-pvc.yaml"
+      //   ]
+      // }
     ];
 
     for (const resourceType of resources) {

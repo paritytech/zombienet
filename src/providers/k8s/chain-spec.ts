@@ -71,6 +71,9 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
         podName
     );
 
+    // let's just wait 2 secs before download
+    await sleep(2000);
+
     // We had some issues where the `raw` file is empty
     // let's add some extra checks here to ensure we are ok.
     let isValid = false;

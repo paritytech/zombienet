@@ -9,9 +9,11 @@ import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command } from "commander";
 import { debug } from "console";
+
 const path = require("path");
 
-const program = new Command("zombie-net");
+
+const program = new Command("zombienet");
 
 let network: Network;
 
@@ -78,6 +80,13 @@ program
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")
   .action(test);
+
+  program
+  .command("version")
+  .description("Prints zombienet version")
+  .action(() => {
+    console.log("1.1.0-alpha");
+  });
 
 // spawn
 async function spawn(
