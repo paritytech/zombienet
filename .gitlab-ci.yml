@@ -180,7 +180,7 @@ publish-docker:
 zombienet-tests-integration:
   stage:                           deploy
   <<:                              *kubernetes-env
-  image:                           paritytech/zombienet:v1.0.2
+  image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_REF_NAME == "master"
