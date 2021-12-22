@@ -194,7 +194,7 @@ zombienet-tests-integration:
 
   before_script:
     - echo "Zombie-net Tests Config"
-    - echo "docker.io/paritytech/zombienet:v1.0.2"
+    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
     - echo "${GH_DIR}"
     - export DEBUG=zombie*
     - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/synth-wave:master"
