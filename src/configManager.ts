@@ -1,4 +1,4 @@
-import { LaunchConfig, ComputedNetwork, Node, Parachain, Override } from "./types";
+import { LaunchConfig, ComputedNetwork, Node, Parachain, Override, RelayChainConfig } from "./types";
 import path, { resolve } from "path";
 import fs from "fs";
 const debug = require("debug")("zombie::config-manager");
@@ -146,6 +146,13 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
       }));
      }
 
+    const isValidator = node.validator ? true :
+      isValidatorbyArgs(args) ? true:
+      false;
+
+    // enable --prometheus-external by default
+    const prometheusExternal = config.settings?.prometheus !== undefined ? config.settings.prometheus : true;
+
     // build node Setup
     const nodeSetup: Node = {
       name: getUniqueName(node.name),
@@ -156,7 +163,7 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
       wsPort: node.wsPort ? node.wsPort : RPC_WS_PORT,
       port: node.port ? node.port : P2P_PORT,
       chain: chainName,
-      validator: node.validator,
+      validator: isValidator,
       args,
       env,
       bootnodes,
@@ -164,7 +171,7 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
         ? "ws://telemetry:8000/submit 0"
         : "",
       telemetry: config.settings?.telemetry ? true : false,
-      prometheus: config.settings?.prometheus ? true : false,
+      prometheus: prometheusExternal,
       overrides: [...globalOverrides, ...nodeOverrides]
     };
 
@@ -320,4 +327,10 @@ async function getLocalOverridePath(configBasePath:string, definedLocalPath: str
   }
 
   return local_real_path;
+}
+
+function isValidatorbyArgs(nodeArgs: string[]): boolean {
+  const defaultAccounts = ['alice', 'bob', 'charlie', 'dave', 'eve', 'ferdie'];
+  const validatorAccount = defaultAccounts.find( acc => nodeArgs.includes(`--${acc}`));
+  return validatorAccount ? true : false;
 }

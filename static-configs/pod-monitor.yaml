@@ -14,7 +14,6 @@ spec:
       - "{{namespace}}"
   selector:
       matchLabels:
-        role: authority
+        zombie-role: authority
   podTargetLabels:
     - instance
-    - role
