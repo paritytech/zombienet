@@ -238,7 +238,7 @@ export async function start(
 
       // Display info about the current node
       let msg = `\n\t${decorators.green(node.name)} running`;
-      if(node.overrides) {
+      if(node.overrides && node.overrides.length > 0) {
         msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
         for(const override of node.overrides){
             msg += `\t\t local_path: ${override.local_path}\n`;
