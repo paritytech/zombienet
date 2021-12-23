@@ -21,7 +21,7 @@ export async function genBootnodeDef(
       labels: {
         "app.kubernetes.io/name" : namespace,
         "app.kubernetes.io/instance" : "bootnode",
-        role: "bootnode",
+        "zombie-role": "bootnode",
         app: "zombienet",
       },
     },
@@ -48,7 +48,7 @@ export function genPodDef(namespace: string, nodeSetup: Node): any {
     metadata: {
       name: nodeSetup.name,
       labels: {
-        role: nodeSetup.validator ? "authority" : "full-node",
+        "zombie-role": nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
         "app.kubernetes.io/name" : namespace,
         "app.kubernetes.io/instance" : nodeSetup.name,
@@ -103,7 +103,7 @@ function make_volume_mounts(): [any, any] {
 }
 
 function make_main_container(nodeSetup: Node, volume_mounts: any[]): any {
-  const ports = [{ containerPort: PROMETHEUS_PORT }];
+  const ports = [{ containerPort: PROMETHEUS_PORT, name: "prometheus" }];
   const command = gen_cmd(nodeSetup);
 
   let containerDef = {

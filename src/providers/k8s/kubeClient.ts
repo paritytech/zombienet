@@ -215,6 +215,7 @@ export class KubeClient {
       .replace(/{{namespace}}/ig, this.namespace)
       .replace(/{{chain}}/ig, chain);
       await this.kubectl(["-n", "monitoring", "apply", "-f", "-"], resourceDef, false);
+      // await this.kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
   async updateResource(
@@ -365,8 +366,8 @@ export class KubeClient {
   }
 
   async cronJobCleanerSetup() {
-    await this.createStaticResource("job-svc-account.yaml");
     if( this.podMonitorAvailable) await this.createStaticResource("job-delete-podmonitor-role.yaml", "monitoring");
+    await this.createStaticResource("job-svc-account.yaml");
   }
 
   async upsertCronJob(minutes = 10) {
