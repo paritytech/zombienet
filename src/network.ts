@@ -1,4 +1,4 @@
-import { KubeClient } from "./providers/k8s";
+import { Client, getClient } from "./providers/client";
 import { cryptoWaitReady, keyExtractPath } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
@@ -29,12 +29,12 @@ export class Network {
   nodes: NetworkNode[] = [];
   nodesByName: NodeMapping = {};
   namespace: string;
-  client: KubeClient;
+  client: Client;
   launched: boolean;
   tmpDir: string;
   backchannelUri: string = "";
 
-  constructor(client: KubeClient, namespace: string, tmpDir: string) {
+  constructor(client: Client, namespace: string, tmpDir: string) {
     this.client = client;
     this.namespace = namespace;
     this.launched = false;

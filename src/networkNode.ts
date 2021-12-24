@@ -4,7 +4,7 @@ import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   PROMETHEUS_PORT,
 } from "./configManager";
-import { getClient } from "./providers/k8s";
+import { getClient } from "./providers/client";
 import type { HeadData, ParaId } from "@polkadot/types/interfaces";
 import type { Option, Vec } from "@polkadot/types";
 
@@ -57,7 +57,7 @@ export class NetworkNode implements NetworkNodeInterface {
       : `echo restart > /tmp/zombiepipe`;
     args.push(cmd);
 
-    await client.kubectl(args, undefined, true);
+    await client.runCommand(args, undefined, true);
   }
 
   async pause() {
@@ -70,7 +70,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    await client.kubectl(args, undefined, true);
+    await client.runCommand(args, undefined, true);
   }
 
   async resume() {
@@ -83,7 +83,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    await client.kubectl(args, undefined, true);
+    await client.runCommand(args, undefined, true);
   }
 
   async isUp(timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {

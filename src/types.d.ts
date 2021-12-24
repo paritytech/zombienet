@@ -131,6 +131,7 @@ export interface Settings {
   grafana?: boolean;
   telemetry?: boolean;
   prometheus?: boolean;
+  provider: string;
 }
 
 export interface GlobalVolume {

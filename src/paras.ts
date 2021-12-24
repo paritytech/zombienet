@@ -1,14 +1,14 @@
 import { debug } from "console";
 import {
   DEFAULT_COLLATOR_IMAGE,
-  FINISH_MAGIC_FILE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   getUniqueName,
   TRANSFER_CONTAINER_NAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./configManager";
-import { genPodDef, getClient } from "./providers/k8s";
+import { getClient } from "./providers/client";
+import { Providers } from "./providers";
 import { Node, Parachain } from "./types";
 import fs from "fs";
 
@@ -47,7 +47,7 @@ export async function generateParachainFiles(
       telemetryUrl: "",
       overrides: [],
     };
-    const podDef = await genPodDef(namespace, node);
+    const podDef = await Providers.get(client.providerName).genPodDef(namespace, node);
     const podName = podDef.metadata.name;
 
     debug(

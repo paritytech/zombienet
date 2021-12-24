@@ -4,24 +4,13 @@ import { FINISH_MAGIC_FILE, TRANSFER_CONTAINER_NAME } from "../../configManager"
 import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
-import { availableNetworks } from "@polkadot/util-crypto";
 import { fileMap } from "../../types";
+import { Client, RunCommandResponse, setClient } from "../client";
 
 const debug = require("debug")("zombie::kube::client");
 
-export interface KubectlResponse {
-  exitCode: number;
-  stdout: string;
-}
-
 export interface ReplaceMapping {
   [propertyName: string]: string;
-}
-
-let client: KubeClient;
-export function getClient(): KubeClient {
-  if (!client) throw new Error("Client not initialized");
-  return client;
 }
 
 export function initClient(
@@ -29,7 +18,8 @@ export function initClient(
   namespace: string,
   tmpDir: string
 ): KubeClient {
-  client = new KubeClient(configPath, namespace, tmpDir);
+  const client = new KubeClient(configPath, namespace, tmpDir);
+  setClient(client);
   return client;
 }
 
@@ -37,7 +27,7 @@ export function initClient(
 // to just cp between pods and not upload again the same file.
 const fileUploadCache: any = {};
 
-export class KubeClient {
+export class KubeClient extends Client {
   namespace: string;
   configPath: string;
   debug: boolean;
@@ -48,6 +38,7 @@ export class KubeClient {
   localMagicFilepath: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
+    super(configPath, namespace, tmpDir, "kubectl", "Kubernetes");
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
@@ -58,7 +49,7 @@ export class KubeClient {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this.kubectl(["cluster-info"], undefined, false);
+      const result = await this.runCommand(["cluster-info"], undefined, false);
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -90,7 +81,7 @@ export class KubeClient {
 
     for(const fileMap of filesToCopy) {
         const  {localFilePath, remoteFilePath} = fileMap;
-        await client.copyFileToPod(name, localFilePath, remoteFilePath, TRANSFER_CONTAINER_NAME)
+        await this.copyFileToPod(name, localFilePath, remoteFilePath, TRANSFER_CONTAINER_NAME)
     }
 
     await this.putLocalMagicFile(name);
@@ -100,7 +91,7 @@ export class KubeClient {
 
   async putLocalMagicFile(name: string, container?: string) {
     const target = container? container : TRANSFER_CONTAINER_NAME;
-    const r = await this.kubectl(["exec", name, "-c", target, "--", "/bin/touch", FINISH_MAGIC_FILE]);
+    const r = await this.runCommand(["exec", name, "-c", target, "--", "/bin/touch", FINISH_MAGIC_FILE]);
     debug(r);
     // await client.copyFileToPod(
     //   name,
@@ -116,7 +107,7 @@ export class KubeClient {
     scoped: boolean = false,
     waitReady: boolean = false
   ): Promise<void> {
-    await this.kubectl(
+    await this.runCommand(
       ["apply", "-f", "-"],
       JSON.stringify(resourseDef),
       scoped
@@ -131,7 +122,7 @@ export class KubeClient {
       let t = this.timeout;
       const args = ["get", kind, name, "-o", "jsonpath={.status}"];
       do {
-        const result = await this.kubectl(args, undefined, true);
+        const result = await this.runCommand(args, undefined, true);
         //debug( result.stdout );
         const status = JSON.parse(result.stdout);
         if (["Running", "Succeeded"].includes(status.phase)) return;
@@ -154,7 +145,7 @@ export class KubeClient {
     let t = this.timeout;
     const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
     do {
-      const result = await this.kubectl(args, undefined, true);
+      const result = await this.runCommand(args, undefined, true);
       //debug( result.stdout );
       if (["Running", "Succeeded"].includes(result.stdout)) return;
 
@@ -169,7 +160,7 @@ export class KubeClient {
     let t = this.timeout;
     const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
     do {
-      const result = await this.kubectl(args, undefined, true);
+      const result = await this.runCommand(args, undefined, true);
       const status = JSON.parse(result.stdout);
 
       // check if we are waiting init container
@@ -196,9 +187,9 @@ export class KubeClient {
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
 
     if(scopeNamespace) {
-      await this.kubectl(["-n", scopeNamespace, "apply", "-f", "-"], resourceDef);
+      await this.runCommand(["-n", scopeNamespace, "apply", "-f", "-"], resourceDef);
     } else {
-      await this.kubectl(["apply", "-f", "-"], resourceDef);
+      await this.runCommand(["apply", "-f", "-"], resourceDef);
     }
   }
 
@@ -214,7 +205,7 @@ export class KubeClient {
       .toString("utf-8")
       .replace(/{{namespace}}/ig, this.namespace)
       .replace(/{{chain}}/ig, chain);
-      await this.kubectl(["-n", "monitoring", "apply", "-f", "-"], resourceDef, false);
+      await this.runCommand(["-n", "monitoring", "apply", "-f", "-"], resourceDef, false);
       // await this.kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
@@ -235,7 +226,7 @@ export class KubeClient {
       );
     }
 
-    await this.kubectl(["apply", "-f", "-"], resourceDef);
+    await this.runCommand(["apply", "-f", "-"], resourceDef);
   }
 
   async copyFileToPod(
@@ -252,7 +243,7 @@ export class KubeClient {
       const args = ["cp", localFilePath, `fileserver:/usr/share/nginx/html/${hashedName}`];
       // if (container) args.push("-c", container);
       debug("copyFileToPod", args);
-      const result = await this.kubectl(args, undefined, true);
+      const result = await this.runCommand(args, undefined, true);
       debug(result);
       fileUploadCache[hashedName] = fileName;
     }
@@ -262,13 +253,13 @@ export class KubeClient {
     if(container) args.push("-c", container);
     let extraArgs = ["--", "/usr/bin/wget", "-O", podFilePath, `http://fileserver/${hashedName}`];
     debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
-    let result = await this.kubectl([...args, ...extraArgs], undefined, true);
+    let result = await this.runCommand([...args, ...extraArgs], undefined, true);
     debug(result);
 
     if(container) args.push("-c", container);
     extraArgs = ["--", "/bin/chmod", "+x", podFilePath];
     debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
-    result = await this.kubectl([...args, ...extraArgs], undefined, true);
+    result = await this.runCommand([...args, ...extraArgs], undefined, true);
     debug(result);
   }
 
@@ -281,12 +272,12 @@ export class KubeClient {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
     if (container) args.push("-c", container);
     debug("copyFileFromPod", args);
-    const result = await this.kubectl(args, undefined, true);
+    const result = await this.runCommand(args, undefined, true);
     debug(result);
   }
 
   async runningOnMinikube(): Promise<boolean> {
-    const result = await this.kubectl([
+    const result = await this.runCommand([
       "get",
       "sc",
       "-o",
@@ -296,7 +287,7 @@ export class KubeClient {
   }
 
   async destroyNamespace() {
-    await this.kubectl(
+    await this.runCommand(
       ["delete", "namespace", this.namespace],
       undefined,
       false
@@ -305,7 +296,7 @@ export class KubeClient {
 
   async getBootnodeIP(): Promise<string> {
     const args = ["get", "pod", "bootnode", "-o", "jsonpath={.status.podIP}"];
-    const result = await this.kubectl(args, undefined, true);
+    const result = await this.runCommand(args, undefined, true);
     return result.stdout;
   }
 
@@ -394,7 +385,7 @@ export class KubeClient {
       "-o",
       "jsonpath={.status.phase}",
     ];
-    const result = await this.kubectl(args, undefined, false);
+    const result = await this.runCommand(args, undefined, false);
     if (result.exitCode !== 0 || result.stdout !== "Active") return false;
     return true;
   }
@@ -446,16 +437,16 @@ export class KubeClient {
   async dumpLogs(path: string, podName: string) {
     const dstFileName = `${path}/logs/${podName}.log`;
     const args = ["logs", podName, "--namespace", this.namespace];
-    const result = await this.kubectl(args, undefined, false);
+    const result = await this.runCommand(args, undefined, false);
     await fs.writeFile(dstFileName, result.stdout);
   }
 
   // run kubectl
-  async kubectl(
+  async runCommand(
     args: string[],
     resourceDef?: string,
     scoped: boolean = true
-  ): Promise<KubectlResponse> {
+  ): Promise<RunCommandResponse> {
     try {
       const augmentedCmd: string[] = ["--kubeconfig", this.configPath];
       if (scoped) augmentedCmd.push("--namespace", this.namespace);

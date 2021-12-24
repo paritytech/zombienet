@@ -4,48 +4,45 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   getUniqueName,
-  FINISH_MAGIC_FILE,
-  DEFAULT_COLLATOR_IMAGE,
+  // FINISH_MAGIC_FILE,
+  // DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   DEFAULT_BOOTNODE_PEER_ID,
-  WAIT_UNTIL_SCRIPT_SUFIX,
-  TRANSFER_CONTAINER_NAME,
+  // WAIT_UNTIL_SCRIPT_SUFIX,
+  // TRANSFER_CONTAINER_NAME,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
-  DEFAULT_CHAIN_SPEC_PATH,
-  DEFAULT_CHAIN_SPEC_RAW_PATH,
-  DEFAULT_CHAIN_SPEC_COMMAND,
+  // DEFAULT_CHAIN_SPEC_PATH,
+  // DEFAULT_CHAIN_SPEC_RAW_PATH,
+  // DEFAULT_CHAIN_SPEC_COMMAND,
   zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
-import { startPortForwarding } from "./portForwarder";
+//import { startPortForwarding } from "./portForwarder";
 //import { ApiPromise, WsProvider } from "@polkadot/api";
 import { clearAuthorities, addAuthority, changeGenesisConfig, addParachainToGenesis } from "./chain-spec";
 import {
   generateNamespace,
   sleep,
   filterConsole,
-  writeLocalJsonFile,
+  // writeLocalJsonFile,
   loadTypeDef,
-  createTempNodeDef,
+  // createTempNodeDef,
 } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import path, { resolve } from "path";
 import { generateParachainFiles } from "./paras";
-import { setupChainSpec } from "./providers/k8s";
-import { getChainSpecRaw } from "./providers/k8s/chain-spec";
+//import { setupChainSpec } from "./providers/k8s";
+//import { getChainSpecRaw } from "./providers/k8s/chain-spec";
 import { decorators } from "./colors";
 
 const debug = require("debug")("zombie");
-
-// For now the only provider is k8s
-const { genBootnodeDef, genPodDef, initClient } = Providers.Kubernetes;
 
 // Hide some warning messages that are coming from Polkadot JS API.
 // TODO: Make configurable.
@@ -86,7 +83,16 @@ export async function start(
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
     debug(`\t Temp Dir: ${tmpDir.path}`);
 
-    // const client = new KubeClient(credentials, namespace, tmpDir.path);
+    // get provider fns
+    const provider = networkSpec.settings.provider;
+    if(!Providers.has(provider)) {
+
+      throw new Error("Invalid provider config. You must one of: " + Array.from(Providers.keys()).join(", "));
+    }
+    console.log(`\t Using provider: ${networkSpec.settings.provider}`);
+    const { genBootnodeDef, genPodDef, initClient, setupChainSpec, getChainSpecRaw } = Providers.get(networkSpec.settings.provider);
+
+
     const client = initClient(credentials, namespace, tmpDir.path);
     network = new Network(client, namespace, tmpDir.path);
 
@@ -182,11 +188,10 @@ export async function start(
     await sleep(5000);
 
     const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await startPortForwarding(9944, bootnodeIdentifier, client);
-    const prometheusPort = await startPortForwarding(
+    const fwdPort = await client.startPortForwarding(9944, bootnodeIdentifier);
+    const prometheusPort = await client.startPortForwarding(
       PROMETHEUS_PORT,
-      bootnodeIdentifier,
-      client
+      bootnodeIdentifier
     );
 
     const bootnodeNode: NetworkNode = new NetworkNode(
@@ -221,11 +226,10 @@ export async function start(
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const fwdPort = await startPortForwarding(9944, nodeIdentifier, client);
-      const nodePrometheusPort = await startPortForwarding(
+      const fwdPort = await client.startPortForwarding(9944, nodeIdentifier);
+      const nodePrometheusPort = await client.startPortForwarding(
         PROMETHEUS_PORT,
-        nodeIdentifier,
-        client
+        nodeIdentifier
       );
 
       const networkNode: NetworkNode = new NetworkNode(

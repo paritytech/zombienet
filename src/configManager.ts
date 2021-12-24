@@ -84,11 +84,14 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
 
   const chainName = config.relaychain.chain || DEFAULT_CHAIN;
 
-  // settings don't need transform
+  // settings
   networkSpec.settings = {
     timeout: DEFAULT_GLOBAL_TIMEOUT,
     ...(config.settings ? config.settings : {}),
   };
+
+  // default provider
+  if(! networkSpec.settings.provider) networkSpec.settings.provider = "Kubernetes";
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {
