@@ -29,7 +29,7 @@ export class PodmanClient extends Client {
     localMagicFilepath: string;
 
     constructor(configPath: string, namespace: string, tmpDir: string) {
-      super(configPath, namespace, tmpDir, "podman", "Podman");
+      super(configPath, namespace, tmpDir, "ssh pepoviola@build-host -f podman", "Podman");
       this.configPath = configPath;
       this.namespace = namespace;
       this.debug = true;
@@ -40,12 +40,69 @@ export class PodmanClient extends Client {
 
     async validateAccess(): Promise<boolean> {
       try {
-        const result = await this.runCommand(["cluster-info"], undefined, false);
+        const result = await this.runCommand(["--help"], undefined, false);
         return result.exitCode === 0;
       } catch (e) {
         return false;
       }
     }
+
+    async createNamespace(): Promise<void> {
+        const namespaceDef = {
+          apiVersion: "v1",
+          kind: "Namespace",
+          metadata: {
+            name: this.namespace,
+          },
+        };
+
+        writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
+        // Podman don't have the namespace concept yet
+        // await this.createResource(namespaceDef);
+
+        return;
+    }
+    async staticSetup(): Promise<void> {
+      const resources = [
+        {
+          type: "services",
+          files: [
+            "bootnode-service.yaml",
+            "backchannel-service.yaml",
+            "fileserver-service.yaml"
+          ],
+        },
+        {
+          type: "deployment",
+          files: [
+            "backchannel-pod.yaml",
+            "fileserver-pod.yaml"
+          ],
+        }
+      ];
+
+      for (const resourceType of resources) {
+        console.log(`adding ${resourceType.type}`);
+        for (const file of resourceType.files) {
+          await this.createStaticResource(file);
+        }
+      }
+    }
+
+    async createStaticResource(filename: string): Promise<void> {
+        const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
+        const fileContent = await fs.readFile(filePath);
+        const resourceDef = fileContent
+          .toString("utf-8")
+          .replace(new RegExp("{{namespace}}", "g"), this.namespace);
+
+        if(scopeNamespace) {
+          await this.runCommand(["-n", scopeNamespace, "apply", "-f", "-"], resourceDef);
+        } else {
+          await this.runCommand(["apply", "-f", "-"], resourceDef);
+        }
+    }
+
     destroyNamespace(): Promise<void> {
         throw new Error("Method not implemented.");
     }
@@ -58,8 +115,26 @@ export class PodmanClient extends Client {
     startPortForwarding(port: number, identifier: string): Promise<number> {
         throw new Error("Method not implemented.");
     }
-    runCommand(args: string[], resourceDef?: string, scoped?: boolean): Promise<RunCommandResponse> {
-        throw new Error("Method not implemented.");
+
+    async runCommand(args: string[], resourceDef?: string, scoped?: boolean): Promise<RunCommandResponse> {
+        try {
+            const augmentedCmd: string[] = [];
+            if (scoped) augmentedCmd.push("--namespace", this.namespace);
+
+            const finalArgs = ["pepoviola@build-host", "-f", "podman", ...augmentedCmd, ...args];
+
+            console.log(augmentedCmd.join(" "));
+
+            const result = await execa("ssh", finalArgs);
+            console.log(result);
+            return {
+                exitCode: result.exitCode,
+                stdout: result.stdout,
+            };
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
     }
     async spawnFromDef(podDef: any, filesToCopy: fileMap[] = [] , filesToGet: fileMap[] = []): Promise<void> {
         throw new Error("Method not implemented.");
@@ -73,11 +148,11 @@ export class PodmanClient extends Client {
     createResource(resourseDef: any, scoped: boolean, waitReady: boolean): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    wait_transfer_container(podName: string): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-    wait_pod_ready(podName: string): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
+    // wait_transfer_container(podName: string): Promise<void> {
+    //     throw new Error("Method not implemented.");
+    // }
+    // wait_pod_ready(podName: string): Promise<void> {
+    //     throw new Error("Method not implemented.");
+    // }
 }
 

@@ -93,12 +93,6 @@ export class KubeClient extends Client {
     const target = container? container : TRANSFER_CONTAINER_NAME;
     const r = await this.runCommand(["exec", name, "-c", target, "--", "/bin/touch", FINISH_MAGIC_FILE]);
     debug(r);
-    // await client.copyFileToPod(
-    //   name,
-    //   this.localMagicFilepath,
-    //   FINISH_MAGIC_FILE,
-    //   target
-    // );
   }
 
   // accept a json def

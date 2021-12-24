@@ -27,6 +27,8 @@ export abstract class Client{
       this.providerName = providerName;
     }
 
+    abstract createNamespace(): Promise<void>;
+    abstract staticSetup(): Promise<void>;
     abstract destroyNamespace(): Promise<void>;
     abstract dumpLogs(path: string, podName: string): Promise<void>;
     abstract upsertCronJob(minutes: number): Promise<void>;
@@ -36,8 +38,8 @@ export abstract class Client{
     abstract copyFileFromPod(identifier: string, podFilePath: string, localFilePath: string, container?: string | undefined ): Promise<void>;
     abstract putLocalMagicFile(name: string, container?: string): Promise<void>;
     abstract createResource(resourseDef: any, scoped: boolean, waitReady: boolean): Promise<void>;
-    abstract wait_transfer_container(podName: string): Promise<void>;
-    abstract wait_pod_ready(podName: string): Promise<void>;
+    // abstract wait_transfer_container(podName: string): Promise<void>;
+    // abstract wait_pod_ready(podName: string): Promise<void>;
 
 };
 
