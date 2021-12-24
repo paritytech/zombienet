@@ -5,7 +5,10 @@ import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import path from "path";
+import { ApiPromise } from "@polkadot/api";
 const zombie = require("../");
+const {connect, chainUpgrade} = require("./jsapi-helpers");
+
 const debug = require("debug")("zombie::test-runner");
 
 const { assert, expect } = chai;
@@ -115,7 +118,7 @@ export async function run(testFile: string, isCI: boolean = false) {
     if (!testFn) continue;
     const test = new Test(
       assertion,
-      async () => await testFn(network, backchannelMap)
+      async () => await testFn(network, backchannelMap, testFile)
     );
     suite.addTest(test);
     test.timeout(0);
@@ -186,6 +189,10 @@ function parseAssertionLine(assertion: string) {
   );
   const pauseRegex = new RegExp(/^([\w]+): pause$/i);
   const resumeRegex = new RegExp(/^([\w]+): resume$/i);
+
+  // Chain Commands
+  const chainUpgradeRegex = new RegExp(/^([\w]+): chain upgrade with (.*?)$/i);
+
 
   // Matchs
   let m: string[] | null;
@@ -334,6 +341,35 @@ function parseAssertionLine(assertion: string) {
       expect(true).to.be.ok;
     };
   }
+
+  m = chainUpgradeRegex.exec(assertion);
+  if (m && m[1]) {
+    const nodeName = m[1];
+    const upgradeFilePath = m[2];
+
+    return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
+      const node = network.node(nodeName);
+      const api: ApiPromise = await connect(node.wsUri);
+
+      let resolvedUpgradeFilePath;
+      try {
+        if (fs.existsSync(upgradeFilePath)) {
+          const dir = path.dirname(upgradeFilePath);
+          resolvedUpgradeFilePath = path.resolve(dir, upgradeFilePath);
+        } else {
+          // the path is relative to the test file
+          const fileTestPath = path.dirname(testFile);
+          resolvedUpgradeFilePath = path.resolve(fileTestPath, upgradeFilePath);
+        }
+        await chainUpgrade(api,resolvedUpgradeFilePath);
+      } catch(e) {
+        console.log(e);
+        throw new Error(`Error upgrading chain with file: ${resolvedUpgradeFilePath}`);
+      }
+      expect(true).to.be.ok;
+    };
+  }
+
 
   // if we can't match let produce a fail test
   return async (network: Network) => {
