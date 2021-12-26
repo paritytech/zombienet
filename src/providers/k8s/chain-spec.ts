@@ -13,8 +13,9 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
     const client = getClient();
     if (networkSpec.relaychain.chainSpecCommand) {
         const { defaultImage, chainSpecCommand } = networkSpec.relaychain;
+        const plainChainSpecOutputFilePath = DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName);
         // set output of command
-        const fullCommand = `${chainSpecCommand} > ${DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName)}`;
+        const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
         const node = createTempNodeDef("temp", defaultImage, chainName, fullCommand);
 
         const podDef = await genPodDef(namespace, node);
@@ -24,7 +25,7 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
         debug("copy file from pod");
         await client.copyFileFromPod(
           podName,
-          `/cfg/${chainName}.json`,
+          plainChainSpecOutputFilePath,
           chainFullPath,
           podName
         );
@@ -44,7 +45,7 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
 export async function getChainSpecRaw(namespace: string, image: string, chainName: string, chainFullPath: string): Promise<any> {
     // backup plain file
     const plainPath = chainFullPath.replace(".json", "-plain.json");
-    fs.copyFileSync(chainFullPath, plainPath);
+    // fs.copyFileSync(chainFullPath, plainPath);
 
     const remoteChainSpecFullPath = DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/, chainName);
     const remoteChainSpecRawFullPath = DEFAULT_CHAIN_SPEC_RAW_PATH.replace(/{{chainName}}/, chainName);
@@ -58,7 +59,7 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
     const client = getClient();
     await client.spawnFromDef(podDef,[
         {
-            localFilePath: chainFullPath,
+            localFilePath: plainPath,
             remoteFilePath: remoteChainSpecFullPath
         }
     ]);
