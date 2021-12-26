@@ -248,7 +248,7 @@ export class KubeClient {
     const parts = localFilePath.split("/");
     const fileName = parts[parts.length -1];
     if(! fileUploadCache[hashedName]) {
-      console.log("es: "+localFilePath);
+      console.log("uploading to fileserver: "+localFilePath + " as:" +hashedName);
       const args = ["cp", localFilePath, `fileserver:/usr/share/nginx/html/${hashedName}`];
       // if (container) args.push("-c", container);
       debug("copyFileToPod", args);
