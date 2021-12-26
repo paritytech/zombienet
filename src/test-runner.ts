@@ -63,7 +63,7 @@ export async function run(testFile: string, isCI: boolean = false) {
     if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
 
-  if (!creds) throw new Error(`Invalid credential file path: ${credsFile}`);
+  if (!creds && config.settings?.provider === "Kubernetes") throw new Error(`Invalid credential file path: ${credsFile}`);
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);

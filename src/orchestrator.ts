@@ -90,7 +90,7 @@ export async function start(
       throw new Error("Invalid provider config. You must one of: " + Array.from(Providers.keys()).join(", "));
     }
     console.log(`\t Using provider: ${networkSpec.settings.provider}`);
-    const { genBootnodeDef, genPodDef, initClient, setupChainSpec, getChainSpecRaw } = Providers.get(networkSpec.settings.provider);
+    const { genBootnodeDef, genNodeDef, initClient, setupChainSpec, getChainSpecRaw } = Providers.get(networkSpec.settings.provider);
 
 
     const client = initClient(credentials, namespace, tmpDir.path);
@@ -214,7 +214,7 @@ export async function start(
       ];
       // create the node and attach to the network object
       debug(`creating node: ${node.name}`);
-      const podDef = await genPodDef(namespace, node);
+      const podDef = await genNodeDef(namespace, node);
 
       let finalFilesToCopyToNode = filesToCopyToNodes;
       for (const override of node.overrides) {
@@ -293,7 +293,7 @@ export async function start(
         telemetryUrl: "",
         overrides: [],
       };
-      const podDef = await genPodDef(namespace, collator);
+      const podDef = await genNodeDef(namespace, collator);
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
       const networkNode: NetworkNode = new NetworkNode(

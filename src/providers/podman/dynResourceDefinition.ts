@@ -3,6 +3,8 @@ import {
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
   DEFAULT_COMMAND,
+  getUniqueName,
+  WAIT_UNTIL_SCRIPT_SUFIX,
 } from "../../configManager";
 import { Node } from "../../types";
 
@@ -37,7 +39,7 @@ export async function genBootnodeDef(
   };
 }
 
-export function genPodDef(namespace: string, nodeSetup: Node): any {
+export function genNodeDef(namespace: string, nodeSetup: Node): any {
   const [volume_mounts, devices] = make_volume_mounts();
   const container = make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
@@ -86,17 +88,12 @@ function make_transfer_containter(): any {
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
-    // { name: "shared", mountPath: "/shared", readOnly: true },
+    { name: "tmp-z", mountPath: "/z", readOnly: false },
   ];
 
   const devices = [
     { name: "tmp-cfg" },
-    // {
-    //   "name": "shared",
-    //   "persistentVolumeClaim": {
-    //     "claimName": "shared-pv-claim"
-    //   }
-    // }
+    { name: "tmp-z" },
   ];
 
   return [volume_mounts, devices];
@@ -225,4 +222,21 @@ function gen_cmd(nodeSetup: Node): string[] {
   //DEBUG
   // return ["bash", "-c", finalArgs.join(" ")  ];
   return ["/cfg/zombie-wrapper.sh", finalArgs.join(" ")];
+}
+
+export function createTempNodeDef(name: string, image: string, chain: string, fullCommand: string) {
+  let node: Node = {
+    name: getUniqueName("temp"),
+    image,
+    fullCommand: fullCommand , //+ " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+    chain,
+    validator: false,
+    bootnodes: [],
+    args: [],
+    env: [],
+    telemetryUrl: "",
+    overrides: [],
+  };
+
+  return node;
 }

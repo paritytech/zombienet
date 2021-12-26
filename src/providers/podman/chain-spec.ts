@@ -1,8 +1,8 @@
-import { genPodDef } from "./dynResourceDefinition";
+import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 import { getClient } from "../client";
 import { DEFAULT_CHAIN_SPEC_PATH, DEFAULT_CHAIN_SPEC_COMMAND, DEFAULT_CHAIN_SPEC_RAW_PATH } from "../../configManager";
 import { ComputedNetwork } from "../../types";
-import { createTempNodeDef, sleep } from "../../utils";
+import { sleep } from "../../utils";
 const debug = require("debug")("zombie::kube::chain-spec");
 
 import fs from "fs";
@@ -18,7 +18,7 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
         const fullCommand = `${chainSpecCommand} > ${DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName)}`;
         const node = createTempNodeDef("temp", defaultImage, chainName, fullCommand);
 
-        const podDef = await genPodDef(namespace, node);
+        const podDef = await genNodeDef(namespace, node);
         const podName = podDef.metadata.name;
         await client.spawnFromDef(podDef);
 
@@ -53,7 +53,7 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
     const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
     const node = createTempNodeDef("temp", image, chainName, fullCommand );
 
-    const podDef = await genPodDef(namespace, node);
+    const podDef = await genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
 
     const client = getClient();

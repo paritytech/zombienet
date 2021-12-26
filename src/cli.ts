@@ -102,12 +102,16 @@ async function spawn(
 
   const filePath = path.resolve(configFile);
   const config = readNetworkConfig(filePath);
-  const creds = getCredsFilePath(credsFile);
-
-  if (!creds) {
-    console.error("  ⚠ I can't find the Creds file: ", credsFile);
-    process.exit();
+  let creds = "";
+  console.log(config);
+  if(config.settings?.provider === "Kubernetes") {
+    creds = getCredsFilePath(credsFile) || "";
+    if (!creds) {
+      console.error("  ⚠ I can't find the Creds file: ", credsFile);
+      process.exit();
+    }
   }
+
 
   network = await start(creds, config, monitor !== undefined);
 

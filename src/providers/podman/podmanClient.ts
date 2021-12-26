@@ -6,6 +6,7 @@ const fs = require("fs").promises;
 import { spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
+import YAML from "yaml";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -29,7 +30,7 @@ export class PodmanClient extends Client {
     localMagicFilepath: string;
 
     constructor(configPath: string, namespace: string, tmpDir: string) {
-      super(configPath, namespace, tmpDir, "ssh pepoviola@build-host -f podman", "Podman");
+      super(configPath, namespace, tmpDir, "podman", "Podman");
       this.configPath = configPath;
       this.namespace = namespace;
       this.debug = true;
@@ -62,22 +63,23 @@ export class PodmanClient extends Client {
 
         return;
     }
+    // Podman ONLY support `pods`
     async staticSetup(): Promise<void> {
       const resources = [
-        {
-          type: "services",
-          files: [
-            "bootnode-service.yaml",
-            "backchannel-service.yaml",
-            "fileserver-service.yaml"
-          ],
-        },
+      //   {
+      //     type: "services",
+      //     files: [
+      //       "bootnode-service.yaml",
+      //       "backchannel-service.yaml",
+      //       "fileserver-service.yaml"
+      //     ],
+      //   },
         {
           type: "deployment",
           files: [
-            "backchannel-pod.yaml",
+            //"backchannel-pod.yaml",
             "fileserver-pod.yaml"
-          ],
+          ]
         }
       ];
 
@@ -96,13 +98,28 @@ export class PodmanClient extends Client {
           .toString("utf-8")
           .replace(new RegExp("{{namespace}}", "g"), this.namespace);
 
-        if(scopeNamespace) {
-          await this.runCommand(["-n", scopeNamespace, "apply", "-f", "-"], resourceDef);
-        } else {
-          await this.runCommand(["apply", "-f", "-"], resourceDef);
-        }
+        const doc = new YAML.Document(JSON.parse(resourceDef));
+
+        const docInYaml = doc.toString();
+        console.log("es:")
+        console.log(docInYaml);
+        console.log(doc.toString());
+
+        const localFilePath = `${this.tmpDir}/${filename}`;
+        await fs.writeFile(localFilePath, doc.toString());
+
+        await this.runCommand(["play", "kube", localFilePath]);
     }
 
+    async createPodMonitor(filename: string, chain: string): Promise<void> {
+      // NOOP, podman don't have podmonitor.
+      return;
+    }
+
+    async setupCleaner(): Promise<void> {
+      // NOOP, podman don't have cronJobs
+      return
+    }
     destroyNamespace(): Promise<void> {
         throw new Error("Method not implemented.");
     }
@@ -121,11 +138,11 @@ export class PodmanClient extends Client {
             const augmentedCmd: string[] = [];
             if (scoped) augmentedCmd.push("--namespace", this.namespace);
 
-            const finalArgs = ["pepoviola@build-host", "-f", "podman", ...augmentedCmd, ...args];
+            const finalArgs = ["--storage-driver=vfs", ...augmentedCmd, ...args];
 
             console.log(augmentedCmd.join(" "));
 
-            const result = await execa("ssh", finalArgs);
+            const result = await execa(this.command, finalArgs);
             console.log(result);
             return {
                 exitCode: result.exitCode,
@@ -148,6 +165,7 @@ export class PodmanClient extends Client {
     createResource(resourseDef: any, scoped: boolean, waitReady: boolean): Promise<void> {
         throw new Error("Method not implemented.");
     }
+
     // wait_transfer_container(podName: string): Promise<void> {
     //     throw new Error("Method not implemented.");
     // }

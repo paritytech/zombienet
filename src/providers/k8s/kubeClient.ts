@@ -338,7 +338,7 @@ export class KubeClient extends Client {
     }
   }
 
-  async setupCleaner() {
+  async setupCleaner(): Promise<NodeJS.Timer> {
     // create CronJob cleanner for namespace
     await this.cronJobCleanerSetup();
     await this.upsertCronJob();
