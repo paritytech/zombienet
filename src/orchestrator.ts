@@ -117,8 +117,10 @@ export async function start(
 
     // Define chain name and file name to use.
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+    const chainSpecPlainFileName = chainSpecFileName.replace(".json", "-plain.json");
     const chainName = networkSpec.relaychain.chain;
     const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
+    const chainSpecFullPathPlain = chainSpecFullPath.replace(".json", "-plain.json");
 
     // create namespace
     await client.createNamespace();
@@ -137,23 +139,23 @@ export async function start(
     if (!monitor) cronInterval = await client.setupCleaner();
 
     // create or copy chain spec
-    await setupChainSpec(namespace, networkSpec, chainName, chainSpecFullPath);
+    await setupChainSpec(namespace, networkSpec, chainName, chainSpecFullPathPlain);
 
     // check if we have the chain spec file
-    if (!fs.existsSync(chainSpecFullPath))
+    if (!fs.existsSync(chainSpecFullPathPlain))
       throw new Error("Can't find chain spec file!");
 
     // Chain spec customization logic
-    clearAuthorities(chainSpecFullPath);
+    clearAuthorities(chainSpecFullPathPlain);
     for (const node of networkSpec.relaychain.nodes) {
-      await addAuthority(chainSpecFullPath, node.name);
+      await addAuthority(chainSpecFullPathPlain, node.name);
     }
 
     for(const parachain of networkSpec.parachains) {
       const parachainFilesPath = await generateParachainFiles(namespace, tmpDir.path, chainName,parachain);
       const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
       const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-      if(parachain.addToGenesis) await addParachainToGenesis(chainSpecFullPath, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
+      if(parachain.addToGenesis) await addParachainToGenesis(chainSpecFullPathPlain, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
     }
 
     // generate the raw chain spec
