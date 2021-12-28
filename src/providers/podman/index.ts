@@ -1,5 +1,5 @@
 import { PodmanClient, initClient } from "./podmanClient";
-import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
-import { setupChainSpec } from "./chain-spec";
+import { genBootnodeDef, genNodeDef } from "./dynResourceDefinition";
+import { setupChainSpec, getChainSpecRaw } from "./chain-spec";
 
-export const provider = { PodmanClient, genBootnodeDef, genPodDef, initClient, setupChainSpec };
+export const provider = { PodmanClient, genBootnodeDef, genNodeDef, initClient, setupChainSpec, getChainSpecRaw };

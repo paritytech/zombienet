@@ -73,7 +73,8 @@ export async function start(
     }, networkSpec.settings.timeout * 1000);
 
     // set namespace
-    const namespace = `zombie-${generateNamespace()}`;
+    const randomBytes = networkSpec.settings.provider === "Podman" ? 4 : 16;
+    const namespace = `zombie-${generateNamespace(randomBytes)}`;
 
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
@@ -204,15 +205,16 @@ export async function start(
 
     network.addNode(bootnodeNode);
 
-    const bootnodeIP = await client.getBootnodeIP();
+    const [bootnodeIP, bootnodePort] = await client.getBootnodeInfo(bootnodeDef.metadata.name);
 
-    const monitorIsAvailable = await client._isPodMonitorAvailable();
+    const monitorIsAvailable = await client.isPodMonitorAvailable();
 
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
+      bootnodePort
       node.bootnodes = [
-        `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
+        `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
       ];
       // create the node and attach to the network object
       debug(`creating node: ${node.name}`);
@@ -288,7 +290,7 @@ export async function start(
         command: parachain.collator.command,
         chain: networkSpec.relaychain.chain,
         bootnodes: [
-          `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
+          `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
         ],
         args: [],
         env: [],

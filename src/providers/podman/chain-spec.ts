@@ -5,7 +5,7 @@ import { ComputedNetwork } from "../../types";
 import { sleep } from "../../utils";
 const debug = require("debug")("zombie::kube::chain-spec");
 
-import fs from "fs";
+const fs = require("fs").promises;
 
 export async function setupChainSpec(namespace: string, networkSpec: ComputedNetwork, chainName: string, chainFullPath: string): Promise<any> {
     // We have two options to get the chain-spec file, neither should use the `raw` file/argument
@@ -14,8 +14,9 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
     const client = getClient();
     if (networkSpec.relaychain.chainSpecCommand) {
         const { defaultImage, chainSpecCommand } = networkSpec.relaychain;
+        const plainChainSpecOutputFilePath = DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName);
         // set output of command
-        const fullCommand = `${chainSpecCommand} > ${DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/ig, chainName)}`;
+        const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
         const node = createTempNodeDef("temp", defaultImage, chainName, fullCommand);
 
         const podDef = await genNodeDef(namespace, node);
@@ -23,18 +24,20 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
         await client.spawnFromDef(podDef);
 
         debug("copy file from pod");
-        await client.copyFileFromPod(
-          podName,
-          `/cfg/${chainName}.json`,
-          chainFullPath,
-          podName
-        );
+        // await client.copyFileFromPod(
+        //   podName,
+        //   `/cfg/${chainName}.json`,
+        //   chainFullPath,
+        //   podName
+        // );
 
-        await client.putLocalMagicFile(podName, podName);
+        // await client.putLocalMagicFile(podName, podName);
+        const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
+        await fs.copyFile(podChainPath, chainFullPath);
     } else {
         if (networkSpec.relaychain.chainSpecPath) {
           // copy file to temp to use
-          fs.copyFileSync(
+          await fs.copyFile(
             networkSpec.relaychain.chainSpecPath,
             chainFullPath
           );
@@ -43,9 +46,7 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
 }
 
 export async function getChainSpecRaw(namespace: string, image: string, chainName: string, chainFullPath: string): Promise<any> {
-    // backup plain file
     const plainPath = chainFullPath.replace(".json", "-plain.json");
-    fs.copyFileSync(chainFullPath, plainPath);
 
     const remoteChainSpecFullPath = DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/, chainName);
     const remoteChainSpecRawFullPath = DEFAULT_CHAIN_SPEC_RAW_PATH.replace(/{{chainName}}/, chainName);
@@ -59,10 +60,13 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
     const client = getClient();
     await client.spawnFromDef(podDef,[
         {
-            localFilePath: chainFullPath,
+            localFilePath: plainPath,
             remoteFilePath: remoteChainSpecFullPath
         }
     ]);
+
+    // let's just wait 2 secs
+    await sleep(2000);
 
     debug("Getting the raw chain spec file from pod to the local environment.");
     await client.copyFileFromPod(
@@ -72,8 +76,6 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
         podName
     );
 
-    // let's just wait 2 secs before download
-    await sleep(2000);
 
     // We had some issues where the `raw` file is empty
     // let's add some extra checks here to ensure we are ok.
@@ -85,7 +87,7 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
 
     if(!isValid) {
         try {
-            const result = await client.runCommand(["exec", podName, "--", "cat", remoteChainSpecRawFullPath]);
+            const result = await client.runCommand(["exec", `${podName}_pod-${podName}`, "cat", remoteChainSpecRawFullPath]);
             if(result.exitCode === 0 && result.stdout.length > 0) {
                 // TODO: remove this debug when we get this fixed.
                 debug(result.stdout);

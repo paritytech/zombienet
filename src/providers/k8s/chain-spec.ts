@@ -44,9 +44,7 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
 }
 
 export async function getChainSpecRaw(namespace: string, image: string, chainName: string, chainFullPath: string): Promise<any> {
-    // backup plain file
     const plainPath = chainFullPath.replace(".json", "-plain.json");
-    // fs.copyFileSync(chainFullPath, plainPath);
 
     const remoteChainSpecFullPath = DEFAULT_CHAIN_SPEC_PATH.replace(/{{chainName}}/, chainName);
     const remoteChainSpecRawFullPath = DEFAULT_CHAIN_SPEC_RAW_PATH.replace(/{{chainName}}/, chainName);

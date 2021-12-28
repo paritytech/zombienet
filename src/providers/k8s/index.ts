@@ -1,5 +1,5 @@
 import { KubeClient, initClient } from "./kubeClient";
-import { genBootnodeDef, genPodDef } from "./dynResourceDefinition";
+import { genBootnodeDef, genNodeDef } from "./dynResourceDefinition";
 import { setupChainSpec, getChainSpecRaw } from "./chain-spec";
 
-export const provider = { KubeClient, genBootnodeDef, genPodDef, initClient, setupChainSpec, getChainSpecRaw };
+export const provider = { KubeClient, genBootnodeDef, genNodeDef, initClient, setupChainSpec, getChainSpecRaw };

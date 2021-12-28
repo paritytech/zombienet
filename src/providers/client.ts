@@ -40,6 +40,7 @@ export abstract class Client{
     abstract createResource(resourseDef: any, scoped: boolean, waitReady: boolean): Promise<void>;
     abstract createPodMonitor(filename: string, chain: string): Promise<void>;
     abstract setupCleaner(): Promise<any>;
+    abstract isPodMonitorAvailable(): Promise<boolean>;
     // abstract wait_transfer_container(podName: string): Promise<void>;
     // abstract wait_pod_ready(podName: string): Promise<void>;
 

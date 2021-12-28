@@ -46,7 +46,9 @@ export async function generateParachainFiles(
       telemetryUrl: "",
       overrides: [],
     };
-    const podDef = await Providers.get(client.providerName).genPodDef(namespace, node);
+
+    const provider = Providers.get(client.providerName);
+    const podDef = await provider.genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
 
     debug(

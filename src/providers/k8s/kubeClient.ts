@@ -188,7 +188,7 @@ export class KubeClient extends Client {
   }
 
   async createPodMonitor(filename: string, chain: string): Promise<void> {
-    this.podMonitorAvailable = await this._isPodMonitorAvailable();
+    this.podMonitorAvailable = await this.isPodMonitorAvailable();
     if( ! this.podMonitorAvailable ) {
       debug("PodMonitor is NOT available in the cluster");
       return;
@@ -292,6 +292,11 @@ export class KubeClient extends Client {
     const args = ["get", "pod", "bootnode", "-o", "jsonpath={.status.podIP}"];
     const result = await this.runCommand(args, undefined, true);
     return result.stdout;
+  }
+
+  async getBootnodeInfo(_identifier: string): Promise<[string, number]> {
+    const ip = await this.getBootnodeIP();
+    return [ip, 30333];
   }
 
   async staticSetup() {
@@ -463,7 +468,7 @@ export class KubeClient extends Client {
     }
   }
 
-  async _isPodMonitorAvailable() {
+  async isPodMonitorAvailable() {
     let available = false;
     try {
       const result = await execa.command("kubectl api-resources -o name");

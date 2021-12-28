@@ -39,7 +39,7 @@ export async function genBootnodeDef(
   };
 }
 
-export function genNodeDef(namespace: string, nodeSetup: Node): any {
+export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<any> {
   const [volume_mounts, devices] = make_volume_mounts();
   const container = make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();

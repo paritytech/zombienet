@@ -41,7 +41,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async connectApi() {
     const provider = new WsProvider(this.wsUri);
-    debug(`Connecting api for ${this.name}...`);
+    debug(`Connecting api for ${this.name} at ${this.wsUri}...`);
     this.apiInstance = await ApiPromise.create({
       provider,
       types: this.userDefinedTypes,
