@@ -5,14 +5,20 @@ import {
   DEFAULT_COMMAND,
   getUniqueName,
   WAIT_UNTIL_SCRIPT_SUFIX,
+  RPC_HTTP_PORT,
+  P2P_PORT,
 } from "../../configManager";
 import { Node } from "../../types";
+import { getRandomPort } from "../../utils";
+import { getClient } from "../client";
+
+const fs = require("fs").promises;
 
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts();
+  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
   return {
@@ -20,11 +26,13 @@ export async function genBootnodeDef(
     kind: "Pod",
     metadata: {
       name: "bootnode",
+      namespace: namespace,
       labels: {
         "app.kubernetes.io/name" : namespace,
         "app.kubernetes.io/instance" : "bootnode",
         "zombie-role": "bootnode",
         app: "zombienet",
+        "zombie-ns": namespace
       },
     },
     spec: {
@@ -40,8 +48,8 @@ export async function genBootnodeDef(
 }
 
 export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<any> {
-  const [volume_mounts, devices] = make_volume_mounts();
-  const container = make_main_container(nodeSetup, volume_mounts);
+  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
+  const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
 
   return {
@@ -49,9 +57,11 @@ export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<an
     kind: "Pod",
     metadata: {
       name: nodeSetup.name,
+      namespace: namespace,
       labels: {
         "zombie-role": nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
+        "zombie-ns": namespace,
         "app.kubernetes.io/name" : namespace,
         "app.kubernetes.io/instance" : nodeSetup.name,
       },
@@ -85,27 +95,32 @@ function make_transfer_containter(): any {
     ],
   };
 }
-function make_volume_mounts(): [any, any] {
+async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
-    // { name: "shared", mountPath: "/shared", readOnly: true },
+    { name: "tmp-z", mountPath: "/z", readOnly: false },
   ];
 
+  const client = getClient();
+  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  const zPath = `${client.tmpDir}/${name}/z`;
+  await fs.mkdir(cfgPath, {recursive: true});
+  await fs.mkdir(zPath, {recursive: true});
+
   const devices = [
-    { name: "tmp-cfg" },
-    // {
-    //   "name": "shared",
-    //   "persistentVolumeClaim": {
-    //     "claimName": "shared-pv-claim"
-    //   }
-    // }
+    { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
+    { name: "tmp-z", hostPath : { type: "Directory", path: zPath } },
   ];
 
   return [volume_mounts, devices];
 }
 
-function make_main_container(nodeSetup: Node, volume_mounts: any[]): any {
-  const ports = [{ containerPort: PROMETHEUS_PORT, name: "prometheus" }];
+async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promise<any> {
+  const ports = [
+    { containerPort: PROMETHEUS_PORT, name: "prometheus", hostPort:  await getRandomPort() },
+    { containerPort: RPC_HTTP_PORT, name: "rpc", hostPort:  await getRandomPort() },
+    { containerPort: P2P_PORT, name: "p2p", hostPort:  await getRandomPort() }
+  ];
   const command = gen_cmd(nodeSetup);
 
   let containerDef = {
@@ -217,10 +232,10 @@ function gen_cmd(nodeSetup: Node): string[] {
     name,
     "--rpc-cors",
     "all",
-    // "--unsafe-rpc-external",
-    // "--rpc-methods",
-    // "unsafe",
-    // "--unsafe-ws-external",
+    "--unsafe-rpc-external",
+    "--rpc-methods",
+    "unsafe",
+    "--unsafe-ws-external",
     ...args,
   ];
 
@@ -233,7 +248,7 @@ export function createTempNodeDef(name: string, image: string, chain: string, fu
   let node: Node = {
     name: getUniqueName("temp"),
     image,
-    fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+    fullCommand: fullCommand , //+ " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,
     validator: false,
     bootnodes: [],

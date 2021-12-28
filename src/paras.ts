@@ -1,14 +1,13 @@
 import { debug } from "console";
 import {
   DEFAULT_COLLATOR_IMAGE,
-  FINISH_MAGIC_FILE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   getUniqueName,
-  TRANSFER_CONTAINER_NAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./configManager";
-import { genPodDef, getClient } from "./providers/k8s";
+import { getClient } from "./providers/client";
+import { Providers } from "./providers";
 import { Node, Parachain } from "./types";
 import fs from "fs";
 
@@ -47,7 +46,9 @@ export async function generateParachainFiles(
       telemetryUrl: "",
       overrides: [],
     };
-    const podDef = await genPodDef(namespace, node);
+
+    const provider = Providers.get(client.providerName);
+    const podDef = await provider.genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
 
     debug(
@@ -55,18 +56,7 @@ export async function generateParachainFiles(
     );
     debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
-    await client.createResource(podDef, true, false);
-    await client.wait_transfer_container(podName);
-
-    // await client.copyFileToPod(
-    //   podDef.metadata.name,
-    //   localMagicFilepath,
-    //   FINISH_MAGIC_FILE,
-    //   TRANSFER_CONTAINER_NAME
-    // );
-    await client.putLocalMagicFile(podName,TRANSFER_CONTAINER_NAME);
-
-    await client.wait_pod_ready(podName);
+    await client.spawnFromDef(podDef)
 
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
@@ -84,12 +74,6 @@ export async function generateParachainFiles(
       );
     }
 
-    // // put file to terminate pod
-    // await client.copyFileToPod(
-    //   podDef.metadata.name,
-    //   localMagicFilepath,
-    //   FINISH_MAGIC_FILE
-    // );
     await client.putLocalMagicFile(podName, podName);
   }
 
@@ -99,7 +83,6 @@ export async function generateParachainFiles(
         parachain.genesisStatePath,
         stateLocalFilePath );
   }
-  // else throw new Error("Invalid state file path");
 
   if (parachain.genesisWasmPath) {
     // copy file to temp to use
@@ -107,7 +90,6 @@ export async function generateParachainFiles(
         parachain.genesisWasmPath,
         wasmLocalFilePath );
   }
-  //else throw new Error("Invalid wasm file path");
 
   // register parachain
   // await network.registerParachain(

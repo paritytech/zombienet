@@ -1,4 +1,4 @@
-import { KubeClient } from "./providers/k8s";
+import { Client, getClient } from "./providers/client";
 import { cryptoWaitReady, keyExtractPath } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
@@ -15,6 +15,7 @@ import { NetworkNode } from "./networkNode";
 import fs from "fs";
 import execa from "execa";
 import axios from "axios";
+import { decorators } from "./colors";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -29,12 +30,12 @@ export class Network {
   nodes: NetworkNode[] = [];
   nodesByName: NodeMapping = {};
   namespace: string;
-  client: KubeClient;
+  client: Client;
   launched: boolean;
   tmpDir: string;
   backchannelUri: string = "";
 
-  constructor(client: KubeClient, namespace: string, tmpDir: string) {
+  constructor(client: Client, namespace: string, tmpDir: string) {
     this.client = client;
     this.namespace = namespace;
     this.launched = false;
@@ -66,7 +67,7 @@ export class Network {
     try {
       await execa("gsutil", args);
     } catch(err) {
-      console.log(`Could NOT upload logs to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`);
+      console.log(`\n\t ${decorators.red("Could NOT upload logs")} to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`);
     }
 
   }

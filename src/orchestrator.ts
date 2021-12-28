@@ -4,48 +4,45 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   getUniqueName,
-  FINISH_MAGIC_FILE,
-  DEFAULT_COLLATOR_IMAGE,
+  // FINISH_MAGIC_FILE,
+  // DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   DEFAULT_BOOTNODE_PEER_ID,
-  WAIT_UNTIL_SCRIPT_SUFIX,
-  TRANSFER_CONTAINER_NAME,
+  // WAIT_UNTIL_SCRIPT_SUFIX,
+  // TRANSFER_CONTAINER_NAME,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
-  DEFAULT_CHAIN_SPEC_PATH,
-  DEFAULT_CHAIN_SPEC_RAW_PATH,
-  DEFAULT_CHAIN_SPEC_COMMAND,
+  // DEFAULT_CHAIN_SPEC_PATH,
+  // DEFAULT_CHAIN_SPEC_RAW_PATH,
+  // DEFAULT_CHAIN_SPEC_COMMAND,
   zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
 } from "./configManager";
 import { Network } from "./network";
 import { NetworkNode } from "./networkNode";
-import { startPortForwarding } from "./portForwarder";
+//import { startPortForwarding } from "./portForwarder";
 //import { ApiPromise, WsProvider } from "@polkadot/api";
 import { clearAuthorities, addAuthority, changeGenesisConfig, addParachainToGenesis } from "./chain-spec";
 import {
   generateNamespace,
   sleep,
   filterConsole,
-  writeLocalJsonFile,
+  // writeLocalJsonFile,
   loadTypeDef,
-  createTempNodeDef,
+  // createTempNodeDef,
 } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import path, { resolve } from "path";
 import { generateParachainFiles } from "./paras";
-import { setupChainSpec } from "./providers/k8s";
-import { getChainSpecRaw } from "./providers/k8s/chain-spec";
+//import { setupChainSpec } from "./providers/k8s";
+//import { getChainSpecRaw } from "./providers/k8s/chain-spec";
 import { decorators } from "./colors";
 
 const debug = require("debug")("zombie");
-
-// For now the only provider is k8s
-const { genBootnodeDef, genPodDef, initClient } = Providers.Kubernetes;
 
 // Hide some warning messages that are coming from Polkadot JS API.
 // TODO: Make configurable.
@@ -76,7 +73,8 @@ export async function start(
     }, networkSpec.settings.timeout * 1000);
 
     // set namespace
-    const namespace = `zombie-${generateNamespace()}`;
+    const randomBytes = networkSpec.settings.provider === "podman" ? 4 : 16;
+    const namespace = `zombie-${generateNamespace(randomBytes)}`;
 
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
@@ -84,20 +82,29 @@ export async function start(
     // create tmp directory to store needed files
     const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
-    debug(`\t Temp Dir: ${tmpDir.path}`);
 
-    // const client = new KubeClient(credentials, namespace, tmpDir.path);
+    // get provider fns
+    const provider = networkSpec.settings.provider;
+    if(!Providers.has(provider)) {
+
+      throw new Error("Invalid provider config. You must one of: " + Array.from(Providers.keys()).join(", "));
+    }
+    console.log(`\t Using provider: ${networkSpec.settings.provider}`);
+    const { genBootnodeDef, genNodeDef, initClient, setupChainSpec, getChainSpecRaw } = Providers.get(networkSpec.settings.provider);
+
+
     const client = initClient(credentials, namespace, tmpDir.path);
     network = new Network(client, namespace, tmpDir.path);
 
-    console.log(`\t Launching network under namespace: ${namespace}`);
+    console.log(`\t Launching network under namespace: ${decorators.magenta(namespace)}`);
+    console.log(`\n\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`);
     debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
     if (!isValid) {
       console.error(
-        "  ⚠ Can not access k8s cluster, please check your config."
+        `  ⚠ Can not access ${networkSpec.settings.provider}, please check your config.`
       );
       process.exit(1);
     }
@@ -159,6 +166,7 @@ export async function start(
     try {
       const chainRawContent = require(chainSpecFullPath);
       debug(`Chain name: ${chainRawContent.name}`);
+      console.log(`\n\t\t Chain name: ${decorators.green(chainRawContent.name)}`);
     } catch(err) {
       throw new Error(`Error: chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`);
     }
@@ -184,11 +192,10 @@ export async function start(
     await sleep(5000);
 
     const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await startPortForwarding(9944, bootnodeIdentifier, client);
-    const prometheusPort = await startPortForwarding(
+    const fwdPort = await client.startPortForwarding(9944, bootnodeIdentifier);
+    const prometheusPort = await client.startPortForwarding(
       PROMETHEUS_PORT,
-      bootnodeIdentifier,
-      client
+      bootnodeIdentifier
     );
 
     const bootnodeNode: NetworkNode = new NetworkNode(
@@ -199,19 +206,20 @@ export async function start(
 
     network.addNode(bootnodeNode);
 
-    const bootnodeIP = await client.getBootnodeIP();
+    const [bootnodeIP, bootnodePort] = await client.getBootnodeInfo(bootnodeDef.metadata.name);
 
-    const monitorIsAvailable = await client._isPodMonitorAvailable();
+    const monitorIsAvailable = await client.isPodMonitorAvailable();
 
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
+      bootnodePort
       node.bootnodes = [
-        `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
+        `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
       ];
       // create the node and attach to the network object
       debug(`creating node: ${node.name}`);
-      const podDef = await genPodDef(namespace, node);
+      const podDef = await genNodeDef(namespace, node);
 
       let finalFilesToCopyToNode = filesToCopyToNodes;
       for (const override of node.overrides) {
@@ -223,11 +231,10 @@ export async function start(
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const fwdPort = await startPortForwarding(9944, nodeIdentifier, client);
-      const nodePrometheusPort = await startPortForwarding(
+      const fwdPort = await client.startPortForwarding(9944, nodeIdentifier);
+      const nodePrometheusPort = await client.startPortForwarding(
         PROMETHEUS_PORT,
-        nodeIdentifier,
-        client
+        nodeIdentifier
       );
 
       const networkNode: NetworkNode = new NetworkNode(
@@ -254,6 +261,16 @@ export async function start(
         const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace).replace(/{{podName}}/, podDef.metadata.name);
         console.log(`\t${decorators.green("Grafana logs url:")}`);
         console.log(`\t\t${decorators.magenta(loki_url)}`);
+      } else {
+        console.log(`\n\t\t ${decorators.magenta("You can follow the logs of the node by running this command:")}`);
+        switch(networkSpec.settings.provider) {
+          case "podman":
+            console.log(`\n\t\t\t podman logs ${podDef.metadata.name}_pod-${podDef.metadata.name}`);
+            break;
+          case "kubernetes":
+            console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
+            break;
+        }
       }
     }
 
@@ -284,14 +301,14 @@ export async function start(
         command: parachain.collator.command,
         chain: networkSpec.relaychain.chain,
         bootnodes: [
-          `/dns/${bootnodeIP}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
+          `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
         ],
         args: [],
         env: [],
         telemetryUrl: "",
         overrides: [],
       };
-      const podDef = await genPodDef(namespace, collator);
+      const podDef = await genNodeDef(namespace, collator);
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
       const networkNode: NetworkNode = new NetworkNode(
@@ -305,7 +322,7 @@ export async function start(
 
     // prevent global timeout
     network.launched = true;
-    debug(`\t 🚀 LAUNCH COMPLETE under namespace ${namespace} 🚀`);
+    debug(`\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`);
     return network;
   } catch (error) {
     console.error(error);
