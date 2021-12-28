@@ -6,6 +6,7 @@ const fs = require("fs").promises;
 import { spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
+import { decorators } from "../../colors";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -38,7 +39,7 @@ export class KubeClient extends Client {
   localMagicFilepath: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
-    super(configPath, namespace, tmpDir, "kubectl", "Kubernetes");
+    super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
@@ -72,10 +73,11 @@ export class KubeClient extends Client {
   async spawnFromDef(podDef: any, filesToCopy: fileMap[] = [] , filesToGet: fileMap[] = []): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, name , podDef);
-    debug(
-      `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+    console.log(
+      `\n\tlaunching ${decorators.green(podDef.metadata.name)} pod with image ${decorators.green(podDef.spec.containers[0].image)}`
     );
-    debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+    console.log(`\n\t\t with command: ${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`);
+
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
 
@@ -86,7 +88,7 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.wait_pod_ready(name);
-    debug(`${name} pod is ready!`);
+    console.log(`\n\t\t${decorators.green(name)} pod is ready!`);
   }
 
   async putLocalMagicFile(name: string, container?: string) {

@@ -115,7 +115,7 @@ export interface ChainSpec {
 
 // Launch Config ( user provided config )
 export interface LaunchConfig {
-  settings?: Settings;
+  settings: Settings;
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;

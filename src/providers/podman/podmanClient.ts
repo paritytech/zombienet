@@ -1,11 +1,11 @@
 import execa from "execa";
 import { resolve } from "path";
-import { FINISH_MAGIC_FILE, P2P_PORT, TRANSFER_CONTAINER_NAME } from "../../configManager";
-import { addMinutes, writeLocalJsonFile, getSha256, getHostIp } from "../../utils";
+import { P2P_PORT } from "../../configManager";
+import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
-import { spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
+import { decorators } from "../../colors";
 import YAML from "yaml";
 
 const debug = require("debug")("zombie::kube::client");
@@ -30,7 +30,7 @@ export class PodmanClient extends Client {
     localMagicFilepath: string;
 
     constructor(configPath: string, namespace: string, tmpDir: string) {
-      super(configPath, namespace, tmpDir, "podman", "Podman");
+      super(configPath, namespace, tmpDir, "podman", "podman");
       this.configPath = configPath;
       this.namespace = namespace;
       this.debug = true;
@@ -58,9 +58,9 @@ export class PodmanClient extends Client {
         };
 
         writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
-        // Podman don't have the namespace concept yet
-        // await this.createResource(namespaceDef);
-
+        // Podman don't have the namespace concept yet but we use a isolated network
+        let args = ["network", "create", this.namespace];
+        await this.runCommand(args, undefined, false);
         return;
     }
     // Podman ONLY support `pods`
@@ -101,14 +101,11 @@ export class PodmanClient extends Client {
         const doc = new YAML.Document(JSON.parse(resourceDef));
 
         const docInYaml = doc.toString();
-        console.log("es:")
-        console.log(docInYaml);
-        console.log(doc.toString());
 
         const localFilePath = `${this.tmpDir}/${filename}`;
-        await fs.writeFile(localFilePath, doc.toString());
+        await fs.writeFile(localFilePath, docInYaml);
 
-        await this.runCommand(["play", "kube", localFilePath]);
+        await this.runCommand(["play", "kube", "--network", this.namespace, localFilePath]);
     }
 
     async createPodMonitor(filename: string, chain: string): Promise<void> {
@@ -123,11 +120,15 @@ export class PodmanClient extends Client {
 
     async destroyNamespace(): Promise<void> {
       // get pod names
-      let args = ["pod", "ps", "-f", `label=zombie-ns=${this.namespace}`, "--format", "'{{.Name}}'"];
+      let args = ["pod", "ps", "-f", `label=zombie-ns=${this.namespace}`, "--format", "{{.Name}}"];
       let result = await this.runCommand(args, undefined, false);
 
       // now remove the pods
       args = ["pod", "rm", "-f", ...result.stdout.split("\n")];
+      result = await this.runCommand(args, undefined, false);
+
+      // now remove the pnetwork
+      args = ["network", "rm", this.namespace];
       result = await this.runCommand(args, undefined, false);
     }
 
@@ -152,8 +153,6 @@ export class PodmanClient extends Client {
       const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
       const result = await this.runCommand(args, undefined, false);
       const resultJson = JSON.parse(result.stdout);
-      console.log('result json');
-      console.log(resultJson[0]);
       const hostPort = resultJson[0].NetworkSettings.Ports[`${port}/tcp`][0].HostPort;
       return hostPort;
     }
@@ -167,18 +166,20 @@ export class PodmanClient extends Client {
     async runCommand(args: string[], resourceDef?: string, scoped?: boolean): Promise<RunCommandResponse> {
         try {
             const augmentedCmd: string[] = [];
-            if (scoped) augmentedCmd.push("--namespace", this.namespace);
+            if (scoped) augmentedCmd.push("--network", this.namespace);
 
             // "--storage-driver=vfs",
             const finalArgs = [...augmentedCmd, ...args];
-
-            console.log(augmentedCmd.join(" "));
-
             const result = await execa(this.command, finalArgs);
-            console.log(result);
+
+            // podman use stderr for logs
+            const stdout = result.stdout !== "" ? result.stdout :
+              result.stderr !== "" ? result.stderr :
+              "";
+
             return {
                 exitCode: result.exitCode,
-                stdout: result.stdout,
+                stdout
             };
         } catch (error) {
             console.log(error);
@@ -188,25 +189,22 @@ export class PodmanClient extends Client {
     async spawnFromDef(podDef: any, filesToCopy: fileMap[] = [] , filesToGet: fileMap[] = []): Promise<void> {
       const name = podDef.metadata.name;
 
-      // await this.runCommand(["play", "kube", localFilePath]);
-
-      debug(
-        `launching ${podDef.metadata.name} pod with image ${podDef.spec.containers[0].image}`
+      console.log(
+        `\n\tlaunching ${decorators.green(podDef.metadata.name)} pod with image ${decorators.green(podDef.spec.containers[0].image)}`
       );
-      debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
+      console.log(`\n\t\t with command: ${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`);
 
       // copy files to volume cfg
       for(const fileMap of filesToCopy) {
           const  {localFilePath, remoteFilePath} = fileMap;
           await fs.copyFile(localFilePath, `${this.tmpDir}/${name}${remoteFilePath}`);
-          // await this.copyFileToPod(name, localFilePath, remoteFilePath, TRANSFER_CONTAINER_NAME)
       }
 
       await this.createResource(podDef, false, false);
 
       // TODO: how to check in podman
       await this.wait_pod_ready(name);
-      debug(`${name} pod is ready!`);
+      console.log(`\n\t\t${decorators.green(name)} pod is ready!`);
     }
     async copyFileFromPod(identifier: string, podFilePath: string, localFilePath: string, container?: string): Promise<void> {
         // throw new Error("Method not implemented.");
@@ -227,14 +225,11 @@ export class PodmanClient extends Client {
       const localFilePath = `${this.tmpDir}/${name}.yaml`;
       await fs.writeFile(localFilePath, docInYaml);
 
-      await this.runCommand(["play", "kube", localFilePath]);
+      await this.runCommand(["play", "kube", "--network", this.namespace, localFilePath], undefined, false);
 
       if(waitReady) await this.wait_pod_ready(name);
     }
 
-    // wait_transfer_container(podName: string): Promise<void> {
-    //     throw new Error("Method not implemented.");
-    // }
 
     async wait_pod_ready(podName: string, allowDegraded: boolean = true): Promise<void> {
       // loop until ready
@@ -251,7 +246,6 @@ export class PodmanClient extends Client {
       } while (t > 0);
 
       throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
-      // podman pod ps -f name=fileserver_pod --format json
     }
 
     async isPodMonitorAvailable(): Promise<boolean> {
@@ -259,4 +253,3 @@ export class PodmanClient extends Client {
       return false;
     }
 }
-

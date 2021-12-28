@@ -7,8 +7,9 @@ import { Network } from "./network";
 import { getCredsFilePath, readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import { debug } from "console";
+import { AVAILABLE_PROVIDERS } from "./configManager";
 
 const path = require("path");
 
@@ -64,11 +65,18 @@ process.on("exit", async function () {
   process.exit(exitCode); // use exitCode set by mocha or 2 as default.
 });
 
+// program
+//   .addOption(
+//     new Option("-p, --provider <provider>", "Override provider to use")
+//       .choices(["podman", "kubernetes"])
+//       .default("kubernetes", "kubernetes")
+//   );
+
 program
   .command("spawn")
   .description("Spawn the network defined in the config")
-  .argument("<creds>", "kubeclt credentials file")
-  .argument("<networkConfig>", "network")
+  .argument("<networkConfig>", "Network config file path")
+  .argument("[creds]", "kubeclt credentials file")
   .argument(
     "[monitor]",
     "Monitor flag, don't teardown the network with the cronjob."
@@ -76,6 +84,11 @@ program
   .action(spawn);
 
 program
+  .addOption(
+    new Option("-p, --provider <provider>", "Override provider to use")
+    .choices(["podman", "kubernetes"])
+    .default("kubernetes", "kubernetes")
+  )
   .command("test")
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")
@@ -90,10 +103,12 @@ program
 
 // spawn
 async function spawn(
-  credsFile: string,
   configFile: string,
-  monitor: string | undefined
+  credsFile: string| undefined,
+  monitor: string | undefined,
+  _opts: any
 ) {
+  const opts = program.opts();
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error("  ⚠ Config file does not exist: ", configPath);
@@ -102,10 +117,13 @@ async function spawn(
 
   const filePath = path.resolve(configFile);
   const config = readNetworkConfig(filePath);
+
+  // if a provider is passed, let just use it.
+  if(opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) config.settings.provider = opts.provider;
+
   let creds = "";
-  console.log(config);
-  if(config.settings?.provider === "Kubernetes") {
-    creds = getCredsFilePath(credsFile) || "";
+  if(config.settings?.provider === "kubernetes") {
+    creds = getCredsFilePath(credsFile|| "config") || "";
     if (!creds) {
       console.error("  ⚠ I can't find the Creds file: ", credsFile);
       process.exit();
@@ -129,10 +147,13 @@ async function spawn(
 }
 
 // test
-async function test(testFile: string) {
+async function test(testFile: string, _opts: any) {
+  const opts = program.opts();
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
-  await run(testFile, inCI);
+  // use `k8s` as default
+  const providerToUse = (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) ? opts.provider : "kubernetes";
+  await run(testFile, providerToUse, inCI);
 }
 
 program.parse(process.argv);

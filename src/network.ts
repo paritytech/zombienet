@@ -15,6 +15,7 @@ import { NetworkNode } from "./networkNode";
 import fs from "fs";
 import execa from "execa";
 import axios from "axios";
+import { decorators } from "./colors";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -66,7 +67,7 @@ export class Network {
     try {
       await execa("gsutil", args);
     } catch(err) {
-      console.log(`Could NOT upload logs to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`);
+      console.log(`\n\t ${decorators.red("Could NOT upload logs")} to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`);
     }
 
   }

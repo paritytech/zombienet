@@ -73,7 +73,7 @@ export async function start(
     }, networkSpec.settings.timeout * 1000);
 
     // set namespace
-    const randomBytes = networkSpec.settings.provider === "Podman" ? 4 : 16;
+    const randomBytes = networkSpec.settings.provider === "podman" ? 4 : 16;
     const namespace = `zombie-${generateNamespace(randomBytes)}`;
 
     // get user defined types
@@ -82,7 +82,6 @@ export async function start(
     // create tmp directory to store needed files
     const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
-    debug(`\t Temp Dir: ${tmpDir.path}`);
 
     // get provider fns
     const provider = networkSpec.settings.provider;
@@ -97,14 +96,15 @@ export async function start(
     const client = initClient(credentials, namespace, tmpDir.path);
     network = new Network(client, namespace, tmpDir.path);
 
-    console.log(`\t Launching network under namespace: ${namespace}`);
+    console.log(`\t Launching network under namespace: ${decorators.magenta(namespace)}`);
+    console.log(`\n\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`);
     debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
     if (!isValid) {
       console.error(
-        "  ⚠ Can not access k8s cluster, please check your config."
+        `  ⚠ Can not access ${networkSpec.settings.provider}, please check your config.`
       );
       process.exit(1);
     }
@@ -166,6 +166,7 @@ export async function start(
     try {
       const chainRawContent = require(chainSpecFullPath);
       debug(`Chain name: ${chainRawContent.name}`);
+      console.log(`\n\t\t Chain name: ${decorators.green(chainRawContent.name)}`);
     } catch(err) {
       throw new Error(`Error: chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`);
     }
@@ -260,6 +261,16 @@ export async function start(
         const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace).replace(/{{podName}}/, podDef.metadata.name);
         console.log(`\t${decorators.green("Grafana logs url:")}`);
         console.log(`\t\t${decorators.magenta(loki_url)}`);
+      } else {
+        console.log(`\n\t\t ${decorators.magenta("You can follow the logs of the node by running this command:")}`);
+        switch(networkSpec.settings.provider) {
+          case "podman":
+            console.log(`\n\t\t\t podman logs ${podDef.metadata.name}_pod-${podDef.metadata.name}`);
+            break;
+          case "kubernetes":
+            console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
+            break;
+        }
       }
     }
 
@@ -311,7 +322,7 @@ export async function start(
 
     // prevent global timeout
     network.launched = true;
-    debug(`\t 🚀 LAUNCH COMPLETE under namespace ${namespace} 🚀`);
+    debug(`\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`);
     return network;
   } catch (error) {
     console.error(error);
