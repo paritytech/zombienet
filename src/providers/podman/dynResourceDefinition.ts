@@ -85,7 +85,7 @@ export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<an
 function make_transfer_containter(): any {
   return {
     name: TRANSFER_CONTAINER_NAME,
-    image: "alpine",
+    image: "docker.io/alpine",
     imagePullPolicy: "Always",
     volumeMounts: [{ name: "tmp-cfg", mountPath: "/cfg", readOnly: false }],
     command: [
