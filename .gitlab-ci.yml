@@ -104,7 +104,7 @@ package:
     - npm run clean
     - npm run build
     - npm run package
-    - cp zombienet-* artifacts/
+    - cp bins/zombienet-* artifacts/
 
 
 # template task for building and pushing an image

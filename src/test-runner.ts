@@ -26,7 +26,7 @@ export interface BackchannelMap {
   [propertyName: string]: any;
 }
 
-export async function run(testFile: string, isCI: boolean = false) {
+export async function run(testFile: string, provider: string,  isCI: boolean = false) {
   let network: Network;
   let backchannelMap: BackchannelMap = {};
   // read test file
@@ -45,6 +45,9 @@ export async function run(testFile: string, isCI: boolean = false) {
     const resolvedFilePath = path.resolve(fileTestPath, testDef.networkConfig);
     config = readNetworkConfig(resolvedFilePath);
   }
+
+  // set the provider
+  config.settings.provider = provider;
 
   // find creds file
   let credsFile = isCI ? "config" : testDef.creds;
@@ -66,7 +69,7 @@ export async function run(testFile: string, isCI: boolean = false) {
     if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
 
-  if (!creds) throw new Error(`Invalid credential file path: ${credsFile}`);
+  if (!creds && config.settings.provider === "kubernetes") throw new Error(`Invalid credential file path: ${credsFile}`);
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);
@@ -86,7 +89,7 @@ export async function run(testFile: string, isCI: boolean = false) {
           node.wsUri
         )}#/explorer\n`
       );
-      console.log(`Node prometheus link: ${node.prometheusUri}\n`);
+      console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
       console.log("---\n");
     }
 

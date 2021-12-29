@@ -23,7 +23,7 @@ export const DEFAULT_CHAIN = "rococo-local";
 export const DEFAULT_BOOTNODE_PEER_ID =
   "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
 export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
-export const DEFAULT_CHAIN_SPEC_PATH =  "/cfg/{{chainName}}.json";
+export const DEFAULT_CHAIN_SPEC_PATH =  "/cfg/{{chainName}}-plain.json";
 export const DEFAULT_CHAIN_SPEC_RAW_PATH =  "/cfg/{{chainName}}-raw.json";
 //export const DEFAULT_CHAIN_SPEC_COMMAND =
 //  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode > /cfg/{{chainName}}-plain.json && polkadot build-spec --chain {{chainName}} --disable-default-bootnode --raw > /cfg/{{chainName}}.json";
@@ -56,6 +56,8 @@ export const zombieWrapperPath = resolve(
 
 export const LOKI_URL_FOR_NODE = "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
 
+export const AVAILABLE_PROVIDERS = ["podman", "kubernetes"];
+
 export async function generateNetworkSpec(config: LaunchConfig): Promise<ComputedNetwork> {
   let globalOverrides: Override[] = [];
   if(config.relaychain.default_overrides) {
@@ -69,9 +71,6 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
   };
 
 
-
-  console.log( "globalOverrides" );
-  console.log( globalOverrides );
   let networkSpec: any = {
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
@@ -84,11 +83,14 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
 
   const chainName = config.relaychain.chain || DEFAULT_CHAIN;
 
-  // settings don't need transform
+  // settings
   networkSpec.settings = {
     timeout: DEFAULT_GLOBAL_TIMEOUT,
     ...(config.settings ? config.settings : {}),
   };
+
+  // default provider
+  if(! networkSpec.settings.provider) networkSpec.settings.provider = "kubernetes";
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {

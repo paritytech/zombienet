@@ -1,11 +1,11 @@
-import { genNodeDef, createTempNodeDef } from "./dynResourceDefinition";
+import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 import { getClient } from "../client";
 import { DEFAULT_CHAIN_SPEC_PATH, DEFAULT_CHAIN_SPEC_COMMAND, DEFAULT_CHAIN_SPEC_RAW_PATH } from "../../configManager";
 import { ComputedNetwork } from "../../types";
 import { sleep } from "../../utils";
 const debug = require("debug")("zombie::kube::chain-spec");
 
-import fs from "fs";
+const fs = require("fs").promises;
 
 export async function setupChainSpec(namespace: string, networkSpec: ComputedNetwork, chainName: string, chainFullPath: string): Promise<any> {
     // We have two options to get the chain-spec file, neither should use the `raw` file/argument
@@ -24,18 +24,20 @@ export async function setupChainSpec(namespace: string, networkSpec: ComputedNet
         await client.spawnFromDef(podDef);
 
         debug("copy file from pod");
-        await client.copyFileFromPod(
-          podName,
-          plainChainSpecOutputFilePath,
-          chainFullPath,
-          podName
-        );
+        // await client.copyFileFromPod(
+        //   podName,
+        //   `/cfg/${chainName}.json`,
+        //   chainFullPath,
+        //   podName
+        // );
 
-        await client.putLocalMagicFile(podName, podName);
+        // await client.putLocalMagicFile(podName, podName);
+        const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
+        await fs.copyFile(podChainPath, chainFullPath);
     } else {
         if (networkSpec.relaychain.chainSpecPath) {
           // copy file to temp to use
-          fs.copyFileSync(
+          await fs.copyFile(
             networkSpec.relaychain.chainSpecPath,
             chainFullPath
           );
@@ -63,6 +65,9 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
         }
     ]);
 
+    // let's just wait 2 secs
+    await sleep(2000);
+
     debug("Getting the raw chain spec file from pod to the local environment.");
     await client.copyFileFromPod(
         podName,
@@ -71,8 +76,6 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
         podName
     );
 
-    // let's just wait 2 secs before download
-    await sleep(2000);
 
     // We had some issues where the `raw` file is empty
     // let's add some extra checks here to ensure we are ok.
@@ -84,7 +87,7 @@ export async function getChainSpecRaw(namespace: string, image: string, chainNam
 
     if(!isValid) {
         try {
-            const result = await client.runCommand(["exec", podName, "--", "cat", remoteChainSpecRawFullPath]);
+            const result = await client.runCommand(["exec", `${podName}_pod-${podName}`, "cat", remoteChainSpecRawFullPath]);
             if(result.exitCode === 0 && result.stdout.length > 0) {
                 // TODO: remove this debug when we get this fixed.
                 debug(result.stdout);
