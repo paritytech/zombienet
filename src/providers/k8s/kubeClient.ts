@@ -338,7 +338,7 @@ export class KubeClient extends Client {
     ];
 
     for (const resourceType of resources) {
-      console.log(`adding ${resourceType.type}`);
+      // console.log(`adding ${resourceType.type}`);
       for (const file of resourceType.files) {
         await this.createStaticResource(file);
       }

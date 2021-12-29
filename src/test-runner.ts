@@ -86,7 +86,7 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
           node.wsUri
         )}#/explorer\n`
       );
-      console.log(`Node prometheus link: ${node.prometheusUri}\n`);
+      console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
       console.log("---\n");
     }
 
