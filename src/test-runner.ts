@@ -5,6 +5,7 @@ import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import path from "path";
+import { decorators } from "./colors";
 const zombie = require("../");
 const debug = require("debug")("zombie::test-runner");
 
@@ -79,14 +80,14 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
 
     // PRINT FOR EASY DEBUG
     for (const node of network.nodes) {
-      console.log("\n");
-      console.log(`\t\t Node name: ${node.name}`);
+      console.log("\n\n");
+      console.log(`\t ${decorators.yellow("Node name:")} ${node.name}`);
       console.log(
-        `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+        `\t\t ${decorators.yellow("Node direct link:")} https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
           node.wsUri
         )}#/explorer\n`
       );
-      console.log(`Node prometheus link: ${node.prometheusUri}\n`);
+      console.log(`${decorators.yellow("Node prometheus link:")} ${node.prometheusUri}\n`);
       console.log("---\n");
     }
 
@@ -102,10 +103,10 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
         const fail = tests.find(test => {test.state !== "passed"});
         if(fail) {
           // keep the namespace up for 1 hour
-          console.log(`\t Some test fail, we will keep the namespace up for 30 more minutes`);
+          console.log(`\n\t ${decorators.yellow("Some test fail, we will keep the namespace up for 30 more minutes")}`);
           await network.upsertCronJob(30);
         } else {
-          console.log(`\t Deleting network`);
+          console.log(`\n\t ${decorators.green("Deleting network")}`);
           await network.stop();
         }
       }
