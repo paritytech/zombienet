@@ -51,7 +51,7 @@ export class KubeClient {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
-    this.timeout = 30; // secs
+    this.timeout = 60; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
   }
