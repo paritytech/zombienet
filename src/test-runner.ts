@@ -7,7 +7,7 @@ import { Network } from "./network";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
 const zombie = require("../");
-const {connect, chainUpgrade} = require("./jsapi-helpers");
+const {connect, chainUpgrade, chainDummyUpgrade} = require("./jsapi-helpers");
 
 const debug = require("debug")("zombie::test-runner");
 
@@ -195,6 +195,7 @@ function parseAssertionLine(assertion: string) {
 
   // Chain Commands
   const chainUpgradeRegex = new RegExp(/^([\w]+): chain upgrade with (.*?)$/i);
+  const chainDummyUpgradeRegex = new RegExp(/^([\w]+): chain generate dummy upgrade$/i);
 
 
   // Matchs
@@ -369,6 +370,20 @@ function parseAssertionLine(assertion: string) {
         console.log(e);
         throw new Error(`Error upgrading chain with file: ${resolvedUpgradeFilePath}`);
       }
+      expect(true).to.be.ok;
+    };
+  }
+
+
+  m = chainDummyUpgradeRegex.exec(assertion);
+  if (m && m[1]) {
+    const nodeName = m[1];
+
+    return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
+      const node = network.node(nodeName);
+      const api: ApiPromise = await connect(node.wsUri);
+      await chainDummyUpgrade(api);
+
       expect(true).to.be.ok;
     };
   }
