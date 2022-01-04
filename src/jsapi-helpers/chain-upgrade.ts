@@ -1,7 +1,7 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { withTypeString } from "@polkadot/types";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { readFileSync } from "fs";
+import { readFileSync, promises as fsPromises } from "fs";
 
 import { compress, decompress } from "napi-maybe-compressed-blob";
 
@@ -46,6 +46,7 @@ export async function chainDummyUpgrade(api: ApiPromise): Promise<void> {
 	const codeHex = code.toString().slice(2)
 	const codeBuf = Buffer.from(hexToBytes(codeHex));
 	const decompressed = decompress(codeBuf);
+
 	// add dummy
 	// echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A"
 	const dummyBuf = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6D, 0x6D, 0x79, 0x0A];
