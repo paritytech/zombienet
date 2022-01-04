@@ -107,6 +107,9 @@ function parse_args {
 
 function copy_to_isolated {
   cd "${SCRIPT_PATH}"
+  echo $(pwd)
+  echo $(ls)
+  echo $(ls ..)
   cp -r ../tests/* "${OUTPUT_DIR}"
 }
 function run_test {
