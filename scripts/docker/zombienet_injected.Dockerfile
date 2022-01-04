@@ -41,6 +41,7 @@ WORKDIR /home/nonroot/zombie-net
 COPY ./artifacts/dist ./dist
 COPY static-configs ./static-configs
 COPY scripts ./scripts
+COPY tests ./tests
 COPY artifacts/package* ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
