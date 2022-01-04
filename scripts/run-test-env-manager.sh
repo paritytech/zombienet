@@ -220,7 +220,7 @@ function run_test {
       zombie test $i
       EXIT_STATUS=$?
     done;
-    if[[ $TEST_FOUND -lt 1 ]]; then
+    if [[ $TEST_FOUND -lt 1 ]]; then
       EXIT_STATUS=1
     fi;
   else
