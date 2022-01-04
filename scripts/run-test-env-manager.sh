@@ -214,10 +214,15 @@ function run_test {
   set -x
   set +e
   if [[ ! -z $TEST_TO_RUN ]]; then
+    TEST_FOUND=0
     for i in $(find ${OUTPUT_DIR} -name "${TEST_TO_RUN}"| head -1); do
+      TEST_FOUND=1
       zombie test $i
       EXIT_STATUS=$?
     done;
+    if[[ $TEST_FOUND -lt 1 ]]; then
+      EXIT_STATUS=1
+    fi;
   else
     for i in $(find ${OUTPUT_DIR} -name *.feature | sort); do
       echo "running test: ${i}"

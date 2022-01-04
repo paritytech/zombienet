@@ -222,7 +222,8 @@ zombienet-dummy-chain-upgrade:
   #   - job:                         publish-docker-pr
 
   variables:
-    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/feat-chain-upgrade-command/tests' # TODO: change to master ones this is merge
+    # TODO: change to master ones this is merge
+    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/feat-chain-upgrade-command/tests'
 
   before_script:
     - echo "Zombie-net Tests Config"
