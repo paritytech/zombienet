@@ -222,7 +222,6 @@ zombienet-dummy-chain-upgrade:
   #   - job:                         publish-docker-pr
 
   variables:
-    # TODO: change to master ones this is merge
     GH_DIR:                        'https://github.com/paritytech/zombienet/tree/feat-chain-upgrade-command/tests'
 
   before_script:
@@ -234,8 +233,7 @@ zombienet-dummy-chain-upgrade:
     - export COL_IMAGE="docker.io/paritypr/colander:master"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
-        --github-remote-dir="${GH_DIR}"
+    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
         --test="0003-parachains-upgrade-smoke-test.feature"
   allow_failure:                   true
   retry: 2
