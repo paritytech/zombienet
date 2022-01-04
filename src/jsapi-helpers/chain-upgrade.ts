@@ -12,33 +12,6 @@ export async function chainUpgrade(api: ApiPromise, wasmFilePath: string): Promi
 
 	let code = readFileSync(wasmFilePath).toString("hex");
 	await performChainUpgrade(api, code);
-	// await cryptoWaitReady()
-
-	// const keyring = new Keyring({ type: "sr25519" });
-	// const alice = keyring.addFromUri("//Alice");
-
-	// await new Promise<void>(async (resolve, reject) => {
-	// 	const unsub = await api.tx.sudo
-	// 	.sudoUncheckedWeight(api.tx.system.setCodeWithoutChecks(`0x${code}`), 1)
-	// 	.signAndSend(alice, (result) => {
-	// 		console.log(`Current status is ${result.status}`);
-	// 		if (result.status.isInBlock) {
-	// 			console.log(
-	// 				`Transaction included at blockHash ${result.status.asInBlock}`
-	// 			);
-	// 		} else if (result.status.isFinalized) {
-	// 			console.log(
-	// 				`Transaction finalized at blockHash ${result.status.asFinalized}`
-	// 			);
-	// 			unsub();
-	// 			return resolve();
-	// 		} else if (result.isError) {
-	// 			console.log(`Transaction Error`);
-	// 			unsub();
-	// 			return reject();
-	// 		}
-	// 	});
-	// });
 }
 
 export async function chainDummyUpgrade(api: ApiPromise): Promise<void> {
