@@ -8,11 +8,10 @@ import { getCredsFilePath, readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
-import { debug } from "console";
-import { AVAILABLE_PROVIDERS } from "./configManager";
+import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./configManager";
 
 const path = require("path");
-
+const debug = require("debug")("zombie-cli");
 
 const program = new Command("zombienet");
 
@@ -65,13 +64,6 @@ process.on("exit", async function () {
   process.exit(exitCode); // use exitCode set by mocha or 2 as default.
 });
 
-// program
-//   .addOption(
-//     new Option("-p, --provider <provider>", "Override provider to use")
-//       .choices(["podman", "kubernetes"])
-//       .default("kubernetes", "kubernetes")
-//   );
-
 program
   .command("spawn")
   .description("Spawn the network defined in the config")
@@ -118,8 +110,17 @@ async function spawn(
   const filePath = path.resolve(configFile);
   const config = readNetworkConfig(filePath);
 
+  debug(config);
+  debug(opts);
+
   // if a provider is passed, let just use it.
-  if(opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) config.settings.provider = opts.provider;
+  if(opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
+    if(! config.settings) {
+      config.settings = { provider: opts.provider, timeout: DEFAULT_GLOBAL_TIMEOUT }
+    } else {
+      config.settings.provider = opts.provider;
+    }
+  }
 
   let creds = "";
   if(config.settings?.provider === "kubernetes") {

@@ -123,9 +123,9 @@ export interface LaunchConfig {
 }
 
 export interface Settings {
-  init_containers: InitContainer[];
-  global_volumes: GlobalVolume[];
-  bootnode: boolean;
+  init_containers?: InitContainer[];
+  global_volumes?: GlobalVolume[];
+  bootnode?: boolean;
   bootnode_domain?: string;
   timeout: number;
   grafana?: boolean;
