@@ -21,7 +21,7 @@
 - `default_command` : The default command to run. (`polkadot` by default).
 - `default_image` : The default image to use for the nodes of the `relaychain`. (*TBD*: define a default value)
 - `chain`: The chain you want to use to generate your spec (probably `rococo-local`).
-- `chain_spec_path` : Path to the chain spec file.
+- `chain_spec_path` : Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
 - `chain_spec_command` : Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
 - `default_args` : An array of arguments to use as default to pass to the `command`.
 - `default_overrides`: An array of overrides to upload to the nodes, objects with:
