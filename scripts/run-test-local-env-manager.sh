@@ -18,10 +18,7 @@ Usage: ${SCRIPT_NAME} OPTION
 
 OPTION
  -t, --test          OPTIONAL Test file to run
-                     If omitted "all" test in the directory will be used.
-  -g, --github-remote-dir
-                     OPTIONAL URL to a directory hosted on github, e.g.:
-                     https://github.com/paritytech/polkadot/tree/master/simnet_tests
+                     If omitted "all" test in the tests directory will be used.
   -h, --help         OPTIONAL Print this help message
   -o, --output-dir   OPTIONAL
                      Path to dir where to save contens of --github-remote-dir
@@ -40,7 +37,7 @@ function main {
   set_defaults_for_globals
   parse_args "$@"
   create_isolated_dir
-  download_from_remote
+  copy_to_isolated
   run_test
   log INFO "Exit status is ${EXIT_STATUS}"
   exit "${EXIT_STATUS}"
@@ -108,102 +105,13 @@ function parse_args {
   check_args
 }
 
-function download_from_remote {
-  log INFO "Downloading tests info from ${GH_REMOTE_DIR}"
-  # https://github.com/paritytech/polkadot/tree/master/simnet_tests
-  local org repo branch gh_dir
-
-  org="$(   parse_url "${GH_REMOTE_DIR}" "org"    )"
-  repo="$(  parse_url "${GH_REMOTE_DIR}" "repo"   )"
-  branch="$(parse_url "${GH_REMOTE_DIR}" "branch" )"
-  gh_dir="$(parse_url "${GH_REMOTE_DIR}" "gh_dir" )"
-  log INFO "Found github api org:${org} repo:${repo} branch:${branch} gh_dir:${gh_dir}"
-
-  function gh_download_content {
-    # recursively dowload content of github dir
-    local url dir
-    url=$1 dir=$2
-    mkdir -p "${OUTPUT_DIR}/${dir}"
-
-    while read -r _path _type _download_url _url ; do
-      if [[ "${_type}" == "file" ]] ; then
-        echo curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}"
-        curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}" --silent
-      elif [[ "${_type}" == "symlink" ]] ; then
-        echo curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}"
-        curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}" --silent
-
-        # replace _path with what you find in file download_url after removing
-        # the dots and slashes
-        # ../node/malus/integrationtests
-        local new_path
-        new_path=$(cat "${OUTPUT_DIR}/${_path}")
-        new_path=$(sed -E 's|(\.+\/)||g'  <<< "${new_path}")
-
-        # update _url : replace _path with new_path
-        # "url": "https://api.github.com/repos/paritytech/polkadot/contents/simnet_tests/malus?ref=bernhard-malus-fx",
-
-        local new_url
-        new_url=$(sed -E  "s|${_path}|${new_path}|g"  <<< "${_url}")
-
-        ln_src="$(cat "${OUTPUT_DIR}/${_path}")"
-        ln_dst="${OUTPUT_DIR}/${_path}"
-
-        log INFO "New download_url=${new_url}  and new_path=${new_path}"
-        gh_download_content "${new_url}" "${new_path}"
-
-        # create the simlink also
-        rm "${ln_dst}"
-        cd "$(dirname "${ln_dst}")"
-        pwd
-        ln -s  "${ln_src}" "${ln_dst}"
-        cd -
-
-      elif [[ "${_type}" == "dir" ]] ; then
-        gh_download_content "${_url}" "${_path}"
-      fi
-    done< <(jq '.[] | "\(.path) \(.type) \(.download_url) \(.url)"' --raw-output < <(curl --silent "${url}"))
-  }
-
-  local url
-  url="https://api.github.com/repos/${org}/${repo}/contents/${gh_dir}?ref=${branch}"
-  gh_download_content "${url}" "${gh_dir}"
-  log INFO "Finished downloading remote dir"
+function copy_to_isolated {
+  cd "${SCRIPT_PATH}"
+  echo $(pwd)
+  echo $(ls)
+  echo $(ls ..)
+  cp -r ../tests/* "${OUTPUT_DIR}"
 }
-
-function parse_url {
-  local gh_remote_dir gh_api_var output
-  gh_remote_dir=$1 gh_api_var=$2
-  output=""
-
-  case "${gh_api_var}" in
-    org )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\2|g' \
-          <<< "${gh_remote_dir}")"
-              ;;
-    repo )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\3|g' \
-          <<< "${gh_remote_dir}")"
-              ;;
-    branch )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\4|g' \
-          <<< "${gh_remote_dir}")"
-              ;;
-    gh_dir )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\5|g' \
-          <<< "${gh_remote_dir}")"
-              ;;
-    ??* )
-      log DIE "Can't handle case when githib api var is ${gh_api_var}"
-  esac
-
-  if [[ -z "${output}"  ]] ; then
-    log DIE "Could not find the required github api variable in github remote dir ${gh_remote_dir}"
-  else
-    echo "${output}"
-  fi
-}
-
 function run_test {
   # RUN_IN_CONTAINER is env var that is set in the dockerfile
   if  [[ -v RUN_IN_CONTAINER  ]]; then

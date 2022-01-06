@@ -43,7 +43,7 @@ export class KubeClient extends Client {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
-    this.timeout = 30; // secs
+    this.timeout = 60; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
   }
@@ -338,7 +338,7 @@ export class KubeClient extends Client {
     ];
 
     for (const resourceType of resources) {
-      console.log(`adding ${resourceType.type}`);
+      // console.log(`adding ${resourceType.type}`);
       for (const file of resourceType.files) {
         await this.createStaticResource(file);
       }
