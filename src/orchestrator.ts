@@ -89,7 +89,7 @@ export async function start(
 
       throw new Error("Invalid provider config. You must one of: " + Array.from(Providers.keys()).join(", "));
     }
-    console.log(`\t Using provider: ${networkSpec.settings.provider}`);
+    console.log(`\n\t Using provider: ${decorators.magenta(networkSpec.settings.provider)}\n`);
     const { genBootnodeDef, genNodeDef, initClient, setupChainSpec, getChainSpecRaw } = Providers.get(networkSpec.settings.provider);
 
 
@@ -97,14 +97,14 @@ export async function start(
     network = new Network(client, namespace, tmpDir.path);
 
     console.log(`\t Launching network under namespace: ${decorators.magenta(namespace)}`);
-    console.log(`\n\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`);
+    console.log(`\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`);
     debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
     if (!isValid) {
       console.error(
-        `  ⚠ Can not access ${networkSpec.settings.provider}, please check your config.`
+        `\n\t\t ${decorators.red("⚠ Can not access")} ${decorators.magenta(networkSpec.settings.provider)}, please check your config.`
       );
       process.exit(1);
     }

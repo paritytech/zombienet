@@ -1,4 +1,3 @@
-import { debug } from "console";
 import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
@@ -20,7 +19,6 @@ export async function generateParachainFiles(
   const parachainFilesPath = `${tmpDir}/${parachain.id}`;
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-  // const localMagicFilepath = `${tmpDir}/finished.txt`;
   const client = getClient();
 
   fs.mkdirSync(parachainFilesPath);
@@ -50,11 +48,6 @@ export async function generateParachainFiles(
     const provider = Providers.get(client.providerName);
     const podDef = await provider.genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
-
-    debug(
-      `launching ${podName} pod with image ${podDef.spec.containers[0].image}`
-    );
-    debug(`command: ${podDef.spec.containers[0].command.join(" ")}`);
 
     await client.spawnFromDef(podDef)
 

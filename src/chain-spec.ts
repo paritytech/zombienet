@@ -1,6 +1,7 @@
 import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { encodeAddress } from "@polkadot/util-crypto";
+import { decorators } from "./colors";
 import { ChainSpec } from "./types";
 import { readDataFile } from "./utils";
 const fs = require("fs");
@@ -24,7 +25,7 @@ function getAuthorityKeys(chainSpec: ChainSpec) {
 		return runtimeConfig.palletSession.keys;
 	}
 
-	console.error("  ⚠ session not found in runtimeConfig");
+	console.error(`\n\t\t  ${decorators.red("⚠ session not found in runtimeConfig")}`);
 	process.exit(1);
 }
 
@@ -35,7 +36,7 @@ export function clearAuthorities(spec: string) {
 	try {
 		chainSpec = JSON.parse(rawdata);
 	} catch {
-		console.error("  ⚠ failed to parse the chain spec");
+		console.error(`\n\t\t  ${decorators.red("  ⚠ failed to parse the chain spec")}`);
 		process.exit(1);
 	}
 
@@ -44,7 +45,7 @@ export function clearAuthorities(spec: string) {
 
 	let data = JSON.stringify(chainSpec, null, 2);
 	fs.writeFileSync(spec, data);
-	console.log(`\n🧹 Starting with a fresh authority set...`);
+	console.log(`\n\t\t🧹 ${decorators.green("Starting with a fresh authority set...")}`);
 }
 
 // Add additional authorities to chain spec in `session.keys`
@@ -84,7 +85,7 @@ export async function addAuthority(spec: string, name: string) {
 
 	let data = JSON.stringify(chainSpec, null, 2);
 	fs.writeFileSync(spec, data);
-	console.log(`  👤 Added Genesis Authority ${name} - ${sr_stash.address}`);
+	console.log(`\t\t\t  👤 Added Genesis Authority ${decorators.green(name)} - ${decorators.magenta(sr_stash.address)}`);
 }
 
 // Add parachains to the chain spec at genesis.
@@ -124,9 +125,9 @@ export async function addParachainToGenesis(
 
 		let data = JSON.stringify(chainSpec, null, 2);
 		fs.writeFileSync(spec_path, data);
-		console.log(`  ✓ Added Genesis Parachain ${para_id}`);
+		console.log(`\n\t\t  ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`);
 	} else {
-		console.error("  ⚠ paras not found in runtimeConfig");
+		console.error(`\n\t\t  ${decorators.red("  ⚠ paras not found in runtimeConfig")}`);
 		process.exit(1);
 	}
 }
@@ -137,7 +138,7 @@ export async function changeGenesisConfig(spec: string, updates: any) {
 	let rawdata = fs.readFileSync(spec);
 	let chainSpec = JSON.parse(rawdata);
 
-	console.log(`\n⚙ Updating Relay Chain Genesis Configuration`);
+	console.log(`\n\t\t ${decorators.green("⚙ Updating Relay Chain Genesis Configuration")}`);
 
 	if (chainSpec.genesis) {
 		let config = chainSpec.genesis;
@@ -164,11 +165,11 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
 			} else {
 				obj2[key] = obj1[key];
 				console.log(
-					`  ✓ Updated Genesis Configuration [ ${key}: ${obj2[key]} ]`
+					`\n\t\t  ${decorators.green("✓ Updated Genesis Configuration")} [ ${key}: ${obj2[key]} ]`
 				);
 			}
 		} else {
-			console.error(`  ⚠ Bad Genesis Configuration [ ${key}: ${obj1[key]} ]`);
+			console.error(`\n\t\t  ${decorators.red("⚠ Bad Genesis Configuration")} [ ${key}: ${obj1[key]} ]`);
 		}
 	});
 }
