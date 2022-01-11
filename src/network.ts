@@ -28,12 +28,12 @@ export interface NodeMappingMetrics {
 
 export enum Scope {
   RELAY,
-  PARA
-};
+  PARA,
+}
 
 export class Network {
   relay: NetworkNode[] = [];
-  paras:{[id: number]: NetworkNode[]} = {};
+  paras: { [id: number]: NetworkNode[] } = {};
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
@@ -49,10 +49,13 @@ export class Network {
   }
 
   addNode(node: NetworkNode, scope: Scope) {
-    if( scope === Scope.RELAY) this.relay.push(node);
+    if (scope === Scope.RELAY) this.relay.push(node);
     else {
-      if(! node.parachainId) throw new Error("Invalid network node configuration, collator must set the parachainId")
-      if(!this.paras[node.parachainId]) this.paras[node.parachainId] = [];
+      if (!node.parachainId)
+        throw new Error(
+          "Invalid network node configuration, collator must set the parachainId"
+        );
+      if (!this.paras[node.parachainId]) this.paras[node.parachainId] = [];
 
       this.paras[node.parachainId].push(node);
     }
@@ -67,11 +70,14 @@ export class Network {
   async uploadLogs() {
     // create dump directory in local temp
     fs.mkdirSync(`${this.tmpDir}/logs`);
-    const paraNodes: NetworkNode[] =  Object.keys(this.paras).reduce((memo: NetworkNode[], key) => {
-      const paraId = parseInt(key,10);
-      memo.concat(this.paras[paraId]);
-      return memo;
-    },[]);
+    const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
+      (memo: NetworkNode[], key) => {
+        const paraId = parseInt(key, 10);
+        memo.concat(this.paras[paraId]);
+        return memo;
+      },
+      []
+    );
     const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
       this.client.dumpLogs(this.tmpDir, node.name);
     });
@@ -84,10 +90,13 @@ export class Network {
     ];
     try {
       await execa("gsutil", args);
-    } catch(err) {
-      console.log(`\n\t ${decorators.red("Could NOT upload logs")} to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`);
+    } catch (err) {
+      console.log(
+        `\n\t ${decorators.red(
+          "Could NOT upload logs"
+        )} to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`
+      );
     }
-
   }
 
   async upsertCronJob(minutes = 10) {
@@ -248,7 +257,9 @@ export class Network {
   showNetworkInfo() {
     console.log("\n-----------------------------------------\n");
     console.log("\n\t Network launched 🚀🚀");
-    console.log(`\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`);
+    console.log(
+      `\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`
+    );
     for (const node of this.relay) {
       this.showNodeInfo(node);
       // console.log("\n");
@@ -266,16 +277,16 @@ export class Network {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
 
-      for( const node of parachain ) {
+      for (const node of parachain) {
         this.showNodeInfo(node);
-      //   console.log(`\t\t Node name: ${node.name}`);
-      //   console.log(
-      //     `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-      //       node.wsUri
-      //     )}#/explorer\n`
-      //   );
-      //   console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
-      //   console.log("---\n");
+        //   console.log(`\t\t Node name: ${node.name}`);
+        //   console.log(
+        //     `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+        //       node.wsUri
+        //     )}#/explorer\n`
+        //   );
+        //   console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
+        //   console.log("---\n");
       }
     }
   }

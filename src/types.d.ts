@@ -92,25 +92,25 @@ export interface envVars {
 }
 
 export interface ChainSpec {
-	name: string;
-	id: string;
-	chainType: string;
-	bootNodes: string[];
-	telemetryEndpoints: null;
-	protocolId: string;
-	properties: null;
-	forkBlocks: null;
-	badBlocks: null;
-	consensusEngine: null;
-	lightSyncState: null;
-	genesis: {
-		runtime: any; // this can change depending on the versions
-		raw: {
-			top: {
-				[key: string]: string;
-			};
-		};
-	};
+  name: string;
+  id: string;
+  chainType: string;
+  bootNodes: string[];
+  telemetryEndpoints: null;
+  protocolId: string;
+  properties: null;
+  forkBlocks: null;
+  badBlocks: null;
+  consensusEngine: null;
+  lightSyncState: null;
+  genesis: {
+    runtime: any; // this can change depending on the versions
+    raw: {
+      top: {
+        [key: string]: string;
+      };
+    };
+  };
 }
 
 // Launch Config ( user provided config )
@@ -144,7 +144,6 @@ export interface InitContainer {
   image: string;
   command: string;
 }
-
 
 export interface RelayChainConfig {
   default_command?: string;
@@ -193,8 +192,8 @@ export interface ParachainConfig {
 
 // name: path
 export interface fileMap {
-  localFilePath: string,
-  remoteFilePath: string
+  localFilePath: string;
+  remoteFilePath: string;
 }
 
 export interface Override {

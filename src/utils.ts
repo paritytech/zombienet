@@ -7,14 +7,14 @@ import { getUniqueName, WAIT_UNTIL_SCRIPT_SUFIX } from "./configManager";
 import path from "path";
 import { createHash } from "crypto";
 import { AddressInfo, createServer } from "net";
-const dns = require("dns")
+const dns = require("dns");
 const os = require("os");
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function generateNamespace(n:number=16): string {
+export function generateNamespace(n: number = 16): string {
   const buf = randomBytes(n);
   return buf.toString("hex");
 }
@@ -94,7 +94,6 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
       ? JSON.parse(content) //require(filepath)
       : toml.parse(content);
 
-
   config.configBasePath = configBasePath;
   return config;
 }
@@ -144,7 +143,12 @@ export function loadTypeDef(types: string | object): object {
   }
 }
 
-export function createTempNodeDef(name: string, image: string, chain: string, fullCommand: string) {
+export function createTempNodeDef(
+  name: string,
+  image: string,
+  chain: string,
+  fullCommand: string
+) {
   let node: Node = {
     name: getUniqueName("temp"),
     image,
@@ -162,33 +166,33 @@ export function createTempNodeDef(name: string, image: string, chain: string, fu
 }
 
 export function getSha256(input: string): string {
-  return createHash('sha256').update(input).digest('hex');
+  return createHash("sha256").update(input).digest("hex");
 }
 
 export async function getRandomPort(): Promise<number> {
-	const inner =  async () => {
+  const inner = async () => {
     return new Promise((resolve, reject) => {
-		  const server = createServer();
-		  server.unref();
-		  server.on('error', reject);
+      const server = createServer();
+      server.unref();
+      server.on("error", reject);
 
-		  server.listen(0, () => {
-	  		const {port} = server.address() as AddressInfo;
-		  	server.close(() => {
-			  	resolve(port);
-			  });
-		  });
-	  });
-  }
+      server.listen(0, () => {
+        const { port } = server.address() as AddressInfo;
+        server.close(() => {
+          resolve(port);
+        });
+      });
+    });
+  };
 
-  const port: number = await inner() as number;
+  const port: number = (await inner()) as number;
   return port;
 }
 
 export async function getHostIp(): Promise<string> {
   return await new Promise((resolve, reject) => {
-    dns.lookup(os.hostname(), (err: any, addr:any) => {
+    dns.lookup(os.hostname(), (err: any, addr: any) => {
       resolve(addr);
-    })
+    });
   });
 }

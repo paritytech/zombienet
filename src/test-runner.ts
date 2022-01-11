@@ -8,7 +8,12 @@ import path from "path";
 import { decorators } from "./colors";
 import { ApiPromise } from "@polkadot/api";
 const zombie = require("../");
-const {connect, chainUpgrade, chainDummyUpgrade, validateRuntimeCode} = require("./jsapi-helpers");
+const {
+  connect,
+  chainUpgrade,
+  chainDummyUpgrade,
+  validateRuntimeCode,
+} = require("./jsapi-helpers");
 
 const debug = require("debug")("zombie::test-runner");
 
@@ -27,7 +32,11 @@ export interface BackchannelMap {
   [propertyName: string]: any;
 }
 
-export async function run(testFile: string, provider: string,  isCI: boolean = false) {
+export async function run(
+  testFile: string,
+  provider: string,
+  isCI: boolean = false
+) {
   let network: Network;
   let backchannelMap: BackchannelMap = {};
   // read test file
@@ -70,7 +79,8 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
     if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
 
-  if (!creds && config.settings.provider === "kubernetes") throw new Error(`Invalid credential file path: ${credsFile}`);
+  if (!creds && config.settings.provider === "kubernetes")
+    throw new Error(`Invalid credential file path: ${credsFile}`);
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);
@@ -90,11 +100,17 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
     if (network) {
       await network.uploadLogs();
       const tests = this.test?.parent?.tests;
-      if(tests) {
-        const fail = tests.find(test => {test.state !== "passed"});
-        if(fail) {
+      if (tests) {
+        const fail = tests.find((test) => {
+          test.state !== "passed";
+        });
+        if (fail) {
           // keep the namespace up for 1 hour
-          console.log(`\n\t ${decorators.yellow("Some test fail, we will keep the namespace up for 30 more minutes")}`);
+          console.log(
+            `\n\t ${decorators.yellow(
+              "Some test fail, we will keep the namespace up for 30 more minutes"
+            )}`
+          );
           await network.upsertCronJob(30);
         } else {
           console.log(`\n\t ${decorators.green("Deleting network")}`);
@@ -159,8 +175,12 @@ function parseAssertionLine(assertion: string) {
   const parachainBlockHeight = new RegExp(
     /^(([\w]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
-  const chainUpgradeRegex = new RegExp(/^(([\w]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i);
-  const chainDummyUpgradeRegex = new RegExp(/^(([\w]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i);
+  const chainUpgradeRegex = new RegExp(
+    /^(([\w]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i
+  );
+  const chainDummyUpgradeRegex = new RegExp(
+    /^(([\w]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i
+  );
 
   // Metrics
   const isReports = new RegExp(
@@ -340,7 +360,11 @@ function parseAssertionLine(assertion: string) {
     let timeout: number;
     if (m[6]) timeout = parseInt(m[6], 10);
 
-    return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
+    return async (
+      network: Network,
+      backchannelMap: BackchannelMap,
+      testFile: string
+    ) => {
       const node = network.node(nodeName);
       const api: ApiPromise = await connect(node.wsUri);
 
@@ -354,14 +378,15 @@ function parseAssertionLine(assertion: string) {
           const fileTestPath = path.dirname(testFile);
           resolvedUpgradeFilePath = path.resolve(fileTestPath, upgradeFilePath);
         }
-        await chainUpgrade(api,resolvedUpgradeFilePath);
-      } catch(e) {
-        throw new Error(`Error upgrading chain with file: ${resolvedUpgradeFilePath}`);
+        await chainUpgrade(api, resolvedUpgradeFilePath);
+      } catch (e) {
+        throw new Error(
+          `Error upgrading chain with file: ${resolvedUpgradeFilePath}`
+        );
       }
       expect(true).to.be.ok;
     };
   }
-
 
   m = chainDummyUpgradeRegex.exec(assertion);
   if (m && m[2]) {
@@ -370,7 +395,11 @@ function parseAssertionLine(assertion: string) {
     let timeout: number;
     if (m[5]) timeout = parseInt(m[5], 10);
 
-    return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
+    return async (
+      network: Network,
+      backchannelMap: BackchannelMap,
+      testFile: string
+    ) => {
       const collator = network.paras[parachainId][0];
       let node = network.node(collator.name);
       let api: ApiPromise = await connect(node.wsUri);
@@ -384,7 +413,6 @@ function parseAssertionLine(assertion: string) {
       expect(valid).to.be.ok;
     };
   }
-
 
   // if we can't match let produce a fail test
   return async (network: Network) => {

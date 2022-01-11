@@ -27,11 +27,11 @@ export async function genBootnodeDef(
       name: "bootnode",
       namespace: namespace,
       labels: {
-        "app.kubernetes.io/name" : namespace,
-        "app.kubernetes.io/instance" : "bootnode",
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": "bootnode",
         "zombie-role": "bootnode",
         app: "zombienet",
-        "zombie-ns": namespace
+        "zombie-ns": namespace,
       },
     },
     spec: {
@@ -46,7 +46,10 @@ export async function genBootnodeDef(
   };
 }
 
-export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<any> {
+export async function genNodeDef(
+  namespace: string,
+  nodeSetup: Node
+): Promise<any> {
   const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
@@ -61,8 +64,8 @@ export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<an
         "zombie-role": nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
         "zombie-ns": namespace,
-        "app.kubernetes.io/name" : namespace,
-        "app.kubernetes.io/instance" : nodeSetup.name,
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": nodeSetup.name,
       },
       annotations: {
         "prometheus.io/scrape": "true",
@@ -103,22 +106,33 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const client = getClient();
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   const zPath = `${client.tmpDir}/${name}/z`;
-  await fs.mkdir(cfgPath, {recursive: true});
-  await fs.mkdir(zPath, {recursive: true});
+  await fs.mkdir(cfgPath, { recursive: true });
+  await fs.mkdir(zPath, { recursive: true });
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
-    { name: "tmp-z", hostPath : { type: "Directory", path: zPath } },
+    { name: "tmp-z", hostPath: { type: "Directory", path: zPath } },
   ];
 
   return [volume_mounts, devices];
 }
 
-async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promise<any> {
+async function make_main_container(
+  nodeSetup: Node,
+  volume_mounts: any[]
+): Promise<any> {
   const ports = [
-    { containerPort: PROMETHEUS_PORT, name: "prometheus", hostPort:  await getRandomPort() },
-    { containerPort: RPC_HTTP_PORT, name: "rpc", hostPort:  await getRandomPort() },
-    { containerPort: P2P_PORT, name: "p2p", hostPort:  await getRandomPort() }
+    {
+      containerPort: PROMETHEUS_PORT,
+      name: "prometheus",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: RPC_HTTP_PORT,
+      name: "rpc",
+      hostPort: await getRandomPort(),
+    },
+    { containerPort: P2P_PORT, name: "p2p", hostPort: await getRandomPort() },
   ];
   const command = await genCmd(nodeSetup);
 
@@ -135,11 +149,16 @@ async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promi
   return containerDef;
 }
 
-export function createTempNodeDef(name: string, image: string, chain: string, fullCommand: string) {
+export function createTempNodeDef(
+  name: string,
+  image: string,
+  chain: string,
+  fullCommand: string
+) {
   let node: Node = {
     name: getUniqueName("temp"),
     image,
-    fullCommand: fullCommand , //+ " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+    fullCommand: fullCommand, //+ " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,
     validator: false,
     bootnodes: [],

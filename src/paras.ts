@@ -50,7 +50,7 @@ export async function generateParachainFiles(
     const podDef = await provider.genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
 
-    await client.spawnFromDef(podDef)
+    await client.spawnFromDef(podDef);
 
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
@@ -73,16 +73,12 @@ export async function generateParachainFiles(
 
   if (parachain.genesisStatePath) {
     // copy file to temp to use
-    fs.copyFileSync(
-        parachain.genesisStatePath,
-        stateLocalFilePath );
+    fs.copyFileSync(parachain.genesisStatePath, stateLocalFilePath);
   }
 
   if (parachain.genesisWasmPath) {
     // copy file to temp to use
-    fs.copyFileSync(
-        parachain.genesisWasmPath,
-        wasmLocalFilePath );
+    fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
 
   // register parachain

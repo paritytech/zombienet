@@ -21,8 +21,8 @@ export async function genBootnodeDef(
     metadata: {
       name: "bootnode",
       labels: {
-        "app.kubernetes.io/name" : namespace,
-        "app.kubernetes.io/instance" : "bootnode",
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": "bootnode",
         "zombie-role": "bootnode",
         app: "zombienet",
       },
@@ -39,7 +39,10 @@ export async function genBootnodeDef(
   };
 }
 
-export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<any> {
+export async function genNodeDef(
+  namespace: string,
+  nodeSetup: Node
+): Promise<any> {
   const [volume_mounts, devices] = make_volume_mounts();
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
@@ -52,8 +55,8 @@ export async function genNodeDef(namespace: string, nodeSetup: Node): Promise<an
       labels: {
         "zombie-role": nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
-        "app.kubernetes.io/name" : namespace,
-        "app.kubernetes.io/instance" : nodeSetup.name,
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": nodeSetup.name,
       },
       annotations: {
         "prometheus.io/scrape": "true",
@@ -104,7 +107,10 @@ function make_volume_mounts(): [any, any] {
   return [volume_mounts, devices];
 }
 
-async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promise<any> {
+async function make_main_container(
+  nodeSetup: Node,
+  volume_mounts: any[]
+): Promise<any> {
   const ports = [{ containerPort: PROMETHEUS_PORT, name: "prometheus" }];
   const command = await genCmd(nodeSetup);
 
@@ -121,8 +127,12 @@ async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promi
   return containerDef;
 }
 
-
-export function createTempNodeDef(name: string, image: string, chain: string, fullCommand: string) {
+export function createTempNodeDef(
+  name: string,
+  image: string,
+  chain: string,
+  fullCommand: string
+) {
   let node: Node = {
     name: getUniqueName("temp"),
     image,

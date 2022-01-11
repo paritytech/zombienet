@@ -1,4 +1,11 @@
-import { LaunchConfig, ComputedNetwork, Node, Parachain, Override, RelayChainConfig } from "./types";
+import {
+  LaunchConfig,
+  ComputedNetwork,
+  Node,
+  Parachain,
+  Override,
+  RelayChainConfig,
+} from "./types";
 import path, { resolve } from "path";
 import fs from "fs";
 const debug = require("debug")("zombie::config-manager");
@@ -24,13 +31,15 @@ export const DEFAULT_BOOTNODE_PEER_ID =
   "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
 export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
 export const DEFAULT_REMOTE_DIR = "/cfg";
-export const DEFAULT_CHAIN_SPEC_PATH =  "/cfg/{{chainName}}-plain.json";
-export const DEFAULT_CHAIN_SPEC_RAW_PATH =  "/cfg/{{chainName}}-raw.json";
+export const DEFAULT_CHAIN_SPEC_PATH = "/cfg/{{chainName}}-plain.json";
+export const DEFAULT_CHAIN_SPEC_RAW_PATH = "/cfg/{{chainName}}-raw.json";
 //export const DEFAULT_CHAIN_SPEC_COMMAND =
 //  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode > /cfg/{{chainName}}-plain.json && polkadot build-spec --chain {{chainName}} --disable-default-bootnode --raw > /cfg/{{chainName}}.json";
-export const DEFAULT_CHAIN_SPEC_COMMAND = "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
-export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND = "export-genesis-state --parachain-id {{paraId}}";
-export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm" // > /cfg/genesis-wasm";
+export const DEFAULT_CHAIN_SPEC_COMMAND =
+  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
+export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND =
+  "export-genesis-state --parachain-id {{paraId}}";
+export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm"; // > /cfg/genesis-wasm";
 export const DEFAULT_ADDER_COLLATOR_BIN = "/usr/local/bin/adder-collator";
 export const DEFAULT_CUMULUS_COLLATOR_BIN = "/usr/local/bin/polkadot-collator";
 export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
@@ -54,29 +63,36 @@ export const zombieWrapperPath = resolve(
   `../scripts/${ZOMBIE_WRAPPER}`
 );
 
-export const LOKI_URL_FOR_NODE = "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
+export const LOKI_URL_FOR_NODE =
+  "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
 
 export const AVAILABLE_PROVIDERS = ["podman", "kubernetes"];
 
-export async function generateNetworkSpec(config: LaunchConfig): Promise<ComputedNetwork> {
+export async function generateNetworkSpec(
+  config: LaunchConfig
+): Promise<ComputedNetwork> {
   let globalOverrides: Override[] = [];
-  if(config.relaychain.default_overrides) {
-    globalOverrides = await Promise.all(config.relaychain.default_overrides.map( async override => {
-     const valid_local_path = await getLocalOverridePath(config.configBasePath, override.local_path);
-     return {
-       local_path: valid_local_path,
-       remote_name: override.remote_name
-     };
-   }));
-  };
-
+  if (config.relaychain.default_overrides) {
+    globalOverrides = await Promise.all(
+      config.relaychain.default_overrides.map(async (override) => {
+        const valid_local_path = await getLocalOverridePath(
+          config.configBasePath,
+          override.local_path
+        );
+        return {
+          local_path: valid_local_path,
+          remote_name: override.remote_name,
+        };
+      })
+    );
+  }
 
   let networkSpec: any = {
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       nodes: [],
       chain: config.relaychain.chain,
-      overrides: Promise.all(globalOverrides)
+      overrides: Promise.all(globalOverrides),
     },
     parachains: [],
   };
@@ -90,7 +106,8 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
   };
 
   // default provider
-  if(! networkSpec.settings.provider) networkSpec.settings.provider = "kubernetes";
+  if (!networkSpec.settings.provider)
+    networkSpec.settings.provider = "kubernetes";
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {
@@ -138,22 +155,32 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
           ];
 
     let nodeOverrides: Override[] = [];
-    if(node.overrides) {
-      nodeOverrides = await Promise.all(node.overrides.map( async override => {
-        const valid_local_path = await getLocalOverridePath(config.configBasePath, override.local_path);
-        return {
-          local_path: valid_local_path,
-          remote_name: override.remote_name
-        };
-      }));
-     }
+    if (node.overrides) {
+      nodeOverrides = await Promise.all(
+        node.overrides.map(async (override) => {
+          const valid_local_path = await getLocalOverridePath(
+            config.configBasePath,
+            override.local_path
+          );
+          return {
+            local_path: valid_local_path,
+            remote_name: override.remote_name,
+          };
+        })
+      );
+    }
 
-    const isValidator = node.validator ? true :
-      isValidatorbyArgs(args) ? true:
-      false;
+    const isValidator = node.validator
+      ? true
+      : isValidatorbyArgs(args)
+      ? true
+      : false;
 
     // enable --prometheus-external by default
-    const prometheusExternal = config.settings?.prometheus !== undefined ? config.settings.prometheus : true;
+    const prometheusExternal =
+      config.settings?.prometheus !== undefined
+        ? config.settings.prometheus
+        : true;
 
     // build node Setup
     const nodeSetup: Node = {
@@ -173,7 +200,7 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
         : "",
       telemetry: config.settings?.telemetry ? true : false,
       prometheus: prometheusExternal,
-      overrides: [...globalOverrides, ...nodeOverrides]
+      overrides: [...globalOverrides, ...nodeOverrides],
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -192,9 +219,11 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
               `/dns/${DEFAULT_BOOTNODE_DOMAIN}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
             ];
 
-      const collatorBinary = parachain.collator.commandWithArgs ? parachain.collator.commandWithArgs.split(" ")[0] :
-         parachain.collator.command ? parachain.collator.command :
-         DEFAULT_ADDER_COLLATOR_BIN;
+      const collatorBinary = parachain.collator.commandWithArgs
+        ? parachain.collator.commandWithArgs.split(" ")[0]
+        : parachain.collator.command
+        ? parachain.collator.command
+        : DEFAULT_ADDER_COLLATOR_BIN;
 
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
@@ -213,7 +242,10 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
       } else {
         computedStateCommand = parachain.genesis_state_generator
           ? parachain.genesis_state_generator
-          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND.replace("{{paraId}}", parachain.id.toString())} > ${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`;
+          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND.replace(
+              "{{paraId}}",
+              parachain.id.toString()
+            )} > ${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`;
       }
 
       if (parachain.genesis_wasm_path) {
@@ -247,9 +279,10 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
 
       let parachainSetup: Parachain = {
         id: parachain.id,
-        addToGenesis: parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
+        addToGenesis:
+          parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
         collator: {
-          name: getUniqueName(parachain.collator.name|| "collator"),
+          name: getUniqueName(parachain.collator.name || "collator"),
           command: collatorBinary,
           commandWithArgs: parachain.collator.commandWithArgs,
           image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
@@ -328,20 +361,28 @@ export function getUniqueName(name: string): string {
   return uniqueName;
 }
 
-async function getLocalOverridePath(configBasePath:string, definedLocalPath: string): Promise<string> {
+async function getLocalOverridePath(
+  configBasePath: string,
+  definedLocalPath: string
+): Promise<string> {
   // let check if local_path is full or relative
   let local_real_path = definedLocalPath;
-  if(! fs.existsSync(definedLocalPath) ){
+  if (!fs.existsSync(definedLocalPath)) {
     // check relative to config
     local_real_path = path.join(configBasePath, definedLocalPath);
-    if(! fs.existsSync(local_real_path)) throw new Error("Invalid override config, only fullpaths or relative paths (from the config) are allowed");
+    if (!fs.existsSync(local_real_path))
+      throw new Error(
+        "Invalid override config, only fullpaths or relative paths (from the config) are allowed"
+      );
   }
 
   return local_real_path;
 }
 
 function isValidatorbyArgs(nodeArgs: string[]): boolean {
-  const defaultAccounts = ['alice', 'bob', 'charlie', 'dave', 'eve', 'ferdie'];
-  const validatorAccount = defaultAccounts.find( acc => nodeArgs.includes(`--${acc}`));
+  const defaultAccounts = ["alice", "bob", "charlie", "dave", "eve", "ferdie"];
+  const validatorAccount = defaultAccounts.find((acc) =>
+    nodeArgs.includes(`--${acc}`)
+  );
   return validatorAccount ? true : false;
 }

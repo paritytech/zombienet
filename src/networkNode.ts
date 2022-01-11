@@ -121,7 +121,10 @@ export class NetworkNode implements NetworkNodeInterface {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
         // wait 2 secs between checks
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        done = await paraIsRegistered(this.apiInstance as ApiPromise, parachainId);
+        done = await paraIsRegistered(
+          this.apiInstance as ApiPromise,
+          parachainId
+        );
       }
 
       return true;
@@ -151,7 +154,10 @@ export class NetworkNode implements NetworkNodeInterface {
       while (!done) {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
 
-        let blockNumber = await paraGetBlockHeight(this.apiInstance as ApiPromise, parachainId);
+        let blockNumber = await paraGetBlockHeight(
+          this.apiInstance as ApiPromise,
+          parachainId
+        );
         if (desiredValue <= blockNumber) {
           done = true;
           value = blockNumber;
@@ -255,7 +261,10 @@ export class NetworkNode implements NetworkNodeInterface {
     for (const namespace of Object.keys(this.cachedMetrics)) {
       // debug(`looking in ns ${namespace}`);
       // debug(`for key: ${metricName}`);
-      if ( this.cachedMetrics[namespace] && this.cachedMetrics[namespace][metricName] !== undefined ) {
+      if (
+        this.cachedMetrics[namespace] &&
+        this.cachedMetrics[namespace][metricName] !== undefined
+      ) {
         debug("returning for: " + metricName);
         debug("returning: " + this.cachedMetrics[namespace][metricName]);
         return this.cachedMetrics[namespace][metricName];

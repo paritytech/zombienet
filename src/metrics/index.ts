@@ -68,21 +68,25 @@ function _extractMetrics(text: string): Metrics {
 
     let labelStrings = [];
     let labelStringsWithOutChain = [];
-    for(const [k,v] of parsedLine.labels.entries()) {
+    for (const [k, v] of parsedLine.labels.entries()) {
       labelStrings.push(`${k}="${v}"`);
-      if(k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);
+      if (k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);
     }
 
     if (!rawMetrics[ns]) rawMetrics[ns] = {};
 
     // store the metric with and without the chain
-    if(labelStrings.length > 0) {
-      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`] = metricValue;
+    if (labelStrings.length > 0) {
+      rawMetrics[ns][
+        `${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`
+      ] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
     }
-    if(labelStringsWithOutChain.length > 0) {
-      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`] = metricValue;
+    if (labelStringsWithOutChain.length > 0) {
+      rawMetrics[ns][
+        `${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`
+      ] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
     }
