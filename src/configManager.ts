@@ -35,8 +35,7 @@ export const DEFAULT_CHAIN_SPEC_PATH = "/cfg/{{chainName}}-plain.json";
 export const DEFAULT_CHAIN_SPEC_RAW_PATH = "/cfg/{{chainName}}-raw.json";
 export const DEFAULT_CHAIN_SPEC_COMMAND =
   "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
-export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND =
-  "export-genesis-state --parachain-id {{paraId}}";
+export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND ="export-genesis-state";
 export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 export const DEFAULT_ADDER_COLLATOR_BIN = "/usr/local/bin/adder-collator";
 export const DEFAULT_CUMULUS_COLLATOR_BIN = "/usr/local/bin/polkadot-collator";
@@ -240,10 +239,13 @@ export async function generateNetworkSpec(
       } else {
         computedStateCommand = parachain.genesis_state_generator
           ? parachain.genesis_state_generator
-          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND.replace(
-              "{{paraId}}",
-              parachain.id.toString()
-            )} > ${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`;
+          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
+
+        if(! collatorBinary.includes("adder")) {
+          computedStateCommand += ` --parachain-id ${parachain.id}`;
+        }
+
+        computedStateCommand += ` > ${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`;
       }
 
       if (parachain.genesis_wasm_path) {

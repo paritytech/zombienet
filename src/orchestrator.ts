@@ -373,7 +373,7 @@ export async function start(
     console.error(error);
     if (network) {
       await network.uploadLogs();
-      await network.stop();
+      // await network.stop();
     }
     if (cronInterval) clearInterval(cronInterval);
     process.exit(1);
