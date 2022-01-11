@@ -7,7 +7,7 @@ import { Network } from "./network";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
 const zombie = require("../");
-const {connect, chainUpgrade, chainDummyUpgrade} = require("./jsapi-helpers");
+const {connect, chainUpgrade, chainDummyUpgrade, validateRuntimeCode} = require("./jsapi-helpers");
 
 const debug = require("debug")("zombie::test-runner");
 
@@ -80,19 +80,7 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
     this.timeout(launchTimeout * 1000);
     network = await zombie.start(creds, config);
 
-    // PRINT FOR EASY DEBUG
-    for (const node of network.nodes) {
-      console.log("\n");
-      console.log(`\t\t Node name: ${node.name}`);
-      console.log(
-        `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-          node.wsUri
-        )}#/explorer\n`
-      );
-      console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
-      console.log("---\n");
-    }
-
+    network.showNetworkInfo();
     return;
   });
 
@@ -170,6 +158,8 @@ function parseAssertionLine(assertion: string) {
   const parachainBlockHeight = new RegExp(
     /^(([\w]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
+  const chainUpgradeRegex = new RegExp(/^(([\w]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i);
+  const chainDummyUpgradeRegex = new RegExp(/^(([\w]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i);
 
   // Metrics
   const isReports = new RegExp(
@@ -192,11 +182,6 @@ function parseAssertionLine(assertion: string) {
   );
   const pauseRegex = new RegExp(/^([\w]+): pause$/i);
   const resumeRegex = new RegExp(/^([\w]+): resume$/i);
-
-  // Chain Commands
-  const chainUpgradeRegex = new RegExp(/^([\w]+): chain upgrade with (.*?)$/i);
-  const chainDummyUpgradeRegex = new RegExp(/^([\w]+): chain generate dummy upgrade$/i);
-
 
   // Matchs
   let m: string[] | null;
@@ -347,9 +332,12 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = chainUpgradeRegex.exec(assertion);
-  if (m && m[1]) {
-    const nodeName = m[1];
-    const upgradeFilePath = m[2];
+  if (m && m[2]) {
+    const nodeName = m[2];
+    const parachainId = parseInt(m[3], 10);
+    const upgradeFilePath = m[4];
+    let timeout: number;
+    if (m[6]) timeout = parseInt(m[6], 10);
 
     return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
       const node = network.node(nodeName);
@@ -367,7 +355,6 @@ function parseAssertionLine(assertion: string) {
         }
         await chainUpgrade(api,resolvedUpgradeFilePath);
       } catch(e) {
-        console.log(e);
         throw new Error(`Error upgrading chain with file: ${resolvedUpgradeFilePath}`);
       }
       expect(true).to.be.ok;
@@ -376,15 +363,24 @@ function parseAssertionLine(assertion: string) {
 
 
   m = chainDummyUpgradeRegex.exec(assertion);
-  if (m && m[1]) {
-    const nodeName = m[1];
+  if (m && m[2]) {
+    const nodeName = m[2];
+    const parachainId = parseInt(m[3], 10);
+    let timeout: number;
+    if (m[5]) timeout = parseInt(m[5], 10);
 
     return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
-      const node = network.node(nodeName);
-      const api: ApiPromise = await connect(node.wsUri);
-      await chainDummyUpgrade(api);
+      const collator = network.paras[parachainId][0];
+      let node = network.node(collator.name);
+      let api: ApiPromise = await connect(node.wsUri);
+      const hash = await chainDummyUpgrade(api);
 
-      expect(true).to.be.ok;
+      // validate in the <node>: of the relay chain
+      node = network.node(nodeName);
+      api = await connect(node.wsUri);
+      const valid = await validateRuntimeCode(api, parachainId, hash, timeout);
+
+      expect(valid).to.be.ok;
     };
   }
 

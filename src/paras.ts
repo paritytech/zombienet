@@ -1,6 +1,7 @@
 import { debug } from "console";
 import {
   DEFAULT_COLLATOR_IMAGE,
+  DEFAULT_REMOTE_DIR,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   getUniqueName,
@@ -51,6 +52,7 @@ export async function generateParachainFiles(
     const podDef = await provider.genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
 
+    debug(podDef.spec.containers[0]);
     debug(
       `launching ${podName} pod with image ${podDef.spec.containers[0].image}`
     );
@@ -61,7 +63,7 @@ export async function generateParachainFiles(
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `/cfg/${GENESIS_STATE_FILENAME}`,
+        `${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`,
         stateLocalFilePath
       );
     }
@@ -69,7 +71,7 @@ export async function generateParachainFiles(
     if (parachain.genesisWasmGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `/cfg/${GENESIS_WASM_FILENAME}`,
+        `${DEFAULT_REMOTE_DIR}/${GENESIS_WASM_FILENAME}`,
         wasmLocalFilePath
       );
     }

@@ -133,18 +133,7 @@ async function spawn(
 
 
   network = await start(creds, config, monitor !== undefined);
-
-  for (const node of network.nodes) {
-    console.log("\n");
-    console.log(`\t\t Node name: ${node.name}`);
-    console.log(
-      `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-        node.wsUri
-      )}#/explorer\n`
-    );
-    console.log(`Node prometheus link: ${node.prometheusUri}\n`);
-    console.log("---\n");
-  }
+  network.showNetworkInfo();
 }
 
 // test

@@ -4,42 +4,28 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   getUniqueName,
-  // FINISH_MAGIC_FILE,
-  // DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   DEFAULT_BOOTNODE_PEER_ID,
-  // WAIT_UNTIL_SCRIPT_SUFIX,
-  // TRANSFER_CONTAINER_NAME,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
-  // DEFAULT_CHAIN_SPEC_PATH,
-  // DEFAULT_CHAIN_SPEC_RAW_PATH,
-  // DEFAULT_CHAIN_SPEC_COMMAND,
   zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
 } from "./configManager";
-import { Network } from "./network";
+import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
-//import { startPortForwarding } from "./portForwarder";
-//import { ApiPromise, WsProvider } from "@polkadot/api";
 import { clearAuthorities, addAuthority, changeGenesisConfig, addParachainToGenesis } from "./chain-spec";
 import {
   generateNamespace,
   sleep,
   filterConsole,
-  // writeLocalJsonFile,
-  loadTypeDef,
-  // createTempNodeDef,
+  loadTypeDef
 } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
-import path, { resolve } from "path";
 import { generateParachainFiles } from "./paras";
-//import { setupChainSpec } from "./providers/k8s";
-//import { getChainSpecRaw } from "./providers/k8s/chain-spec";
 import { decorators } from "./colors";
 
 const debug = require("debug")("zombie");
@@ -137,7 +123,7 @@ export async function start(
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
     // setup cleaner
-    if (!monitor) cronInterval = await client.setupCleaner();
+    // if (!monitor) cronInterval = await client.setupCleaner();
 
     // create or copy chain spec
     await setupChainSpec(namespace, networkSpec, chainName, chainSpecFullPathPlain);
@@ -204,7 +190,7 @@ export async function start(
       METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString())
     );
 
-    network.addNode(bootnodeNode);
+    network.addNode(bootnodeNode, Scope.RELAY);
 
     const [bootnodeIP, bootnodePort] = await client.getBootnodeInfo(bootnodeDef.metadata.name);
 
@@ -243,10 +229,10 @@ export async function start(
         METRICS_URI_PATTERN.replace("{{PORT}}", nodePrometheusPort.toString()),
         userDefinedTypes
       );
-      network.addNode(networkNode);
+      network.addNode(networkNode, Scope.RELAY);
 
       // Display info about the current node
-      let msg = `\n\t${decorators.green(node.name)} running`;
+      let msg = `\t${decorators.green(node.name)} running`;
       if(node.overrides && node.overrides.length > 0) {
         msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
         for(const override of node.overrides){
@@ -256,7 +242,6 @@ export async function start(
       }
 
       console.log(msg);
-      console.log("\n");
       if(monitorIsAvailable) {
         const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace).replace(/{{podName}}/, podDef.metadata.name);
         console.log(`\t${decorators.green("Grafana logs url:")}`);
@@ -277,11 +262,11 @@ export async function start(
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
     // sleep 2 secs before connect the api
-    await sleep(2000);
+    // await sleep(2000);
 
-    for (const node of network.nodes) {
-      await node.connectApi();
-    }
+    // for (const node of network.nodes) {
+    //   await node.connectApi();
+    // }
 
     for (const parachain of networkSpec.parachains) {
       if(!parachain.addToGenesis) {
@@ -299,25 +284,30 @@ export async function start(
         validator: false,
         image: parachain.collator.image,
         command: parachain.collator.command,
+        commandWithArgs: parachain.collator.commandWithArgs,
         chain: networkSpec.relaychain.chain,
         bootnodes: [
           `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
         ],
         args: [],
-        env: [],
+        env: parachain.collator.env,
         telemetryUrl: "",
-        overrides: [],
+        overrides: []
       };
       const podDef = await genNodeDef(namespace, collator);
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
+      const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
+      const rpcPort = await client.startPortForwarding(9944, nodeIdentifier);
+
       const networkNode: NetworkNode = new NetworkNode(
         podDef.metadata.name,
-        "", // TODO: needs to connect to rpc?
+        WS_URI_PATTERN.replace("{{PORT}}", rpcPort.toString()),
         "" // TODO: needs to connect for metrics?
       );
 
-      network.addNode(networkNode);
+      networkNode.parachainId = parachain.id;
+      network.addNode(networkNode, Scope.PARA);
     }
 
     // prevent global timeout

@@ -1,20 +1,26 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { withTypeString } from "@polkadot/types";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
 import { readFileSync, promises as fsPromises } from "fs";
-
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../configManager";
 import { compress, decompress } from "napi-maybe-compressed-blob";
+const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
-export async function chainUpgrade(api: ApiPromise, wasmFilePath: string): Promise<void> {
+export async function chainUpgrade(api: ApiPromise, wasmFilePath: string): Promise<string> {
 	// The filename of the runtime/PVF we want to upgrade to. Usually a file
 	// with `.compact.compressed.wasm` extension.
 	console.log(`upgrading chain with file: ${wasmFilePath}`);
 
 	let code = readFileSync(wasmFilePath).toString("hex");
 	await performChainUpgrade(api, code);
+	console.log("hash");
+	const hash = blake2AsHex(code);
+	console.log(hash);
+
+	return hash;
 }
 
-export async function chainDummyUpgrade(api: ApiPromise): Promise<void> {
+export async function chainDummyUpgrade(api: ApiPromise): Promise<string> {
 	const code: any = await api.rpc.state.getStorage(":code");
 	const codeHex = code.toString().slice(2)
 	const codeBuf = Buffer.from(hexToBytes(codeHex));
@@ -27,11 +33,43 @@ export async function chainDummyUpgrade(api: ApiPromise): Promise<void> {
 
 	// compress again
 	const compressed = compress(withDummyCode);
+	const hash = blake2AsHex(compressed);
+	debug(`New compressed hash : ${hash}`);
 
 	// perform upgrade
 	await performChainUpgrade(api, compressed.toString("hex"));
+
+	return hash;
+
 }
 
+
+export async function validateRuntimeCode(api: ApiPromise, paraId: number, hash: string, timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
+    let expired = false;
+    let limitTimeout;
+    try {
+      limitTimeout = setTimeout(() => {
+        expired = true;
+      }, timeout * 1000);
+
+
+      let done = false;
+      while (!done) {
+        if (expired) throw new Error(`Timeout(${timeout}s)`);
+        // wait 2 secs between checks
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const currentHash = await api.query.paras.currentCodeHash(paraId);
+        console.log(`parachain ${paraId} current code hash : ${currentHash}`);
+		done = hash === currentHash.toString();
+      }
+
+      return true;
+    } catch (err) {
+      console.log(err);
+      if (limitTimeout) clearTimeout(limitTimeout);
+      return false;
+    }
+}
 
 async function performChainUpgrade(api: ApiPromise, code: string) {
 	await cryptoWaitReady()

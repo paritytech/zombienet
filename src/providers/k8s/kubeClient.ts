@@ -76,7 +76,7 @@ export class KubeClient extends Client {
     console.log(
       `\n\tlaunching ${decorators.green(podDef.metadata.name)} pod with image ${decorators.green(podDef.spec.containers[0].image)}`
     );
-    console.log(`\n\t\t with command: ${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`);
+    console.log(`\t\t with command: ${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`);
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
@@ -88,7 +88,7 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.wait_pod_ready(name);
-    console.log(`\n\t\t${decorators.green(name)} pod is ready!`);
+    console.log(`\t\t${decorators.green(name)} pod is ready!`);
   }
 
   async putLocalMagicFile(name: string, container?: string) {

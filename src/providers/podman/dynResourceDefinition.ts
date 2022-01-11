@@ -1,10 +1,9 @@
+import { genCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
-  DEFAULT_COMMAND,
   getUniqueName,
-  WAIT_UNTIL_SCRIPT_SUFIX,
   RPC_HTTP_PORT,
   P2P_PORT,
 } from "../../configManager";
@@ -121,7 +120,7 @@ async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promi
     { containerPort: RPC_HTTP_PORT, name: "rpc", hostPort:  await getRandomPort() },
     { containerPort: P2P_PORT, name: "p2p", hostPort:  await getRandomPort() }
   ];
-  const command = gen_cmd(nodeSetup);
+  const command = await genCmd(nodeSetup);
 
   let containerDef = {
     image: nodeSetup.image,
@@ -134,114 +133,6 @@ async function make_main_container(nodeSetup: Node, volume_mounts: any[]): Promi
   };
 
   return containerDef;
-}
-
-function gen_cmd(nodeSetup: Node): string[] {
-  let {
-    name,
-    chain,
-    commandWithArgs,
-    fullCommand,
-    command,
-    telemetry,
-    telemetryUrl,
-    prometheus,
-    validator,
-    bootnodes,
-    args,
-  } = nodeSetup;
-
-  if (fullCommand) return ["bash", "-c", fullCommand];
-
-  if (commandWithArgs) {
-    const parts = commandWithArgs.split(" ");
-    let finalCommand: string[] = [];
-    if (["bash", "ash"].includes(parts[0])) {
-      finalCommand.push(parts[0]);
-      let partIndex;
-      if (parts[1] === "-c") {
-        finalCommand.push(parts[1]);
-        partIndex = 2;
-      } else {
-        finalCommand.push("-c");
-        partIndex = 1;
-      }
-      finalCommand = [...finalCommand, ...[parts.slice(partIndex).join(" ")]];
-    } else {
-      finalCommand = ["bash", "-c", commandWithArgs];
-    }
-
-    return finalCommand;
-  }
-
-  // if (!mdns) args.push("--no-mdns");
-  args.push("--no-mdns");
-
-  if (!telemetry) args.push("--no-telemetry");
-  else args.push("--telemetry-url", telemetryUrl);
-
-  if (prometheus) args.push("--prometheus-external");
-
-  if (validator) args.push("--validator");
-
-  if (bootnodes && bootnodes.length)
-    args.push("--bootnodes", bootnodes.join(","));
-  // args.extend(self.custom_args.iter().cloned());
-
-  // if self.chainspec.is_some() || self.substrate_binary.is_some() || self.keys.is_some() {
-  //     args = if self.keys.is_some() {
-  //         let keys = self.keys.as_ref().expect("None is checked");
-  //         let mut insert_cmds: Vec<String> = Vec::new();
-  //         for key in keys {
-  //             if let Some(ref key_scheme) = key.key_scheme {
-  //                 insert_cmds.push(
-  //                     format!(
-  //                         "{} key insert --chain {} --suri {} --scheme {} --key-type {};",
-  //                         self.cmd,
-  //                         self.chain_name,
-  //                         key.key,
-  //                         key_scheme,
-  //                         key.key_type,
-  //                     )
-  //                 );
-  //             } else {
-  //                 insert_cmds.push(
-  //                     format!(
-  //                         "{} key insert --chain {} --suri {} --key-type {};",
-  //                         self.cmd,
-  //                         self.chain_name,
-  //                         key.key,
-  //                         key.key_type
-  //                     )
-  //                 );
-  //             }
-  //         }
-  //         insert_cmds.extend_from_slice(&args);
-  //         insert_cmds
-  //     } else {
-  //         args
-  //     };
-  // }
-
-  if (!command) command = DEFAULT_COMMAND;
-  const finalArgs: string[] = [
-    command,
-    "--chain",
-    `/cfg/${chain}.json`,
-    "--name",
-    name,
-    "--rpc-cors",
-    "all",
-    "--unsafe-rpc-external",
-    "--rpc-methods",
-    "unsafe",
-    "--unsafe-ws-external",
-    ...args,
-  ];
-
-  //DEBUG
-  // return ["bash", "-c", finalArgs.join(" ")  ];
-  return ["/cfg/zombie-wrapper.sh", finalArgs.join(" ")];
 }
 
 export function createTempNodeDef(name: string, image: string, chain: string, fullCommand: string) {

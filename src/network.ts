@@ -26,8 +26,14 @@ export interface NodeMappingMetrics {
   [propertyName: string]: Metrics;
 }
 
+export enum Scope {
+  RELAY,
+  PARA
+};
+
 export class Network {
-  nodes: NetworkNode[] = [];
+  relay: NetworkNode[] = [];
+  paras:{[id: number]: NetworkNode[]} = {};
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
@@ -42,8 +48,15 @@ export class Network {
     this.tmpDir = tmpDir;
   }
 
-  addNode(node: NetworkNode) {
-    this.nodes.push(node);
+  addNode(node: NetworkNode, scope: Scope) {
+    if( scope === Scope.RELAY) this.relay.push(node);
+    else {
+      if(! node.parachainId) throw new Error("Invalid network node configuration, collator must set the parachainId")
+      if(!this.paras[node.parachainId]) this.paras[node.parachainId] = [];
+
+      this.paras[node.parachainId].push(node);
+    }
+
     this.nodesByName[node.name] = node;
   }
 
@@ -54,7 +67,12 @@ export class Network {
   async uploadLogs() {
     // create dump directory in local temp
     fs.mkdirSync(`${this.tmpDir}/logs`);
-    const dumpsPromises = this.nodes.map((node) => {
+    const paraNodes: NetworkNode[] =  Object.keys(this.paras).reduce((memo: NetworkNode[], key) => {
+      const paraId = parseInt(key,10);
+      memo.concat(this.paras[paraId]);
+      return memo;
+    },[]);
+    const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
       this.client.dumpLogs(this.tmpDir, node.name);
     });
     await Promise.all(dumpsPromises);
@@ -91,9 +109,9 @@ export class Network {
       let api: ApiPromise;
       if (apiInstance) api = apiInstance;
       else {
-        if (!this.nodes[0].apiInstance) await this.nodes[0].connectApi();
+        if (!this.relay[0].apiInstance) await this.relay[0].connectApi();
         // now should be connected
-        api = this.nodes[0].apiInstance as ApiPromise;
+        api = this.relay[0].apiInstance as ApiPromise;
       }
 
       let nonce = (
@@ -224,5 +242,53 @@ export class Network {
       console.log(err);
       return false;
     }
+  }
+
+  // show links for access and debug
+  showNetworkInfo() {
+    console.log("\n-----------------------------------------\n");
+    console.log("\n\t Network launched 🚀🚀");
+    console.log(`\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`);
+    for (const node of this.relay) {
+      this.showNodeInfo(node);
+      // console.log("\n");
+      // console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
+      // console.log(
+      //   `\t\tNode direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+      //     node.wsUri
+      //   )}#/explorer\n`
+      // );
+      // console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
+      // console.log("---\n");
+    }
+
+    for (const [paraId, parachain] of Object.entries(this.paras)) {
+      console.log("\n");
+      console.log("\n\t Parachain ID: " + paraId);
+
+      for( const node of parachain ) {
+        this.showNodeInfo(node);
+      //   console.log(`\t\t Node name: ${node.name}`);
+      //   console.log(
+      //     `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+      //       node.wsUri
+      //     )}#/explorer\n`
+      //   );
+      //   console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
+      //   console.log("---\n");
+      }
+    }
+  }
+
+  showNodeInfo(node: NetworkNode) {
+    console.log("\n");
+    console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
+    console.log(
+      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+        node.wsUri
+      )}#/explorer\n`
+    );
+    console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
+    console.log("---\n");
   }
 }

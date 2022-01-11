@@ -192,7 +192,7 @@ export class PodmanClient extends Client {
       console.log(
         `\n\tlaunching ${decorators.green(podDef.metadata.name)} pod with image ${decorators.green(podDef.spec.containers[0].image)}`
       );
-      console.log(`\n\t\t with command: ${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`);
+      console.log(`\t\t with command: ${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`);
 
       // copy files to volume cfg
       for(const fileMap of filesToCopy) {
@@ -204,7 +204,7 @@ export class PodmanClient extends Client {
 
       // TODO: how to check in podman
       await this.wait_pod_ready(name);
-      console.log(`\n\t\t${decorators.green(name)} pod is ready!`);
+      console.log(`\t\t${decorators.green(name)} pod is ready!`);
     }
     async copyFileFromPod(identifier: string, podFilePath: string, localFilePath: string, container?: string): Promise<void> {
         // throw new Error("Method not implemented.");

@@ -59,7 +59,7 @@ export interface Collator {
   command: string;
   commandWithArgs?: string;
   image: string;
-  chain: string;
+  chain?: string;
   args: string[];
   env: envVars[];
   bootnodes: string[];
@@ -159,7 +159,7 @@ export interface RelayChainConfig {
     image?: string;
     command?: string;
     commandWithArgs?: string;
-    fullCommand?: string;
+    // fullCommand?: string; full command is only for internal use.
     wsPort?: number;
     port?: number;
     args?: string[];
@@ -187,6 +187,7 @@ export interface ParachainConfig {
     commandWithArgs?: string;
     name?: string;
     args?: string[];
+    env?: envVars[];
   };
 }
 
