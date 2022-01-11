@@ -145,7 +145,6 @@ export class KubeClient extends Client {
       const args = ["get", kind, name, "-o", "jsonpath={.status}"];
       do {
         const result = await this.runCommand(args, undefined, true);
-        //debug( result.stdout );
         const status = JSON.parse(result.stdout);
         if (["Running", "Succeeded"].includes(status.phase)) return;
 
@@ -168,7 +167,6 @@ export class KubeClient extends Client {
     const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
     do {
       const result = await this.runCommand(args, undefined, true);
-      //debug( result.stdout );
       if (["Running", "Succeeded"].includes(result.stdout)) return;
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -279,7 +277,7 @@ export class KubeClient extends Client {
         localFilePath,
         `fileserver:/usr/share/nginx/html/${hashedName}`,
       ];
-      // if (container) args.push("-c", container);
+
       debug("copyFileToPod", args);
       const result = await this.runCommand(args, undefined, true);
       debug(result);
@@ -377,17 +375,10 @@ export class KubeClient extends Client {
       {
         type: "deployment",
         files: ["backchannel-pod.yaml", "fileserver-pod.yaml"],
-      },
-      // {
-      //   type: "pvc",
-      //   files: [
-      //     "shared-pvc.yaml"
-      //   ]
-      // }
+      }
     ];
 
     for (const resourceType of resources) {
-      // console.log(`adding ${resourceType.type}`);
       for (const file of resourceType.files) {
         await this.createStaticResource(file);
       }
@@ -508,13 +499,10 @@ export class KubeClient extends Client {
       if (scoped) augmentedCmd.push("--namespace", this.namespace);
 
       const finalArgs = [...augmentedCmd, ...args];
-
-      // if (this.debug) console.log(augmentedCmd.join(" "));
-
       const result = await execa("kubectl", finalArgs, {
         input: resourceDef,
       });
-      // console.log(result);
+
       return {
         exitCode: result.exitCode,
         stdout: result.stdout,

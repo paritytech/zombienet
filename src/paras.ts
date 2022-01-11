@@ -72,21 +72,12 @@ export async function generateParachainFiles(
   }
 
   if (parachain.genesisStatePath) {
-    // copy file to temp to use
     fs.copyFileSync(parachain.genesisStatePath, stateLocalFilePath);
   }
 
   if (parachain.genesisWasmPath) {
-    // copy file to temp to use
     fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
-
-  // register parachain
-  // await network.registerParachain(
-  //   parachain.id,
-  //   wasmLocalFilePath,
-  //   stateLocalFilePath
-  // );
 
   return parachainFilesPath;
 }

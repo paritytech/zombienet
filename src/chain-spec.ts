@@ -125,8 +125,8 @@ export async function addParachainToGenesis(
     let new_para = [
       parseInt(para_id),
       [
-        readDataFile(head), //fs.readFileSync(head).toString(),
-        readDataFile(wasm), //fs.readFileSync(wasm).toString(),
+        readDataFile(head),
+        readDataFile(wasm),
         parachain,
       ],
     ];

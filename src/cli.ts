@@ -61,7 +61,8 @@ process.on("exit", async function () {
     await network.stop();
   }
   const exitCode = process.exitCode !== undefined ? process.exitCode : 2;
-  process.exit(exitCode); // use exitCode set by mocha or 2 as default.
+  // use exitCode set by mocha or 2 as default.
+  process.exit(exitCode);
 });
 
 program

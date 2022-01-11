@@ -27,7 +27,7 @@ export async function setupChainSpec(
       /{{chainName}}/gi,
       chainName
     );
-    // set output of command
+
     const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
     const node = createTempNodeDef(
       "temp",
@@ -51,7 +51,6 @@ export async function setupChainSpec(
     await client.putLocalMagicFile(podName, podName);
   } else {
     if (networkSpec.relaychain.chainSpecPath) {
-      // copy file to temp to use
       fs.copyFileSync(networkSpec.relaychain.chainSpecPath, chainFullPath);
     }
   }

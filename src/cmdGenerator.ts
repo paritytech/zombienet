@@ -23,7 +23,6 @@ function parseCmdWithArguments(commandWithArgs: string): string[] {
     }
     finalCommand = [...finalCommand, ...[parts.slice(partIndex).join(" ")]];
   } else {
-    // finalCommand = ["bash", "-c", commandWithArgs];
     finalCommand = ["/cfg/zombie-wrapper.sh", commandWithArgs];
   }
 
@@ -150,7 +149,6 @@ export async function genCmd(nodeSetup: Node): Promise<string[]> {
     return await genCollatorCmd(command, nodeSetup);
   }
 
-  // if (!mdns) args.push("--no-mdns");
   args.push("--no-mdns");
 
   if (!telemetry) args.push("--no-telemetry");
@@ -162,42 +160,6 @@ export async function genCmd(nodeSetup: Node): Promise<string[]> {
 
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(","));
-  // args.extend(self.custom_args.iter().cloned());
-
-  // if self.chainspec.is_some() || self.substrate_binary.is_some() || self.keys.is_some() {
-  //     args = if self.keys.is_some() {
-  //         let keys = self.keys.as_ref().expect("None is checked");
-  //         let mut insert_cmds: Vec<String> = Vec::new();
-  //         for key in keys {
-  //             if let Some(ref key_scheme) = key.key_scheme {
-  //                 insert_cmds.push(
-  //                     format!(
-  //                         "{} key insert --chain {} --suri {} --scheme {} --key-type {};",
-  //                         self.cmd,
-  //                         self.chain_name,
-  //                         key.key,
-  //                         key_scheme,
-  //                         key.key_type,
-  //                     )
-  //                 );
-  //             } else {
-  //                 insert_cmds.push(
-  //                     format!(
-  //                         "{} key insert --chain {} --suri {} --key-type {};",
-  //                         self.cmd,
-  //                         self.chain_name,
-  //                         key.key,
-  //                         key.key_type
-  //                     )
-  //                 );
-  //             }
-  //         }
-  //         insert_cmds.extend_from_slice(&args);
-  //         insert_cmds
-  //     } else {
-  //         args
-  //     };
-  // }
 
   const finalArgs: string[] = [
     command,
@@ -214,7 +176,5 @@ export async function genCmd(nodeSetup: Node): Promise<string[]> {
     ...args,
   ];
 
-  //DEBUG
-  // return ["bash", "-c", finalArgs.join(" ")  ];
   return ["/cfg/zombie-wrapper.sh", finalArgs.join(" ")];
 }

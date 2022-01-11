@@ -235,7 +235,6 @@ export class NetworkNode implements NetworkNodeInterface {
         ) {
           done = true;
         } else {
-          // debug
           debug(
             `current value: ${value} for metric ${rawmetricName}, keep trying...`
           );
@@ -259,8 +258,6 @@ export class NetworkNode implements NetworkNodeInterface {
 
     // loops over namespaces first
     for (const namespace of Object.keys(this.cachedMetrics)) {
-      // debug(`looking in ns ${namespace}`);
-      // debug(`for key: ${metricName}`);
       if (
         this.cachedMetrics[namespace] &&
         this.cachedMetrics[namespace][metricName] !== undefined

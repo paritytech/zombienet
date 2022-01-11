@@ -141,16 +141,11 @@ export async function start(
 
     // Create bootnode and backchannel services
     debug(`Creating static resources (bootnode and backchannel services)`);
-    // await client.createStaticResource("bootnode-service.yaml");
-    // await client.createStaticResource("backchannel-service.yaml");
-    // await client.createStaticResource("backchannel-pod.yaml");
-
-    // create basic infra metrics if needed
     await client.staticSetup();
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
     // setup cleaner
-    // if (!monitor) cronInterval = await client.setupCleaner();
+    if (!monitor) cronInterval = await client.setupCleaner();
 
     // create or copy chain spec
     await setupChainSpec(
@@ -325,12 +320,6 @@ export async function start(
 
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
-    // sleep 2 secs before connect the api
-    // await sleep(2000);
-
-    // for (const node of network.nodes) {
-    //   await node.connectApi();
-    // }
 
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis) {

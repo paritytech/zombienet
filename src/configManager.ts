@@ -33,13 +33,11 @@ export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
 export const DEFAULT_REMOTE_DIR = "/cfg";
 export const DEFAULT_CHAIN_SPEC_PATH = "/cfg/{{chainName}}-plain.json";
 export const DEFAULT_CHAIN_SPEC_RAW_PATH = "/cfg/{{chainName}}-raw.json";
-//export const DEFAULT_CHAIN_SPEC_COMMAND =
-//  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode > /cfg/{{chainName}}-plain.json && polkadot build-spec --chain {{chainName}} --disable-default-bootnode --raw > /cfg/{{chainName}}.json";
 export const DEFAULT_CHAIN_SPEC_COMMAND =
   "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
 export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND =
   "export-genesis-state --parachain-id {{paraId}}";
-export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm"; // > /cfg/genesis-wasm";
+export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 export const DEFAULT_ADDER_COLLATOR_BIN = "/usr/local/bin/adder-collator";
 export const DEFAULT_CUMULUS_COLLATOR_BIN = "/usr/local/bin/polkadot-collator";
 export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";

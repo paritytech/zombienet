@@ -262,15 +262,6 @@ export class Network {
     );
     for (const node of this.relay) {
       this.showNodeInfo(node);
-      // console.log("\n");
-      // console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
-      // console.log(
-      //   `\t\tNode direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-      //     node.wsUri
-      //   )}#/explorer\n`
-      // );
-      // console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
-      // console.log("---\n");
     }
 
     for (const [paraId, parachain] of Object.entries(this.paras)) {
@@ -279,14 +270,6 @@ export class Network {
 
       for (const node of parachain) {
         this.showNodeInfo(node);
-        //   console.log(`\t\t Node name: ${node.name}`);
-        //   console.log(
-        //     `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-        //       node.wsUri
-        //     )}#/explorer\n`
-        //   );
-        //   console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
-        //   console.log("---\n");
       }
     }
   }

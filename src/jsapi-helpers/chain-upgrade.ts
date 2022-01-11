@@ -1,5 +1,4 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
-import { withTypeString } from "@polkadot/types";
 import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
 import { readFileSync, promises as fsPromises } from "fs";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../configManager";
@@ -23,23 +22,26 @@ export async function chainUpgrade(
   return hash;
 }
 
-export async function chainDummyUpgrade(api: ApiPromise): Promise<string> {
+// Add a custom section to the end, re-compress and perform the upgrade of the runtime.
+// It's required by the standard that custom sections cannot have any semantic differences
+// and can be ignored in the general case.
+// The wasm format consists of bunch of sections. Here we just slap a custom section to the end.
+export async function chainCustomSectionUpgrade(api: ApiPromise): Promise<string> {
   const code: any = await api.rpc.state.getStorage(":code");
   const codeHex = code.toString().slice(2);
   const codeBuf = Buffer.from(hexToBytes(codeHex));
   const decompressed = decompress(codeBuf);
 
-  // add dummy
-  // echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A"
-  const dummyBuf = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a];
-  const withDummyCode = Buffer.concat([decompressed, Buffer.from(dummyBuf)]);
+  // add a custom section
+  // Same as echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A" >> file.wasm
+  const customSection = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a];
+  const withCustomSectionCode = Buffer.concat([decompressed, Buffer.from(customSection)]);
 
   // compress again
-  const compressed = compress(withDummyCode);
+  const compressed = compress(withCustomSectionCode);
   const hash = blake2AsHex(compressed);
   debug(`New compressed hash : ${hash}`);
 
-  // perform upgrade
   await performChainUpgrade(api, compressed.toString("hex"));
 
   return hash;

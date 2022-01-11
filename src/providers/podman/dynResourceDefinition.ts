@@ -158,7 +158,7 @@ export function createTempNodeDef(
   let node: Node = {
     name: getUniqueName("temp"),
     image,
-    fullCommand: fullCommand, //+ " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+    fullCommand: fullCommand,
     chain,
     validator: false,
     bootnodes: [],

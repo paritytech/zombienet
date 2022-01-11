@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import {
   chainUpgrade,
-  chainDummyUpgrade,
+  chainCustomSectionUpgrade,
   validateRuntimeCode,
 } from "./chain-upgrade";
 import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
@@ -16,7 +16,7 @@ async function connect(apiUrl: string, types: any): Promise<ApiPromise> {
 export {
   connect,
   chainUpgrade,
-  chainDummyUpgrade,
+  chainCustomSectionUpgrade,
   validateRuntimeCode,
   paraGetBlockHeight,
   paraIsRegistered,

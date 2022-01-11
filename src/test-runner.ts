@@ -11,7 +11,7 @@ const zombie = require("../");
 const {
   connect,
   chainUpgrade,
-  chainDummyUpgrade,
+  chainCustomSectionUpgrade,
   validateRuntimeCode,
 } = require("./jsapi-helpers");
 
@@ -251,8 +251,6 @@ function parseAssertionLine(assertion: string) {
   if (m && m[1] !== null) {
     const nodeName = m[1];
     return async (network: Network) => {
-      // const isUp = await network.node(nodeName).isUp();
-      // expect(isUp).to.be.ok;
       await network.node(nodeName).getMetric("process_start_time_seconds");
       return true;
     };
@@ -403,7 +401,7 @@ function parseAssertionLine(assertion: string) {
       const collator = network.paras[parachainId][0];
       let node = network.node(collator.name);
       let api: ApiPromise = await connect(node.wsUri);
-      const hash = await chainDummyUpgrade(api);
+      const hash = await chainCustomSectionUpgrade(api);
 
       // validate in the <node>: of the relay chain
       node = network.node(nodeName);

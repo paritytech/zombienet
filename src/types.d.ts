@@ -21,10 +21,9 @@ export interface Node {
   fullCommand?: string;
   image: string;
   chain: string;
-  chainSpec?: string; // path to the json spec
+  chainSpec?: string;
   port?: number;
   wsPort?: number;
-  // run with `--validator`-flag
   validator: boolean;
   args: string[];
   env: envVars[];
@@ -32,25 +31,8 @@ export interface Node {
   substrateRole?: string;
   initContainers?: object[];
   telemetry?: boolean;
-  /// URL for telemetry
   telemetryUrl: string;
-  /// run with `--prometheus-external`-flag
   prometheus?: boolean;
-  // subcommand: Option<String>,
-  // init: Option<CustomInit>,
-  // extra_args: Option<Vec<String>>,
-  // chain_name: Option<String>,
-  // binary: Option<PathBuf>,
-  // chain_spec: Option<String>,
-  // keys: Option<Vec<KeyToInsert>>,
-  // image: Option<String>,
-  // volumes: Option<Vec<NodeVolume>>,
-  // timeout: Option<u16>,
-  // resources: Option<ResourceRequirements>,
-  // copy_files: Option<Vec<PathBuf>>,
-  // fetch_files: Option<Vec<PathBuf>>,
-  // env: Option<HashMap<String, String>>,
-  // mdns: Option<bool>,
   overrides: Override[];
 }
 
@@ -158,7 +140,6 @@ export interface RelayChainConfig {
     image?: string;
     command?: string;
     commandWithArgs?: string;
-    // fullCommand?: string; full command is only for internal use.
     wsPort?: number;
     port?: number;
     args?: string[];
@@ -190,7 +171,6 @@ export interface ParachainConfig {
   };
 }
 
-// name: path
 export interface fileMap {
   localFilePath: string;
   remoteFilePath: string;

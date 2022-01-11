@@ -65,30 +65,7 @@ export class PodmanClient extends Client {
   }
   // Podman ONLY support `pods`
   async staticSetup(): Promise<void> {
-    const resources: any = [
-      //   {
-      //     type: "services",
-      //     files: [
-      //       "bootnode-service.yaml",
-      //       "backchannel-service.yaml",
-      //       "fileserver-service.yaml"
-      //     ],
-      //   },
-      // {
-      //   type: "deployment",
-      //   files: [
-      //     //"backchannel-pod.yaml",
-      //     "fileserver-pod.yaml"
-      //   ]
-      // }
-    ];
-
-    for (const resourceType of resources) {
-      console.log(`adding ${resourceType.type}`);
-      for (const file of resourceType.files) {
-        await this.createStaticResource(file);
-      }
-    }
+    return;
   }
 
   async createStaticResource(filename: string): Promise<void> {
@@ -186,7 +163,6 @@ export class PodmanClient extends Client {
       const augmentedCmd: string[] = [];
       if (scoped) augmentedCmd.push("--network", this.namespace);
 
-      // "--storage-driver=vfs",
       const finalArgs = [...augmentedCmd, ...args];
       const result = await execa(this.command, finalArgs);
 
@@ -255,7 +231,6 @@ export class PodmanClient extends Client {
   }
 
   async putLocalMagicFile(name: string, container?: string): Promise<void> {
-    // throw new Error("Method not implemented.");
     // NOOP
     return;
   }
