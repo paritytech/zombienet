@@ -5,6 +5,7 @@ import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import path from "path";
+import { decorators } from "./colors";
 import { ApiPromise } from "@polkadot/api";
 const zombie = require("../");
 const {connect, chainUpgrade, chainDummyUpgrade, validateRuntimeCode} = require("./jsapi-helpers");
@@ -93,10 +94,10 @@ export async function run(testFile: string, provider: string,  isCI: boolean = f
         const fail = tests.find(test => {test.state !== "passed"});
         if(fail) {
           // keep the namespace up for 1 hour
-          console.log(`\t Some test fail, we will keep the namespace up for 30 more minutes`);
+          console.log(`\n\t ${decorators.yellow("Some test fail, we will keep the namespace up for 30 more minutes")}`);
           await network.upsertCronJob(30);
         } else {
-          console.log(`\t Deleting network`);
+          console.log(`\n\t ${decorators.green("Deleting network")}`);
           await network.stop();
         }
       }
