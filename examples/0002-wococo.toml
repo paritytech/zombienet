@@ -29,3 +29,8 @@ id = 100
   name = "collator01"
   image = "{{COL_IMAGE}}"
   command = "/usr/local/bin/adder-collator"
+
+[types.Header]
+number = "u64"
+parent_hash = "Hash"
+post_state = "Hash"
