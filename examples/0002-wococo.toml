@@ -9,18 +9,22 @@ command = "polkadot"
   [[relaychain.nodes]]
   name = "alice"
   validator = true
+  extra_args = [ "--alice", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "bob"
   validator = true
+  extra_args = [ "--bob", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "charlie"
   validator = true
+  extra_args = [ "--charlie", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "dave"
   validator = true
+  extra_args = ["--dave", "-lparachain=debug"]
 
 [[parachains]]
 id = 100
