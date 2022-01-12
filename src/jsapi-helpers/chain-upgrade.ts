@@ -3,21 +3,25 @@ import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
 import { readFileSync, promises as fsPromises } from "fs";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../configManager";
 import { compress, decompress } from "napi-maybe-compressed-blob";
+import axios from "axios";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
 export async function chainUpgrade(
   api: ApiPromise,
-  wasmFilePath: string
+  wasmFileUrl: string
 ): Promise<string> {
   // The filename of the runtime/PVF we want to upgrade to. Usually a file
   // with `.compact.compressed.wasm` extension.
-  console.log(`upgrading chain with file: ${wasmFilePath}`);
+  console.log(`upgrading chain with file from url: ${wasmFileUrl}`);
 
-  let code = readFileSync(wasmFilePath).toString("hex");
-  await performChainUpgrade(api, code);
-  console.log("hash");
-  const hash = blake2AsHex(code);
-  console.log(hash);
+  const file = await axios({
+    url: wasmFileUrl,
+    responseType: 'arraybuffer'
+  });
+
+  const buff = Buffer.from(file.data);
+  const hash = blake2AsHex(buff);
+  await performChainUpgrade(api, buff.toString("hex"));
 
   return hash;
 }

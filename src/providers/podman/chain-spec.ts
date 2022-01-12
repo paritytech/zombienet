@@ -41,14 +41,7 @@ export async function setupChainSpec(
     await client.spawnFromDef(podDef);
 
     debug("copy file from pod");
-    // await client.copyFileFromPod(
-    //   podName,
-    //   `/cfg/${chainName}.json`,
-    //   chainFullPath,
-    //   podName
-    // );
 
-    // await client.putLocalMagicFile(podName, podName);
     const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
     await fs.copyFile(podChainPath, chainFullPath);
   } else {

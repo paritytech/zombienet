@@ -253,7 +253,7 @@ export async function start(
       node.bootnodes = [
         `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
       ];
-      // create the node and attach to the network object
+
       debug(`creating node: ${node.name}`);
       const podDef = await genNodeDef(namespace, node);
 

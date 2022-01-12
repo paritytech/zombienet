@@ -1,12 +1,13 @@
 const chai = require("chai");
 import Mocha from "mocha";
 import fs from "fs";
+import axios from "axios";
+import path from "path";
+import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
-import path from "path";
 import { decorators } from "./colors";
-import { ApiPromise } from "@polkadot/api";
 const zombie = require("../");
 const {
   connect,
@@ -354,7 +355,7 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2]) {
     const nodeName = m[2];
     const parachainId = parseInt(m[3], 10);
-    const upgradeFilePath = m[4];
+    const upgradeFileUrl = m[4];
     let timeout: number;
     if (m[6]) timeout = parseInt(m[6], 10);
 
@@ -363,26 +364,16 @@ function parseAssertionLine(assertion: string) {
       backchannelMap: BackchannelMap,
       testFile: string
     ) => {
-      const node = network.node(nodeName);
-      const api: ApiPromise = await connect(node.wsUri);
+      let node = network.node(nodeName);
+      let api: ApiPromise = await connect(node.wsUri);
 
-      let resolvedUpgradeFilePath;
-      try {
-        if (fs.existsSync(upgradeFilePath)) {
-          const dir = path.dirname(upgradeFilePath);
-          resolvedUpgradeFilePath = path.resolve(dir, upgradeFilePath);
-        } else {
-          // the path is relative to the test file
-          const fileTestPath = path.dirname(testFile);
-          resolvedUpgradeFilePath = path.resolve(fileTestPath, upgradeFilePath);
-        }
-        await chainUpgrade(api, resolvedUpgradeFilePath);
-      } catch (e) {
-        throw new Error(
-          `Error upgrading chain with file: ${resolvedUpgradeFilePath}`
-        );
-      }
-      expect(true).to.be.ok;
+      const hash = await chainUpgrade(api, upgradeFileUrl);
+      // validate in the <node>: of the relay chain
+      node = network.node(nodeName);
+      api = await connect(node.wsUri);
+      const valid = await validateRuntimeCode(api, parachainId, hash, timeout);
+
+      expect(valid).to.be.ok;
     };
   }
 
