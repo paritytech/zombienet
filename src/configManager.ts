@@ -120,7 +120,7 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
       ? node.command
       : config.relaychain.default_command;
     const image = node.image ? node.image : config.relaychain.default_image;
-    let args = DEFAULT_ARGS;
+    let args: string[] = [];
     if (node.args) args = args.concat(node.args);
     if (node.extra_args) args = args.concat(node.extra_args);
 
@@ -233,7 +233,7 @@ export async function generateNetworkSpec(config: LaunchConfig): Promise<Compute
           : DEFAULT_WASM_GENERATE_COMMAND;
       }
 
-      let args = DEFAULT_ARGS;
+      let args: string[] = [];
       if (parachain.collator.args) args = args.concat(parachain.collator.args);
 
       let parachainSetup: Parachain = {

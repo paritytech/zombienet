@@ -1,3 +1,6 @@
+[settings]
+timeout = 1000
+
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 chain = "rococo-local"
@@ -5,10 +8,12 @@ chain = "rococo-local"
   [[relaychain.nodes]]
   name = "alice"
   validator = true
+  extra_args = [ "--alice", "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "bob"
   validator = true
+  extra_args = [ "--bob", "-lparachain=debug" ]
 
 [[parachains]]
 id = 100
