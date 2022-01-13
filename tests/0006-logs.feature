@@ -1,5 +1,5 @@
 Description: Logs Test
-Network: ./0005-logs.toml
+Network: ./0006-logs.toml
 Creds: config
 
 
