@@ -122,11 +122,19 @@ export class PodmanClient extends Client {
     result = await this.runCommand(args, undefined, false);
   }
 
+  async getNodeLogs(podName: string, since: number|undefined = undefined): Promise<string> {
+    const args = ["logs"];
+    if(since && since > 0) args.push(...["--since",`${since}s`]);
+    args.push(`${podName}_pod-${podName}`);
+
+    const result = await this.runCommand(args, undefined, false);
+    return result.stdout;
+  }
+
   async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
-    const args = ["logs", `${podName}_pod-${podName}`];
-    const result = await this.runCommand(args, undefined, false);
-    await fs.writeFile(dstFileName, result.stdout);
+    const logs = await this.getNodeLogs(podName);
+    await fs.writeFile(dstFileName, logs);
   }
 
   upsertCronJob(minutes: number): Promise<void> {

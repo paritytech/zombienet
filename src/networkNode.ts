@@ -1,4 +1,6 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import minimatch from "minimatch";
+
 import { Metrics, fetchMetrics, getMetricName } from "./metrics";
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -248,6 +250,17 @@ export class NetworkNode implements NetworkNodeInterface {
       if (limitTimeout) clearTimeout(limitTimeout);
       throw new Error(`Error getting metric: ${rawmetricName}`);
     }
+  }
+
+  async findPattern(pattern: string, isGlob: boolean, fromSeconds: number): Promise<boolean> {
+    const re = (isGlob) ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+    console.log(re);
+    const client = getClient();
+    const logs = await ((fromSeconds > 0) ? client.getNodeLogs(this.name, fromSeconds) : client.getNodeLogs(this.name));
+    const found = logs.split("\n").findIndex(line => {
+      return re.test(line);
+    });
+    return found >= 0;
   }
 
   _getMetric(
