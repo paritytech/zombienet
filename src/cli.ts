@@ -91,7 +91,7 @@ program
   .command("version")
   .description("Prints zombienet version")
   .action(() => {
-    console.log("1.2.0");
+    console.log("1.2.3");
   });
 
 // spawn
