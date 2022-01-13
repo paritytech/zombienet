@@ -4,7 +4,7 @@ metadata:
   name: bootnode
 spec:
   selector:
-    node-role: bootnode
+    zombie-role: bootnode
   ports:
     - name: p2p
       protocol: TCP

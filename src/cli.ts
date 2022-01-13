@@ -61,7 +61,8 @@ process.on("exit", async function () {
     await network.stop();
   }
   const exitCode = process.exitCode !== undefined ? process.exitCode : 2;
-  process.exit(exitCode); // use exitCode set by mocha or 2 as default.
+  // use exitCode set by mocha or 2 as default.
+  process.exit(exitCode);
 });
 
 program
@@ -78,15 +79,15 @@ program
 program
   .addOption(
     new Option("-p, --provider <provider>", "Override provider to use")
-    .choices(["podman", "kubernetes"])
-    .default("kubernetes", "kubernetes")
+      .choices(["podman", "kubernetes"])
+      .default("kubernetes", "kubernetes")
   )
   .command("test")
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")
   .action(test);
 
-  program
+program
   .command("version")
   .description("Prints zombienet version")
   .action(() => {
@@ -96,7 +97,7 @@ program
 // spawn
 async function spawn(
   configFile: string,
-  credsFile: string| undefined,
+  credsFile: string | undefined,
   monitor: string | undefined,
   _opts: any
 ) {
@@ -114,37 +115,28 @@ async function spawn(
   debug(opts);
 
   // if a provider is passed, let just use it.
-  if(opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
-    if(! config.settings) {
-      config.settings = { provider: opts.provider, timeout: DEFAULT_GLOBAL_TIMEOUT }
+  if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
+    if (!config.settings) {
+      config.settings = {
+        provider: opts.provider,
+        timeout: DEFAULT_GLOBAL_TIMEOUT,
+      };
     } else {
       config.settings.provider = opts.provider;
     }
   }
 
   let creds = "";
-  if(config.settings?.provider === "kubernetes") {
-    creds = getCredsFilePath(credsFile|| "config") || "";
+  if (config.settings?.provider === "kubernetes") {
+    creds = getCredsFilePath(credsFile || "config") || "";
     if (!creds) {
       console.error("  ⚠ I can't find the Creds file: ", credsFile);
       process.exit();
     }
   }
 
-
   network = await start(creds, config, monitor !== undefined);
-
-  for (const node of network.nodes) {
-    console.log("\n");
-    console.log(`\t\t Node name: ${node.name}`);
-    console.log(
-      `Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
-        node.wsUri
-      )}#/explorer\n`
-    );
-    console.log(`Node prometheus link: ${node.prometheusUri}\n`);
-    console.log("---\n");
-  }
+  network.showNetworkInfo();
 }
 
 // test
@@ -153,7 +145,10 @@ async function test(testFile: string, _opts: any) {
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
   // use `k8s` as default
-  const providerToUse = (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) ? opts.provider : "kubernetes";
+  const providerToUse =
+    opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
+      ? opts.provider
+      : "kubernetes";
   await run(testFile, providerToUse, inCI);
 }
 

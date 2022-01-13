@@ -19,11 +19,7 @@ enum metricKeysMapping {
 export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   try {
     debug(`fetching: ${metricUri}`);
-    //const response = await fetch(metricUri);
     const response = await axios.get(metricUri, { timeout: 2000 });
-    debug("fetched");
-    //const body = await response.text();
-    //const metrics = _extractMetrics(body);
     const metrics = _extractMetrics(response.data);
     return metrics;
   } catch (err) {
@@ -68,21 +64,25 @@ function _extractMetrics(text: string): Metrics {
 
     let labelStrings = [];
     let labelStringsWithOutChain = [];
-    for(const [k,v] of parsedLine.labels.entries()) {
+    for (const [k, v] of parsedLine.labels.entries()) {
       labelStrings.push(`${k}="${v}"`);
-      if(k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);
+      if (k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);
     }
 
     if (!rawMetrics[ns]) rawMetrics[ns] = {};
 
     // store the metric with and without the chain
-    if(labelStrings.length > 0) {
-      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`] = metricValue;
+    if (labelStrings.length > 0) {
+      rawMetrics[ns][
+        `${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`
+      ] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
     }
-    if(labelStringsWithOutChain.length > 0) {
-      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`] = metricValue;
+    if (labelStringsWithOutChain.length > 0) {
+      rawMetrics[ns][
+        `${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`
+      ] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
     }

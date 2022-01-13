@@ -229,12 +229,10 @@ zombienet-dummy-chain-upgrade:
     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
     - echo "${GH_DIR}"
     - export DEBUG=zombie*
-    - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/synth-wave:master"
-    - export COL_IMAGE="docker.io/paritypr/colander:master"
 
   script:
     - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
-        --test="0003-parachains-upgrade-smoke-test.feature"
+        --test="0004-parachains-upgrade-smoke-test.feature"
   allow_failure:                   true
   retry: 2
   tags:

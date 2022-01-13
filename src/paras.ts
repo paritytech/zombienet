@@ -1,5 +1,6 @@
 import {
   DEFAULT_COLLATOR_IMAGE,
+  DEFAULT_REMOTE_DIR,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   getUniqueName,
@@ -49,12 +50,12 @@ export async function generateParachainFiles(
     const podDef = await provider.genNodeDef(namespace, node);
     const podName = podDef.metadata.name;
 
-    await client.spawnFromDef(podDef)
+    await client.spawnFromDef(podDef);
 
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `/cfg/${GENESIS_STATE_FILENAME}`,
+        `${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`,
         stateLocalFilePath
       );
     }
@@ -62,7 +63,7 @@ export async function generateParachainFiles(
     if (parachain.genesisWasmGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `/cfg/${GENESIS_WASM_FILENAME}`,
+        `${DEFAULT_REMOTE_DIR}/${GENESIS_WASM_FILENAME}`,
         wasmLocalFilePath
       );
     }
@@ -71,25 +72,12 @@ export async function generateParachainFiles(
   }
 
   if (parachain.genesisStatePath) {
-    // copy file to temp to use
-    fs.copyFileSync(
-        parachain.genesisStatePath,
-        stateLocalFilePath );
+    fs.copyFileSync(parachain.genesisStatePath, stateLocalFilePath);
   }
 
   if (parachain.genesisWasmPath) {
-    // copy file to temp to use
-    fs.copyFileSync(
-        parachain.genesisWasmPath,
-        wasmLocalFilePath );
+    fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
-
-  // register parachain
-  // await network.registerParachain(
-  //   parachain.id,
-  //   wasmLocalFilePath,
-  //   stateLocalFilePath
-  // );
 
   return parachainFilesPath;
 }

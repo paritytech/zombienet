@@ -4,42 +4,28 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   getUniqueName,
-  // FINISH_MAGIC_FILE,
-  // DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   DEFAULT_BOOTNODE_PEER_ID,
-  // WAIT_UNTIL_SCRIPT_SUFIX,
-  // TRANSFER_CONTAINER_NAME,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
-  // DEFAULT_CHAIN_SPEC_PATH,
-  // DEFAULT_CHAIN_SPEC_RAW_PATH,
-  // DEFAULT_CHAIN_SPEC_COMMAND,
   zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
 } from "./configManager";
-import { Network } from "./network";
+import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
-//import { startPortForwarding } from "./portForwarder";
-//import { ApiPromise, WsProvider } from "@polkadot/api";
-import { clearAuthorities, addAuthority, changeGenesisConfig, addParachainToGenesis } from "./chain-spec";
 import {
-  generateNamespace,
-  sleep,
-  filterConsole,
-  // writeLocalJsonFile,
-  loadTypeDef,
-  // createTempNodeDef,
-} from "./utils";
+  clearAuthorities,
+  addAuthority,
+  changeGenesisConfig,
+  addParachainToGenesis,
+} from "./chain-spec";
+import { generateNamespace, sleep, filterConsole, loadTypeDef } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
-import path, { resolve } from "path";
 import { generateParachainFiles } from "./paras";
-//import { setupChainSpec } from "./providers/k8s";
-//import { getChainSpecRaw } from "./providers/k8s/chain-spec";
 import { decorators } from "./colors";
 
 const debug = require("debug")("zombie");
@@ -54,13 +40,15 @@ filterConsole([
 export async function start(
   credentials: string,
   networkConfig: LaunchConfig,
-  monitor: boolean = false,
+  monitor: boolean = false
 ) {
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
     // Parse and build Network definition
-    const networkSpec: ComputedNetwork = await generateNetworkSpec(networkConfig);
+    const networkSpec: ComputedNetwork = await generateNetworkSpec(
+      networkConfig
+    );
     debug(JSON.stringify(networkSpec, null, 4));
 
     // global timeout to spin the network
@@ -85,26 +73,43 @@ export async function start(
 
     // get provider fns
     const provider = networkSpec.settings.provider;
-    if(!Providers.has(provider)) {
-
-      throw new Error("Invalid provider config. You must one of: " + Array.from(Providers.keys()).join(", "));
+    if (!Providers.has(provider)) {
+      throw new Error(
+        "Invalid provider config. You must one of: " +
+          Array.from(Providers.keys()).join(", ")
+      );
     }
-    console.log(`\n\t Using provider: ${decorators.magenta(networkSpec.settings.provider)}\n`);
-    const { genBootnodeDef, genNodeDef, initClient, setupChainSpec, getChainSpecRaw } = Providers.get(networkSpec.settings.provider);
-
+    console.log(
+      `\n\t Using provider: ${decorators.magenta(
+        networkSpec.settings.provider
+      )}\n`
+    );
+    const {
+      genBootnodeDef,
+      genNodeDef,
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+    } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
     network = new Network(client, namespace, tmpDir.path);
 
-    console.log(`\t Launching network under namespace: ${decorators.magenta(namespace)}`);
-    console.log(`\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`);
+    console.log(
+      `\t Launching network under namespace: ${decorators.magenta(namespace)}`
+    );
+    console.log(
+      `\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`
+    );
     debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
     const isValid = await client.validateAccess();
     if (!isValid) {
       console.error(
-        `\n\t\t ${decorators.red("⚠ Can not access")} ${decorators.magenta(networkSpec.settings.provider)}, please check your config.`
+        `\n\t\t ${decorators.red("⚠ Can not access")} ${decorators.magenta(
+          networkSpec.settings.provider
+        )}, please check your config.`
       );
       process.exit(1);
     }
@@ -114,25 +119,28 @@ export async function start(
 
     const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
     const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
-    await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent, {mode: 0o755 });
+    await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent, {
+      mode: 0o755,
+    });
 
     // Define chain name and file name to use.
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
-    const chainSpecPlainFileName = chainSpecFileName.replace(".json", "-plain.json");
+    const chainSpecPlainFileName = chainSpecFileName.replace(
+      ".json",
+      "-plain.json"
+    );
     const chainName = networkSpec.relaychain.chain;
     const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
-    const chainSpecFullPathPlain = chainSpecFullPath.replace(".json", "-plain.json");
+    const chainSpecFullPathPlain = chainSpecFullPath.replace(
+      ".json",
+      "-plain.json"
+    );
 
     // create namespace
     await client.createNamespace();
 
     // Create bootnode and backchannel services
     debug(`Creating static resources (bootnode and backchannel services)`);
-    // await client.createStaticResource("bootnode-service.yaml");
-    // await client.createStaticResource("backchannel-service.yaml");
-    // await client.createStaticResource("backchannel-pod.yaml");
-
-    // create basic infra metrics if needed
     await client.staticSetup();
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
@@ -140,7 +148,12 @@ export async function start(
     if (!monitor) cronInterval = await client.setupCleaner();
 
     // create or copy chain spec
-    await setupChainSpec(namespace, networkSpec, chainName, chainSpecFullPathPlain);
+    await setupChainSpec(
+      namespace,
+      networkSpec,
+      chainName,
+      chainSpecFullPathPlain
+    );
 
     // check if we have the chain spec file
     if (!fs.existsSync(chainSpecFullPathPlain))
@@ -152,34 +165,55 @@ export async function start(
       await addAuthority(chainSpecFullPathPlain, node.name);
     }
 
-    for(const parachain of networkSpec.parachains) {
-      const parachainFilesPath = await generateParachainFiles(namespace, tmpDir.path, chainName,parachain);
+    for (const parachain of networkSpec.parachains) {
+      const parachainFilesPath = await generateParachainFiles(
+        namespace,
+        tmpDir.path,
+        chainName,
+        parachain
+      );
       const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
       const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-      if(parachain.addToGenesis) await addParachainToGenesis(chainSpecFullPathPlain, parachain.id.toString(), stateLocalFilePath, wasmLocalFilePath);
+      if (parachain.addToGenesis)
+        await addParachainToGenesis(
+          chainSpecFullPathPlain,
+          parachain.id.toString(),
+          stateLocalFilePath,
+          wasmLocalFilePath
+        );
     }
 
     // generate the raw chain spec
-    await getChainSpecRaw(namespace, networkSpec.relaychain.defaultImage, chainName, chainSpecFullPath);
+    await getChainSpecRaw(
+      namespace,
+      networkSpec.relaychain.defaultImage,
+      chainName,
+      chainSpecFullPath
+    );
 
     // ensure chain raw is ok
     try {
       const chainRawContent = require(chainSpecFullPath);
       debug(`Chain name: ${chainRawContent.name}`);
-      console.log(`\n\t\t Chain name: ${decorators.green(chainRawContent.name)}`);
-    } catch(err) {
-      throw new Error(`Error: chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`);
+      console.log(
+        `\n\t\t Chain name: ${decorators.green(chainRawContent.name)}`
+      );
+    } catch (err) {
+      throw new Error(
+        `Error: chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`
+      );
     }
 
     // files to include in each node
     const filesToCopyToNodes = [
       {
-      localFilePath: `${tmpDir.path}/${chainSpecFileName}`,
-      remoteFilePath: `/cfg/${chainSpecFileName}`
-      }, {
+        localFilePath: `${tmpDir.path}/${chainSpecFileName}`,
+        remoteFilePath: `/cfg/${chainSpecFileName}`,
+      },
+      {
         localFilePath: zombieWrapperLocalPath,
-        remoteFilePath: `/cfg/${ZOMBIE_WRAPPER}`
-      }
+        remoteFilePath: `/cfg/${ZOMBIE_WRAPPER}`,
+      },
     ];
 
     // bootnode
@@ -204,20 +238,22 @@ export async function start(
       METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString())
     );
 
-    network.addNode(bootnodeNode);
+    network.addNode(bootnodeNode, Scope.RELAY);
 
-    const [bootnodeIP, bootnodePort] = await client.getBootnodeInfo(bootnodeDef.metadata.name);
+    const [bootnodeIP, bootnodePort] = await client.getBootnodeInfo(
+      bootnodeDef.metadata.name
+    );
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
 
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
-      bootnodePort
+      bootnodePort;
       node.bootnodes = [
         `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
       ];
-      // create the node and attach to the network object
+
       debug(`creating node: ${node.name}`);
       const podDef = await genNodeDef(namespace, node);
 
@@ -225,7 +261,7 @@ export async function start(
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
           localFilePath: override.local_path,
-          remoteFilePath: `/cfg/${override.remote_name}`
+          remoteFilePath: `/cfg/${override.remote_name}`,
         });
       }
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
@@ -243,29 +279,37 @@ export async function start(
         METRICS_URI_PATTERN.replace("{{PORT}}", nodePrometheusPort.toString()),
         userDefinedTypes
       );
-      network.addNode(networkNode);
+      network.addNode(networkNode, Scope.RELAY);
 
       // Display info about the current node
-      let msg = `\n\t${decorators.green(node.name)} running`;
-      if(node.overrides && node.overrides.length > 0) {
+      let msg = `\t${decorators.green(node.name)} running`;
+      if (node.overrides && node.overrides.length > 0) {
         msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
-        for(const override of node.overrides){
-            msg += `\t\t local_path: ${override.local_path}\n`;
-            msg += `\t\t remote name: ${override.remote_name}`;
+        for (const override of node.overrides) {
+          msg += `\t\t local_path: ${override.local_path}\n`;
+          msg += `\t\t remote name: ${override.remote_name}`;
         }
       }
 
       console.log(msg);
-      console.log("\n");
-      if(monitorIsAvailable) {
-        const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace).replace(/{{podName}}/, podDef.metadata.name);
+      if (monitorIsAvailable) {
+        const loki_url = LOKI_URL_FOR_NODE.replace(
+          /{{namespace}}/,
+          namespace
+        ).replace(/{{podName}}/, podDef.metadata.name);
         console.log(`\t${decorators.green("Grafana logs url:")}`);
         console.log(`\t\t${decorators.magenta(loki_url)}`);
       } else {
-        console.log(`\n\t\t ${decorators.magenta("You can follow the logs of the node by running this command:")}`);
-        switch(networkSpec.settings.provider) {
+        console.log(
+          `\n\t\t ${decorators.magenta(
+            "You can follow the logs of the node by running this command:"
+          )}`
+        );
+        switch (networkSpec.settings.provider) {
           case "podman":
-            console.log(`\n\t\t\t podman logs ${podDef.metadata.name}_pod-${podDef.metadata.name}`);
+            console.log(
+              `\n\t\t\t podman logs ${podDef.metadata.name}_pod-${podDef.metadata.name}`
+            );
             break;
           case "kubernetes":
             console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
@@ -276,15 +320,9 @@ export async function start(
 
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
-    // sleep 2 secs before connect the api
-    await sleep(2000);
-
-    for (const node of network.nodes) {
-      await node.connectApi();
-    }
 
     for (const parachain of networkSpec.parachains) {
-      if(!parachain.addToGenesis) {
+      if (!parachain.addToGenesis) {
         // register parachain on a running network
         await network.registerParachain(
           parachain.id,
@@ -299,36 +337,43 @@ export async function start(
         validator: false,
         image: parachain.collator.image,
         command: parachain.collator.command,
+        commandWithArgs: parachain.collator.commandWithArgs,
         chain: networkSpec.relaychain.chain,
         bootnodes: [
           `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
         ],
         args: [],
-        env: [],
+        env: parachain.collator.env,
         telemetryUrl: "",
         overrides: [],
       };
       const podDef = await genNodeDef(namespace, collator);
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
+      const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
+      const rpcPort = await client.startPortForwarding(9944, nodeIdentifier);
+
       const networkNode: NetworkNode = new NetworkNode(
         podDef.metadata.name,
-        "", // TODO: needs to connect to rpc?
+        WS_URI_PATTERN.replace("{{PORT}}", rpcPort.toString()),
         "" // TODO: needs to connect for metrics?
       );
 
-      network.addNode(networkNode);
+      networkNode.parachainId = parachain.id;
+      network.addNode(networkNode, Scope.PARA);
     }
 
     // prevent global timeout
     network.launched = true;
-    debug(`\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`);
+    debug(
+      `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`
+    );
     return network;
   } catch (error) {
     console.error(error);
     if (network) {
       await network.uploadLogs();
-      await network.stop();
+      // await network.stop();
     }
     if (cronInterval) clearInterval(cronInterval);
     process.exit(1);

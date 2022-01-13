@@ -5,8 +5,8 @@ import {
   PROMETHEUS_PORT,
 } from "./configManager";
 import { getClient } from "./providers/client";
-import type { HeadData, ParaId } from "@polkadot/types/interfaces";
-import type { Option, Vec } from "@polkadot/types";
+
+import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
 
 const debug = require("debug")("zombie::network-node");
 
@@ -25,6 +25,7 @@ export class NetworkNode implements NetworkNodeInterface {
   spec?: object | undefined;
   cachedMetrics?: Metrics;
   userDefinedTypes: any;
+  parachainId?: number;
 
   constructor(
     name: string,
@@ -114,19 +115,16 @@ export class NetworkNode implements NetworkNodeInterface {
         expired = true;
       }, timeout * 1000);
 
-      if (!this.apiInstance) this.connectApi();
+      if (!this.apiInstance) await this.connectApi();
       let done = false;
       while (!done) {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
         // wait 2 secs between checks
         await new Promise((resolve) => setTimeout(resolve, 2000));
-        const parachains =
-          (await this.apiInstance?.query.paras.parachains<Vec<ParaId>>()) || [];
-        debug(`parachains : ${JSON.stringify(parachains)}`);
-        done =
-          parachains.findIndex(
-            (id) => id.toString() == parachainId.toString()
-          ) >= 0;
+        done = await paraIsRegistered(
+          this.apiInstance as ApiPromise,
+          parachainId
+        );
       }
 
       return true;
@@ -149,32 +147,22 @@ export class NetworkNode implements NetworkNodeInterface {
         expired = true;
       }, timeout * 1000);
 
-      if (!this.apiInstance) this.connectApi();
+      // reconnect iff needed
+      if (!this.apiInstance) await this.connectApi();
       let done = false;
       let value: number = 0;
       while (!done) {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
 
-        const optHeadData = await this.apiInstance?.query.paras.heads<
-          Option<HeadData>
-        >(parachainId);
-
-        if (optHeadData?.isSome) {
-          const header = this.apiInstance?.createType(
-            "Header",
-            optHeadData.unwrap().toHex()
-          );
-          const headerStr = JSON.stringify(header?.toHuman(), null, 2);
-
-          const headerObj = JSON.parse(headerStr);
-          const blockNumber = parseInt(headerObj["number"].replace(",", ""));
-          debug(`blockNumber : ${blockNumber}`);
-
-          if (desiredValue <= blockNumber) {
-            done = true;
-            value = blockNumber;
-          }
+        let blockNumber = await paraGetBlockHeight(
+          this.apiInstance as ApiPromise,
+          parachainId
+        );
+        if (desiredValue <= blockNumber) {
+          done = true;
+          value = blockNumber;
         }
+
         // wait 2 secs between checks
         if (!done) await new Promise((resolve) => setTimeout(resolve, 2000));
       }
@@ -247,7 +235,6 @@ export class NetworkNode implements NetworkNodeInterface {
         ) {
           done = true;
         } else {
-          // debug
           debug(
             `current value: ${value} for metric ${rawmetricName}, keep trying...`
           );
@@ -271,9 +258,10 @@ export class NetworkNode implements NetworkNodeInterface {
 
     // loops over namespaces first
     for (const namespace of Object.keys(this.cachedMetrics)) {
-      // debug(`looking in ns ${namespace}`);
-      // debug(`for key: ${metricName}`);
-      if ( this.cachedMetrics[namespace] && this.cachedMetrics[namespace][metricName] !== undefined ) {
+      if (
+        this.cachedMetrics[namespace] &&
+        this.cachedMetrics[namespace][metricName] !== undefined
+      ) {
         debug("returning for: " + metricName);
         debug("returning: " + this.cachedMetrics[namespace][metricName]);
         return this.cachedMetrics[namespace][metricName];

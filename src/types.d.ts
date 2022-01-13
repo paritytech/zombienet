@@ -21,10 +21,9 @@ export interface Node {
   fullCommand?: string;
   image: string;
   chain: string;
-  chainSpec?: string; // path to the json spec
+  chainSpec?: string;
   port?: number;
   wsPort?: number;
-  // run with `--validator`-flag
   validator: boolean;
   args: string[];
   env: envVars[];
@@ -32,25 +31,8 @@ export interface Node {
   substrateRole?: string;
   initContainers?: object[];
   telemetry?: boolean;
-  /// URL for telemetry
   telemetryUrl: string;
-  /// run with `--prometheus-external`-flag
   prometheus?: boolean;
-  // subcommand: Option<String>,
-  // init: Option<CustomInit>,
-  // extra_args: Option<Vec<String>>,
-  // chain_name: Option<String>,
-  // binary: Option<PathBuf>,
-  // chain_spec: Option<String>,
-  // keys: Option<Vec<KeyToInsert>>,
-  // image: Option<String>,
-  // volumes: Option<Vec<NodeVolume>>,
-  // timeout: Option<u16>,
-  // resources: Option<ResourceRequirements>,
-  // copy_files: Option<Vec<PathBuf>>,
-  // fetch_files: Option<Vec<PathBuf>>,
-  // env: Option<HashMap<String, String>>,
-  // mdns: Option<bool>,
   overrides: Override[];
 }
 
@@ -59,7 +41,7 @@ export interface Collator {
   command: string;
   commandWithArgs?: string;
   image: string;
-  chain: string;
+  chain?: string;
   args: string[];
   env: envVars[];
   bootnodes: string[];
@@ -92,25 +74,25 @@ export interface envVars {
 }
 
 export interface ChainSpec {
-	name: string;
-	id: string;
-	chainType: string;
-	bootNodes: string[];
-	telemetryEndpoints: null;
-	protocolId: string;
-	properties: null;
-	forkBlocks: null;
-	badBlocks: null;
-	consensusEngine: null;
-	lightSyncState: null;
-	genesis: {
-		runtime: any; // this can change depending on the versions
-		raw: {
-			top: {
-				[key: string]: string;
-			};
-		};
-	};
+  name: string;
+  id: string;
+  chainType: string;
+  bootNodes: string[];
+  telemetryEndpoints: null;
+  protocolId: string;
+  properties: null;
+  forkBlocks: null;
+  badBlocks: null;
+  consensusEngine: null;
+  lightSyncState: null;
+  genesis: {
+    runtime: any; // this can change depending on the versions
+    raw: {
+      top: {
+        [key: string]: string;
+      };
+    };
+  };
 }
 
 // Launch Config ( user provided config )
@@ -145,7 +127,6 @@ export interface InitContainer {
   command: string;
 }
 
-
 export interface RelayChainConfig {
   default_command?: string;
   default_image?: string;
@@ -159,7 +140,6 @@ export interface RelayChainConfig {
     image?: string;
     command?: string;
     commandWithArgs?: string;
-    fullCommand?: string;
     wsPort?: number;
     port?: number;
     args?: string[];
@@ -187,13 +167,13 @@ export interface ParachainConfig {
     commandWithArgs?: string;
     name?: string;
     args?: string[];
+    env?: envVars[];
   };
 }
 
-// name: path
 export interface fileMap {
-  localFilePath: string,
-  remoteFilePath: string
+  localFilePath: string;
+  remoteFilePath: string;
 }
 
 export interface Override {

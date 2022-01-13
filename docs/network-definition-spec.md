@@ -32,7 +32,6 @@
   - `image` : Override default docker image to use for this node.
   - `command`: Override default command.
   - `commandWithArgs`: Override default command and args.
-  - `fullCommand`: Override command and args, allow to specify the full command to exec.
   - `wsPort`: The WS port for this node. (`9944` by default).
   - `port`: The TCP port for this node. (`30444` by default).
   - `args`: Arguments to be passed to the `command`.
