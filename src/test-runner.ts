@@ -191,7 +191,7 @@ function parseAssertionLine(assertion: string) {
   );
 
   // Logs assertion
-  const assertLogLineRegex = new RegExp(/^(([\w]+): log line contains( regex| glob)? "([\w_*? ]+)")+(( from (\d+) (seconds|secs|s)?))?$/);
+  const assertLogLineRegex = new RegExp(/^(([\w]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/);
 
   // Backchannel
   // alice: wait for name and use as X within 30s
@@ -288,14 +288,17 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = assertLogLineRegex.exec(assertion);
-  if(m && m[2] && m[4]) {
+  if(m && m[2] && m[5]) {
+    let timeout: number;
     const nodeName = m[2];
-    const pattern = m[4];
-    const isGlob = m[3] && m[3].trim() === "glob" || false;
-    const fromSeconds = parseInt(m[7],10) || 0;
+    const pattern = m[5];
+    const isGlob = m[4] && m[4].trim() === "glob" || false;
+    if (m[7]) timeout = parseInt(m[7], 10);
 
     return async (network: Network) => {
-      const found = await network.node(nodeName).findPattern(pattern, isGlob, fromSeconds);
+      const found = timeout ?
+        await network.node(nodeName).findPattern(pattern, isGlob, timeout) :
+        await network.node(nodeName).findPattern(pattern, isGlob);
       expect(found).to.be.ok;
     };
   }

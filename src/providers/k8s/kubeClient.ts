@@ -481,9 +481,10 @@ export class KubeClient extends Client {
     });
   }
 
-  async getNodeLogs(podName: string, since: number|undefined = undefined): Promise<string> {
+  async getNodeLogs(podName: string, since: number|undefined = undefined, withTimestamp = false): Promise<string> {
     const args = ["logs"];
     if(since && since > 0) args.push(`--since=${since}s`);
+    if(withTimestamp) args.push("--timestamps=true");
     args.push(...[podName, "--namespace", this.namespace]);
 
     const result = await this.runCommand(args, undefined, false);
