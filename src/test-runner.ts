@@ -168,8 +168,10 @@ const exitMocha = (code: number) => {
 };
 
 function parseAssertionLine(assertion: string) {
-  // parachains smoke test
+  // Node general
   const isUpRegex = new RegExp(/^([\w]+): is up$/i);
+
+  // parachains
   const parachainIsRegistered = new RegExp(
     /^(([\w]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i
   );
@@ -187,6 +189,9 @@ function parseAssertionLine(assertion: string) {
   const isReports = new RegExp(
     /^(([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
+
+  // Logs assertion
+  const assertLogLineRegex = new RegExp(/^(([\w]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/);
 
   // Backchannel
   // alice: wait for name and use as X within 30s
@@ -279,6 +284,22 @@ function parseAssertionLine(assertion: string) {
         else throw err;
       }
       assert[comparatorFn](value, targetValue);
+    };
+  }
+
+  m = assertLogLineRegex.exec(assertion);
+  if(m && m[2] && m[5]) {
+    let timeout: number;
+    const nodeName = m[2];
+    const pattern = m[5];
+    const isGlob = m[4] && m[4].trim() === "glob" || false;
+    if (m[7]) timeout = parseInt(m[7], 10);
+
+    return async (network: Network) => {
+      const found = timeout ?
+        await network.node(nodeName).findPattern(pattern, isGlob, timeout) :
+        await network.node(nodeName).findPattern(pattern, isGlob);
+      expect(found).to.be.ok;
     };
   }
 

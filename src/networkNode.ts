@@ -1,4 +1,6 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import minimatch from "minimatch";
+
 import { Metrics, fetchMetrics, getMetricName } from "./metrics";
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -26,6 +28,7 @@ export class NetworkNode implements NetworkNodeInterface {
   cachedMetrics?: Metrics;
   userDefinedTypes: any;
   parachainId?: number;
+  lastLogLineCheckedTimestamp?: string;
 
   constructor(
     name: string,
@@ -248,6 +251,62 @@ export class NetworkNode implements NetworkNodeInterface {
       if (limitTimeout) clearTimeout(limitTimeout);
       throw new Error(`Error getting metric: ${rawmetricName}`);
     }
+  }
+
+  async findPattern(pattern: string, isGlob: boolean, timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
+    let limitTimeout;
+    let expired: boolean = false;
+    try {
+      limitTimeout = setTimeout(() => {
+        debug(`Timeout getting pattern ${pattern} (${timeout})`);
+        expired = true;
+      }, timeout * 1000);
+
+      const re = (isGlob) ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const client = getClient();
+
+      // loop until get the desired value or timeout
+      let done = false;
+      while (!done) {
+        if (expired) throw new Error(`Timeout(${timeout}s)`);
+
+        // By default use 2s since we sleep 1s.
+        const logs = await client.getNodeLogs(this.name, 2, true);
+        const dedupedLogs = this._dedupLogs(logs.split("\n"));
+        const index = dedupedLogs.findIndex(line => {
+          // remove the extra timestamp
+          return re.test(line.split(" ").slice(1).join(" "));
+
+        });
+
+        if(index >= 0) {
+          done = true;
+          this.lastLogLineCheckedTimestamp = dedupedLogs[index];
+          debug(this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
+          clearTimeout(limitTimeout);
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
+
+      clearTimeout(limitTimeout);
+      return true
+    } catch (err) {
+      if (limitTimeout) clearTimeout(limitTimeout);
+      throw new Error(`Error getting pattern: ${pattern}`);
+    }
+  }
+
+  // prevent to seach in the same log line twice.
+  _dedupLogs(logs: string[]): string[] {
+    if( ! this.lastLogLineCheckedTimestamp) return logs;
+    const lastLineTs = this.lastLogLineCheckedTimestamp.split(" ")[0];
+    const index = logs.findIndex(logLine => {
+      const thisLineTs = logLine.split(" ")[0];
+      return ( thisLineTs > lastLineTs );
+    });
+
+    return logs.slice(index);
   }
 
   _getMetric(

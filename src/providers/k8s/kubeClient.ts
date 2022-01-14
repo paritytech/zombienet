@@ -481,11 +481,20 @@ export class KubeClient extends Client {
     });
   }
 
+  async getNodeLogs(podName: string, since: number|undefined = undefined, withTimestamp = false): Promise<string> {
+    const args = ["logs"];
+    if(since && since > 0) args.push(`--since=${since}s`);
+    if(withTimestamp) args.push("--timestamps=true");
+    args.push(...[podName, "--namespace", this.namespace]);
+
+    const result = await this.runCommand(args, undefined, false);
+    return result.stdout;
+  }
+
   async dumpLogs(path: string, podName: string) {
     const dstFileName = `${path}/logs/${podName}.log`;
-    const args = ["logs", podName, "--namespace", this.namespace];
-    const result = await this.runCommand(args, undefined, false);
-    await fs.writeFile(dstFileName, result.stdout);
+    const logs = await this.getNodeLogs(podName);
+    await fs.writeFile(dstFileName, logs);
   }
 
   // run kubectl
