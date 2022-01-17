@@ -1,6 +1,7 @@
 import execa from "execa";
 import { resolve } from "path";
 import {
+  DEFAULT_REMOTE_DIR,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
 } from "../../configManager";
@@ -40,6 +41,7 @@ export class KubeClient extends Client {
   tmpDir: string;
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
+  remoteDir: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -49,6 +51,7 @@ export class KubeClient extends Client {
     this.timeout = 60; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
+    this.remoteDir = DEFAULT_REMOTE_DIR;
   }
 
   async validateAccess(): Promise<boolean> {

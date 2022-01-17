@@ -29,6 +29,7 @@ export class NetworkNode implements NetworkNodeInterface {
   userDefinedTypes: any;
   parachainId?: number;
   lastLogLineCheckedTimestamp?: string;
+  lastLogLineCheckedIndex?: number;
 
   constructor(
     name: string,
@@ -272,16 +273,19 @@ export class NetworkNode implements NetworkNodeInterface {
 
         // By default use 2s since we sleep 1s.
         const logs = await client.getNodeLogs(this.name, 2, true);
-        const dedupedLogs = this._dedupLogs(logs.split("\n"));
+        const dedupedLogs = this._dedupLogs(logs.split("\n"), client.providerName === "native");
         const index = dedupedLogs.findIndex(line => {
-          // remove the extra timestamp
-          return re.test(line.split(" ").slice(1).join(" "));
-
+          if(client.providerName !== "native") {
+            // remove the extra timestamp
+            line = line.split(" ").slice(1).join(" ")
+          }
+          return re.test(line);
         });
 
         if(index >= 0) {
           done = true;
           this.lastLogLineCheckedTimestamp = dedupedLogs[index];
+          this.lastLogLineCheckedIndex = index;
           debug(this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
           clearTimeout(limitTimeout);
         } else {
@@ -298,14 +302,15 @@ export class NetworkNode implements NetworkNodeInterface {
   }
 
   // prevent to seach in the same log line twice.
-  _dedupLogs(logs: string[]): string[] {
+  _dedupLogs(logs: string[], useIndex = false): string[] {
     if( ! this.lastLogLineCheckedTimestamp) return logs;
+    if(useIndex) return logs.slice(this.lastLogLineCheckedIndex);
+
     const lastLineTs = this.lastLogLineCheckedTimestamp.split(" ")[0];
     const index = logs.findIndex(logLine => {
       const thisLineTs = logLine.split(" ")[0];
       return ( thisLineTs > lastLineTs );
     });
-
     return logs.slice(index);
   }
 

@@ -1,6 +1,6 @@
 import execa from "execa";
 import { resolve } from "path";
-import { P2P_PORT } from "../../configManager";
+import { DEFAULT_REMOTE_DIR, P2P_PORT } from "../../configManager";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
@@ -8,7 +8,7 @@ import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../colors";
 import YAML from "yaml";
 
-const debug = require("debug")("zombie::kube::client");
+const debug = require("debug")("zombie::podman::client");
 
 export function initClient(
   configPath: string,
@@ -28,6 +28,7 @@ export class PodmanClient extends Client {
   tmpDir: string;
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
+  remoteDir: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
@@ -37,6 +38,7 @@ export class PodmanClient extends Client {
     this.timeout = 30; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
+    this.remoteDir = DEFAULT_REMOTE_DIR;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -220,7 +222,6 @@ export class PodmanClient extends Client {
 
     await this.createResource(podDef, false, false);
 
-    // TODO: how to check in podman
     await this.wait_pod_ready(name);
     console.log(`\t\t${decorators.green(name)} pod is ready!`);
   }
@@ -230,7 +231,6 @@ export class PodmanClient extends Client {
     localFilePath: string,
     container?: string
   ): Promise<void> {
-    // throw new Error("Method not implemented.");
     debug(`cp ${this.tmpDir}/${identifier}${podFilePath}  ${localFilePath}`);
     await fs.copyFile(
       `${this.tmpDir}/${identifier}${podFilePath}`,

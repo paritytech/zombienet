@@ -15,6 +15,7 @@ export abstract class Client {
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
   providerName: string;
+  remoteDir: string | undefined;
 
   constructor(
     configPath: string,

@@ -1,6 +1,5 @@
 import {
   DEFAULT_COLLATOR_IMAGE,
-  DEFAULT_REMOTE_DIR,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   getUniqueName,
@@ -28,10 +27,12 @@ export async function generateParachainFiles(
   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
     let commands = [];
     if (parachain.genesisStateGenerator)
-      commands.push(parachain.genesisStateGenerator);
+      commands.push(parachain.genesisStateGenerator.replace("{{CLIENT_REMOTE_DIR}}", client.remoteDir as string));
     if (parachain.genesisWasmGenerator)
-      commands.push(parachain.genesisWasmGenerator);
-    commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
+      commands.push(parachain.genesisWasmGenerator.replace("{{CLIENT_REMOTE_DIR}}", client.remoteDir as string));
+
+    // Native provider doesn't need to wait
+    if( client.providerName !== "native") commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
     let node: Node = {
       name: getUniqueName("temp-collator"),
@@ -44,6 +45,7 @@ export async function generateParachainFiles(
       env: [],
       telemetryUrl: "",
       overrides: [],
+      zombieRole: "temp"
     };
 
     const provider = Providers.get(client.providerName);
@@ -55,7 +57,7 @@ export async function generateParachainFiles(
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`,
+        `${client.remoteDir}/${GENESIS_STATE_FILENAME}`,
         stateLocalFilePath
       );
     }
@@ -63,7 +65,7 @@ export async function generateParachainFiles(
     if (parachain.genesisWasmGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `${DEFAULT_REMOTE_DIR}/${GENESIS_WASM_FILENAME}`,
+        `${client.remoteDir}/${GENESIS_WASM_FILENAME}`,
         wasmLocalFilePath
       );
     }

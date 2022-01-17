@@ -31,14 +31,14 @@ export const DEFAULT_BOOTNODE_PEER_ID =
   "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
 export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
 export const DEFAULT_REMOTE_DIR = "/cfg";
-export const DEFAULT_CHAIN_SPEC_PATH = "/cfg/{{chainName}}-plain.json";
-export const DEFAULT_CHAIN_SPEC_RAW_PATH = "/cfg/{{chainName}}-raw.json";
+export const DEFAULT_CHAIN_SPEC = "{{chainName}}-plain.json";
+export const DEFAULT_CHAIN_SPEC_RAW = "{{chainName}}-raw.json";
 export const DEFAULT_CHAIN_SPEC_COMMAND =
-  "polkadot build-spec --chain {{chainName}} --disable-default-bootnode";
+  "{{DEFAULT_COMMAND}} build-spec --chain {{chainName}} --disable-default-bootnode";
 export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND ="export-genesis-state";
 export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
-export const DEFAULT_ADDER_COLLATOR_BIN = "/usr/local/bin/adder-collator";
-export const DEFAULT_CUMULUS_COLLATOR_BIN = "/usr/local/bin/polkadot-collator";
+export const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
+export const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-collator";
 export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
 export const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 export const GENESIS_STATE_FILENAME = "genesis-state";
@@ -63,7 +63,7 @@ export const zombieWrapperPath = resolve(
 export const LOKI_URL_FOR_NODE =
   "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
 
-export const AVAILABLE_PROVIDERS = ["podman", "kubernetes"];
+export const AVAILABLE_PROVIDERS = ["podman", "kubernetes", "native"];
 
 export async function generateNetworkSpec(
   config: LaunchConfig
@@ -87,6 +87,7 @@ export async function generateNetworkSpec(
   let networkSpec: any = {
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
+      defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       nodes: [],
       chain: config.relaychain.chain,
       overrides: Promise.all(globalOverrides),
@@ -124,15 +125,15 @@ export async function generateNetworkSpec(
       .chain_spec_command
       ? config.relaychain.chain_spec_command
       : DEFAULT_CHAIN_SPEC_COMMAND.replace(
-          new RegExp("{{chainName}}", "g"),
+          "{{chainName}}",
           chainName
-        );
+        ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
   }
 
   for (const node of config.relaychain.nodes) {
     const command = node.command
       ? node.command
-      : config.relaychain.default_command;
+      : networkSpec.relaychain.defaultCommand;
     const image = node.image ? node.image : config.relaychain.default_image;
     let args: string[] = [];
     if (node.args) args = args.concat(node.args);
@@ -245,7 +246,7 @@ export async function generateNetworkSpec(
           computedStateCommand += ` --parachain-id ${parachain.id}`;
         }
 
-        computedStateCommand += ` > ${DEFAULT_REMOTE_DIR}/${GENESIS_STATE_FILENAME}`;
+        computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
 
       if (parachain.genesis_wasm_path) {
@@ -265,7 +266,7 @@ export async function generateNetworkSpec(
       } else {
         computedWasmCommand = parachain.genesis_wasm_generator
           ? parachain.genesis_wasm_generator
-          : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND} > ${DEFAULT_REMOTE_DIR}/${GENESIS_WASM_FILENAME}`;
+          : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND} > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
       let args: string[] = [];
@@ -289,8 +290,7 @@ export async function generateNetworkSpec(
           chain: chainName,
           args: [],
           env: env,
-          bootnodes,
-          substrateRole: "collator",
+          bootnodes
         },
       };
 
@@ -314,13 +314,13 @@ export async function generateNetworkSpec(
   networkSpec.types = config.types ? config.types : {};
   networkSpec.configBasePath = config.configBasePath;
 
-  return networkSpec;
+  return networkSpec as ComputedNetwork;
 }
 
 export function generateBootnodeSpec(config: ComputedNetwork): Node {
   const nodeSetup: Node = {
     name: "bootnode",
-    command: DEFAULT_COMMAND,
+    command: config.relaychain.defaultCommand || DEFAULT_COMMAND,
     image: config.relaychain.defaultImage || DEFAULT_IMAGE,
     chain: config.relaychain.chain,
     port: P2P_PORT,
@@ -338,6 +338,7 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     bootnodes: [],
     telemetryUrl: "",
     overrides: [],
+    zombieRole: "bootnode"
   };
 
   return nodeSetup;
