@@ -10,7 +10,7 @@
 
 Zombienet aim to be a testing framework for substrate based blockchains,  providing a simple **cli** tool that allow users to spawn and test ephemeral networks with assertions based in a set of `natural language` expresions. Also, is designed to integrate in a `CI` pipeline easily.
 
-Internally is a `javascript` library, designed to run on NodeJS and support different `providers` to run the *nodes*, at this moment`kubernetes` and `podman`.
+Internally is a `javascript` library, designed to run on NodeJS and support different `providers` to run the *nodes*, at this moment`kubernetes`, `podman` and `native`.
 
 ## Usage
 
@@ -37,24 +37,59 @@ Then you are ready to use `zombienet`.
 
 Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have `podman` installed in your environment to use and either set in the *network* file or with the `--provider` flag in the cli.
 
+### With Native
+
+Zombienet support `Native` provider, you only need to have the `binaries` used in your `network` (e.g polkador, adder-collator). To use it either set in the *network* file or with the `--provider` flag in the cli.
+**NOTE:** The `native` provider **only** use the `command` config for nodes/collators, both relative and absolute paths are supported. You can use `default_command` config to set the binary to spawn all the `nodes` in the relay chain.
+
+Example:
+
+```toml
+[settings]
+timeout = 1000
+
+[relaychain]
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
+chain = "rococo-local"
+default_command = "../polkadot/target/release/polkadot"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  extra_args = [ "--alice" ]
+
+  [[relaychain.nodes]]
+  name = "bob"
+  extra_args = [ "--bob" ]
+
+[[parachains]]
+id = 100
+addToGenesis = true
+
+  [parachains.collator]
+  name = "collator01"
+  image = "{{COL_IMAGE}}"
+  command = "../polkadot/target/testnet/adder-collator"
+```
+
 ### Cli
 
 *For this example we will use the `macos` version of the executable*
 
-```
+```bash
 ./zombienet-macos
 Usage: zombienet [options] [command]
 
 Options:
-  -p, --provider <provider>                Override provider to use (choices: "podman",
-                                           "kubernetes", default: kubernetes)
-  -h, --help                               display help for command
+  -m, --monitor                  Start as monitor, do not auto cleanup network
+  -p, --provider <provider>      Override provider to use (choices: "podman", "kubernetes",
+                                 "native", default: kubernetes)
+  -h, --help                     display help for command
 
 Commands:
-  spawn <networkConfig> [creds] [monitor]  Spawn the network defined in the config
-  test <testFile>                          Run tests on the network defined
-  version                                  Prints zombienet version
-  help [command]                           display help for command
+  spawn <networkConfig> [creds]  Spawn the network defined in the config
+  test <testFile>                Run tests on the network defined
+  version                        Prints zombienet version
+  help [command]                 display help for command
 ```
 
 ### Configuration files and examples
