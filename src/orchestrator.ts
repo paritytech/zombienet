@@ -95,6 +95,7 @@ export async function start(
     } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
+    const endpointPort = client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT;
     network = new Network(client, namespace, tmpDir.path);
 
     console.log(
@@ -229,7 +230,7 @@ export async function start(
     await sleep(2000);
 
     const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await client.startPortForwarding(RPC_WS_PORT, bootnodeIdentifier);
+    const fwdPort = await client.startPortForwarding(endpointPort, bootnodeIdentifier);
     const prometheusPort = await client.startPortForwarding(
       PROMETHEUS_PORT,
       bootnodeIdentifier
@@ -270,7 +271,7 @@ export async function start(
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const fwdPort = await client.startPortForwarding(RPC_WS_PORT, nodeIdentifier);
+      const fwdPort = await client.startPortForwarding(endpointPort, nodeIdentifier);
       const nodePrometheusPort = await client.startPortForwarding(
         PROMETHEUS_PORT,
         nodeIdentifier
@@ -358,7 +359,7 @@ export async function start(
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const rpcPort = await client.startPortForwarding(RPC_WS_PORT, nodeIdentifier);
+      const rpcPort = await client.startPortForwarding(endpointPort, nodeIdentifier);
 
       const networkNode: NetworkNode = new NetworkNode(
         podDef.metadata.name,
