@@ -3,6 +3,7 @@ export interface ComputedNetwork {
   settings: Settings;
   relaychain: {
     defaultImage: string;
+    defaultCommand: string;
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
@@ -28,7 +29,7 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  substrateRole?: string;
+  zombieRole?: "temp"|"node"|"bootnode"|"collator";
   initContainers?: object[];
   telemetry?: boolean;
   telemetryUrl: string;
@@ -45,7 +46,6 @@ export interface Collator {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  substrateRole: string;
 }
 
 export interface Parachain {

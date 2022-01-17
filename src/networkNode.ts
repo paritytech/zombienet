@@ -274,9 +274,10 @@ export class NetworkNode implements NetworkNodeInterface {
         const logs = await client.getNodeLogs(this.name, 2, true);
         const dedupedLogs = this._dedupLogs(logs.split("\n"));
         const index = dedupedLogs.findIndex(line => {
+          if(client.providerName !== "native") {
           // remove the extra timestamp
           return re.test(line.split(" ").slice(1).join(" "));
-
+          }
         });
 
         if(index >= 0) {

@@ -46,16 +46,19 @@ process.on("unhandledRejection", async (err) => {
 });
 
 // Handle ctrl+c to trigger `exit`.
+let alreadyTry = false;
 process.on("SIGINT", async function () {
-  if (network) {
-    debug("removing namespace: " + network.namespace);
+  if (network && !alreadyTry) {
+    alreadyTry = true;
+    debug("Ctrl+c ... removing namespace: " + network.namespace);
     await network.stop();
   }
   process.exit(2);
 });
 
 process.on("exit", async function () {
-  if (network) {
+  if (network && !alreadyTry) {
+    alreadyTry = true;
     debug("removing namespace: " + network.namespace);
     await network.uploadLogs();
     await network.stop();
@@ -66,20 +69,18 @@ process.on("exit", async function () {
 });
 
 program
+  .addOption(
+    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network"))
   .command("spawn")
   .description("Spawn the network defined in the config")
   .argument("<networkConfig>", "Network config file path")
   .argument("[creds]", "kubeclt credentials file")
-  .argument(
-    "[monitor]",
-    "Monitor flag, don't teardown the network with the cronjob."
-  )
   .action(spawn);
 
 program
   .addOption(
     new Option("-p, --provider <provider>", "Override provider to use")
-      .choices(["podman", "kubernetes"])
+      .choices(["podman", "kubernetes", "native"])
       .default("kubernetes", "kubernetes")
   )
   .command("test")

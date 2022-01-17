@@ -13,6 +13,8 @@ import {
   zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
+  RPC_WS_PORT,
+  RPC_HTTP_PORT,
 } from "./configManager";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -119,7 +121,7 @@ export async function start(
 
     const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
     const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
-    await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent, {
+    await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent.toString().replace("{{REMOTE_DIR}}", client.remoteDir), {
       mode: 0o755,
     });
 
@@ -188,6 +190,7 @@ export async function start(
       namespace,
       networkSpec.relaychain.defaultImage,
       chainName,
+      networkSpec.relaychain.defaultCommand,
       chainSpecFullPath
     );
 
@@ -208,11 +211,11 @@ export async function start(
     const filesToCopyToNodes = [
       {
         localFilePath: `${tmpDir.path}/${chainSpecFileName}`,
-        remoteFilePath: `/cfg/${chainSpecFileName}`,
+        remoteFilePath: `${client.remoteDir}/${chainSpecFileName}`,
       },
       {
         localFilePath: zombieWrapperLocalPath,
-        remoteFilePath: `/cfg/${ZOMBIE_WRAPPER}`,
+        remoteFilePath: `${client.remoteDir}/${ZOMBIE_WRAPPER}`,
       },
     ];
 
@@ -223,10 +226,10 @@ export async function start(
 
     await client.spawnFromDef(bootnodeDef, filesToCopyToNodes);
     // make sure the bootnode is up and available over DNS
-    await sleep(5000);
+    await sleep(2000);
 
     const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await client.startPortForwarding(9944, bootnodeIdentifier);
+    const fwdPort = await client.startPortForwarding(RPC_WS_PORT, bootnodeIdentifier);
     const prometheusPort = await client.startPortForwarding(
       PROMETHEUS_PORT,
       bootnodeIdentifier
@@ -261,13 +264,13 @@ export async function start(
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
           localFilePath: override.local_path,
-          remoteFilePath: `/cfg/${override.remote_name}`,
+          remoteFilePath: `${client.remoteDir}/${override.remote_name}`,
         });
       }
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const fwdPort = await client.startPortForwarding(9944, nodeIdentifier);
+      const fwdPort = await client.startPortForwarding(RPC_WS_PORT, nodeIdentifier);
       const nodePrometheusPort = await client.startPortForwarding(
         PROMETHEUS_PORT,
         nodeIdentifier
@@ -302,7 +305,7 @@ export async function start(
       } else {
         console.log(
           `\n\t\t ${decorators.magenta(
-            "You can follow the logs of the node by running this command:"
+            "You can follow the logs of the node by running this command: "
           )}`
         );
         switch (networkSpec.settings.provider) {
@@ -313,6 +316,9 @@ export async function start(
             break;
           case "kubernetes":
             console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
+            break;
+          case "native":
+           console.log(`\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}`);
             break;
         }
       }
@@ -346,12 +352,13 @@ export async function start(
         env: parachain.collator.env,
         telemetryUrl: "",
         overrides: [],
+        zombieRole: "collator"
       };
       const podDef = await genNodeDef(namespace, collator);
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-      const rpcPort = await client.startPortForwarding(9944, nodeIdentifier);
+      const rpcPort = await client.startPortForwarding(RPC_WS_PORT, nodeIdentifier);
 
       const networkNode: NetworkNode = new NetworkNode(
         podDef.metadata.name,
@@ -373,7 +380,7 @@ export async function start(
     console.error(error);
     if (network) {
       await network.uploadLogs();
-      // await network.stop();
+      await network.stop();
     }
     if (cronInterval) clearInterval(cronInterval);
     process.exit(1);

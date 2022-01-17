@@ -1,13 +1,13 @@
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 import { getClient } from "../client";
 import {
-  DEFAULT_CHAIN_SPEC_PATH,
+  DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
-  DEFAULT_CHAIN_SPEC_RAW_PATH,
+  DEFAULT_CHAIN_SPEC_RAW,
 } from "../../configManager";
 import { ComputedNetwork } from "../../types";
 import { sleep } from "../../utils";
-const debug = require("debug")("zombie::kube::chain-spec");
+const debug = require("debug")("zombie::podman::chain-spec");
 
 const fs = require("fs").promises;
 
@@ -23,7 +23,7 @@ export async function setupChainSpec(
   const client = getClient();
   if (networkSpec.relaychain.chainSpecCommand) {
     const { defaultImage, chainSpecCommand } = networkSpec.relaychain;
-    const plainChainSpecOutputFilePath = DEFAULT_CHAIN_SPEC_PATH.replace(
+    const plainChainSpecOutputFilePath = client.remoteDir + "/" + DEFAULT_CHAIN_SPEC.replace(
       /{{chainName}}/gi,
       chainName
     );
@@ -56,29 +56,32 @@ export async function getChainSpecRaw(
   namespace: string,
   image: string,
   chainName: string,
+  chainCommand: string,
   chainFullPath: string
 ): Promise<any> {
   const plainPath = chainFullPath.replace(".json", "-plain.json");
+  const client = getClient();
 
-  const remoteChainSpecFullPath = DEFAULT_CHAIN_SPEC_PATH.replace(
+  const remoteChainSpecFullPath = client.remoteDir + "/" + DEFAULT_CHAIN_SPEC.replace(
     /{{chainName}}/,
     chainName
   );
-  const remoteChainSpecRawFullPath = DEFAULT_CHAIN_SPEC_RAW_PATH.replace(
+  const remoteChainSpecRawFullPath = client.remoteDir + "/" + DEFAULT_CHAIN_SPEC_RAW.replace(
     /{{chainName}}/,
     chainName
   );
   const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
     /{{chainName}}/gi,
     remoteChainSpecFullPath
-  );
+  ).replace("{{DEFAULT_COMMAND}}", chainCommand);
+
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = createTempNodeDef("temp", image, chainName, fullCommand);
 
   const podDef = await genNodeDef(namespace, node);
   const podName = podDef.metadata.name;
 
-  const client = getClient();
+
   await client.spawnFromDef(podDef, [
     {
       localFilePath: plainPath,
