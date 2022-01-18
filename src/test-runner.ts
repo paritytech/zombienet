@@ -8,12 +8,15 @@ import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import { decorators } from "./colors";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
+import minimatch from "minimatch";
 const zombie = require("../");
 const {
   connect,
   chainUpgrade,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
+  findPatternInSystemEventSubscription
 } = require("./jsapi-helpers");
 
 const debug = require("debug")("zombie::test-runner");
@@ -193,6 +196,9 @@ function parseAssertionLine(assertion: string) {
   // Logs assertion
   const assertLogLineRegex = new RegExp(/^(([\w]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/);
 
+  // system events
+  const assertSystemEventRegex = new RegExp(/^(([\w]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/);
+
   // Backchannel
   // alice: wait for name and use as X within 30s
   const backchannelWait = new RegExp(
@@ -303,6 +309,24 @@ function parseAssertionLine(assertion: string) {
     };
   }
 
+  m = assertSystemEventRegex.exec(assertion);
+  if(m && m[2] && m[5]) {
+    const nodeName = m[2];
+    const pattern = m[5];
+    const isGlob = m[4] && m[4].trim() === "glob" || false;
+    const timeout = m[7] ? parseInt(m[7], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
+
+    return async (network: Network) => {
+      const node = network.node(nodeName);
+      const api: ApiPromise = await connect(node.wsUri);
+      const re = (isGlob) ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const found = await findPatternInSystemEventSubscription(api, re, timeout);
+      api.disconnect();
+
+      expect(found).to.be.ok;
+    };
+  }
+
   m = backchannelWait.exec(assertion);
   if (m && m[1] && m[2] && m[3]) {
     let timeout: number;
@@ -393,6 +417,7 @@ function parseAssertionLine(assertion: string) {
       node = network.node(nodeName);
       api = await connect(node.wsUri);
       const valid = await validateRuntimeCode(api, parachainId, hash, timeout);
+      api.disconnect();
 
       expect(valid).to.be.ok;
     };
@@ -419,6 +444,7 @@ function parseAssertionLine(assertion: string) {
       node = network.node(nodeName);
       api = await connect(node.wsUri);
       const valid = await validateRuntimeCode(api, parachainId, hash, timeout);
+      api.disconnect();
 
       expect(valid).to.be.ok;
     };

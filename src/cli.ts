@@ -92,7 +92,8 @@ program
   .command("version")
   .description("Prints zombienet version")
   .action(() => {
-    console.log("1.2.4");
+    const p = require("../package.json");
+    console.log(p.version);
   });
 
 // spawn
