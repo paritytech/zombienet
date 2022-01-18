@@ -1,5 +1,5 @@
-Description: Logs Test
-Network: ./0006-logs.toml
+Description: System Events Test
+Network: ./0007-events.toml
 Creds: config
 
 
