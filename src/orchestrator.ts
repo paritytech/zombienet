@@ -142,13 +142,16 @@ export async function start(
     // create namespace
     await client.createNamespace();
 
+    // setup cleaner
+    if (!monitor) {
+      cronInterval = await client.setupCleaner();
+      debug("Cleanner job configured");
+    }
+
     // Create bootnode and backchannel services
     debug(`Creating static resources (bootnode and backchannel services)`);
     await client.staticSetup();
     await client.createPodMonitor("pod-monitor.yaml", chainName);
-
-    // setup cleaner
-    if (!monitor) cronInterval = await client.setupCleaner();
 
     // create or copy chain spec
     await setupChainSpec(
