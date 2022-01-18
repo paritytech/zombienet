@@ -99,10 +99,10 @@ program
 async function spawn(
   configFile: string,
   credsFile: string | undefined,
-  monitor: string | undefined,
   _opts: any
 ) {
   const opts = program.opts();
+  const monitor = opts.monitor || false;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error("  ⚠ Config file does not exist: ", configPath);
@@ -111,9 +111,6 @@ async function spawn(
 
   const filePath = path.resolve(configFile);
   const config = readNetworkConfig(filePath);
-
-  debug(config);
-  debug(opts);
 
   // if a provider is passed, let just use it.
   if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
@@ -136,7 +133,7 @@ async function spawn(
     }
   }
 
-  network = await start(creds, config, monitor !== undefined);
+  network = await start(creds, config, monitor);
   network.showNetworkInfo();
 }
 
