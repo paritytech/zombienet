@@ -5,6 +5,7 @@ import {
   validateRuntimeCode,
 } from "./chain-upgrade";
 import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
+import { findPatternInSystemEventSubscription } from "./events";
 
 async function connect(apiUrl: string, types: any): Promise<ApiPromise> {
   const provider = new WsProvider(apiUrl);
@@ -20,4 +21,5 @@ export {
   validateRuntimeCode,
   paraGetBlockHeight,
   paraIsRegistered,
+  findPatternInSystemEventSubscription
 };
