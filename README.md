@@ -6,6 +6,12 @@
 <p>A cli tool to easily spawn ephemeral Polkadot/Substrate networks and perform tests against them.</p>
 </div>
 
+## :warning: :construction: Under active development :construction: :warning:
+
+This project is still in early stage and very much work in progress. More features will be added and api/config may change.
+
+---
+
 ## What is Zombienet?
 
 Zombienet aim to be a testing framework for substrate based blockchains,  providing a simple **cli** tool that allow users to spawn and test ephemeral networks with assertions based in a set of `natural language` expresions. Also, is designed to integrate in a `CI` pipeline easily.
