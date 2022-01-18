@@ -16,22 +16,17 @@ Internally is a `javascript` library, designed to run on NodeJS and support diff
 
 Zombienet releases are available in `github`. Each one provide an executable for both `linux` and `macos` crated with [pkg](https://github.com/vercel/pkg) and allow to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` (e.g. k8s, podman) needs to be installed.
 
+## Requeriments by provider
+
 ### With kubernetes
 
 Zombienet should works with any k8s cluster (e.g [GKE](https://cloud.google.com/kubernetes-engine), [docker-desktop](https://docs.docker.com/desktop/kubernetes/), [kind](https://kind.sigs.k8s.io/)) **but** you need to have `kubectl` installed to interact with your cluster.
 
 Also, you need *access* to create resources (e.g `namespaces`, `pods` and `cronJobs`) in the target cluster.
 
-#### With `Zombienet` GKE cluster.
+#### Using `Zombienet` GKE cluster (internally).
 
-Zombienet project has it's own k8s cluster in GCP, to use it please ping [Javier](@javier:matrix.parity.io) in element to gain access.
-
-Once you have access, you will also need to install the [Cloud SDK](https://cloud.google.com/sdk/docs/install) and then perform the folowing steps:
-
-- run `gcloud auth login` and follow the auth flow.
-- run `gcloud container clusters get-credentials parity-zombienet --zone europe-west3-b --project parity-zombienet` to get the credentials of the cluster, *note* that this will also update your *context* in `kubectl` (you can verify by running `kubectl config current-context`).
-
-Then you are ready to use `zombienet`.
+Zombienet project has it's own k8s cluster in GCP, to use it please ping [Javier](@javier:matrix.parity.io) in element to gain access and steps to use.
 
 ### With Podman
 
@@ -39,7 +34,8 @@ Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only 
 
 ### With Native
 
-Zombienet support `Native` provider, you only need to have the `binaries` used in your `network` (e.g polkador, adder-collator). To use it either set in the *network* file or with the `--provider` flag in the cli.
+Zombienet `Native` provider allow to run the nodes as local process in your environments. You only need to have the `binaries` used in your `network` (e.g polkador, adder-collator).
+To use it either set in the *network* file or with the `--provider` flag in the cli.
 
 **NOTE:** The `native` provider **only** use the `command` config for nodes/collators, both relative and absolute paths are supported. You can use `default_command` config to set the binary to spawn all the `nodes` in the relay chain.
 
@@ -74,7 +70,9 @@ addToGenesis = true
   command = "../polkadot/target/testnet/adder-collator"
 ```
 
-### Cli
+---
+
+### Cli usage
 
 *For this example we will use the `macos` version of the executable*
 
@@ -95,34 +93,90 @@ Commands:
   help [command]                 display help for command
 ```
 
+---
+
 ### Configuration files and examples
 
-Zombienet support both `json` and `toml` format to define the Network you want to spawn. You can check the [definition spec](/docs/network-definition-spec.md) to view the available options.
+#### Spawning
+
+One of the goal of `zombienet` is easily spawn ephemeral networks, providing a simple but poweful *cli* that allow you to declare the desired network in `toml` or `json` format. You can check the [definition spec](/docs/network-definition-spec.md) to view the available options.
 
 A **minimal** configuration example with two validators and one parachain:
 
 ```toml
+[settings]
+timeout = 1000
+
 [relaychain]
 default_image = "paritypr/synth-wave:3639-0.9.9-7edc6602-ed5fb773"
 chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "alice"
-  validator = true
+  extra_args = [ "--alice" ]
 
   [[relaychain.nodes]]
   name = "bob"
-  validator = true
+  extra_args = [ "--bob" ]
 
 [[parachains]]
 id = 100
-addToGenesis = false
 
   [parachains.collator]
   name = "collator01"
   image = "paritypr/colander:4131-ccd09bbf"
-  command = "/usr/local/bin/adder-collator"
+  command = "adder-collator"
 ```
+
+Then you can spwan the network by running the following command:
+
+```bash
+./zombienet-macos spawn examples/0001-simple-network.toml
+```
+
+You can follow the output of the `steps` to spawn the network and once the network is launched a message with the `node`s information like this one is show
+
+```bash
+-----------------------------------------
+
+	 Network launched 🚀🚀
+
+		 In namespace zombie-1b0ad798d89c9f7f9c610bc46849970f with kubernetes provider
+
+
+		 Node name: bootnode
+
+		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52562#/explorer
+
+		 Node prometheus link: http://127.0.0.1:52567/metrics
+
+---
+
+		 Node name: alice
+
+		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52642#/explorer
+
+		 Node prometheus link: http://127.0.0.1:52647/metrics
+
+---
+
+		 Node name: bob
+
+		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52694#/explorer
+
+		 Node prometheus link: http://127.0.0.1:52699/metrics
+
+---
+
+	 Parachain ID: 100
+
+
+		 Node name: collator01-1
+
+		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52742#/explorer
+```
+
+Both the `prometheus` and the ` node` links are accesibles in your local machine to get the `metrics` or connect to the node.
 
 #### Using `env` variables in network config
 
@@ -137,11 +191,11 @@ chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "alice"
-  validator = true
+  extra_args = [ "--alice" ]
 
   [[relaychain.nodes]]
   name = "bob"
-  validator = true
+  extra_args = [ "--bob" ]
 
 [[parachains]]
 id = 100
@@ -150,20 +204,34 @@ addToGenesis = false
   [parachains.collator]
   name = "collator01"
   image = "{{COL_IMAGE}}"
-  command = "/usr/local/bin/adder-collator"
+  command = "adder-collator"
 
 ```
 
-And `export` the needed values before run:
+Then you can `export` the needed values before run the command to spawn the network again:
 
 ```bash
 export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/synth-wave:4131-0.9.12-ccd09bbf-29a1ac18
 export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 
-./bins/zombienet-macos spawn examples/0001-simple-network.toml
+./zombienet-macos spawn examples/0001-simple-network.toml
 ```
 
-You also can use this configuration with your *tests features*, and small example to cover that the network is working (You can check the [test-dsl spec](/docs/test-dsl-definition-spec.md) to view more options):
+##### Teardown
+
+You can teardown the network (and cleanup the used resources) by terminating the process (`Ctrl+c`).
+
+---
+
+#### Testing
+
+The other goal of `zombienet` is provide a way to perform test/assertions agins the spawned network, using a set of `natural language expressions` that allow to make assertions based on metrics, logs and some `built-in` function that query the network usin `polkadot.js`.
+Those assertions should be defined in a *feature test*, and the `dsl` and format is documented in [here](/docs/test-dsl-definition-spec.md).
+
+The following is an small example to spawn a network (using the previos `simple network definition`) and assert that:
+  - Both `nodes` are running
+  - The definded `parachain` is registered
+   - The defined `parachain` is producing blocks and produced at least 10 within 200 seconds.
 
 ```feature
 Description: Simple Network Smoke Test
