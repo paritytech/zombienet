@@ -8,7 +8,7 @@
 
 ## :warning: :construction: Under active development :construction: :warning:
 
-This project is still in early stage and very much work in progress. More features will be added and api/config may change.
+This project is still in early stage and very much work in progress. More features will be added, docs can be missing or outdated and api/config may change.
 
 ---
 
