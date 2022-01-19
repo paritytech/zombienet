@@ -10,6 +10,7 @@ import { Network } from "./network";
 import { decorators } from "./colors";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
 import minimatch from "minimatch";
+import { node } from "execa";
 const zombie = require("../");
 const {
   connect,
@@ -194,10 +195,13 @@ function parseAssertionLine(assertion: string) {
   );
 
   // Logs assertion
-  const assertLogLineRegex = new RegExp(/^(([\w]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/);
+  const assertLogLineRegex = new RegExp(/^(([\w]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
 
   // system events
-  const assertSystemEventRegex = new RegExp(/^(([\w]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/);
+  const assertSystemEventRegex = new RegExp(/^(([\w]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
+
+  // Custom js-script
+  const assertCustomJsRegex = new RegExp(/(([\w]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")? return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i);
 
   // Backchannel
   // alice: wait for name and use as X within 30s
@@ -326,6 +330,54 @@ function parseAssertionLine(assertion: string) {
       expect(found).to.be.ok;
     };
   }
+
+  m = assertCustomJsRegex.exec(assertion);
+  if(m && m[2] && m[5]) {
+    const nodeName = m[2];
+    const jsFile = m[3];
+    const withArgs = m[4] ? m[4] : "";
+    const comparatorFn = getComparatorFn(m[5] || "");
+    let targetValue: string|number = m[6];
+    const timeout = m[8] ? parseInt(m[8], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
+
+    return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
+      let limitTimeout;
+      const networkInfo = {
+        relay: network.relay.map(node => {
+          const {name, wsUri, prometheusUri, userDefinedTypes} = node;
+          return {name, wsUri, prometheusUri, userDefinedTypes};
+        }),
+        paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
+          memo[paraId] = network.paras[paraId].map(node => {
+            return {...node};
+          });
+          return memo;
+        }, {}),
+        nodesByName: Object.keys(network.nodesByName).reduce((memo: any, nodeName) => {
+          const {name, wsUri, prometheusUri, userDefinedTypes, parachainId} = network.nodesByName[nodeName];
+          memo[nodeName] = {name, wsUri, prometheusUri, userDefinedTypes};
+          if(parachainId) memo[nodeName].parachainId = parachainId;
+          return memo;
+        }, {})
+      };
+
+      limitTimeout = setTimeout(() => {
+        debug(`Timeout running custom js-script (${timeout})`);
+        throw new Error(`Timeout running custom js-script (${timeout})`);
+      }, timeout * 1000);
+
+      const fileTestPath = path.dirname(testFile);
+      const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
+
+      const jsScript = require(resolvedJsFilePath);
+      const args = (withArgs === "") ? [] : withArgs.split(",");
+      const value = await jsScript.run(nodeName, networkInfo, args);
+      clearTimeout(limitTimeout);
+      if(comparatorFn !== "equals") targetValue = parseInt(targetValue as string,10);
+      assert[comparatorFn](value, targetValue);
+    };
+  }
+
 
   m = backchannelWait.exec(assertion);
   if (m && m[1] && m[2] && m[3]) {

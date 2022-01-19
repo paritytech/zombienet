@@ -10,7 +10,6 @@ import { run } from "./test-runner";
 import { Command, Option } from "commander";
 import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./configManager";
 
-const path = require("path");
 const debug = require("debug")("zombie-cli");
 
 const program = new Command("zombienet");
@@ -110,7 +109,7 @@ async function spawn(
     process.exit();
   }
 
-  const filePath = path.resolve(configFile);
+  const filePath = resolve(configFile);
   const config = readNetworkConfig(filePath);
 
   // if a provider is passed, let just use it.
