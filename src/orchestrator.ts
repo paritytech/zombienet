@@ -23,7 +23,8 @@ import {
   addAuthority,
   changeGenesisConfig,
   addParachainToGenesis,
-  addHrmpChannelsToGenesis
+  addHrmpChannelsToGenesis,
+  addBootNodes
 } from "./chain-spec";
 import { generateNamespace, sleep, filterConsole, loadTypeDef } from "./utils";
 import tmp from "tmp-promise";
@@ -225,10 +226,13 @@ export async function start(
       );
     }
 
+    // store the chain spec path to use in tests
+    network.chainSpecFullPath = chainSpecFullPath;
+
     // files to include in each node
     const filesToCopyToNodes = [
       {
-        localFilePath: `${tmpDir.path}/${chainSpecFileName}`,
+        localFilePath: chainSpecFullPath,
         remoteFilePath: `${client.remoteDir}/${chainSpecFileName}`,
       },
       {
@@ -265,15 +269,23 @@ export async function start(
       bootnodeDef.metadata.name
     );
 
+    const bootnodes = [
+      `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
+    ];
+
+    // add bootnodes to chain spec
+    console.log("chainSpecFullPath", chainSpecFullPath);
+    await addBootNodes(chainSpecFullPath, bootnodes);
+    // flush require cache since we change the chain-spec
+    delete require.cache[require.resolve(chainSpecFullPath)];
+
     const monitorIsAvailable = await client.isPodMonitorAvailable();
 
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
       // TODO: k8s don't see pods by name so in here we inject the bootnode ip
       bootnodePort;
-      node.bootnodes = [
-        `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
-      ];
+      node.bootnodes = bootnodes;
 
       debug(`creating node: ${node.name}`);
       const podDef = await genNodeDef(namespace, node);
