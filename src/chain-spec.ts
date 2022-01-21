@@ -165,6 +165,16 @@ export async function changeGenesisConfig(spec_path: string, updates: any) {
   }
 }
 
+export async function addBootNodes(spec_path: string, addresses: string[]) {
+	let rawdata = fs.readFileSync(spec_path);
+	let chainSpec = JSON.parse(rawdata);
+	chainSpec.bootNodes = addresses;
+	let data = JSON.stringify(chainSpec, null, 2);
+
+	fs.writeFileSync(spec_path, data);
+	console.log(`Added Boot Nodes: ${addresses}`);
+}
+
 export async function addHrmpChannelsToGenesis(
 	spec_path: string,
 	hrmpChannels: HrmpChannelsConfig[]

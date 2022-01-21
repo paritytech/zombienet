@@ -343,6 +343,7 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
       let limitTimeout;
       const networkInfo = {
+        chainSpecPath : network.chainSpecFullPath,
         relay: network.relay.map(node => {
           const {name, wsUri, prometheusUri, userDefinedTypes} = node;
           return {name, wsUri, prometheusUri, userDefinedTypes};
@@ -369,7 +370,8 @@ function parseAssertionLine(assertion: string) {
       const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
-      const jsScript = require(resolvedJsFilePath);
+      //const jsScript = require(resolvedJsFilePath);
+      const jsScript = await import(resolvedJsFilePath);
       const args = (withArgs === "") ? [] : withArgs.split(",");
       const value = await jsScript.run(nodeName, networkInfo, args);
       clearTimeout(limitTimeout);
