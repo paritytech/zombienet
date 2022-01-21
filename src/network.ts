@@ -40,6 +40,7 @@ export class Network {
   launched: boolean;
   tmpDir: string;
   backchannelUri: string = "";
+  chainSpecFullPath?: string;
 
   constructor(client: Client, namespace: string, tmpDir: string) {
     this.client = client;

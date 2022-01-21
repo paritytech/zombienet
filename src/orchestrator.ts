@@ -211,6 +211,9 @@ export async function start(
       );
     }
 
+    // store the chain spec path to use in tests
+    network.chainSpecFullPath = chainSpecFullPath;
+
     // files to include in each node
     const filesToCopyToNodes = [
       {
