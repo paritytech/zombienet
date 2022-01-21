@@ -23,6 +23,7 @@ import {
   addAuthority,
   changeGenesisConfig,
   addParachainToGenesis,
+  addHrmpChannelsToGenesis
 } from "./chain-spec";
 import { generateNamespace, sleep, filterConsole, loadTypeDef } from "./utils";
 import tmp from "tmp-promise";
@@ -128,10 +129,6 @@ export async function start(
 
     // Define chain name and file name to use.
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
-    const chainSpecPlainFileName = chainSpecFileName.replace(
-      ".json",
-      "-plain.json"
-    );
     const chainName = networkSpec.relaychain.chain;
     const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
     const chainSpecFullPathPlain = chainSpecFullPath.replace(
@@ -165,38 +162,55 @@ export async function start(
     if (!fs.existsSync(chainSpecFullPathPlain))
       throw new Error("Can't find chain spec file!");
 
-    // Chain spec customization logic
-    clearAuthorities(chainSpecFullPathPlain);
-    for (const node of networkSpec.relaychain.nodes) {
-      await addAuthority(chainSpecFullPathPlain, node.name);
-    }
+    // Check if the chain spec is in raw format
+    // Could be if the chain_spec_path was set
+    const chainSpecContent = require(chainSpecFullPathPlain);
+    if(! chainSpecContent.genesis.raw) {
+      // Chain spec customization logic
+      clearAuthorities(chainSpecFullPathPlain);
+      for (const node of networkSpec.relaychain.nodes) {
+        await addAuthority(chainSpecFullPathPlain, node.name);
+      }
 
-    for (const parachain of networkSpec.parachains) {
-      const parachainFilesPath = await generateParachainFiles(
-        namespace,
-        tmpDir.path,
-        chainName,
-        parachain
-      );
-      const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
-      const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-      if (parachain.addToGenesis)
-        await addParachainToGenesis(
-          chainSpecFullPathPlain,
-          parachain.id.toString(),
-          stateLocalFilePath,
-          wasmLocalFilePath
+      if (networkSpec.relaychain.genesis) {
+        await changeGenesisConfig(chainSpecFullPathPlain, networkSpec.relaychain.genesis);
+      }
+
+      for (const parachain of networkSpec.parachains) {
+        const parachainFilesPath = await generateParachainFiles(
+          namespace,
+          tmpDir.path,
+          chainName,
+          parachain
         );
-    }
+        const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
+        const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
+        if (parachain.addToGenesis)
+          await addParachainToGenesis(
+            chainSpecFullPathPlain,
+            parachain.id.toString(),
+            stateLocalFilePath,
+            wasmLocalFilePath
+          );
+      }
 
-    // generate the raw chain spec
-    await getChainSpecRaw(
-      namespace,
-      networkSpec.relaychain.defaultImage,
-      chainName,
-      networkSpec.relaychain.defaultCommand,
-      chainSpecFullPath
-    );
+      if (networkSpec.hrmpChannels) {
+        await addHrmpChannelsToGenesis(chainSpecFullPathPlain, networkSpec.hrmpChannels);
+      }
+
+      // generate the raw chain spec
+      await getChainSpecRaw(
+        namespace,
+        networkSpec.relaychain.defaultImage,
+        chainName,
+        networkSpec.relaychain.defaultCommand,
+        chainSpecFullPath
+      );
+
+    } else {
+      console.log(`\n\t\t 🚧 ${decorators.yellow("Chain Spec was set to a file in raw format, can't customize.")} 🚧`);
+      await fs.promises.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
+    }
 
     // ensure chain raw is ok
     try {

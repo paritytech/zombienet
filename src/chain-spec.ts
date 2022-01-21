@@ -2,7 +2,7 @@ import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./colors";
-import { ChainSpec } from "./types";
+import { ChainSpec, HrmpChannelsConfig } from "./types";
 import { readDataFile } from "./utils";
 const fs = require("fs");
 
@@ -148,8 +148,8 @@ export async function addParachainToGenesis(
 
 // Update the runtime config in the genesis.
 // It will try to match keys which exist within the configuration and update the value.
-export async function changeGenesisConfig(spec: string, updates: any) {
-  let rawdata = fs.readFileSync(spec);
+export async function changeGenesisConfig(spec_path: string, updates: any) {
+  let rawdata = fs.readFileSync(spec_path);
   let chainSpec = JSON.parse(rawdata);
 
   console.log(
@@ -161,8 +161,56 @@ export async function changeGenesisConfig(spec: string, updates: any) {
     findAndReplaceConfig(updates, config);
 
     let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(spec, data);
+    fs.writeFileSync(spec_path, data);
   }
+}
+
+export async function addHrmpChannelsToGenesis(
+	spec_path: string,
+	hrmpChannels: HrmpChannelsConfig[]
+) {
+	console.log("⛓ Adding Genesis HRMP Channels");
+	let rawdata = fs.readFileSync(spec_path);
+	let chainSpec = JSON.parse(rawdata);
+
+
+	for (const hrmpChannel of hrmpChannels) {
+    let newHrmpChannel = [
+      hrmpChannel.sender,
+      hrmpChannel.recipient,
+      hrmpChannel.maxCapacity,
+      hrmpChannel.maxMessageSize,
+    ];
+
+    // Check runtime_genesis_config key for rococo compatibility.
+    const runtimeConfig =
+      chainSpec.genesis.runtime.runtime_genesis_config ||
+      chainSpec.genesis.runtime;
+
+    let hrmp = undefined;
+
+    if (runtimeConfig.hrmp) {
+      hrmp = runtimeConfig.hrmp;
+    }
+    // For retro-compatibility with substrate pre Polkadot 0.9.5
+    else if (runtimeConfig.parachainsHrmp) {
+      hrmp = runtimeConfig.parachainsHrmp;
+    }
+
+    if (hrmp && hrmp.preopenHrmpChannels) {
+      hrmp.preopenHrmpChannels.push(newHrmpChannel);
+
+      console.log(
+        `  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`
+      );
+    } else {
+      console.error("  ⚠ hrmp not found in runtimeConfig");
+      process.exit(1);
+    }
+
+    let data = JSON.stringify(chainSpec, null, 2);
+    fs.writeFileSync(spec_path, data);
+	}
 }
 
 // Look at the key + values from `obj1` and try to replace them in `obj2`.
