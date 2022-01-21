@@ -9,9 +9,11 @@ export interface ComputedNetwork {
     chainSpecCommand?: string;
     nodes: Node[];
     overrides: Override[];
+    genesis?: JSON | ObjectJSON;
   };
   parachains: Parachain[];
   types: any;
+  hrmpChannels?: HrmpChannelsConfig[];
   configBasePath: string;
 }
 
@@ -101,6 +103,7 @@ export interface LaunchConfig {
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;
+  hrmpChannels?: HrmpChannelsConfig[];
   configBasePath: string;
 }
 
@@ -150,6 +153,7 @@ export interface RelayChainConfig {
     initContainers?: object[];
     overrides?: Override[];
   }[];
+  genesis?: JSON | ObjectJSON;
 }
 
 export interface ParachainConfig {
@@ -179,4 +183,15 @@ export interface fileMap {
 export interface Override {
   local_path: string;
   remote_name: string;
+}
+
+export interface HrmpChannelsConfig {
+	sender: number;
+	recipient: number;
+	maxCapacity: number;
+	maxMessageSize: number;
+}
+
+interface ObjectJSON {
+	[key: string]: ObjectJSON | number | string;
 }
