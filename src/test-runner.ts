@@ -26,6 +26,8 @@ const { assert, expect } = chai;
 const { Test, Suite } = Mocha;
 const mocha = new Mocha();
 
+import { JSDOM } from "jsdom";
+
 interface TestDefinition {
   networkConfig: string;
   creds: string;
@@ -370,10 +372,17 @@ function parseAssertionLine(assertion: string) {
       const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
-      //const jsScript = require(resolvedJsFilePath);
+      // shim with jsdom
+      const dom = new JSDOM("<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>");
+      (global as any).window = dom.window;
+      (global as any).document = dom.window.document;
       const jsScript = await import(resolvedJsFilePath);
       const args = (withArgs === "") ? [] : withArgs.split(",");
       const value = await jsScript.run(nodeName, networkInfo, args);
+
+      // remove shim
+      (global as any).window = undefined;
+      (global as any).document = undefined;
       clearTimeout(limitTimeout);
       if(comparatorFn !== "equals") targetValue = parseInt(targetValue as string,10);
       assert[comparatorFn](value, targetValue);
