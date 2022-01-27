@@ -149,7 +149,7 @@ export function createTempNodeDef(
   chain: string,
   fullCommand: string
 ) {
-  const nodeName = getUniqueName("temo");
+  const nodeName = getUniqueName("temp");
   let node: Node = {
     name: nodeName,
     key: getSha256(nodeName),
