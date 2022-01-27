@@ -288,7 +288,7 @@ export async function generateNetworkSpec(
           commandWithArgs: parachain.collator.commandWithArgs,
           image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
           chain: chainName,
-          args: [],
+          args: parachain.collator.args || [],
           env: env,
           bootnodes
         },
