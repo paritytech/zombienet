@@ -369,7 +369,7 @@ export async function start(
 
       // create collator
       let collator: Node = {
-        name: getUniqueName(parachain.collator.name),
+        name: parachain.collator.name,
         validator: false,
         image: parachain.collator.image,
         command: parachain.collator.command,
@@ -378,7 +378,7 @@ export async function start(
         bootnodes: [
           `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
         ],
-        args: [],
+        args: parachain.collator.args,
         env: parachain.collator.env,
         telemetryUrl: "",
         overrides: [],
