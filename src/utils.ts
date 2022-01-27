@@ -149,8 +149,10 @@ export function createTempNodeDef(
   chain: string,
   fullCommand: string
 ) {
+  const nodeName = getUniqueName("temo");
   let node: Node = {
-    name: getUniqueName("temp"),
+    name: nodeName,
+    key: getSha256(nodeName),
     image,
     fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,

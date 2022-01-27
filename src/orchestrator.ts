@@ -26,11 +26,12 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes
 } from "./chain-spec";
-import { generateNamespace, sleep, filterConsole, loadTypeDef } from "./utils";
+import { generateNamespace, sleep, filterConsole, loadTypeDef, getSha256 } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
 import { decorators } from "./colors";
+import { generateBootnodeString } from "./bootnode";
 
 const debug = require("debug")("zombie");
 
@@ -226,6 +227,9 @@ export async function start(
       );
     }
 
+    // clear bootnodes
+    await addBootNodes(chainSpecFullPath, []);
+
     // store the chain spec path to use in tests
     network.chainSpecFullPath = chainSpecFullPath;
 
@@ -241,51 +245,49 @@ export async function start(
       },
     ];
 
-    // bootnode
-    // TODO: allow to customize the bootnode
-    const bootnodeSpec = await generateBootnodeSpec(networkSpec);
-    const bootnodeDef = await genBootnodeDef(namespace, bootnodeSpec);
+    let bootnodes: string[] = [];
 
-    await client.spawnFromDef(bootnodeDef, filesToCopyToNodes);
-    // make sure the bootnode is up and available over DNS
-    await sleep(2000);
+    if( networkConfig.settings.bootnode ) {
+      // bootnode
+      // TODO: allow to customize the bootnode
+      const bootnodeSpec = await generateBootnodeSpec(networkSpec);
+      const bootnodeDef = await genBootnodeDef(namespace, bootnodeSpec);
 
-    const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-    const fwdPort = await client.startPortForwarding(endpointPort, bootnodeIdentifier);
-    const prometheusPort = await client.startPortForwarding(
-      PROMETHEUS_PORT,
-      bootnodeIdentifier
-    );
+      await client.spawnFromDef(bootnodeDef, filesToCopyToNodes);
+      // make sure the bootnode is up and available over DNS
+      await sleep(2000);
 
-    const bootnodeNode: NetworkNode = new NetworkNode(
-      bootnodeDef.metadata.name,
-      WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
-      METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString())
-    );
+      const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
+      const fwdPort = await client.startPortForwarding(endpointPort, bootnodeIdentifier);
+      const prometheusPort = await client.startPortForwarding(
+        PROMETHEUS_PORT,
+        bootnodeIdentifier
+      );
 
-    network.addNode(bootnodeNode, Scope.RELAY);
+      const bootnodeNode: NetworkNode = new NetworkNode(
+        bootnodeDef.metadata.name,
+        WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
+        METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString())
+      );
 
-    const [bootnodeIP, bootnodePort] = await client.getBootnodeInfo(
-      bootnodeDef.metadata.name
-    );
+      network.addNode(bootnodeNode, Scope.RELAY);
 
-    const bootnodes = [
-      `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
-    ];
+      const [nodeIp, nodePort] = await client.getNodeInfo(
+        bootnodeDef.metadata.name
+      );
 
-    // add bootnodes to chain spec
-    console.log("chainSpecFullPath", chainSpecFullPath);
-    await addBootNodes(chainSpecFullPath, bootnodes);
-    // flush require cache since we change the chain-spec
-    delete require.cache[require.resolve(chainSpecFullPath)];
+      bootnodes.push( await generateBootnodeString(bootnodeSpec.key!, nodeIp, nodePort));
+      // add bootnodes to chain spec
+      await addBootNodes(chainSpecFullPath, bootnodes);
+      // flush require cache since we change the chain-spec
+      delete require.cache[require.resolve(chainSpecFullPath)];
+    }
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
 
     // Create nodes
     for (const node of networkSpec.relaychain.nodes) {
-      // TODO: k8s don't see pods by name so in here we inject the bootnode ip
-      bootnodePort;
-      node.bootnodes = bootnodes;
+      node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
       const podDef = await genNodeDef(namespace, node);
@@ -298,6 +300,18 @@ export async function start(
         });
       }
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
+
+      if( bootnodes.length === 0 || node.addToBootnodes ) {
+        // add first node as bootnode
+        const [nodeIp, nodePort] = await client.getNodeInfo(
+          podDef.metadata.name
+        );
+        bootnodes.push( await generateBootnodeString(node.key!, nodeIp, nodePort));
+        // add bootnodes to chain spec
+        await addBootNodes(chainSpecFullPath, bootnodes);
+        // flush require cache since we change the chain-spec
+        delete require.cache[require.resolve(chainSpecFullPath)];
+      }
 
       const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
       const fwdPort = await client.startPortForwarding(endpointPort, nodeIdentifier);
@@ -348,7 +362,7 @@ export async function start(
             console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
             break;
           case "native":
-           console.log(`\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}`);
+           console.log(`\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`);
             break;
         }
       }
@@ -368,17 +382,17 @@ export async function start(
       }
 
       // create collator
+      const collatorName = parachain.collator.name;
       let collator: Node = {
-        name: parachain.collator.name,
+        name: collatorName,
+        key: getSha256(collatorName),
         validator: false,
         image: parachain.collator.image,
         command: parachain.collator.command,
         commandWithArgs: parachain.collator.commandWithArgs,
         chain: networkSpec.relaychain.chain,
-        bootnodes: [
-          `/dns/${bootnodeIP}/tcp/${bootnodePort}/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
-        ],
         args: parachain.collator.args,
+        bootnodes: bootnodes,
         env: parachain.collator.env,
         telemetryUrl: "",
         overrides: [],
