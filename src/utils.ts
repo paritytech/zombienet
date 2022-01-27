@@ -143,30 +143,6 @@ export function loadTypeDef(types: string | object): object {
   }
 }
 
-export function createTempNodeDef(
-  name: string,
-  image: string,
-  chain: string,
-  fullCommand: string
-) {
-  const nodeName = getUniqueName("temp");
-  let node: Node = {
-    name: nodeName,
-    key: getSha256(nodeName),
-    image,
-    fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
-    chain,
-    validator: false,
-    bootnodes: [],
-    args: [],
-    env: [],
-    telemetryUrl: "",
-    overrides: [],
-  };
-
-  return node;
-}
-
 export function getSha256(input: string): string {
   return createHash("sha256").update(input).digest("hex");
 }
