@@ -172,7 +172,11 @@ export async function addBootNodes(spec_path: string, addresses: string[]) {
 	let data = JSON.stringify(chainSpec, null, 2);
 
 	fs.writeFileSync(spec_path, data);
-	console.log(`Added Boot Nodes: ${addresses}`);
+  if(addresses.length) {
+    console.log(`\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`);
+  } else {
+    console.log(`\n\t\t ${decorators.green("⚙ Clear Boot Nodes")}`);
+  }
 }
 
 export async function addHrmpChannelsToGenesis(

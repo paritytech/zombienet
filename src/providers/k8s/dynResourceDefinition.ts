@@ -7,6 +7,7 @@ import {
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "../../configManager";
 import { Node } from "../../types";
+import { getSha256 } from "../../utils";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -126,8 +127,10 @@ export function createTempNodeDef(
   chain: string,
   fullCommand: string
 ) {
+  const nodeName = getUniqueName("temp");
   let node: Node = {
-    name: getUniqueName("temp"),
+    name: nodeName,
+    key: getSha256(nodeName),
     image,
     fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,

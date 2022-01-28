@@ -19,6 +19,7 @@ export interface ComputedNetwork {
 
 export interface Node {
   name: string;
+  key?: string;
   command?: string;
   commandWithArgs?: string;
   fullCommand?: string;
@@ -37,6 +38,7 @@ export interface Node {
   telemetryUrl: string;
   prometheus?: boolean;
   overrides: Override[];
+  addToBootnodes?: boolean;
 }
 
 export interface Collator {
@@ -152,6 +154,7 @@ export interface RelayChainConfig {
     bootnodes?: string[];
     initContainers?: object[];
     overrides?: Override[];
+    add_to_bootnodes?: boolean;
   }[];
   genesis?: JSON | ObjectJSON;
 }

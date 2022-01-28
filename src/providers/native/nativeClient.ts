@@ -145,9 +145,9 @@ export class NativeClient extends Client {
     return this.processMap[podName].portMapping[port];
   }
 
-  async getBootnodeInfo(podName: string): Promise<[string, number]> {
+  async getNodeInfo(podName: string): Promise<[string, number]> {
     const hostPort = await this.getPortMapping(P2P_PORT, podName);
-    return ["localhost", hostPort];
+    return ["127.0.0.1", hostPort];
   }
 
   async runCommand(

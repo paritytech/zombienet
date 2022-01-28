@@ -343,14 +343,14 @@ export class KubeClient extends Client {
     );
   }
 
-  async getBootnodeIP(): Promise<string> {
-    const args = ["get", "pod", "bootnode", "-o", "jsonpath={.status.podIP}"];
+  async getNodeIP(identifier: string): Promise<string> {
+    const args = ["get", "pod", identifier, "-o", "jsonpath={.status.podIP}"];
     const result = await this.runCommand(args, undefined, true);
     return result.stdout;
   }
 
-  async getBootnodeInfo(_identifier: string): Promise<[string, number]> {
-    const ip = await this.getBootnodeIP();
+  async getNodeInfo(identifier: string): Promise<[string, number]> {
+    const ip = await this.getNodeIP(identifier);
     return [ip, 30333];
   }
 

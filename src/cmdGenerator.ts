@@ -124,6 +124,7 @@ export async function genCollatorCmd(
 export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapper = true, portFlags?: { [flag: string]: number } ): Promise<string[]> {
   let {
     name,
+    key,
     chain,
     commandWithArgs,
     fullCommand,
@@ -155,15 +156,17 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
 
   args.push("--no-mdns");
 
+  if(key) args.push(...["--node-key", key]);
+
   if (!telemetry) args.push("--no-telemetry");
-  else args.push("--telemetry-url", telemetryUrl);
+  else args.push(...["--telemetry-url", telemetryUrl]);
 
   if (prometheus) args.push("--prometheus-external");
 
   if (validator) args.push("--validator");
 
   if (bootnodes && bootnodes.length)
-    args.push("--bootnodes", bootnodes.join(","));
+    args.push("--bootnodes", bootnodes.join(" "));
 
 
   if(portFlags) {
@@ -190,6 +193,8 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
         args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}`])
       }
 
+      // add ws listen
+      args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`]);
       const portFlagIndex = args.findIndex(arg => arg === "--port");
       if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
     }

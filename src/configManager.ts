@@ -6,6 +6,7 @@ import {
   Override,
   RelayChainConfig,
 } from "./types";
+import { getSha256 } from "./utils";
 import path, { resolve } from "path";
 import fs from "fs";
 const debug = require("debug")("zombie::config-manager");
@@ -130,6 +131,7 @@ export async function generateNetworkSpec(
         ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
   }
 
+  const relayChainBootnodes: string[] = [];
   for (const node of config.relaychain.nodes) {
     const command = node.command
       ? node.command
@@ -144,13 +146,6 @@ export async function generateNetworkSpec(
       { name: "RUST_BACKTRACE", value: "FULL" },
     ];
     if (node.env) env.push(...node.env);
-
-    const bootnodes =
-      node.bootnodes && node.bootnodes.length
-        ? node.bootnodes
-        : [
-            `/dns/${DEFAULT_BOOTNODE_DOMAIN}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
-          ];
 
     let nodeOverrides: Override[] = [];
     if (node.overrides) {
@@ -180,9 +175,11 @@ export async function generateNetworkSpec(
         ? config.settings.prometheus
         : true;
 
+    const nodeName = getUniqueName(node.name);
     // build node Setup
     const nodeSetup: Node = {
-      name: getUniqueName(node.name),
+      name: nodeName,
+      key: getSha256(nodeName),
       command: command || DEFAULT_COMMAND,
       commandWithArgs: node.commandWithArgs,
       image: image || DEFAULT_IMAGE,
@@ -192,13 +189,14 @@ export async function generateNetworkSpec(
       validator: isValidator,
       args,
       env,
-      bootnodes,
+      bootnodes: relayChainBootnodes,
       telemetryUrl: config.settings?.telemetry
         ? "ws://telemetry:8000/submit 0"
         : "",
       telemetry: config.settings?.telemetry ? true : false,
       prometheus: prometheusExternal,
       overrides: [...globalOverrides, ...nodeOverrides],
+      addToBootnodes: node.add_to_bootnodes ? true : false
     };
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -210,13 +208,7 @@ export async function generateNetworkSpec(
         computedStateCommand,
         computedWasmPath,
         computedWasmCommand;
-      const bootnodes =
-        parachain.bootnodes && parachain.bootnodes.length
-          ? parachain.bootnodes
-          : [
-              `/dns/${DEFAULT_BOOTNODE_DOMAIN}/tcp/30333/p2p/${DEFAULT_BOOTNODE_PEER_ID}`,
-            ];
-
+      const bootnodes = relayChainBootnodes;
       const collatorBinary = parachain.collator.commandWithArgs
         ? parachain.collator.commandWithArgs.split(" ")[0]
         : parachain.collator.command
@@ -320,6 +312,7 @@ export async function generateNetworkSpec(
 export function generateBootnodeSpec(config: ComputedNetwork): Node {
   const nodeSetup: Node = {
     name: "bootnode",
+    key: "0000000000000000000000000000000000000000000000000000000000000001",
     command: config.relaychain.defaultCommand || DEFAULT_COMMAND,
     image: config.relaychain.defaultImage || DEFAULT_IMAGE,
     chain: config.relaychain.chain,
@@ -327,12 +320,10 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     wsPort: RPC_WS_PORT,
     validator: false,
     args: [
-      "--node-key",
-      "0000000000000000000000000000000000000000000000000000000000000001",
       "--ws-external",
       "--rpc-external",
       "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333",
+      "/ip4/0.0.0.0/tcp/30333"
     ],
     env: [],
     bootnodes: [],
