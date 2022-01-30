@@ -39,6 +39,7 @@ export function getMetricName(metricName: string): string {
     case "finalised height":
     case "finalised block":
       metricNameTouse = metricKeysMapping.FinalizedHeight;
+      break;
     case "peers count":
     case "peers":
       metricNameTouse = metricKeysMapping.PeersCount;
