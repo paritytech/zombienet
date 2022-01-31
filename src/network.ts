@@ -279,9 +279,9 @@ export class Network {
     console.log("\n");
     console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
     console.log(
-      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${encodeURIComponent(
+      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${
         node.wsUri
-      )}#/explorer\n`
+      }#/explorer\n`
     );
     console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
     console.log("---\n");
