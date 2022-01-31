@@ -29,22 +29,23 @@ variables:
   tags:
     - kubernetes-parity-build
 
+# run jobs only on PRs
 .test-refs:                        &test-refs
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/                         # PRs
-    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
 
+# run jobs always
 .common-refs:                      &common-refs
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_REF_NAME == "main"
-    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
     - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/                         # PRs
+    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
 
+# run jobs only on master and publish
 .publish-refs:                     &publish-refs
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
@@ -52,7 +53,7 @@ variables:
     - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
 
-#telling gitlab to collect artifacts from artifacts/ folder to path it to other jobs
+# telling gitlab to collect artifacts from artifacts/ folder to path it to other jobs
 .collect-artifacts:                &collect-artifacts
   artifacts:
     name:                          "${CI_JOB_NAME}_${CI_COMMIT_REF_NAME}"
