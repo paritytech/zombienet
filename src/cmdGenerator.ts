@@ -30,7 +30,7 @@ function parseCmdWithArguments(commandWithArgs: string, useWrapper = true): stri
   return finalCommand;
 }
 
-export async function genCollatorCmd(
+export async function genCumulusCollatorCmd(
   command: string,
   nodeSetup: Node,
   cfgPath: string = "/cfg",
@@ -150,8 +150,8 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
   if (!command) command = DEFAULT_COMMAND;
 
   // IFF the node is a cumulus based collator
-  if (zombieRole === "collator" && !command.includes("adder")) {
-    return await genCollatorCmd(command, nodeSetup);
+  if (zombieRole === "collator" && command.includes("polkadot-collator")) {
+    return await genCumulusCollatorCmd(command, nodeSetup);
   }
 
   args.push("--no-mdns");
