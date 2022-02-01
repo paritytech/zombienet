@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import minimatch from "minimatch";
 
-import { Metrics, fetchMetrics, getMetricName } from "./metrics";
+import { Metrics, fetchMetrics, getMetricName, getHistogramBuckets, BucketHash } from "./metrics";
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   PROMETHEUS_PORT,
@@ -254,6 +254,79 @@ export class NetworkNode implements NetworkNodeInterface {
     }
   }
 
+
+  async getHistogramSamplesInBuckets(
+    rawmetricName: string,
+    buckets: string[], // empty string means all.
+    desiredMetricValue: number | null = null,
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+  ): Promise<number> {
+    let limitTimeout;
+    let expired: boolean = false;
+    try {
+      limitTimeout = setTimeout(() => {
+        debug(`Timeout getting metric ${rawmetricName} (${timeout})`);
+        expired = true;
+      }, timeout * 1000);
+
+      const metricName = getMetricName(rawmetricName);
+      let histogramBuckets = await getHistogramBuckets(this.prometheusUri, metricName);
+      let value = this._getSamplesCount(histogramBuckets, buckets);
+      if (desiredMetricValue === null || value >= desiredMetricValue) {
+        debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
+        clearTimeout(limitTimeout);
+        return value;
+      }
+
+      // loop until get the desired value or timeout
+      let done = false;
+      let c = 0;
+      while (!done) {
+        if (expired) throw new Error(`Timeout(${timeout}s)`);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        c += 1;
+        // refresh metrics
+        try {
+          debug(`fetching buckets - q: ${c}  time:  ${new Date()}`);
+          histogramBuckets = await getHistogramBuckets(this.prometheusUri, metricName);
+        } catch (err) {
+          debug(`Error fetching buckets, recreating port-fw`);
+          debug(err);
+          // re-create port-fw
+          const client = getClient();
+          const newPort = await client.startPortForwarding(
+            PROMETHEUS_PORT,
+            `Pod/${this.name}`
+          );
+          this.prometheusUri = `http://127.0.0.1:${newPort}/metrics`;
+          continue;
+        }
+        value = this._getSamplesCount(histogramBuckets, buckets);
+        if (
+          value !== undefined &&
+          desiredMetricValue !== null &&
+          desiredMetricValue <= value
+        ) {
+          done = true;
+        } else {
+          debug(
+            `current value: ${value} for sameples count of ${rawmetricName}, keep trying...`
+          );
+        }
+      }
+
+      debug("returning: " + value);
+      clearTimeout(limitTimeout);
+      return value || 0;
+    } catch (err) {
+      if (limitTimeout) clearTimeout(limitTimeout);
+      console.log(err);
+      throw new Error(`Error getting samples count : ${rawmetricName}`);
+    }
+  }
+
+
+
   async findPattern(pattern: string, isGlob: boolean, timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
     let limitTimeout;
     let expired: boolean = false;
@@ -332,5 +405,16 @@ export class NetworkNode implements NetworkNodeInterface {
       }
     }
     if (metricShouldExists) throw new Error("Metric not found!");
+  }
+
+  _getSamplesCount(buckets: BucketHash, bucketKeys: string[]): number {
+    debug("buckets samples count:");
+    debug(buckets);
+    let count = 0;
+    for(const key of bucketKeys) {
+      if(buckets[key] === undefined) throw new Error(`Bucket with le: ${key} is NOT present in metrics`);
+      count += buckets[key];
+    }
+    return count;
   }
 }

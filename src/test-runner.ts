@@ -191,6 +191,12 @@ function parseAssertionLine(assertion: string) {
     /^(([\w]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i
   );
 
+  // Metrics - histograms
+  // e.g alice: reports histogram pvf_execution_time has at last X samples in buckets ["3", "4", "6", "+Inf"]
+  const isHistogram = new RegExp(
+    /^(([\w]+): reports histogram (.*?) has (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) samples in buckets \[(.+)\])+( within (\d+) (seconds|secs|s))?$/i
+  );
+
   // Metrics
   const isReports = new RegExp(
     /^(([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
@@ -271,6 +277,32 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network) => {
       await network.node(nodeName).getMetric("process_start_time_seconds");
       return true;
+    };
+  }
+
+  m = isHistogram.exec(assertion);
+  if(m && m[2] && m[3] && m[5]) {
+    let timeout: number;
+    let value: number;
+    const nodeName = m[2];
+    const metricName = m[3];
+    const comparatorFn = getComparatorFn(m[4] || "");
+    const targetValue = parseInt(m[5]);
+    const buckets = m[6].split(",").map(x => x.replaceAll('"',"").trim());
+    if (m[8]) timeout = parseInt(m[8], 10);
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      let value;
+      try {
+        value = timeout
+          ? await network
+              .node(nodeName)
+              .getHistogramSamplesInBuckets(metricName, buckets, targetValue, timeout)
+          : await network.node(nodeName).getHistogramSamplesInBuckets(metricName, buckets);
+      } catch (err) {
+        if (comparatorFn === "equal" && targetValue === 0) value = 0;
+        else throw err;
+      }
+      assert[comparatorFn](value, targetValue);
     };
   }
 
