@@ -1,12 +1,10 @@
 [settings]
 timeout = 1000
 bootnode = true
-# provider = "Podman"
 
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 chain = "rococo-local"
-#default_command = "../polkadot/target/release/polkadot"
 
   [[relaychain.nodes]]
   name = "alice"
@@ -24,8 +22,6 @@ addToGenesis = true
   [parachains.collator]
   name = "collator01"
   image = "{{COL_IMAGE}}"
-  #args = ["-lparachain=debug", "--pov-size=9000000"]
-  #command = "../polkadot/target/testnet/adder-collator"
 
 [types.Header]
 number = "u64"
