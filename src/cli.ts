@@ -134,7 +134,7 @@ async function spawn(
   }
 
   network = await start(creds, config, monitor);
-  network.showNetworkInfo();
+  network.showNetworkInfo(config.settings?.provider);
 }
 
 // test
