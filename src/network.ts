@@ -255,14 +255,14 @@ export class Network {
   }
 
   // show links for access and debug
-  showNetworkInfo() {
+  showNetworkInfo(provider: String) {
     console.log("\n-----------------------------------------\n");
     console.log("\n\t Network launched 🚀🚀");
     console.log(
       `\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`
     );
     for (const node of this.relay) {
-      this.showNodeInfo(node);
+      this.showNodeInfo(node, provider);
     }
 
     for (const [paraId, parachain] of Object.entries(this.paras)) {
@@ -270,17 +270,22 @@ export class Network {
       console.log("\n\t Parachain ID: " + paraId);
 
       for (const node of parachain) {
-        this.showNodeInfo(node);
+        this.showNodeInfo(node, provider);
       }
     }
   }
 
-  showNodeInfo(node: NetworkNode) {
+  showNodeInfo(node: NetworkNode, provider: String) {
     console.log("\n");
     console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
+    
+    // Support native VSCode remote extension automatic port forwarding.
+    // VSCode doesn't parse the encoded URI and we have no reason to encode 
+    // `localhost:port`.
+    let wsUri = provider === "native" ? node.wsUri : encodeURIComponent(node.wsUri);
     console.log(
       `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${
-        node.wsUri
+        wsUri
       }#/explorer\n`
     );
     console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);

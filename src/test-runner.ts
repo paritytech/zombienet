@@ -98,7 +98,7 @@ export async function run(
     this.timeout(launchTimeout * 1000);
     network = await zombie.start(creds, config);
 
-    network.showNetworkInfo();
+    network.showNetworkInfo(config.settings.provider);
     return;
   });
 
