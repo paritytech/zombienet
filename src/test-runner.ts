@@ -547,6 +547,9 @@ function parseAssertionLine(assertion: string) {
 
   // if we can't match let produce a fail test
   return async (network: Network) => {
+    console.log(
+      `\n\t ${decorators.red("Failed to match, please check syntax.")}`
+    );
     assert.equal(0, 1);
   };
 }
