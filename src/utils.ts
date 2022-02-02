@@ -1,14 +1,16 @@
 import { randomBytes } from "crypto";
 import fs from "fs";
 import { format } from "util";
-import { LaunchConfig, Node } from "./types";
 import toml from "toml";
-import { getUniqueName, WAIT_UNTIL_SCRIPT_SUFIX } from "./configManager";
 import path from "path";
 import { createHash } from "crypto";
 import { AddressInfo, createServer } from "net";
+import { Environment } from "nunjucks";
 const dns = require("dns");
 const os = require("os");
+import { LaunchConfig, Node } from "./types";
+import { RelativeLoader } from "./nunjucks-relative-loader";
+import { debug } from "console";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -72,29 +74,28 @@ export function filterConsole(excludePatterns: string[], options?: any) {
   };
 }
 
+
 export function readNetworkConfig(filepath: string): LaunchConfig {
   const configBasePath = path.dirname(filepath);
-  let content = fs.readFileSync(filepath).toString();
-  let replacements = getReplacementInText(content);
+  const env = new Environment(new RelativeLoader([configBasePath]));
+  const temmplateContent = fs.readFileSync(filepath).toString();
+  const content = env.renderString( temmplateContent, process.env );
 
-  for (const replacement of replacements) {
-    const replacementValue = process.env[replacement];
-    if (replacementValue === undefined)
-      throw new Error(`Environment not set for : ${replacement}`);
-    content = content.replace(
-      new RegExp(`{{${replacement}}}`, "gi"),
-      replacementValue
-    );
+  //  check if we have missing replacements
+  let replacements = getReplacementInText(content);
+  if( replacements.length > 0 ) {
+    throw new Error(`Environment not set for : ${replacements.join(",")}`);
   }
 
   // TODO: add better file recognition
   const fileType = filepath.split(".").pop();
   const config: LaunchConfig =
     fileType?.toLocaleLowerCase() === "json"
-      ? JSON.parse(content) //require(filepath)
+      ? JSON.parse(content)
       : toml.parse(content);
 
   config.configBasePath = configBasePath;
+  debug(config);
   return config;
 }
 

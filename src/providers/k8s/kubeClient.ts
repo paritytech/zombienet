@@ -4,7 +4,7 @@ import {
   DEFAULT_REMOTE_DIR,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
-} from "../../configManager";
+} from "../../constants";
 import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";

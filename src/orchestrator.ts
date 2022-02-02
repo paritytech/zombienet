@@ -4,17 +4,19 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   getUniqueName,
+  zombieWrapperPath,
+} from "./configManager";
+import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
-  zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
   RPC_WS_PORT,
   RPC_HTTP_PORT,
-} from "./configManager";
+} from "./constants";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
 import {
@@ -170,7 +172,7 @@ export async function start(
       // Chain spec customization logic
       clearAuthorities(chainSpecFullPathPlain);
       for (const node of networkSpec.relaychain.nodes) {
-        await addAuthority(chainSpecFullPathPlain, node.name);
+        await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
       }
 
       if (networkSpec.relaychain.genesis) {

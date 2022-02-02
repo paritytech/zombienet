@@ -1,5 +1,5 @@
 import execa from "execa";
-import { DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT, RPC_HTTP_PORT, RPC_WS_PORT } from "../../configManager";
+import { DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT, RPC_HTTP_PORT, RPC_WS_PORT } from "../../constants";
 import { writeLocalJsonFile } from "../../utils";
 const fs = require("fs");
 const fsPromise = require("fs").promises;

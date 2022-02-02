@@ -1,11 +1,11 @@
 import { genCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
-  getUniqueName,
   RPC_HTTP_PORT,
   P2P_PORT,
   RPC_WS_PORT,
-} from "../../configManager";
+} from "../../constants";
+import { getUniqueName } from "../../configManager";
 import { Node } from "../../types";
 import { getRandomPort } from "../../utils";
 import { getClient } from "../client";

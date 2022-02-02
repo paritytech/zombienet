@@ -4,7 +4,7 @@ import {
   P2P_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-} from "./configManager";
+} from "./constants";
 import { Node } from "./types";
 import { getRandomPort } from "./utils";
 
@@ -179,25 +179,18 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
       }
     }
 
-    // special case for bootnode
-    // use `--listen-addr` to bind 0.0.0.0 and don't use `--port`.
-    // --listen-addr /ip4/0.0.0.0/tcp/30333
-    if(zombieRole === "bootnode") {
-      const port = portFlags["--port"];
-      const listenIndex = args.findIndex(arg => arg === "--listen-addr")
-      if(listenIndex >= 0) {
-        const parts = args[listenIndex+1].split("/");
-        parts[4] = port.toString();
-        args[listenIndex+1] = parts.join("/");
-      } else {
-        args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}`])
-      }
-
-      // add ws listen
+    const port = portFlags["--port"];
+    const listenIndex = args.findIndex(arg => arg === "--listen-addr")
+    if(listenIndex >= 0) {
+      const parts = args[listenIndex+1].split("/");
+      parts[4] = port.toString();
+      args[listenIndex+1] = parts.join("/");
+    } else {
       args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`]);
-      const portFlagIndex = args.findIndex(arg => arg === "--port");
-      if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
     }
+
+    const portFlagIndex = args.findIndex(arg => arg === "--port");
+    if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
   }
 
   const finalArgs: string[] = [

@@ -8,7 +8,7 @@ import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import { decorators } from "./colors";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./constants";
 import minimatch from "minimatch";
 import { node } from "execa";
 const zombie = require("../");

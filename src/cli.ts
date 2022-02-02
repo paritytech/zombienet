@@ -8,7 +8,7 @@ import { getCredsFilePath, readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
-import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./configManager";
+import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants";
 
 const debug = require("debug")("zombie-cli");
 
@@ -110,7 +110,7 @@ async function spawn(
   }
 
   const filePath = resolve(configFile);
-  const config = readNetworkConfig(filePath);
+  const config: LaunchConfig = readNetworkConfig(filePath);
 
   // if a provider is passed, let just use it.
   if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {

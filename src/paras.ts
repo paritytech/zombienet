@@ -2,9 +2,9 @@ import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  getUniqueName,
   WAIT_UNTIL_SCRIPT_SUFIX,
-} from "./configManager";
+} from "./constants";
+import { getUniqueName } from "./configManager";
 import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { Node, Parachain } from "./types";

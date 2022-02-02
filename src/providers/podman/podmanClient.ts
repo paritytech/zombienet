@@ -1,6 +1,6 @@
 import execa from "execa";
 import { resolve } from "path";
-import { DEFAULT_REMOTE_DIR, P2P_PORT } from "../../configManager";
+import { DEFAULT_REMOTE_DIR, P2P_PORT } from "../../constants";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";

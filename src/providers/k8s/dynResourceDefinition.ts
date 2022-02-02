@@ -3,9 +3,9 @@ import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
-  getUniqueName,
   WAIT_UNTIL_SCRIPT_SUFIX,
-} from "../../configManager";
+} from "../../constants";
+import { getUniqueName } from "../../configManager";
 import { Node } from "../../types";
 import { getSha256 } from "../../utils";
 

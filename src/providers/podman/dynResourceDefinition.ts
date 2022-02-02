@@ -3,10 +3,10 @@ import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
-  getUniqueName,
   RPC_HTTP_PORT,
   P2P_PORT,
-} from "../../configManager";
+} from "../../constants";
+import { getUniqueName } from "../../configManager";
 import { Node } from "../../types";
 import { getRandomPort } from "../../utils";
 import { getClient } from "../client";
