@@ -21,6 +21,7 @@ export const DEFAULT_BOOTNODE_PEER_ID =
   "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
 export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
 export const DEFAULT_REMOTE_DIR = "/cfg";
+export const DEFAULT_DATA_DIR = "/data";
 export const DEFAULT_CHAIN_SPEC = "{{chainName}}-plain.json";
 export const DEFAULT_CHAIN_SPEC_RAW = "{{chainName}}-raw.json";
 export const DEFAULT_CHAIN_SPEC_COMMAND =

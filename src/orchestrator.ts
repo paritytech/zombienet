@@ -33,6 +33,7 @@ import fs from "fs";
 import { generateParachainFiles } from "./paras";
 import { decorators } from "./colors";
 import { generateBootnodeString } from "./bootnode";
+import { generateKeystoreFiles } from "./keys";
 
 const debug = require("debug")("zombie");
 
@@ -76,6 +77,15 @@ export async function start(
     // create tmp directory to store needed files
     const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
+
+    // Define chain name and file name to use.
+    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+    const chainName = networkSpec.relaychain.chain;
+    const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
+    const chainSpecFullPathPlain = chainSpecFullPath.replace(
+      ".json",
+      "-plain.json"
+    );
 
     // get provider fns
     const provider = networkSpec.settings.provider;
@@ -130,15 +140,6 @@ export async function start(
       mode: 0o755,
     });
 
-    // Define chain name and file name to use.
-    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
-    const chainName = networkSpec.relaychain.chain;
-    const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
-    const chainSpecFullPathPlain = chainSpecFullPath.replace(
-      ".json",
-      "-plain.json"
-    );
-
     // create namespace
     await client.createNamespace();
 
@@ -168,6 +169,8 @@ export async function start(
     // Check if the chain spec is in raw format
     // Could be if the chain_spec_path was set
     const chainSpecContent = require(chainSpecFullPathPlain);
+    client.chainId = chainSpecContent.id;
+
     if(! chainSpecContent.genesis.raw) {
       // Chain spec customization logic
       clearAuthorities(chainSpecFullPathPlain);
@@ -293,11 +296,20 @@ export async function start(
       debug(`creating node: ${node.name}`);
       const podDef = await genNodeDef(namespace, node);
 
-      let finalFilesToCopyToNode = filesToCopyToNodes;
+      let finalFilesToCopyToNode = [...filesToCopyToNodes];
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
           localFilePath: override.local_path,
           remoteFilePath: `${client.remoteDir}/${override.remote_name}`,
+        });
+      }
+
+      const keystoreFiles = await generateKeystoreFiles(node, `${tmpDir.path}/${node.name}`);
+      for( const keystoreFile of keystoreFiles) {
+        const keystoreFilename = keystoreFile.split("/").pop();
+        finalFilesToCopyToNode.push({
+          localFilePath: keystoreFile,
+          remoteFilePath: `${client.dataDir}/chains/${client.chainId}/keystore/${keystoreFilename}`,
         });
       }
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);

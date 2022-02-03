@@ -1,5 +1,5 @@
 import execa from "execa";
-import { DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT, RPC_HTTP_PORT, RPC_WS_PORT } from "../../constants";
+import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT, RPC_HTTP_PORT, RPC_WS_PORT } from "../../constants";
 import { writeLocalJsonFile } from "../../utils";
 const fs = require("fs");
 const fsPromise = require("fs").promises;
@@ -23,6 +23,7 @@ export function initClient(
 
 export class NativeClient extends Client {
   namespace: string;
+  chainId?: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -30,6 +31,7 @@ export class NativeClient extends Client {
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
   remoteDir: string;
+  dataDir: string;
   processMap: {
     [name: string]: {
       pid?: number,
@@ -52,6 +54,7 @@ export class NativeClient extends Client {
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.processMap = {};
     this.remoteDir = `${tmpDir}${DEFAULT_REMOTE_DIR}`;
+    this.dataDir = `${tmpDir}${DEFAULT_DATA_DIR}`;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -198,14 +201,23 @@ export class NativeClient extends Client {
       )}`
     );
 
+    // initialize keystore
+    await fsPromise.mkdir(`${podDef.spec.dataPath}/chains/${this.chainId}/keystore`, { recursive: true });
+
     // copy files to volume cfg
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
       debug("remoteFilePath", remoteFilePath);
       debug("remote dir", this.remoteDir);
+      debug("data dir", this.dataDir);
+
+      const resolvedRemoteFilePath = remoteFilePath.includes(this.remoteDir) ?
+        `${podDef.spec.cfgPath}/${remoteFilePath.replace(this.remoteDir, "")}` :
+        `${podDef.spec.dataPath}/${remoteFilePath.replace(this.dataDir, "")}`;
+
       await fsPromise.copyFile(
         localFilePath,
-        `${podDef.spec.cfgPath}/${remoteFilePath.replace(this.remoteDir, "")}`
+        resolvedRemoteFilePath
       );
     }
 
@@ -244,7 +256,6 @@ export class NativeClient extends Client {
       await this.runCommand(resourseDef.spec.command);
     } else {
       if(resourseDef.spec.command[0] === "bash") resourseDef.spec.command.splice(0,1);
-      let p: any = {};
       debug(this.command);
       debug(resourseDef.spec.command);
 

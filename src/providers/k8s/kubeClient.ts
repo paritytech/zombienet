@@ -1,6 +1,7 @@
 import execa from "execa";
 import { resolve } from "path";
 import {
+  DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
@@ -21,9 +22,10 @@ export interface ReplaceMapping {
 export function initClient(
   configPath: string,
   namespace: string,
+  chainName: string,
   tmpDir: string
 ): KubeClient {
-  const client = new KubeClient(configPath, namespace, tmpDir);
+  const client = new KubeClient(configPath, namespace, chainName,  tmpDir);
   setClient(client);
   return client;
 }
@@ -34,6 +36,7 @@ const fileUploadCache: any = {};
 
 export class KubeClient extends Client {
   namespace: string;
+  chainName: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -42,16 +45,19 @@ export class KubeClient extends Client {
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
   remoteDir: string;
+  dataDir: string;
 
-  constructor(configPath: string, namespace: string, tmpDir: string) {
+  constructor(configPath: string, namespace: string, chainName: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
     this.configPath = configPath;
     this.namespace = namespace;
+    this.chainName = chainName;
     this.debug = true;
     this.timeout = 60; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
+    this.dataDir = DEFAULT_DATA_DIR;
   }
 
   async validateAccess(): Promise<boolean> {

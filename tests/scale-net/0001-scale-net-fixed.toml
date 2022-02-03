@@ -1,0 +1,31 @@
+[settings]
+timeout = 1000
+bootnode = true
+# provider = "Podman"
+
+[relaychain]
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
+chain = "rococo-local"
+
+  [[relaychain.node_groups]]
+  name = "a"
+  count = 1
+  {% include("./a-group.toml")%}
+
+  [[relaychain.node_groups]]
+  name = "b"
+  count = 1
+  {% include("./b-group.toml")%}
+
+[[parachains]]
+id = 100
+addToGenesis = true
+
+  [parachains.collator]
+  name = "collator01"
+  image = "{{COL_IMAGE}}"
+
+[types.Header]
+number = "u64"
+parent_hash = "Hash"
+post_state = "Hash"

@@ -121,7 +121,7 @@ export async function genCumulusCollatorCmd(
   return fullCmd;
 }
 
-export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapper = true, portFlags?: { [flag: string]: number } ): Promise<string[]> {
+export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath: string = "/data", useWrapper = true, portFlags?: { [flag: string]: number } ): Promise<string[]> {
   let {
     name,
     key,
@@ -193,6 +193,11 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
     if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
   }
 
+  // set our base path
+  const basePathFlagIndex = args.findIndex(arg => arg === "--base-path");
+  if(basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
+  args.push(...["--base-path", dataPath]);
+
   const finalArgs: string[] = [
     command,
     "--chain",
@@ -205,7 +210,6 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
     "--rpc-methods",
     "unsafe",
     "--unsafe-ws-external",
-    "--tmp",
     ...args,
   ];
 

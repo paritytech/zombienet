@@ -1,6 +1,6 @@
 import execa from "execa";
 import { resolve } from "path";
-import { DEFAULT_REMOTE_DIR, P2P_PORT } from "../../constants";
+import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT } from "../../constants";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
@@ -13,15 +13,17 @@ const debug = require("debug")("zombie::podman::client");
 export function initClient(
   configPath: string,
   namespace: string,
+  chainName: string,
   tmpDir: string
 ): PodmanClient {
-  const client = new PodmanClient(configPath, namespace, tmpDir);
+  const client = new PodmanClient(configPath, namespace, chainName, tmpDir);
   setClient(client);
   return client;
 }
 
 export class PodmanClient extends Client {
   namespace: string;
+  chainName: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -29,16 +31,19 @@ export class PodmanClient extends Client {
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
   remoteDir: string;
+  dataDir: string;
 
-  constructor(configPath: string, namespace: string, tmpDir: string) {
+  constructor(configPath: string, namespace: string, chainName: string,  tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
     this.configPath = configPath;
     this.namespace = namespace;
+    this.chainName = chainName;
     this.debug = true;
     this.timeout = 30; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
+    this.dataDir = DEFAULT_DATA_DIR;
   }
 
   async validateAccess(): Promise<boolean> {

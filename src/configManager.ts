@@ -1,5 +1,3 @@
-import { mnemonicGenerate, mnemonicToMiniSecret} from "@polkadot/util-crypto";
-import { u8aToHex } from "@polkadot/util";
 import path, { resolve } from "path";
 import fs from "fs";
 
@@ -50,13 +48,8 @@ export async function generateNetworkSpec(
     );
   }
 
-  // generate mnemonic to derive for all nodes.
-  const mnemonic = mnemonicGenerate();
-  const secret = mnemonicToMiniSecret(mnemonic);
-
   let networkSpec: any = {
     configBasePath: config.configBasePath,
-    seed: u8aToHex(secret),
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
@@ -343,9 +336,7 @@ async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBo
       : true;
 
   const nodeName = getUniqueName(node.name);
-  const accountsForNode = await generateKeyForNode(networkSpec.seed, nodeName);
-  console.log(nodeName);
-  console.log(accountsForNode);
+  const accountsForNode = await generateKeyForNode();
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,

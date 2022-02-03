@@ -15,6 +15,7 @@ export interface ComputedNetwork {
   types: any;
   hrmpChannels?: HrmpChannelsConfig[];
   configBasePath: string;
+  seed: string;
 }
 
 export interface Node {
