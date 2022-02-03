@@ -51,17 +51,6 @@ export function clearAuthorities(spec: string) {
 // Add additional authorities to chain spec in `session.keys`
 export async function addAuthority(spec: string, name: string, accounts: any) {
   const { sr_stash, sr_account, ed_account, ec_account } = accounts;
-  // await cryptoWaitReady();
-
-  // const sr_keyring = new Keyring({ type: "sr25519" });
-  // const sr_account = sr_keyring.createFromUri(`//${nameCase(name)}`);
-  // const sr_stash = sr_keyring.createFromUri(`//${nameCase(name)}//stash`);
-
-  // const ed_keyring = new Keyring({ type: "ed25519" });
-  // const ed_account = ed_keyring.createFromUri(`//${nameCase(name)}`);
-
-  // const ec_keyring = new Keyring({ type: "ecdsa" });
-  // const ec_account = ec_keyring.createFromUri(`//${nameCase(name)}`);
 
   let key = [
     sr_stash.address,
