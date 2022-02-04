@@ -186,11 +186,16 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath
       parts[4] = port.toString();
       args[listenIndex+1] = parts.join("/");
     } else {
-      args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`]);
+      args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`])
     }
 
     const portFlagIndex = args.findIndex(arg => arg === "--port");
     if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
+  } else {
+    // ensure listen on `ws`
+    const listenIndex = args.findIndex(arg => arg === "--listen-addr");
+    if(listenIndex >= 0) args.splice(listenIndex, 2);
+    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
   }
 
   // set our base path

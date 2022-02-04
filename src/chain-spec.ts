@@ -221,7 +221,7 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
       if (
         obj1[key] !== null &&
         obj1[key] !== undefined &&
-        obj1[key].constructor === Object
+        JSON.parse(JSON.stringify(obj1[key])).constructor === Object
       ) {
         findAndReplaceConfig(obj1[key], obj2[key]);
       } else {
@@ -229,7 +229,7 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
         console.log(
           `\n\t\t  ${decorators.green(
             "✓ Updated Genesis Configuration"
-          )} [ ${key}: ${obj2[key]} ]`
+          )} [ ${key}: ${JSON.parse(JSON.stringify(obj2))[key]} ]`
         );
       }
     } else {

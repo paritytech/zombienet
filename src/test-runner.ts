@@ -209,7 +209,7 @@ function parseAssertionLine(assertion: string) {
   const assertSystemEventRegex = new RegExp(/^(([\w]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
 
   // Custom js-script
-  const assertCustomJsRegex = new RegExp(/(([\w]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")? return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i);
+  const assertCustomJsRegex = new RegExp(/^([\w]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i);
 
   // Backchannel
   // alice: wait for name and use as X within 30s
@@ -366,12 +366,12 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = assertCustomJsRegex.exec(assertion);
-  if(m && m[2] && m[5]) {
-    const nodeName = m[2];
-    const jsFile = m[3];
-    const withArgs = m[4] ? m[4] : "";
+  if(m && m[1] && m[2]) {
+    const nodeName = m[1];
+    const jsFile = m[2];
+    const withArgs = m[3] ? m[3] : "";
     const comparatorFn = getComparatorFn(m[5] || "");
-    let targetValue: string|number = m[6];
+    let targetValue: string|number|undefined = m[6];
     const timeout = m[8] ? parseInt(m[8], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
 
     return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
@@ -410,14 +410,26 @@ function parseAssertionLine(assertion: string) {
       (global as any).document = dom.window.document;
       const jsScript = await import(resolvedJsFilePath);
       const args = (withArgs === "") ? [] : withArgs.split(",");
-      const value = await jsScript.run(nodeName, networkInfo, args);
+      let value;
+      try {
+        value = await jsScript.run(nodeName, networkInfo, args);
+      } catch(err) {
+        console.log(`\n\t ${decorators.red("Error running custom-js.")}`);
+        console.log(err);
+        expect(false).to.be.ok;
+      }
 
       // remove shim
       (global as any).window = undefined;
       (global as any).document = undefined;
       clearTimeout(limitTimeout);
-      if(comparatorFn !== "equals") targetValue = parseInt(targetValue as string,10);
-      assert[comparatorFn](value, targetValue);
+      if(targetValue) {
+        if(comparatorFn !== "equals") targetValue = parseInt(targetValue as string,10);
+        assert[comparatorFn](value, targetValue);
+      } else {
+        // test don't have matching output
+        expect(true).to.be.ok;
+      }
     };
   }
 

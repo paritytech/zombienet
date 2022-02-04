@@ -335,3 +335,34 @@ zombienet-histogram-assertion:
   retry: 2
   tags:
     - zombienet-polkadot-integration-test
+
+zombienet-update-genesis-config:
+  stage:                           deploy
+  <<:                              *kubernetes-env
+  image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_REF_NAME == "master"
+    - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/                         # PRs
+    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/              # i.e. v1.0, v2.1rc1
+  # needs:
+  #   - job:                         publish-docker-pr
+
+  variables:
+    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests'
+
+  before_script:
+    - echo "Zombienet Tests Genesis config update"
+    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+    - echo "${GH_DIR}"
+    - export DEBUG=zombie*
+    - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/synth-wave:master"
+    - export COL_IMAGE="docker.io/paritypr/colander:4519"
+
+  script:
+    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+        --test="0011-update-genesis-config.feature"
+  allow_failure:                   true
+  retry: 2
+  tags:
+    - zombienet-polkadot-integration-test

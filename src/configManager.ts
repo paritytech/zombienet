@@ -57,8 +57,11 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
     },
-    parachains: [],
+    parachains: []
   };
+
+  if(config.relaychain.genesis) networkSpec.relaychain.genesis = config.relaychain.genesis;
+  const chainName = config.relaychain.chain || DEFAULT_CHAIN;
 
   // settings
   networkSpec.settings = {

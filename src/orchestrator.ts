@@ -258,7 +258,7 @@ export async function start(
       const bootnodeDef = await genBootnodeDef(namespace, bootnodeSpec);
 
       await client.spawnFromDef(bootnodeDef, filesToCopyToNodes);
-      // make sure the bootnode is up and available over DNS
+      // make sure the bootnode is up and available
       await sleep(2000);
 
       const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
@@ -315,6 +315,9 @@ export async function start(
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
       if( bootnodes.length === 0 || node.addToBootnodes ) {
+        // if is the first bootnode just sleep a couple of seconds
+        // to ensure the node is listening connections
+        if( bootnodes.length === 0 ) await sleep(2000);
         // add first node as bootnode
         const [nodeIp, nodePort] = await client.getNodeInfo(
           podDef.metadata.name
