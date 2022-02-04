@@ -180,9 +180,8 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
     }
 
     // special case for bootnode
-    // use `--listen-addr` to bind 0.0.0.0 and don't use `--port`.
     const port = portFlags["--port"];
-    const listenIndex = args.findIndex(arg => arg === "--listen-addr")
+    const listenIndex = args.findIndex(arg => arg === "--listen-addr");
     if(listenIndex >= 0) {
       const parts = args[listenIndex+1].split("/");
       parts[4] = port.toString();
@@ -193,6 +192,11 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
 
     const portFlagIndex = args.findIndex(arg => arg === "--port");
     if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
+    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
+  } else {
+    // ensure listen on `ws`
+    const listenIndex = args.findIndex(arg => arg === "--listen-addr");
+    if(listenIndex >= 0) args.splice(listenIndex, 2);
   }
 
   const finalArgs: string[] = [
