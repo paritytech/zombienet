@@ -6,3 +6,4 @@ Creds: config
 alice: is up
 bob: is up
 alice: js-script ./0008-custom.js return is greater than 1 within 200 seconds
+alice: js-script ./0008-custom.js within 200 seconds
