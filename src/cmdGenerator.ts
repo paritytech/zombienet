@@ -192,11 +192,11 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
 
     const portFlagIndex = args.findIndex(arg => arg === "--port");
     if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
-    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
   } else {
     // ensure listen on `ws`
     const listenIndex = args.findIndex(arg => arg === "--listen-addr");
     if(listenIndex >= 0) args.splice(listenIndex, 2);
+    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
   }
 
   const finalArgs: string[] = [
