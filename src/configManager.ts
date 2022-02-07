@@ -106,7 +106,7 @@ export async function generateNetworkSpec(
     for(let i=0;i < nodeGroup.count; i++) {
       let node: NodeConfig = {
         name: `${nodeGroup.name}-${i}`,
-        image: nodeGroup.image,
+        image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
         args: nodeGroup.args?.filter( arg => ! DEV_ACCOUNTS.includes(arg.toLocaleLowerCase().replace("--",""))),
         validator: true, // groups are always validators
