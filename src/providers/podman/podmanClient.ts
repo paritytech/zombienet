@@ -71,9 +71,11 @@ export class PodmanClient extends Client {
   async staticSetup(): Promise<void> {
     const prometheusSpec = await genPrometheusDef(this.namespace);
     const promPort = prometheusSpec.spec.containers[0].ports[0].hostPort;
-    const grafanaSpec = await genGrafanaDef(this.namespace, promPort);
-    await this.createResource(prometheusSpec,false,false);
+    await this.createResource(prometheusSpec,false,true);
     console.log(`\n\t Monitor: ${decorators.green(prometheusSpec.metadata.name)} - url: http://127.0.0.1:${promPort}`);
+
+    const prometheusIp = await this.getPodIp("prometheus");
+    const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp);
     await this.createResource(grafanaSpec,false,false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;
     console.log(`\n\t Monitor: ${decorators.green(grafanaSpec.metadata.name)} - url: http://127.0.0.1:${grafanaPort}`);
@@ -165,6 +167,14 @@ export class PodmanClient extends Client {
     const hostPort =
       resultJson[0].NetworkSettings.Ports[`${port}/tcp`][0].HostPort;
     return hostPort;
+  }
+
+  async getPodIp(podName: string): Promise<number> {
+    const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
+    const result = await this.runCommand(args, undefined, false);
+    const resultJson = JSON.parse(result.stdout);
+    const podIp = resultJson[0].NetworkSettings.Networks[this.namespace].IPAddress;
+    return podIp;
   }
 
   async getNodeInfo(podName: string): Promise<[string, number]> {

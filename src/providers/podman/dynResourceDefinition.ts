@@ -125,11 +125,11 @@ scrape_configs:
 
 export async function genGrafanaDef(
   namespace: string,
-  prometheusPort: number
+  prometheusIp: number
 ): Promise<any> {
   const client = getClient();
   const volume_mounts = [
-    { name: "datasources-cfg", mountPath: "/etc/grafana/provisioning/datasources", readOnly: false }
+    { name: "datasources-cfg", mountPath: "/usr/share/grafana/conf/provisioning/datasources", readOnly: false }
   ];
   const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
   await fs.mkdir(datasourcesPath, { recursive: true });
@@ -147,7 +147,7 @@ export async function genGrafanaDef(
             "name": "Prometheus",
             "orgId": 1,
             "type": "prometheus",
-            "url": `http://127.0.0.1:${prometheusPort}`,
+            "url": `http://${prometheusIp}:9090`,
             "version": 1
         }
     ]
