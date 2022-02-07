@@ -136,7 +136,7 @@ export class PodmanClient extends Client {
   }
 
   async addNodeToPrometheus(podName: string) {
-    const podIp = await this.getPodIp("podName");
+    const podIp = await this.getPodIp(podName);
     const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
     await fs.write(`${this.tmpDir}/prometheus/data/sd_config_${podName}.json`, content);
   }
