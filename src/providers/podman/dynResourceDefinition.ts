@@ -138,22 +138,20 @@ export async function genGrafanaDef(
     { name: "datasources-cfg", hostPath: { type: "Directory", path: datasourcesPath } }
   ];
 
-  const datasource ={
-    "apiVersion": 1,
-    "datasources": [
-        {
-           "access":"proxy",
-            "editable": true,
-            "name": "Prometheus",
-            "orgId": 1,
-            "type": "prometheus",
-            "url": `http://${prometheusIp}:9090`,
-            "version": 1
-        }
-    ]
-};
+  const datasource = `
+# config file version
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://${prometheusIp}:9090
+    version: 1
+    editable: true
+`;
 
-  await fs.writeFile(`${datasourcesPath}/prometheus.json`, JSON.stringify(datasource, null, 2));
+  await fs.writeFile(`${datasourcesPath}/prometheus.yml`, datasource);
 
   const ports = [
     {
