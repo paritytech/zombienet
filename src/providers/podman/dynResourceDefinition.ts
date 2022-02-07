@@ -61,7 +61,7 @@ export async function genPrometheusDef(
 
   const devices = [
     { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
-    { name: "data-cfg", hostPath: { type: "Directory", path: dataPath } }
+    { name: "prom-data", hostPath: { type: "Directory", path: dataPath } }
   ];
 
   const config = `
