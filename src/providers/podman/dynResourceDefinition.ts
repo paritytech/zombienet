@@ -64,8 +64,8 @@ export async function genPrometheusDef(
     { name: "prom-data", hostPath: { type: "Directory", path: dataPath } }
   ];
 
-  const config = `
-  global:
+  const config = `# config
+global:
   scrape_interval: 5s
   external_labels:
     monitor: 'zombienet-monitor'
@@ -82,7 +82,7 @@ scrape_configs:
     refresh_interval: 5s
 `;
 
-  await fs.writeFile(`${cfgPath}/prometheus.yaml`, config);
+  await fs.writeFile(`${cfgPath}/prometheus.yml`, config);
 
   const ports = [
     {
