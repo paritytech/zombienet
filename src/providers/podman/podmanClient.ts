@@ -14,17 +14,16 @@ const debug = require("debug")("zombie::podman::client");
 export function initClient(
   configPath: string,
   namespace: string,
-  chainName: string,
   tmpDir: string
 ): PodmanClient {
-  const client = new PodmanClient(configPath, namespace, chainName, tmpDir);
+  const client = new PodmanClient(configPath, namespace, tmpDir);
   setClient(client);
   return client;
 }
 
 export class PodmanClient extends Client {
   namespace: string;
-  chainName: string;
+  chainId?: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -38,7 +37,6 @@ export class PodmanClient extends Client {
     super(configPath, namespace, tmpDir, "podman", "podman");
     this.configPath = configPath;
     this.namespace = namespace;
-    this.chainName = chainName;
     this.debug = true;
     this.timeout = 30; // secs
     this.tmpDir = tmpDir;
