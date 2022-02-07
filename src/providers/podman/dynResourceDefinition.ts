@@ -46,6 +46,154 @@ export async function genBootnodeDef(
   };
 }
 
+export async function genPrometheusDef(
+  namespace: string
+): Promise<any> {
+  const client = getClient();
+  const volume_mounts = [
+    { name: "prom-cfg", mountPath: "/etc/prometheus", readOnly: false },
+    { name: "prom-data", mountPath: "/data", readOnly: false }
+  ];
+  const cfgPath = `${client.tmpDir}/prometheus/etc`;
+  const dataPath = `${client.tmpDir}/prometheus/data`;
+  await fs.mkdir(cfgPath, { recursive: true });
+  await fs.mkdir(dataPath, { recursive: true });
+
+  const devices = [
+    { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
+    { name: "data-cfg", hostPath: { type: "Directory", path: dataPath } }
+  ];
+
+  const config = `
+  global:
+  scrape_interval: 5s
+  external_labels:
+    monitor: 'zombienet-monitor'
+# Scraping Prometheus itself
+scrape_configs:
+- job_name: 'prometheus'
+  static_configs:
+  - targets: ['localhost:9090']
+- job_name: 'dynamic'
+  file_sd_configs:\n\
+  - files:
+    - /data/sd_config*.yaml
+    - /data/sd_config*.json
+    refresh_interval: 5s
+`;
+
+  await fs.writeFile(`${cfgPath}/prometheus.yaml`, config);
+
+  const ports = [
+    {
+      containerPort: 9090,
+      name: "prometheus_endpoint",
+      hostPort: await getRandomPort(),
+    }
+  ];
+
+  const containerDef = {
+    image: "prom/prometheus",
+    name: "prometheus",
+    imagePullPolicy: "Always",
+    ports,
+    volumeMounts: volume_mounts,
+  };
+
+  return {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: "prometheus",
+      namespace: namespace,
+      labels: {
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": "prometheus",
+        "zombie-role": "prometheus",
+        app: "zombienet",
+        "zombie-ns": namespace,
+      },
+    },
+    spec: {
+      hostname: "prometheus",
+      containers: [containerDef],
+      restartPolicy: "OnFailure",
+      volumes: devices,
+    },
+  };
+}
+
+export async function genGrafanaDef(
+  namespace: string,
+  prometheusPort: number
+): Promise<any> {
+  const client = getClient();
+  const volume_mounts = [
+    { name: "datasources-cfg", mountPath: "/etc/grafana/provisioning/datasources", readOnly: false }
+  ];
+  const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
+  await fs.mkdir(datasourcesPath, { recursive: true });
+
+  const devices = [
+    { name: "datasources-cfg", hostPath: { type: "Directory", path: datasourcesPath } }
+  ];
+
+  const datasource ={
+    "apiVersion": 1,
+    "datasources": [
+        {
+           "access":"proxy",
+            "editable": true,
+            "name": "Prometheus",
+            "orgId": 1,
+            "type": "prometheus",
+            "url": `http://127.0.0.1:${prometheusPort}`,
+            "version": 1
+        }
+    ]
+};
+
+  await fs.writeFile(`${datasourcesPath}/prometheus.json`, JSON.stringify(datasource, null, 2));
+
+  const ports = [
+    {
+      containerPort: 3000,
+      name: "grafana_web",
+      hostPort: await getRandomPort(),
+    }
+  ];
+
+  const containerDef = {
+    image: "grafana/grafana",
+    name: "grafana",
+    imagePullPolicy: "Always",
+    ports,
+    volumeMounts: volume_mounts,
+  };
+
+  return {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: "grafana",
+      namespace: namespace,
+      labels: {
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": "grafana",
+        "zombie-role": "grafana",
+        app: "zombienet",
+        "zombie-ns": namespace,
+      },
+    },
+    spec: {
+      hostname: "grafana",
+      containers: [containerDef],
+      restartPolicy: "OnFailure",
+      volumes: devices,
+    },
+  };
+}
+
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node

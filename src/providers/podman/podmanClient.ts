@@ -7,6 +7,7 @@ import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../colors";
 import YAML from "yaml";
+import { genGrafanaDef, genPrometheusDef } from "./dynResourceDefinition";
 
 const debug = require("debug")("zombie::podman::client");
 
@@ -65,9 +66,14 @@ export class PodmanClient extends Client {
     await this.runCommand(args, undefined, false);
     return;
   }
-  // Podman ONLY support `pods`
+
+  // start a grafana and prometheus
   async staticSetup(): Promise<void> {
-    return;
+    const prometheusSpec = await genPrometheusDef(this.namespace);
+    const promPort = prometheusSpec.spec.containers[0].ports[0].hostPort;
+    const grafanaSpec = await genGrafanaDef(this.namespace, promPort);
+    await this.createResource(prometheusSpec,false,false);
+    await this.createResource(grafanaSpec,false,false);
   }
 
   async createStaticResource(filename: string): Promise<void> {
