@@ -37,6 +37,7 @@ const fileUploadCache: any = {};
 export class KubeClient extends Client {
   namespace: string;
   chainName: string;
+  chainId?: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -102,6 +103,18 @@ export class KubeClient extends Client {
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
+
+    // initialize keystore
+    await this.runCommand([
+      "exec",
+      name,
+      "-c",
+      TRANSFER_CONTAINER_NAME,
+      "--",
+      "/bin/mkdir",
+      "-p",
+      `/data/chains/${this.chainId}/keystore`
+    ], undefined, true);
 
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;

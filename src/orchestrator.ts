@@ -304,6 +304,12 @@ export async function start(
         });
       }
 
+      // check if the node directory exists if not create (e.g for k8s provider)
+      const nodeFilesPath = `${tmpDir.path}/${node.name}`;
+      if( ! fs.existsSync(nodeFilesPath)) {
+        await fs.promises.mkdir(nodeFilesPath, { recursive: true });
+      }
+
       const keystoreFiles = await generateKeystoreFiles(node, `${tmpDir.path}/${node.name}`);
       for( const keystoreFile of keystoreFiles) {
         const keystoreFilename = keystoreFile.split("/").pop();
