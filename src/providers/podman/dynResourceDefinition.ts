@@ -252,12 +252,15 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const client = getClient();
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   const zPath = `${client.tmpDir}/${name}/z`;
+  const dataPath = `${client.tmpDir}/${name}/data`;
   await fs.mkdir(cfgPath, { recursive: true });
   await fs.mkdir(zPath, { recursive: true });
+  await fs.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "tmp-z", hostPath: { type: "Directory", path: zPath } },
+    { name: "tmp-data", hostPath: { type: "Directory", path: dataPath } },
   ];
 
   return [volume_mounts, devices];
