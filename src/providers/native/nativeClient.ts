@@ -204,7 +204,7 @@ export class NativeClient extends Client {
     // initialize keystore
     await fsPromise.mkdir(`${podDef.spec.dataPath}/chains/${this.chainId}/keystore`, { recursive: true });
 
-    // copy files to volume cfg
+    // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
       debug("remoteFilePath", remoteFilePath);

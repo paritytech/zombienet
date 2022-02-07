@@ -239,7 +239,11 @@ export class PodmanClient extends Client {
       )}`
     );
 
-    // copy files to volume cfg
+    // initialize keystore
+    const dataPath = podDef.spec.volumes.find((vol:any)  => vol.name === "tmp-data");
+    await fs.promises.mkdir(`${dataPath.hostPath.path}/chains/${this.chainId}/keystore`, { recursive: true });
+
+    // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
       await fs.copyFile(
