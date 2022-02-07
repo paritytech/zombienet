@@ -1,6 +1,6 @@
 import execa from "execa";
 import { resolve } from "path";
-import { DEFAULT_REMOTE_DIR, P2P_PORT } from "../../configManager";
+import { DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT } from "../../configManager";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
@@ -135,6 +135,12 @@ export class PodmanClient extends Client {
     result = await this.runCommand(args, undefined, false);
   }
 
+  async addNodeToPrometheus(podName: string) {
+    const podIp = await this.getPodIp("podName");
+    const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
+    await fs.write(`${this.tmpDir}/prometheus/data/sd_config_${podName}.json`, content);
+  }
+
   async getNodeLogs(podName: string, since: number|undefined = undefined): Promise<string> {
     const args = ["logs"];
     if(since && since > 0) args.push(...["--since",`${since}s`]);
@@ -242,6 +248,7 @@ export class PodmanClient extends Client {
     await this.createResource(podDef, false, false);
 
     await this.wait_pod_ready(name);
+    await this.addNodeToPrometheus(name);
     console.log(`\t\t${decorators.green(name)} pod is ready!`);
   }
   async copyFileFromPod(

@@ -129,7 +129,7 @@ export async function genGrafanaDef(
 ): Promise<any> {
   const client = getClient();
   const volume_mounts = [
-    { name: "datasources-cfg", mountPath: "/usr/share/grafana/conf/provisioning/datasources", readOnly: false }
+    { name: "datasources-cfg", mountPath: "/etc/grafana/provisioning/datasources", readOnly: false }
   ];
   const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
   await fs.mkdir(datasourcesPath, { recursive: true });
