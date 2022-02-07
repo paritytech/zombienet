@@ -33,7 +33,7 @@ export class PodmanClient extends Client {
   remoteDir: string;
   dataDir: string;
 
-  constructor(configPath: string, namespace: string, chainName: string,  tmpDir: string) {
+  constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
     this.configPath = configPath;
     this.namespace = namespace;
