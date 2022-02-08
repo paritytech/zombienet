@@ -22,10 +22,9 @@ export interface ReplaceMapping {
 export function initClient(
   configPath: string,
   namespace: string,
-  chainName: string,
   tmpDir: string
 ): KubeClient {
-  const client = new KubeClient(configPath, namespace, chainName,  tmpDir);
+  const client = new KubeClient(configPath, namespace,  tmpDir);
   setClient(client);
   return client;
 }
@@ -36,7 +35,6 @@ const fileUploadCache: any = {};
 
 export class KubeClient extends Client {
   namespace: string;
-  chainName: string;
   chainId?: string;
   configPath: string;
   debug: boolean;
@@ -48,11 +46,10 @@ export class KubeClient extends Client {
   remoteDir: string;
   dataDir: string;
 
-  constructor(configPath: string, namespace: string, chainName: string, tmpDir: string) {
+  constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
     this.configPath = configPath;
     this.namespace = namespace;
-    this.chainName = chainName;
     this.debug = true;
     this.timeout = 60; // secs
     this.tmpDir = tmpDir;

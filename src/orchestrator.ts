@@ -56,7 +56,7 @@ export async function start(
     ...{ monitor : false, spawnConcurrency: 1 },
     ...options
   };
-  console.log("options", opts);
+
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
