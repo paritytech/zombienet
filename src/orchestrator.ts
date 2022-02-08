@@ -50,11 +50,13 @@ export interface orchestratorOptions {
 export async function start(
   credentials: string,
   networkConfig: LaunchConfig,
-  options: orchestratorOptions = {
-    monitor : false,
-    spawnConcurrency: 1
-  }
+  options?: orchestratorOptions
 ) {
+  const opts = {
+    ...{ monitor : false, spawnConcurrency: 1 },
+    ...options
+  };
+  console.log("options", opts);
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
@@ -150,7 +152,7 @@ export async function start(
     await client.createNamespace();
 
     // setup cleaner
-    if (!options.monitor) {
+    if (!opts.monitor) {
       cronInterval = await client.setupCleaner();
       debug("Cleanner job configured");
     }
@@ -381,7 +383,7 @@ export async function start(
       return () =>  spawnNode(node, network!);
     });
 
-    await series(promiseGenerators, options.spawnConcurrency);
+    await series(promiseGenerators, opts.spawnConcurrency);
 
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");

@@ -17,13 +17,15 @@ chain = "rococo-local"
   count = 1
   {% include("./b-group.toml")%}
 
+{% for id in [100,200] %}
 [[parachains]]
-id = 100
+id = {{id}}
 addToGenesis = true
 
   [parachains.collator]
   name = "collator01"
   image = "{{COL_IMAGE}}"
+{% endfor %}
 
 [types.Header]
 number = "u64"
