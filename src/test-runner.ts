@@ -42,7 +42,8 @@ export interface BackchannelMap {
 export async function run(
   testFile: string,
   provider: string,
-  isCI: boolean = false
+  isCI: boolean = false,
+  concurrency: number = 1
 ) {
   let network: Network;
   let backchannelMap: BackchannelMap = {};
@@ -96,7 +97,7 @@ export async function run(
     console.log(`\t Launching network... this can take a while.`);
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
-    network = await zombie.start(creds, config);
+    network = await zombie.start(creds, config, {spawnConcurrency: concurrency});
 
     network.showNetworkInfo(config.settings.provider);
     return;

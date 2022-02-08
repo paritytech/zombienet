@@ -68,8 +68,8 @@ process.on("exit", async function () {
 });
 
 program
-  .addOption(
-    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network"))
+  .addOption(new Option("-m, --monitor", "Start as monitor, do not auto cleanup network"))
+  .addOption(new Option("-c, --spawn-concurrency <spawn-concurrency>", "Number of concurrent spawning process to launch, default is 1"))
   .command("spawn")
   .description("Spawn the network defined in the config")
   .argument("<networkConfig>", "Network config file path")
@@ -103,6 +103,7 @@ async function spawn(
 ) {
   const opts = program.opts();
   const monitor = opts.monitor || false;
+  const spawnConcurrency = opts.spawnConcurrency || 1;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error("  ⚠ Config file does not exist: ", configPath);
@@ -133,7 +134,7 @@ async function spawn(
     }
   }
 
-  network = await start(creds, config, monitor);
+  network = await start(creds, config, {monitor, spawnConcurrency});
   network.showNetworkInfo(config.settings?.provider);
 }
 
@@ -147,7 +148,7 @@ async function test(testFile: string, _opts: any) {
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
-  await run(testFile, providerToUse, inCI);
+  await run(testFile, providerToUse, inCI, opts.concurrency);
 }
 
 program.parse(process.argv);
