@@ -86,7 +86,7 @@ export class KubeClient extends Client {
     filesToGet: fileMap[] = []
   ): Promise<void> {
     const name = podDef.metadata.name;
-    writeLocalJsonFile(this.tmpDir, name, podDef);
+    writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
     console.log(
       `\n\tlaunching ${decorators.green(
         podDef.metadata.name
