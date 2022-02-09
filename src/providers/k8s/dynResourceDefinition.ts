@@ -39,7 +39,9 @@ export async function genBootnodeDef(
       restartPolicy: "OnFailure",
       volumes: devices,
       securityContext: {
-        fsGroup: 1000
+        fsGroup: 1000,
+        runAsUser: 1000,
+        runAsGroup: 1000
       }
     },
   };
@@ -78,7 +80,9 @@ export async function genNodeDef(
       restartPolicy: "OnFailure",
       volumes: devices,
       securityContext: {
-        fsGroup: 1000
+        fsGroup: 1000,
+        runAsUser: 1000,
+        runAsGroup: 1000
       }
     },
   };
