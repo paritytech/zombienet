@@ -38,6 +38,9 @@ export async function genBootnodeDef(
       ]) || [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
+      securityContext: {
+        fsGroup: 1000
+      }
     },
   };
 }
@@ -74,6 +77,9 @@ export async function genNodeDef(
       ]) || [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
+      securityContext: {
+        fsGroup: 1000
+      }
     },
   };
 }
@@ -94,6 +100,7 @@ function make_transfer_containter(): any {
     ],
   };
 }
+
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
