@@ -303,7 +303,7 @@ async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBo
   const command = node.command
     ? node.command
     : networkSpec.relaychain.defaultCommand;
-  const image = node.image ? node.image : networkSpec.relaychain.default_image;
+  const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = [];
   if (node.args) args = args.concat(node.args);
   if (node.extra_args) args = args.concat(node.extra_args);
