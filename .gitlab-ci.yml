@@ -207,28 +207,28 @@ zombienet-tests-integration:
   tags:
     - zombienet-polkadot-integration-test
 
-zombienet-dummy-chain-upgrade:
-  stage:                           deploy
-  <<:                              *kubernetes-env
-  image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
-  <<:                              *common-refs
+# zombienet-dummy-chain-upgrade:
+#   stage:                           deploy
+#   <<:                              *kubernetes-env
+#   image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+#   <<:                              *common-refs
 
-  variables:
-    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests'
+#   variables:
+#     GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests'
 
-  before_script:
-    - echo "Zombienet Tests Parachain Upgrade"
-    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
-    - echo "${GH_DIR}"
-    - export DEBUG=zombie*
+#   before_script:
+#     - echo "Zombienet Tests Parachain Upgrade"
+#     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+#     - echo "${GH_DIR}"
+#     - export DEBUG=zombie*
 
-  script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
-        --test="0004-parachains-upgrade-smoke-test.feature"
-  allow_failure:                   true
-  retry: 2
-  tags:
-    - zombienet-polkadot-integration-test
+#   script:
+#     - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+#         --test="0004-parachains-upgrade-smoke-test.feature"
+#   allow_failure:                   true
+#   retry: 2
+#   tags:
+#     - zombienet-polkadot-integration-test
 
 zombienet-logs-assertion:
   stage:                           deploy
@@ -380,7 +380,7 @@ zombienet-scale-net-config:
   #   - job:                         publish-docker-pr
 
   variables:
-    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests'
+    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/scale-net'
 
   before_script:
     - echo "Zombienet Tests Scale Net"
@@ -392,7 +392,7 @@ zombienet-scale-net-config:
 
   script:
     - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
-        --test="scale-net/0001-scale-net.feature"
+        --test="0001-scale-net.feature"
   allow_failure:                   true
   retry: 2
   tags:
