@@ -9,7 +9,7 @@ import {
   BAKCCHANNEL_URI_PATTERN,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ZOMBIE_BUCKET,
-} from "./configManager";
+} from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import fs from "fs";
@@ -278,9 +278,9 @@ export class Network {
   showNodeInfo(node: NetworkNode, provider: String) {
     console.log("\n");
     console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
-    
+
     // Support native VSCode remote extension automatic port forwarding.
-    // VSCode doesn't parse the encoded URI and we have no reason to encode 
+    // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
     let wsUri = provider === "native" ? node.wsUri : encodeURIComponent(node.wsUri);
     console.log(

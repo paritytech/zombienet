@@ -8,7 +8,7 @@ import { getCredsFilePath, readNetworkConfig } from "./utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
-import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./configManager";
+import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants";
 
 const debug = require("debug")("zombie-cli");
 
@@ -68,8 +68,8 @@ process.on("exit", async function () {
 });
 
 program
-  .addOption(
-    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network"))
+  .addOption(new Option("-m, --monitor", "Start as monitor, do not auto cleanup network"))
+  .addOption(new Option("-c, --spawn-concurrency <concurrency>", "Number of concurrent spawning process to launch, default is 1"))
   .command("spawn")
   .description("Spawn the network defined in the config")
   .argument("<networkConfig>", "Network config file path")
@@ -103,6 +103,7 @@ async function spawn(
 ) {
   const opts = program.opts();
   const monitor = opts.monitor || false;
+  const spawnConcurrency = opts.spawnConcurrency || 1;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error("  ⚠ Config file does not exist: ", configPath);
@@ -110,7 +111,7 @@ async function spawn(
   }
 
   const filePath = resolve(configFile);
-  const config = readNetworkConfig(filePath);
+  const config: LaunchConfig = readNetworkConfig(filePath);
 
   // if a provider is passed, let just use it.
   if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
@@ -133,7 +134,8 @@ async function spawn(
     }
   }
 
-  network = await start(creds, config, monitor);
+  const options = { monitor, spawnConcurrency };
+  network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
 
@@ -147,7 +149,7 @@ async function test(testFile: string, _opts: any) {
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
-  await run(testFile, providerToUse, inCI);
+  await run(testFile, providerToUse, inCI, opts.spawnConcurrency);
 }
 
 program.parse(process.argv);

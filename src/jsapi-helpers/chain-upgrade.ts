@@ -1,7 +1,7 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
 import { readFileSync, promises as fsPromises } from "fs";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../configManager";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 import { compress, decompress } from "napi-maybe-compressed-blob";
 import axios from "axios";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");

@@ -1,10 +1,11 @@
 import execa from "execa";
 import { resolve } from "path";
 import {
+  DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
-} from "../../configManager";
+} from "../../constants";
 import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
@@ -23,7 +24,7 @@ export function initClient(
   namespace: string,
   tmpDir: string
 ): KubeClient {
-  const client = new KubeClient(configPath, namespace, tmpDir);
+  const client = new KubeClient(configPath, namespace,  tmpDir);
   setClient(client);
   return client;
 }
@@ -34,6 +35,7 @@ const fileUploadCache: any = {};
 
 export class KubeClient extends Client {
   namespace: string;
+  chainId?: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -42,6 +44,7 @@ export class KubeClient extends Client {
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
   remoteDir: string;
+  dataDir: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -52,6 +55,7 @@ export class KubeClient extends Client {
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
+    this.dataDir = DEFAULT_DATA_DIR;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -82,7 +86,7 @@ export class KubeClient extends Client {
     filesToGet: fileMap[] = []
   ): Promise<void> {
     const name = podDef.metadata.name;
-    writeLocalJsonFile(this.tmpDir, name, podDef);
+    writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
     console.log(
       `\n\tlaunching ${decorators.green(
         podDef.metadata.name
@@ -96,6 +100,18 @@ export class KubeClient extends Client {
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
+
+    // initialize keystore
+    await this.runCommand([
+      "exec",
+      name,
+      "-c",
+      TRANSFER_CONTAINER_NAME,
+      "--",
+      "/bin/mkdir",
+      "-p",
+      `/data/chains/${this.chainId}/keystore`
+    ], undefined, true);
 
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;

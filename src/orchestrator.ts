@@ -3,18 +3,19 @@ import { LaunchConfig, ComputedNetwork, Node } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
-  getUniqueName,
+  zombieWrapperPath,
+} from "./configManager";
+import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   PROMETHEUS_PORT,
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
-  zombieWrapperPath,
   ZOMBIE_WRAPPER,
   LOKI_URL_FOR_NODE,
   RPC_WS_PORT,
   RPC_HTTP_PORT,
-} from "./configManager";
+} from "./constants";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
 import {
@@ -25,12 +26,13 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes
 } from "./chain-spec";
-import { generateNamespace, sleep, filterConsole, loadTypeDef, getSha256 } from "./utils";
+import { generateNamespace, sleep, filterConsole, loadTypeDef, getSha256, series } from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
 import { decorators } from "./colors";
 import { generateBootnodeString } from "./bootnode";
+import { generateKeystoreFiles } from "./keys";
 
 const debug = require("debug")("zombie");
 
@@ -41,11 +43,20 @@ filterConsole([
   `API-WS: disconnected`,
 ]);
 
+export interface orchestratorOptions {
+  monitor?: boolean;
+  spawnConcurrency?: number;
+}
 export async function start(
   credentials: string,
   networkConfig: LaunchConfig,
-  monitor: boolean = false
+  options?: orchestratorOptions
 ) {
+  const opts = {
+    ...{ monitor : false, spawnConcurrency: 1 },
+    ...options
+  };
+
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
@@ -74,6 +85,15 @@ export async function start(
     // create tmp directory to store needed files
     const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
+
+    // Define chain name and file name to use.
+    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
+    const chainName = networkSpec.relaychain.chain;
+    const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
+    const chainSpecFullPathPlain = chainSpecFullPath.replace(
+      ".json",
+      "-plain.json"
+    );
 
     // get provider fns
     const provider = networkSpec.settings.provider;
@@ -128,20 +148,11 @@ export async function start(
       mode: 0o755,
     });
 
-    // Define chain name and file name to use.
-    const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
-    const chainName = networkSpec.relaychain.chain;
-    const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
-    const chainSpecFullPathPlain = chainSpecFullPath.replace(
-      ".json",
-      "-plain.json"
-    );
-
     // create namespace
     await client.createNamespace();
 
     // setup cleaner
-    if (!monitor) {
+    if (!opts.monitor) {
       cronInterval = await client.setupCleaner();
       debug("Cleanner job configured");
     }
@@ -166,11 +177,13 @@ export async function start(
     // Check if the chain spec is in raw format
     // Could be if the chain_spec_path was set
     const chainSpecContent = require(chainSpecFullPathPlain);
+    client.chainId = chainSpecContent.id;
+
     if(! chainSpecContent.genesis.raw) {
       // Chain spec customization logic
       clearAuthorities(chainSpecFullPathPlain);
       for (const node of networkSpec.relaychain.nodes) {
-        await addAuthority(chainSpecFullPathPlain, node.name);
+        await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
       }
 
       if (networkSpec.relaychain.genesis) {
@@ -247,63 +260,45 @@ export async function start(
     let bootnodes: string[] = [];
 
     if( networkConfig.settings.bootnode ) {
-      // bootnode
-      // TODO: allow to customize the bootnode
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
-      const bootnodeDef = await genBootnodeDef(namespace, bootnodeSpec);
-
-      await client.spawnFromDef(bootnodeDef, filesToCopyToNodes);
-      // make sure the bootnode is up and available
-      await sleep(2000);
-
-      const bootnodeIdentifier = `${bootnodeDef.kind}/${bootnodeDef.metadata.name}`;
-      const fwdPort = await client.startPortForwarding(endpointPort, bootnodeIdentifier);
-      const prometheusPort = await client.startPortForwarding(
-        PROMETHEUS_PORT,
-        bootnodeIdentifier
-      );
-
-      const bootnodeNode: NetworkNode = new NetworkNode(
-        bootnodeDef.metadata.name,
-        WS_URI_PATTERN.replace("{{PORT}}", fwdPort.toString()),
-        METRICS_URI_PATTERN.replace("{{PORT}}", prometheusPort.toString())
-      );
-
-      network.addNode(bootnodeNode, Scope.RELAY);
-
-      const [nodeIp, nodePort] = await client.getNodeInfo(
-        bootnodeDef.metadata.name
-      );
-
-      bootnodes.push( await generateBootnodeString(bootnodeSpec.key!, nodeIp, nodePort));
-      // add bootnodes to chain spec
-      await addBootNodes(chainSpecFullPath, bootnodes);
-      // flush require cache since we change the chain-spec
-      delete require.cache[require.resolve(chainSpecFullPath)];
+      networkSpec.relaychain.nodes.unshift(bootnodeSpec);
     }
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
 
-    // Create nodes
-    for (const node of networkSpec.relaychain.nodes) {
+    const spawnNode = async (node: Node, network: Network) => {
       node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
-      const podDef = await genNodeDef(namespace, node);
+      const podDef = await ((node.name === "bootnode") ? genBootnodeDef(namespace,node) : genNodeDef(namespace, node));
 
-      let finalFilesToCopyToNode = filesToCopyToNodes;
+      let finalFilesToCopyToNode = [...filesToCopyToNodes];
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
           localFilePath: override.local_path,
           remoteFilePath: `${client.remoteDir}/${override.remote_name}`,
         });
       }
+
+      if( node.name !== "bootnode") {
+        // check if the node directory exists if not create (e.g for k8s provider)
+        const nodeFilesPath = `${tmpDir.path}/${node.name}`;
+        if( ! fs.existsSync(nodeFilesPath)) {
+          await fs.promises.mkdir(nodeFilesPath, { recursive: true });
+        }
+
+        const keystoreFiles = await generateKeystoreFiles(node, `${tmpDir.path}/${node.name}`);
+        for( const keystoreFile of keystoreFiles) {
+          const keystoreFilename = keystoreFile.split("/").pop();
+          finalFilesToCopyToNode.push({
+            localFilePath: keystoreFile,
+            remoteFilePath: `${client.dataDir}/chains/${client.chainId}/keystore/${keystoreFilename}`,
+          });
+        }
+      }
       await client.spawnFromDef(podDef, finalFilesToCopyToNode);
 
-      if( bootnodes.length === 0 || node.addToBootnodes ) {
-        // if is the first bootnode just sleep a couple of seconds
-        // to ensure the node is listening connections
-        if( bootnodes.length === 0 ) await sleep(2000);
+      if( node.addToBootnodes ) {
         // add first node as bootnode
         const [nodeIp, nodePort] = await client.getNodeInfo(
           podDef.metadata.name
@@ -369,6 +364,26 @@ export async function start(
         }
       }
     }
+
+    const firstNode = networkSpec.relaychain.nodes.shift();
+    if( firstNode) {
+      await spawnNode(firstNode, network);
+      await sleep(2000);
+
+      const [nodeIp, nodePort] = await client.getNodeInfo(firstNode.name);
+
+      bootnodes.push( await generateBootnodeString(firstNode.key!, nodeIp, nodePort));
+      // add bootnodes to chain spec
+      await addBootNodes(chainSpecFullPath, bootnodes);
+      // flush require cache since we change the chain-spec
+      delete require.cache[require.resolve(chainSpecFullPath)];
+    }
+
+    const promiseGenerators = networkSpec.relaychain.nodes.map( (node:Node) => {
+      return () =>  spawnNode(node, network!);
+    });
+
+    await series(promiseGenerators, opts.spawnConcurrency);
 
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");

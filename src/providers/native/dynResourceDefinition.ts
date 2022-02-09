@@ -1,11 +1,11 @@
 import { genCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
-  getUniqueName,
   RPC_HTTP_PORT,
   P2P_PORT,
   RPC_WS_PORT,
-} from "../../configManager";
+} from "../../constants";
+import { getUniqueName } from "../../configManager";
 import { Node } from "../../types";
 import { getRandomPort } from "../../utils";
 import { getClient } from "../client";
@@ -24,7 +24,10 @@ export async function genBootnodeDef(
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
 
-  const command = await genCmd(nodeSetup, cfgPath, false, portFlags);
+  const dataPath = `${client.tmpDir}/${name}/data`;
+  await fs.mkdir(dataPath, { recursive: true });
+
+  const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
 
 
   return {
@@ -59,7 +62,10 @@ export async function genNodeDef(
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
 
-  const command = await genCmd(nodeSetup, cfgPath, false, portFlags);
+  const dataPath = `${client.tmpDir}/${name}/data`;
+  await fs.mkdir(dataPath, { recursive: true });
+
+  const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
 
   return {
     metadata: {
@@ -77,6 +83,7 @@ export async function genNodeDef(
     },
     spec: {
       cfgPath,
+      dataPath,
       ports,
       command
     }

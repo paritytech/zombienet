@@ -1,14 +1,8 @@
-import { Keyring } from "@polkadot/api";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./colors";
 import { ChainSpec, HrmpChannelsConfig } from "./types";
 import { readDataFile } from "./utils";
 const fs = require("fs");
-
-function nameCase(string: string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 // Get authority keys from within chainSpec data
 function getAuthorityKeys(chainSpec: ChainSpec) {
@@ -55,18 +49,8 @@ export function clearAuthorities(spec: string) {
 }
 
 // Add additional authorities to chain spec in `session.keys`
-export async function addAuthority(spec: string, name: string) {
-  await cryptoWaitReady();
-
-  const sr_keyring = new Keyring({ type: "sr25519" });
-  const sr_account = sr_keyring.createFromUri(`//${nameCase(name)}`);
-  const sr_stash = sr_keyring.createFromUri(`//${nameCase(name)}//stash`);
-
-  const ed_keyring = new Keyring({ type: "ed25519" });
-  const ed_account = ed_keyring.createFromUri(`//${nameCase(name)}`);
-
-  const ec_keyring = new Keyring({ type: "ecdsa" });
-  const ec_account = ec_keyring.createFromUri(`//${nameCase(name)}`);
+export async function addAuthority(spec: string, name: string, accounts: any) {
+  const { sr_stash, sr_account, ed_account, ec_account } = accounts;
 
   let key = [
     sr_stash.address,

@@ -5,7 +5,7 @@ import { Metrics, fetchMetrics, getMetricName, getHistogramBuckets, BucketHash }
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   PROMETHEUS_PORT,
-} from "./configManager";
+} from "./constants";
 import { getClient } from "./providers/client";
 
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";

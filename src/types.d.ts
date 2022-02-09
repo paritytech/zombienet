@@ -15,11 +15,13 @@ export interface ComputedNetwork {
   types: any;
   hrmpChannels?: HrmpChannelsConfig[];
   configBasePath: string;
+  seed: string;
 }
 
 export interface Node {
   name: string;
   key?: string;
+  accounts?: any;
   command?: string;
   commandWithArgs?: string;
   fullCommand?: string;
@@ -140,24 +142,39 @@ export interface RelayChainConfig {
   chain_spec_command?: string;
   default_args?: string[];
   default_overrides?: Override[];
-  nodes: {
-    name: string;
-    image?: string;
-    command?: string;
-    commandWithArgs?: string;
-    wsPort?: number;
-    port?: number;
-    args?: string[];
-    extra_args?: string[];
-    validator: boolean;
-    env?: envVars[];
-    bootnodes?: string[];
-    initContainers?: object[];
-    overrides?: Override[];
-    add_to_bootnodes?: boolean;
-  }[];
+  nodes?: NodeConfig[];
+  node_groups?: NodeGroupConfig[];
+  total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
 }
+
+export interface NodeConfig {
+  name: string;
+  image?: string;
+  command?: string;
+  commandWithArgs?: string;
+  wsPort?: number;
+  port?: number;
+  args?: string[];
+  extra_args?: string[];
+  validator: boolean;
+  env?: envVars[];
+  bootnodes?: string[];
+  initContainers?: object[];
+  overrides?: Override[];
+  add_to_bootnodes?: boolean;
+}
+
+export interface NodeGroupConfig {
+  name: string;
+  image?: string;
+  command?: string;
+  args?: string[];
+  env?: envVars[];
+  overrides?: Override[];
+  count: string|number,
+}
+
 
 export interface ParachainConfig {
   id: number;

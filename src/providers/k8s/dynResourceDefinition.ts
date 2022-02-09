@@ -1,19 +1,21 @@
+import fs from "fs";
 import { genCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
-  getUniqueName,
   WAIT_UNTIL_SCRIPT_SUFIX,
-} from "../../configManager";
+} from "../../constants";
+import { getUniqueName } from "../../configManager";
 import { Node } from "../../types";
 import { getSha256 } from "../../utils";
+import { getClient } from "../client";
 
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts();
+  const [volume_mounts, devices] = make_volume_mounts();
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
   return {
@@ -36,6 +38,11 @@ export async function genBootnodeDef(
       ]) || [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
+      securityContext: {
+        fsGroup: 1000,
+        runAsUser: 1000,
+        runAsGroup: 1000
+      }
     },
   };
 }
@@ -72,6 +79,11 @@ export async function genNodeDef(
       ]) || [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
+      securityContext: {
+        fsGroup: 1000,
+        runAsUser: 1000,
+        runAsGroup: 1000
+      }
     },
   };
 }
@@ -81,7 +93,10 @@ function make_transfer_containter(): any {
     name: TRANSFER_CONTAINER_NAME,
     image: "docker.io/alpine",
     imagePullPolicy: "Always",
-    volumeMounts: [{ name: "tmp-cfg", mountPath: "/cfg", readOnly: false }],
+    volumeMounts: [
+      { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
+      { name: "tmp-data", mountPath: "/data", readOnly: false }
+    ],
     command: [
       "ash",
       "-c",
@@ -89,13 +104,16 @@ function make_transfer_containter(): any {
     ],
   };
 }
+
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
-    { name: "tmp-cfg", mountPath: "/cfg", readOnly: false }
+    { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
+    { name: "tmp-data", mountPath: "/data", readOnly: false }
   ];
 
   const devices = [
-    { name: "tmp-cfg" }
+    { name: "tmp-cfg" },
+    { name: "tmp-data" }
   ];
 
   return [volume_mounts, devices];

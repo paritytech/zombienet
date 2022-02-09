@@ -1,3 +1,6 @@
+import path, { resolve } from "path";
+import fs from "fs";
+
 import {
   LaunchConfig,
   ComputedNetwork,
@@ -5,66 +8,26 @@ import {
   Parachain,
   Override,
   RelayChainConfig,
+  NodeConfig,
+  envVars,
 } from "./types";
 import { getSha256 } from "./utils";
-import path, { resolve } from "path";
-import fs from "fs";
+import { DEFAULT_ADDER_COLLATOR_BIN, DEFAULT_CHAIN, DEFAULT_CHAIN_SPEC_COMMAND, DEFAULT_COLLATOR_IMAGE, DEFAULT_COMMAND, DEFAULT_GENESIS_GENERATE_SUBCOMMAND, DEFAULT_GLOBAL_TIMEOUT, DEFAULT_IMAGE, DEFAULT_WASM_GENERATE_SUBCOMMAND, DEV_ACCOUNTS, GENESIS_STATE_FILENAME, GENESIS_WASM_FILENAME, P2P_PORT, RPC_WS_PORT, ZOMBIE_WRAPPER } from "./constants";
+import { generateKeyForNode } from "./keys";
+
+
 const debug = require("debug")("zombie::config-manager");
 
-// CONSTANTS
-export const REGULAR_BIN_PATH = "/usr/local/bin/substrate";
-// The remote port prometheus can be accessed with
-export const PROMETHEUS_PORT = 9615;
-// The remote port websocket to access the RPC
-export const RPC_WS_PORT = 9933;
-// The remote port http to access the RPC
-export const RPC_HTTP_PORT = 9944;
-// The port substrate listens for p2p connections on
-export const P2P_PORT = 30333;
-
-export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
-export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
-export const DEFAULT_COMMAND = "polkadot";
-export const DEFAULT_IMAGE = "parity/substrate:latest";
-export const DEFAULT_ARGS: string[] = [];
-export const DEFAULT_CHAIN = "rococo-local";
-export const DEFAULT_BOOTNODE_PEER_ID =
-  "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
-export const DEFAULT_BOOTNODE_DOMAIN = "bootnode";
-export const DEFAULT_REMOTE_DIR = "/cfg";
-export const DEFAULT_CHAIN_SPEC = "{{chainName}}-plain.json";
-export const DEFAULT_CHAIN_SPEC_RAW = "{{chainName}}-raw.json";
-export const DEFAULT_CHAIN_SPEC_COMMAND =
-  "{{DEFAULT_COMMAND}} build-spec --chain {{chainName}} --disable-default-bootnode";
-export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND ="export-genesis-state";
-export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
-export const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
-export const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-collator";
-export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
-export const FINISH_MAGIC_FILE = "/tmp/finished.txt";
-export const GENESIS_STATE_FILENAME = "genesis-state";
-export const GENESIS_WASM_FILENAME = "genesis-wasm";
-
-export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
-export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
-export const ZOMBIE_BUCKET = "zombienet-logs";
-export const WS_URI_PATTERN = "ws://127.0.0.1:{{PORT}}";
-export const METRICS_URI_PATTERN = "http://127.0.0.1:{{PORT}}/metrics";
-export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
-export const BAKCCHANNEL_PORT = 3000;
-export const BAKCCHANNEL_POD_NAME = "backchannel";
-
-export const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 // get the path of the zombie wrapper
 export const zombieWrapperPath = resolve(
   __dirname,
   `../scripts/${ZOMBIE_WRAPPER}`
 );
 
-export const LOKI_URL_FOR_NODE =
-  "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
-
-export const AVAILABLE_PROVIDERS = ["podman", "kubernetes", "native"];
+const DEFAULT_ENV: envVars[] = [
+  { name: "COLORBT_SHOW_HIDDEN", value: "1" },
+  { name: "RUST_BACKTRACE", value: "FULL" },
+];
 
 export async function generateNetworkSpec(
   config: LaunchConfig
@@ -86,12 +49,13 @@ export async function generateNetworkSpec(
   }
 
   let networkSpec: any = {
+    configBasePath: config.configBasePath,
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       nodes: [],
-      chain: config.relaychain.chain,
-      overrides: Promise.all(globalOverrides),
+      chain: config.relaychain.chain || DEFAULT_CHAIN,
+      overrides: globalOverrides,
     },
     parachains: []
   };
@@ -128,79 +92,34 @@ export async function generateNetworkSpec(
       ? config.relaychain.chain_spec_command
       : DEFAULT_CHAIN_SPEC_COMMAND.replace(
           "{{chainName}}",
-          chainName
+          networkSpec.relaychain.chain
         ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
   }
 
   const relayChainBootnodes: string[] = [];
-  for (const node of config.relaychain.nodes) {
-    const command = node.command
-      ? node.command
-      : networkSpec.relaychain.defaultCommand;
-    const image = node.image ? node.image : config.relaychain.default_image;
-    let args: string[] = [];
-    if (node.args) args = args.concat(node.args);
-    if (node.extra_args) args = args.concat(node.extra_args);
-
-    const env = [
-      { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-      { name: "RUST_BACKTRACE", value: "FULL" },
-    ];
-    if (node.env) env.push(...node.env);
-
-    let nodeOverrides: Override[] = [];
-    if (node.overrides) {
-      nodeOverrides = await Promise.all(
-        node.overrides.map(async (override) => {
-          const valid_local_path = await getLocalOverridePath(
-            config.configBasePath,
-            override.local_path
-          );
-          return {
-            local_path: valid_local_path,
-            remote_name: override.remote_name,
-          };
-        })
-      );
-    }
-
-    const isValidator = node.validator
-      ? true
-      : isValidatorbyArgs(args)
-      ? true
-      : false;
-
-    // enable --prometheus-external by default
-    const prometheusExternal =
-      config.settings?.prometheus !== undefined
-        ? config.settings.prometheus
-        : true;
-
-    const nodeName = getUniqueName(node.name);
-    // build node Setup
-    const nodeSetup: Node = {
-      name: nodeName,
-      key: getSha256(nodeName),
-      command: command || DEFAULT_COMMAND,
-      commandWithArgs: node.commandWithArgs,
-      image: image || DEFAULT_IMAGE,
-      wsPort: node.wsPort ? node.wsPort : RPC_WS_PORT,
-      port: node.port ? node.port : P2P_PORT,
-      chain: chainName,
-      validator: isValidator,
-      args,
-      env,
-      bootnodes: relayChainBootnodes,
-      telemetryUrl: config.settings?.telemetry
-        ? "ws://telemetry:8000/submit 0"
-        : "",
-      telemetry: config.settings?.telemetry ? true : false,
-      prometheus: prometheusExternal,
-      overrides: [...globalOverrides, ...nodeOverrides],
-      addToBootnodes: node.add_to_bootnodes ? true : false
-    };
-
+  for (const node of config.relaychain.nodes || []) {
+    const nodeSetup = await getNodeFromConfig(networkSpec, node, relayChainBootnodes, globalOverrides);
     networkSpec.relaychain.nodes.push(nodeSetup);
+  }
+
+  for(const nodeGroup of config.relaychain.node_groups || []) {
+    for(let i=0;i < nodeGroup.count; i++) {
+      let node: NodeConfig = {
+        name: `${nodeGroup.name}-${i}`,
+        image: nodeGroup.image || networkSpec.relaychain.defaultImage,
+        command: nodeGroup.command,
+        args: nodeGroup.args?.filter( arg => ! DEV_ACCOUNTS.includes(arg.toLocaleLowerCase().replace("--",""))),
+        validator: true, // groups are always validators
+        env: nodeGroup.env,
+        overrides: nodeGroup.overrides
+      }
+      const nodeSetup = await getNodeFromConfig(networkSpec, node, relayChainBootnodes, globalOverrides);
+      networkSpec.relaychain.nodes.push(nodeSetup);
+    }
+  }
+
+  if(networkSpec.relaychain.nodes.length < 1) {
+    throw new Error("No NODE defined in config, please review.");
   }
 
   if (config.parachains && config.parachains.length) {
@@ -280,7 +199,7 @@ export async function generateNetworkSpec(
           command: collatorBinary,
           commandWithArgs: parachain.collator.commandWithArgs,
           image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
-          chain: chainName,
+          chain: networkSpec.relaychain.chain,
           args: parachain.collator.args || [],
           env: env,
           bootnodes
@@ -305,11 +224,11 @@ export async function generateNetworkSpec(
   }
 
   networkSpec.types = config.types ? config.types : {};
-  networkSpec.configBasePath = config.configBasePath;
 
   return networkSpec as ComputedNetwork;
 }
 
+// TODO: move this fn to other module.
 export function generateBootnodeSpec(config: ComputedNetwork): Node {
   const nodeSetup: Node = {
     name: "bootnode",
@@ -378,4 +297,72 @@ function isValidatorbyArgs(nodeArgs: string[]): boolean {
     nodeArgs.includes(`--${acc}`)
   );
   return validatorAccount ? true : false;
+}
+
+async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBootnodes: string[], globalOverrides: Override[]): Promise<Node> {
+  const command = node.command
+    ? node.command
+    : networkSpec.relaychain.defaultCommand;
+  const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
+  let args: string[] = [];
+  if (node.args) args = args.concat(node.args);
+  if (node.extra_args) args = args.concat(node.extra_args);
+
+  const env = (node.env) ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
+
+  let nodeOverrides: Override[] = [];
+  if (node.overrides) {
+    nodeOverrides = await Promise.all(
+      node.overrides.map(async (override) => {
+        const valid_local_path = await getLocalOverridePath(
+          networkSpec.configBasePath,
+          override.local_path
+        );
+        return {
+          local_path: valid_local_path,
+          remote_name: override.remote_name,
+        };
+      })
+    );
+  }
+
+  const isValidator = node.validator
+    ? true
+    : isValidatorbyArgs(args)
+    ? true
+    : false;
+
+  // enable --prometheus-external by default
+  const prometheusExternal =
+  networkSpec.settings?.prometheus !== undefined
+      ? networkSpec.settings.prometheus
+      : true;
+
+  const nodeName = getUniqueName(node.name);
+  const accountsForNode = await generateKeyForNode();
+  // build node Setup
+  const nodeSetup: Node = {
+    name: nodeName,
+    key: getSha256(nodeName),
+    accounts: accountsForNode,
+    command: command || DEFAULT_COMMAND,
+    commandWithArgs: node.commandWithArgs,
+    image: image || DEFAULT_IMAGE,
+    wsPort: node.wsPort ? node.wsPort : RPC_WS_PORT,
+    port: node.port ? node.port : P2P_PORT,
+    chain: networkSpec.relaychain.chain,
+    validator: isValidator,
+    args,
+    env,
+    bootnodes: relayChainBootnodes,
+    telemetryUrl: networkSpec.settings?.telemetry
+      ? "ws://telemetry:8000/submit 0"
+      : "",
+    telemetry: networkSpec.settings?.telemetry ? true : false,
+    prometheus: prometheusExternal,
+    overrides: [...globalOverrides, ...nodeOverrides],
+    addToBootnodes: node.add_to_bootnodes ? true : false
+  };
+
+  return nodeSetup;
 }

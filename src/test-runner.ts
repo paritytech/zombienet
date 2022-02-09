@@ -8,7 +8,7 @@ import { LaunchConfig } from "./types";
 import { readNetworkConfig, sleep } from "./utils";
 import { Network } from "./network";
 import { decorators } from "./colors";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./configManager";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./constants";
 import minimatch from "minimatch";
 import { node } from "execa";
 const zombie = require("../");
@@ -42,7 +42,8 @@ export interface BackchannelMap {
 export async function run(
   testFile: string,
   provider: string,
-  isCI: boolean = false
+  isCI: boolean = false,
+  concurrency: number = 1
 ) {
   let network: Network;
   let backchannelMap: BackchannelMap = {};
@@ -96,7 +97,7 @@ export async function run(
     console.log(`\t Launching network... this can take a while.`);
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
-    network = await zombie.start(creds, config);
+    network = await zombie.start(creds, config, {spawnConcurrency: concurrency});
 
     network.showNetworkInfo(config.settings.provider);
     return;
@@ -175,58 +176,58 @@ const exitMocha = (code: number) => {
 
 function parseAssertionLine(assertion: string) {
   // Node general
-  const isUpRegex = new RegExp(/^([\w]+): is up$/i);
+  const isUpRegex = new RegExp(/^([\w-]+): is up$/i);
 
   // parachains
   const parachainIsRegistered = new RegExp(
-    /^(([\w]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i
+    /^(([\w-]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i
   );
   const parachainBlockHeight = new RegExp(
-    /^(([\w]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
+    /^(([\w-]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
   const chainUpgradeRegex = new RegExp(
-    /^(([\w]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i
+    /^(([\w-]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i
   );
   const chainDummyUpgradeRegex = new RegExp(
-    /^(([\w]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i
+    /^(([\w-]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i
   );
 
   // Metrics - histograms
   // e.g alice: reports histogram pvf_execution_time has at last X samples in buckets ["3", "4", "6", "+Inf"]
   const isHistogram = new RegExp(
-    /^(([\w]+): reports histogram (.*?) has (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) samples in buckets \[(.+)\])+( within (\d+) (seconds|secs|s))?$/i
+    /^(([\w-]+): reports histogram (.*?) has (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) samples in buckets \[(.+)\])+( within (\d+) (seconds|secs|s))?$/i
   );
 
   // Metrics
   const isReports = new RegExp(
-    /^(([\w]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
+    /^(([\w-]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
   );
 
   // Logs assertion
-  const assertLogLineRegex = new RegExp(/^(([\w]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
+  const assertLogLineRegex = new RegExp(/^(([\w-]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
 
   // system events
-  const assertSystemEventRegex = new RegExp(/^(([\w]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
+  const assertSystemEventRegex = new RegExp(/^(([\w-]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
 
   // Custom js-script
-  const assertCustomJsRegex = new RegExp(/^([\w]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i);
+  const assertCustomJsRegex = new RegExp(/^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i);
 
   // Backchannel
   // alice: wait for name and use as X within 30s
   const backchannelWait = new RegExp(
-    /^([\w]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i
+    /^([\w-]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i
   );
 
   // Alice: ensure var:X is used
-  const isEnsure = new RegExp(/^([\w]+): ensure var:([\w]+) is used$/i);
+  const isEnsure = new RegExp(/^([\w-]+): ensure var:([\w]+) is used$/i);
 
   // Commands
   const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
   const restartRegex = new RegExp(
-    /^(([\w]+): restart)+( after (\d+) (seconds|secs|s))?$/i
+    /^(([\w-]+): restart)+( after (\d+) (seconds|secs|s))?$/i
   );
-  const pauseRegex = new RegExp(/^([\w]+): pause$/i);
-  const resumeRegex = new RegExp(/^([\w]+): resume$/i);
+  const pauseRegex = new RegExp(/^([\w-]+): pause$/i);
+  const resumeRegex = new RegExp(/^([\w-]+): resume$/i);
 
   // Matchs
   let m: string[] | null;

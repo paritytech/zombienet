@@ -4,7 +4,7 @@ import {
   P2P_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-} from "./configManager";
+} from "./constants";
 import { Node } from "./types";
 import { getRandomPort } from "./utils";
 
@@ -121,7 +121,7 @@ export async function genCumulusCollatorCmd(
   return fullCmd;
 }
 
-export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapper = true, portFlags?: { [flag: string]: number } ): Promise<string[]> {
+export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath: string = "/data", useWrapper = true, portFlags?: { [flag: string]: number } ): Promise<string[]> {
   let {
     name,
     key,
@@ -179,9 +179,8 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
       }
     }
 
-    // special case for bootnode
     const port = portFlags["--port"];
-    const listenIndex = args.findIndex(arg => arg === "--listen-addr");
+    const listenIndex = args.findIndex(arg => arg === "--listen-addr")
     if(listenIndex >= 0) {
       const parts = args[listenIndex+1].split("/");
       parts[4] = port.toString();
@@ -199,6 +198,11 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
     args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
   }
 
+  // set our base path
+  const basePathFlagIndex = args.findIndex(arg => arg === "--base-path");
+  if(basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
+  args.push(...["--base-path", dataPath]);
+
   const finalArgs: string[] = [
     command,
     "--chain",
@@ -211,7 +215,6 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", useWrapp
     "--rpc-methods",
     "unsafe",
     "--unsafe-ws-external",
-    "--tmp",
     ...args,
   ];
 

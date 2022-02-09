@@ -1,6 +1,6 @@
 import execa from "execa";
 import { resolve } from "path";
-import { DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT } from "../../configManager";
+import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT } from "../../constants";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
@@ -23,6 +23,7 @@ export function initClient(
 
 export class PodmanClient extends Client {
   namespace: string;
+  chainId?: string;
   configPath: string;
   debug: boolean;
   timeout: number;
@@ -30,6 +31,7 @@ export class PodmanClient extends Client {
   podMonitorAvailable: boolean = false;
   localMagicFilepath: string;
   remoteDir: string;
+  dataDir: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
@@ -40,6 +42,7 @@ export class PodmanClient extends Client {
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
+    this.dataDir = DEFAULT_DATA_DIR;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -236,7 +239,11 @@ export class PodmanClient extends Client {
       )}`
     );
 
-    // copy files to volume cfg
+    // initialize keystore
+    const dataPath = podDef.spec.volumes.find((vol:any)  => vol.name === "tmp-data");
+    await fs.mkdir(`${dataPath.hostPath.path}/chains/${this.chainId}/keystore`, { recursive: true });
+
+    // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
       await fs.copyFile(
