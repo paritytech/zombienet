@@ -1,6 +1,6 @@
 Description: Disputes
 Network: ./00001-dispute-valid-block.toml
-Creds: config.gcloud
+Creds: config
 
 
 alice: is up
@@ -24,6 +24,6 @@ alice: reports parachain_candidate_dispute_votes{validity="valid"} is at least 1
 bob: reports parachain_candidate_dispute_votes{validity="valid"} is at least 2 within 5 seconds
 charlie: reports parachain_candidate_dispute_votes{validity="valid"} is at least 2 within 5 seconds
 alice: reports parachain_candidate_dispute_concluded{validity="valid"} is at least 1 within 5 seconds
-alice: reports parachain_candidate_dispute_concluded{validity="invalid"} is 0 within 5 seconds
+alice: reports parachain_candidate_dispute_concluded{validity="invalid"} is 0 within 200 seconds
 bob: reports parachain_candidate_dispute_concluded{validity="valid"} is at least 1 within 5 seconds
 charlie: reports parachain_candidate_dispute_concluded{validity="valid"} is at least 1 within 5 seconds
