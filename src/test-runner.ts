@@ -319,7 +319,7 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network, backchannelMap: BackchannelMap) => {
       let value;
       try {
-        value = timeout
+        value = (timeout && !(comparatorFn === "equal" && targetValue === 0))
           ? await network
               .node(nodeName)
               .getMetric(metricName, targetValue, timeout)
