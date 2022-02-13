@@ -21,5 +21,5 @@ export {
   validateRuntimeCode,
   paraGetBlockHeight,
   paraIsRegistered,
-  findPatternInSystemEventSubscription
+  findPatternInSystemEventSubscription,
 };

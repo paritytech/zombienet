@@ -44,8 +44,8 @@ export async function genBootnodeDef(
       securityContext: {
         fsGroup: 1000,
         runAsUser: 1000,
-        runAsGroup: 1000
-      }
+        runAsGroup: 1000,
+      },
     },
   };
 }
@@ -85,8 +85,8 @@ export async function genNodeDef(
       securityContext: {
         fsGroup: 1000,
         runAsUser: 1000,
-        runAsGroup: 1000
-      }
+        runAsGroup: 1000,
+      },
     },
   };
 }
@@ -98,7 +98,7 @@ function make_transfer_containter(): any {
     imagePullPolicy: "Always",
     volumeMounts: [
       { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
-      { name: "tmp-data", mountPath: "/data", readOnly: false }
+      { name: "tmp-data", mountPath: "/data", readOnly: false },
     ],
     command: [
       "ash",
@@ -111,13 +111,10 @@ function make_transfer_containter(): any {
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
-    { name: "tmp-data", mountPath: "/data", readOnly: false }
+    { name: "tmp-data", mountPath: "/data", readOnly: false },
   ];
 
-  const devices = [
-    { name: "tmp-cfg" },
-    { name: "tmp-data" }
-  ];
+  const devices = [{ name: "tmp-cfg" }, { name: "tmp-data" }];
 
   return [volume_mounts, devices];
 }
@@ -130,7 +127,7 @@ async function make_main_container(
     { containerPort: PROMETHEUS_PORT, name: "prometheus" },
     { containerPort: RPC_HTTP_PORT, name: "rpc-http" },
     { containerPort: RPC_WS_PORT, name: "rpc-ws" },
-    { containerPort: P2P_PORT, name: "p2p" }
+    { containerPort: P2P_PORT, name: "p2p" },
   ];
   const command = await genCmd(nodeSetup);
 

@@ -29,14 +29,13 @@ export async function genBootnodeDef(
 
   const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
 
-
   return {
     metadata: {
       name: "bootnode",
       namespace: namespace,
       labels: {
-        "name": namespace,
-        "instance": "bootnode",
+        name: namespace,
+        instance: "bootnode",
         "zombie-role": "bootnode",
         app: "zombienet",
         "zombie-ns": namespace,
@@ -45,9 +44,9 @@ export async function genBootnodeDef(
     spec: {
       cfgPath: `${client.tmpDir}/${nodeSetup.name}/cfg`,
       ports,
-      command
-    }
-  }
+      command,
+    },
+  };
 }
 
 export async function genNodeDef(
@@ -72,22 +71,24 @@ export async function genNodeDef(
       name: nodeSetup.name,
       namespace: namespace,
       labels: {
-        "zombie-role": nodeSetup.zombieRole ? nodeSetup.zombieRole :
-          nodeSetup.validator ? "authority" :
-          "full-node",
+        "zombie-role": nodeSetup.zombieRole
+          ? nodeSetup.zombieRole
+          : nodeSetup.validator
+          ? "authority"
+          : "full-node",
         app: "zombienet",
         "zombie-ns": namespace,
-        "name": namespace,
-        "instance": nodeSetup.name,
-      }
+        name: namespace,
+        instance: nodeSetup.name,
+      },
     },
     spec: {
       cfgPath,
       dataPath,
       ports,
-      command
-    }
-  }
+      command,
+    },
+  };
 }
 
 async function getPorts() {
@@ -96,21 +97,32 @@ async function getPorts() {
       containerPort: PROMETHEUS_PORT,
       name: "prometheus",
       flag: "--prometheus-port",
-      hostPort: await getRandomPort()
+      hostPort: await getRandomPort(),
     },
     {
-      containerPort: RPC_HTTP_PORT, name: "rpc", flag: "--rpc-port", hostPort: await getRandomPort()
+      containerPort: RPC_HTTP_PORT,
+      name: "rpc",
+      flag: "--rpc-port",
+      hostPort: await getRandomPort(),
     },
     {
-      containerPort: RPC_WS_PORT, name: "ws", flag: "--ws-port", hostPort: await getRandomPort()
+      containerPort: RPC_WS_PORT,
+      name: "ws",
+      flag: "--ws-port",
+      hostPort: await getRandomPort(),
     },
-    { containerPort: P2P_PORT, name: "p2p", flag: "--port", hostPort: await getRandomPort() } //p2p
+    {
+      containerPort: P2P_PORT,
+      name: "p2p",
+      flag: "--port",
+      hostPort: await getRandomPort(),
+    }, //p2p
   ];
 
-  return ports
+  return ports;
 }
 
-function getPortFlags(ports: any): {[flag: string]: number} {
+function getPortFlags(ports: any): { [flag: string]: number } {
   const portFlags = ports.reduce((memo: any, portItem: any) => {
     memo[portItem.flag] = portItem.hostPort;
     return memo;
@@ -135,7 +147,7 @@ export function createTempNodeDef(
     env: [],
     telemetryUrl: "",
     overrides: [],
-    zombieRole: "temp"
+    zombieRole: "temp",
   };
 
   return node;

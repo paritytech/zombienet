@@ -12,9 +12,24 @@ import {
   envVars,
 } from "./types";
 import { getSha256 } from "./utils";
-import { DEFAULT_ADDER_COLLATOR_BIN, DEFAULT_CHAIN, DEFAULT_CHAIN_SPEC_COMMAND, DEFAULT_COLLATOR_IMAGE, DEFAULT_COMMAND, DEFAULT_GENESIS_GENERATE_SUBCOMMAND, DEFAULT_GLOBAL_TIMEOUT, DEFAULT_IMAGE, DEFAULT_WASM_GENERATE_SUBCOMMAND, DEV_ACCOUNTS, GENESIS_STATE_FILENAME, GENESIS_WASM_FILENAME, P2P_PORT, RPC_WS_PORT, ZOMBIE_WRAPPER } from "./constants";
+import {
+  DEFAULT_ADDER_COLLATOR_BIN,
+  DEFAULT_CHAIN,
+  DEFAULT_CHAIN_SPEC_COMMAND,
+  DEFAULT_COLLATOR_IMAGE,
+  DEFAULT_COMMAND,
+  DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
+  DEFAULT_GLOBAL_TIMEOUT,
+  DEFAULT_IMAGE,
+  DEFAULT_WASM_GENERATE_SUBCOMMAND,
+  DEV_ACCOUNTS,
+  GENESIS_STATE_FILENAME,
+  GENESIS_WASM_FILENAME,
+  P2P_PORT,
+  RPC_WS_PORT,
+  ZOMBIE_WRAPPER,
+} from "./constants";
 import { generateKeyForNode } from "./keys";
-
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -57,10 +72,11 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
     },
-    parachains: []
+    parachains: [],
   };
 
-  if(config.relaychain.genesis) networkSpec.relaychain.genesis = config.relaychain.genesis;
+  if (config.relaychain.genesis)
+    networkSpec.relaychain.genesis = config.relaychain.genesis;
   const chainName = config.relaychain.chain || DEFAULT_CHAIN;
 
   // settings
@@ -98,27 +114,40 @@ export async function generateNetworkSpec(
 
   const relayChainBootnodes: string[] = [];
   for (const node of config.relaychain.nodes || []) {
-    const nodeSetup = await getNodeFromConfig(networkSpec, node, relayChainBootnodes, globalOverrides);
+    const nodeSetup = await getNodeFromConfig(
+      networkSpec,
+      node,
+      relayChainBootnodes,
+      globalOverrides
+    );
     networkSpec.relaychain.nodes.push(nodeSetup);
   }
 
-  for(const nodeGroup of config.relaychain.node_groups || []) {
-    for(let i=0;i < nodeGroup.count; i++) {
+  for (const nodeGroup of config.relaychain.node_groups || []) {
+    for (let i = 0; i < nodeGroup.count; i++) {
       let node: NodeConfig = {
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
-        args: nodeGroup.args?.filter( arg => ! DEV_ACCOUNTS.includes(arg.toLocaleLowerCase().replace("--",""))),
+        args: nodeGroup.args?.filter(
+          (arg) =>
+            !DEV_ACCOUNTS.includes(arg.toLocaleLowerCase().replace("--", ""))
+        ),
         validator: true, // groups are always validators
         env: nodeGroup.env,
-        overrides: nodeGroup.overrides
-      }
-      const nodeSetup = await getNodeFromConfig(networkSpec, node, relayChainBootnodes, globalOverrides);
+        overrides: nodeGroup.overrides,
+      };
+      const nodeSetup = await getNodeFromConfig(
+        networkSpec,
+        node,
+        relayChainBootnodes,
+        globalOverrides
+      );
       networkSpec.relaychain.nodes.push(nodeSetup);
     }
   }
 
-  if(networkSpec.relaychain.nodes.length < 1) {
+  if (networkSpec.relaychain.nodes.length < 1) {
     throw new Error("No NODE defined in config, please review.");
   }
 
@@ -154,7 +183,7 @@ export async function generateNetworkSpec(
           ? parachain.genesis_state_generator
           : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
 
-        if(! collatorBinary.includes("adder")) {
+        if (!collatorBinary.includes("adder")) {
           computedStateCommand += ` --parachain-id ${parachain.id}`;
         }
 
@@ -202,7 +231,7 @@ export async function generateNetworkSpec(
           chain: networkSpec.relaychain.chain,
           args: parachain.collator.args || [],
           env: env,
-          bootnodes
+          bootnodes,
         },
       };
 
@@ -243,13 +272,13 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
       "--ws-external",
       "--rpc-external",
       "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333/ws"
+      "/ip4/0.0.0.0/tcp/30333/ws",
     ],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
     overrides: [],
-    zombieRole: "bootnode"
+    zombieRole: "bootnode",
   };
 
   return nodeSetup;
@@ -299,7 +328,12 @@ function isValidatorbyArgs(nodeArgs: string[]): boolean {
   return validatorAccount ? true : false;
 }
 
-async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBootnodes: string[], globalOverrides: Override[]): Promise<Node> {
+async function getNodeFromConfig(
+  networkSpec: any,
+  node: NodeConfig,
+  relayChainBootnodes: string[],
+  globalOverrides: Override[]
+): Promise<Node> {
   const command = node.command
     ? node.command
     : networkSpec.relaychain.defaultCommand;
@@ -308,7 +342,7 @@ async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBo
   if (node.args) args = args.concat(node.args);
   if (node.extra_args) args = args.concat(node.extra_args);
 
-  const env = (node.env) ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
+  const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
   let nodeOverrides: Override[] = [];
   if (node.overrides) {
@@ -334,7 +368,7 @@ async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBo
 
   // enable --prometheus-external by default
   const prometheusExternal =
-  networkSpec.settings?.prometheus !== undefined
+    networkSpec.settings?.prometheus !== undefined
       ? networkSpec.settings.prometheus
       : true;
 
@@ -361,7 +395,7 @@ async function getNodeFromConfig(networkSpec:any, node: NodeConfig, relayChainBo
     telemetry: networkSpec.settings?.telemetry ? true : false,
     prometheus: prometheusExternal,
     overrides: [...globalOverrides, ...nodeOverrides],
-    addToBootnodes: node.add_to_bootnodes ? true : false
+    addToBootnodes: node.add_to_bootnodes ? true : false,
   };
 
   return nodeSetup;

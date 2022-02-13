@@ -23,10 +23,10 @@ export async function setupChainSpec(
   const client = getClient();
   if (networkSpec.relaychain.chainSpecCommand) {
     const { defaultImage, chainSpecCommand } = networkSpec.relaychain;
-    const plainChainSpecOutputFilePath = client.remoteDir + "/" + DEFAULT_CHAIN_SPEC.replace(
-      /{{chainName}}/gi,
-      chainName
-    );
+    const plainChainSpecOutputFilePath =
+      client.remoteDir +
+      "/" +
+      DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
     // set output of command
     const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
     const node = createTempNodeDef(
@@ -59,14 +59,14 @@ export async function getChainSpecRaw(
   const plainPath = chainFullPath.replace(".json", "-plain.json");
   const client = getClient();
 
-  const remoteChainSpecFullPath = client.tmpDir + "/" + DEFAULT_CHAIN_SPEC.replace(
-    /{{chainName}}/,
-    chainName
-  );
-  const remoteChainSpecRawFullPath = client.tmpDir + "/" + DEFAULT_CHAIN_SPEC_RAW.replace(
-    /{{chainName}}/,
-    chainName
-  );
+  const remoteChainSpecFullPath =
+    client.tmpDir +
+    "/" +
+    DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/, chainName);
+  const remoteChainSpecRawFullPath =
+    client.tmpDir +
+    "/" +
+    DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
   const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
     /{{chainName}}/gi,
     remoteChainSpecFullPath
@@ -77,7 +77,6 @@ export async function getChainSpecRaw(
 
   const podDef = await genNodeDef(namespace, node);
   const podName = podDef.metadata.name;
-
 
   await client.spawnFromDef(podDef);
 

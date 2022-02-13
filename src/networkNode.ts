@@ -1,11 +1,14 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import minimatch from "minimatch";
 
-import { Metrics, fetchMetrics, getMetricName, getHistogramBuckets, BucketHash } from "./metrics";
 import {
-  DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  PROMETHEUS_PORT,
-} from "./constants";
+  Metrics,
+  fetchMetrics,
+  getMetricName,
+  getHistogramBuckets,
+  BucketHash,
+} from "./metrics";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./constants";
 import { getClient } from "./providers/client";
 
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
@@ -254,7 +257,6 @@ export class NetworkNode implements NetworkNodeInterface {
     }
   }
 
-
   async getHistogramSamplesInBuckets(
     rawmetricName: string,
     buckets: string[], // empty string means all.
@@ -270,7 +272,10 @@ export class NetworkNode implements NetworkNodeInterface {
       }, timeout * 1000);
 
       const metricName = getMetricName(rawmetricName);
-      let histogramBuckets = await getHistogramBuckets(this.prometheusUri, metricName);
+      let histogramBuckets = await getHistogramBuckets(
+        this.prometheusUri,
+        metricName
+      );
       let value = this._getSamplesCount(histogramBuckets, buckets);
       if (desiredMetricValue === null || value >= desiredMetricValue) {
         debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
@@ -288,7 +293,10 @@ export class NetworkNode implements NetworkNodeInterface {
         // refresh metrics
         try {
           debug(`fetching buckets - q: ${c}  time:  ${new Date()}`);
-          histogramBuckets = await getHistogramBuckets(this.prometheusUri, metricName);
+          histogramBuckets = await getHistogramBuckets(
+            this.prometheusUri,
+            metricName
+          );
         } catch (err) {
           debug(`Error fetching buckets, recreating port-fw`);
           debug(err);
@@ -325,9 +333,11 @@ export class NetworkNode implements NetworkNodeInterface {
     }
   }
 
-
-
-  async findPattern(pattern: string, isGlob: boolean, timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {
+  async findPattern(
+    pattern: string,
+    isGlob: boolean,
+    timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+  ): Promise<boolean> {
     let limitTimeout;
     let expired: boolean = false;
     try {
@@ -336,7 +346,7 @@ export class NetworkNode implements NetworkNodeInterface {
         expired = true;
       }, timeout * 1000);
 
-      const re = (isGlob) ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
       const client = getClient();
 
       // loop until get the desired value or timeout
@@ -346,16 +356,19 @@ export class NetworkNode implements NetworkNodeInterface {
 
         // By default use 2s since we sleep 1s.
         const logs = await client.getNodeLogs(this.name, 2, true);
-        const dedupedLogs = this._dedupLogs(logs.split("\n"), client.providerName === "native");
-        const index = dedupedLogs.findIndex(line => {
-          if(client.providerName !== "native") {
+        const dedupedLogs = this._dedupLogs(
+          logs.split("\n"),
+          client.providerName === "native"
+        );
+        const index = dedupedLogs.findIndex((line) => {
+          if (client.providerName !== "native") {
             // remove the extra timestamp
-            line = line.split(" ").slice(1).join(" ")
+            line = line.split(" ").slice(1).join(" ");
           }
           return re.test(line);
         });
 
-        if(index >= 0) {
+        if (index >= 0) {
           done = true;
           this.lastLogLineCheckedTimestamp = dedupedLogs[index];
           this.lastLogLineCheckedIndex = index;
@@ -367,7 +380,7 @@ export class NetworkNode implements NetworkNodeInterface {
       }
 
       clearTimeout(limitTimeout);
-      return true
+      return true;
     } catch (err) {
       if (limitTimeout) clearTimeout(limitTimeout);
       throw new Error(`Error getting pattern: ${pattern}`);
@@ -376,13 +389,13 @@ export class NetworkNode implements NetworkNodeInterface {
 
   // prevent to seach in the same log line twice.
   _dedupLogs(logs: string[], useIndex = false): string[] {
-    if( ! this.lastLogLineCheckedTimestamp) return logs;
-    if(useIndex) return logs.slice(this.lastLogLineCheckedIndex);
+    if (!this.lastLogLineCheckedTimestamp) return logs;
+    if (useIndex) return logs.slice(this.lastLogLineCheckedIndex);
 
     const lastLineTs = this.lastLogLineCheckedTimestamp.split(" ")[0];
-    const index = logs.findIndex(logLine => {
+    const index = logs.findIndex((logLine) => {
       const thisLineTs = logLine.split(" ")[0];
-      return ( thisLineTs > lastLineTs );
+      return thisLineTs > lastLineTs;
     });
     return logs.slice(index);
   }
@@ -411,8 +424,9 @@ export class NetworkNode implements NetworkNodeInterface {
     debug("buckets samples count:");
     debug(buckets);
     let count = 0;
-    for(const key of bucketKeys) {
-      if(buckets[key] === undefined) throw new Error(`Bucket with le: ${key} is NOT present in metrics`);
+    for (const key of bucketKeys) {
+      if (buckets[key] === undefined)
+        throw new Error(`Bucket with le: ${key} is NOT present in metrics`);
       count += buckets[key];
     }
     return count;

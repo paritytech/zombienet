@@ -25,7 +25,7 @@ export function initClient(
   namespace: string,
   tmpDir: string
 ): KubeClient {
-  const client = new KubeClient(configPath, namespace,  tmpDir);
+  const client = new KubeClient(configPath, namespace, tmpDir);
   setClient(client);
   return client;
 }
@@ -102,18 +102,22 @@ export class KubeClient extends Client {
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
 
-    if(keystore) {
+    if (keystore) {
       // initialize keystore
-      await this.runCommand([
-        "exec",
-        name,
-        "-c",
-        TRANSFER_CONTAINER_NAME,
-        "--",
-        "/bin/mkdir",
-        "-p",
-        `/data/chains/${this.chainId}/keystore`
-      ], undefined, true);
+      await this.runCommand(
+        [
+          "exec",
+          name,
+          "-c",
+          TRANSFER_CONTAINER_NAME,
+          "--",
+          "/bin/mkdir",
+          "-p",
+          `/data/chains/${this.chainId}/keystore`,
+        ],
+        undefined,
+        true
+      );
 
       // inject keys
       await this.copyFileToPod(
@@ -298,7 +302,7 @@ export class KubeClient extends Client {
     container: string | undefined = undefined,
     unique: boolean = false
   ) {
-    if(unique) {
+    if (unique) {
       const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
       if (container) args.push("-c", container);
       const result = await this.runCommand(args, undefined, true);
@@ -415,7 +419,7 @@ export class KubeClient extends Client {
       {
         type: "deployment",
         files: ["backchannel-pod.yaml", "fileserver-pod.yaml"],
-      }
+      },
     ];
 
     for (const resourceType of resources) {
@@ -521,10 +525,14 @@ export class KubeClient extends Client {
     });
   }
 
-  async getNodeLogs(podName: string, since: number|undefined = undefined, withTimestamp = false): Promise<string> {
+  async getNodeLogs(
+    podName: string,
+    since: number | undefined = undefined,
+    withTimestamp = false
+  ): Promise<string> {
     const args = ["logs"];
-    if(since && since > 0) args.push(`--since=${since}s`);
-    if(withTimestamp) args.push("--timestamps=true");
+    if (since && since > 0) args.push(`--since=${since}s`);
+    if (withTimestamp) args.push("--timestamps=true");
     args.push(...[podName, "--namespace", this.namespace]);
 
     const result = await this.runCommand(args, undefined, false);

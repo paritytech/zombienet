@@ -282,11 +282,10 @@ export class Network {
     // Support native VSCode remote extension automatic port forwarding.
     // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
-    let wsUri = provider === "native" ? node.wsUri : encodeURIComponent(node.wsUri);
+    let wsUri =
+      provider === "native" ? node.wsUri : encodeURIComponent(node.wsUri);
     console.log(
-      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${
-        wsUri
-      }#/explorer\n`
+      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer\n`
     );
     console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
     console.log("---\n");

@@ -1,7 +1,12 @@
 import execa from "execa";
 import { resolve } from "path";
 import { copy as fseCopy } from "fs-extra";
-import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT } from "../../constants";
+import {
+  DEFAULT_DATA_DIR,
+  DEFAULT_REMOTE_DIR,
+  P2P_PORT,
+  PROMETHEUS_PORT,
+} from "../../constants";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
@@ -75,14 +80,22 @@ export class PodmanClient extends Client {
   async staticSetup(): Promise<void> {
     const prometheusSpec = await genPrometheusDef(this.namespace);
     const promPort = prometheusSpec.spec.containers[0].ports[0].hostPort;
-    await this.createResource(prometheusSpec,false,true);
-    console.log(`\n\t Monitor: ${decorators.green(prometheusSpec.metadata.name)} - url: http://127.0.0.1:${promPort}`);
+    await this.createResource(prometheusSpec, false, true);
+    console.log(
+      `\n\t Monitor: ${decorators.green(
+        prometheusSpec.metadata.name
+      )} - url: http://127.0.0.1:${promPort}`
+    );
 
     const prometheusIp = await this.getPodIp("prometheus");
     const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp);
-    await this.createResource(grafanaSpec,false,false);
+    await this.createResource(grafanaSpec, false, false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;
-    console.log(`\n\t Monitor: ${decorators.green(grafanaSpec.metadata.name)} - url: http://127.0.0.1:${grafanaPort}`);
+    console.log(
+      `\n\t Monitor: ${decorators.green(
+        grafanaSpec.metadata.name
+      )} - url: http://127.0.0.1:${grafanaPort}`
+    );
   }
 
   async createStaticResource(filename: string): Promise<void> {
@@ -142,12 +155,18 @@ export class PodmanClient extends Client {
   async addNodeToPrometheus(podName: string) {
     const podIp = await this.getPodIp(podName);
     const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
-    await fs.writeFile(`${this.tmpDir}/prometheus/data/sd_config_${podName}.json`, content);
+    await fs.writeFile(
+      `${this.tmpDir}/prometheus/data/sd_config_${podName}.json`,
+      content
+    );
   }
 
-  async getNodeLogs(podName: string, since: number|undefined = undefined): Promise<string> {
+  async getNodeLogs(
+    podName: string,
+    since: number | undefined = undefined
+  ): Promise<string> {
     const args = ["logs"];
-    if(since && since > 0) args.push(...["--since",`${since}s`]);
+    if (since && since > 0) args.push(...["--since", `${since}s`]);
     args.push(`${podName}_pod-${podName}`);
 
     const result = await this.runCommand(args, undefined, false);
@@ -183,7 +202,8 @@ export class PodmanClient extends Client {
     const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
     const result = await this.runCommand(args, undefined, false);
     const resultJson = JSON.parse(result.stdout);
-    const podIp = resultJson[0].NetworkSettings.Networks[this.namespace].IPAddress;
+    const podIp =
+      resultJson[0].NetworkSettings.Networks[this.namespace].IPAddress;
     return podIp;
   }
 
@@ -240,9 +260,11 @@ export class PodmanClient extends Client {
       )}`
     );
 
-    if(keystore) {
+    if (keystore) {
       // initialize keystore
-      const dataPath = podDef.spec.volumes.find((vol:any)  => vol.name === "tmp-data");
+      const dataPath = podDef.spec.volumes.find(
+        (vol: any) => vol.name === "tmp-data"
+      );
       debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${this.chainId}/keystore`;
       debug("keystoreRemoteDir", keystoreRemoteDir);
@@ -251,7 +273,6 @@ export class PodmanClient extends Client {
       await fseCopy(keystore, keystoreRemoteDir);
       debug("keys injected");
     }
-
 
     // copy files to volumes
     for (const fileMap of filesToCopy) {

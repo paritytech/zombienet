@@ -25,9 +25,16 @@ import {
   changeGenesisConfig,
   addParachainToGenesis,
   addHrmpChannelsToGenesis,
-  addBootNodes
+  addBootNodes,
 } from "./chain-spec";
-import { generateNamespace, sleep, filterConsole, loadTypeDef, getSha256, series } from "./utils";
+import {
+  generateNamespace,
+  sleep,
+  filterConsole,
+  loadTypeDef,
+  getSha256,
+  series,
+} from "./utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
@@ -57,12 +64,12 @@ export async function start(
   options?: orchestratorOptions
 ) {
   const opts = {
-    ...{ monitor : false, spawnConcurrency: 1, inCI: false },
-    ...options
+    ...{ monitor: false, spawnConcurrency: 1, inCI: false },
+    ...options,
   };
 
-  debug("options",options);
-  debug("opts",opts);
+  debug("options", options);
+  debug("opts", opts);
 
   let network: Network | undefined;
   let cronInterval = undefined;
@@ -124,7 +131,8 @@ export async function start(
     } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
-    const endpointPort = client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT;
+    const endpointPort =
+      client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT;
     network = new Network(client, namespace, tmpDir.path);
 
     console.log(
@@ -151,9 +159,15 @@ export async function start(
 
     const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
     const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
-    await fs.promises.writeFile(zombieWrapperLocalPath, zombieWrapperContent.toString().replace("{{REMOTE_DIR}}", client.remoteDir), {
-      mode: 0o755,
-    });
+    await fs.promises.writeFile(
+      zombieWrapperLocalPath,
+      zombieWrapperContent
+        .toString()
+        .replace("{{REMOTE_DIR}}", client.remoteDir),
+      {
+        mode: 0o755,
+      }
+    );
 
     // create namespace
     await client.createNamespace();
@@ -186,7 +200,7 @@ export async function start(
     const chainSpecContent = require(chainSpecFullPathPlain);
     client.chainId = chainSpecContent.id;
 
-    if(! chainSpecContent.genesis.raw) {
+    if (!chainSpecContent.genesis.raw) {
       // Chain spec customization logic
       clearAuthorities(chainSpecFullPathPlain);
       for (const node of networkSpec.relaychain.nodes) {
@@ -194,7 +208,10 @@ export async function start(
       }
 
       if (networkSpec.relaychain.genesis) {
-        await changeGenesisConfig(chainSpecFullPathPlain, networkSpec.relaychain.genesis);
+        await changeGenesisConfig(
+          chainSpecFullPathPlain,
+          networkSpec.relaychain.genesis
+        );
       }
 
       for (const parachain of networkSpec.parachains) {
@@ -216,7 +233,10 @@ export async function start(
       }
 
       if (networkSpec.hrmpChannels) {
-        await addHrmpChannelsToGenesis(chainSpecFullPathPlain, networkSpec.hrmpChannels);
+        await addHrmpChannelsToGenesis(
+          chainSpecFullPathPlain,
+          networkSpec.hrmpChannels
+        );
       }
 
       // generate the raw chain spec
@@ -227,9 +247,12 @@ export async function start(
         networkSpec.relaychain.defaultCommand,
         chainSpecFullPath
       );
-
     } else {
-      console.log(`\n\t\t 🚧 ${decorators.yellow("Chain Spec was set to a file in raw format, can't customize.")} 🚧`);
+      console.log(
+        `\n\t\t 🚧 ${decorators.yellow(
+          "Chain Spec was set to a file in raw format, can't customize."
+        )} 🚧`
+      );
       await fs.promises.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
     }
 
@@ -266,7 +289,7 @@ export async function start(
 
     let bootnodes: string[] = [];
 
-    if( networkConfig.settings.bootnode ) {
+    if (networkConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
       networkSpec.relaychain.nodes.unshift(bootnodeSpec);
     }
@@ -277,7 +300,9 @@ export async function start(
       node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
-      const podDef = await ((node.name === "bootnode") ? genBootnodeDef(namespace,node) : genNodeDef(namespace, node));
+      const podDef = await (node.name === "bootnode"
+        ? genBootnodeDef(namespace, node)
+        : genNodeDef(namespace, node));
 
       let finalFilesToCopyToNode = [...filesToCopyToNodes];
       for (const override of node.overrides) {
@@ -288,24 +313,33 @@ export async function start(
       }
 
       let keystoreLocalDir;
-      if( node.name !== "bootnode") {
+      if (node.name !== "bootnode") {
         // check if the node directory exists if not create (e.g for k8s provider)
         const nodeFilesPath = `${tmpDir.path}/${node.name}`;
-        if( ! fs.existsSync(nodeFilesPath)) {
+        if (!fs.existsSync(nodeFilesPath)) {
           await fs.promises.mkdir(nodeFilesPath, { recursive: true });
         }
 
-        const keystoreFiles = await generateKeystoreFiles(node, `${tmpDir.path}/${node.name}`);
+        const keystoreFiles = await generateKeystoreFiles(
+          node,
+          `${tmpDir.path}/${node.name}`
+        );
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
-      await client.spawnFromDef(podDef, finalFilesToCopyToNode, keystoreLocalDir);
+      await client.spawnFromDef(
+        podDef,
+        finalFilesToCopyToNode,
+        keystoreLocalDir
+      );
 
-      if( node.addToBootnodes ) {
+      if (node.addToBootnodes) {
         // add first node as bootnode
         const [nodeIp, nodePort] = await client.getNodeInfo(
           podDef.metadata.name
         );
-        bootnodes.push( await generateBootnodeString(node.key!, nodeIp, nodePort));
+        bootnodes.push(
+          await generateBootnodeString(node.key!, nodeIp, nodePort)
+        );
         // add bootnodes to chain spec
         await addBootNodes(chainSpecFullPath, bootnodes);
         // flush require cache since we change the chain-spec
@@ -313,17 +347,26 @@ export async function start(
       }
 
       let networkNode: NetworkNode;
-      if(options?.inCI) {
+      if (options?.inCI) {
         const nodeIp = await client.getNodeIP(podDef.metadata.name);
         networkNode = new NetworkNode(
           node.name,
-          WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}", RPC_HTTP_PORT.toString()),
-          METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}", PROMETHEUS_PORT.toString()),
+          WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+            "{{PORT}}",
+            RPC_HTTP_PORT.toString()
+          ),
+          METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+            "{{PORT}}",
+            PROMETHEUS_PORT.toString()
+          ),
           userDefinedTypes
         );
       } else {
         const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-        const fwdPort = await client.startPortForwarding(endpointPort, nodeIdentifier);
+        const fwdPort = await client.startPortForwarding(
+          endpointPort,
+          nodeIdentifier
+        );
         const nodePrometheusPort = await client.startPortForwarding(
           PROMETHEUS_PORT,
           nodeIdentifier
@@ -331,8 +374,14 @@ export async function start(
 
         networkNode = new NetworkNode(
           node.name,
-          WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace("{{PORT}}", fwdPort.toString()),
-          METRICS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace("{{PORT}}", nodePrometheusPort.toString()),
+          WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+            "{{PORT}}",
+            fwdPort.toString()
+          ),
+          METRICS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+            "{{PORT}}",
+            nodePrometheusPort.toString()
+          ),
           userDefinedTypes
         );
       }
@@ -373,28 +422,32 @@ export async function start(
             console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
             break;
           case "native":
-           console.log(`\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`);
+            console.log(
+              `\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`
+            );
             break;
         }
       }
-    }
+    };
 
     const firstNode = networkSpec.relaychain.nodes.shift();
-    if( firstNode) {
+    if (firstNode) {
       await spawnNode(firstNode, network);
       await sleep(2000);
 
       const [nodeIp, nodePort] = await client.getNodeInfo(firstNode.name);
 
-      bootnodes.push( await generateBootnodeString(firstNode.key!, nodeIp, nodePort));
+      bootnodes.push(
+        await generateBootnodeString(firstNode.key!, nodeIp, nodePort)
+      );
       // add bootnodes to chain spec
       await addBootNodes(chainSpecFullPath, bootnodes);
       // flush require cache since we change the chain-spec
       delete require.cache[require.resolve(chainSpecFullPath)];
     }
 
-    const promiseGenerators = networkSpec.relaychain.nodes.map( (node:Node) => {
-      return () =>  spawnNode(node, network!);
+    const promiseGenerators = networkSpec.relaychain.nodes.map((node: Node) => {
+      return () => spawnNode(node, network!);
     });
 
     await series(promiseGenerators, opts.spawnConcurrency);
@@ -427,27 +480,39 @@ export async function start(
         env: parachain.collator.env,
         telemetryUrl: "",
         overrides: [],
-        zombieRole: "collator"
+        zombieRole: "collator",
       };
       const podDef = await genNodeDef(namespace, collator);
       await client.spawnFromDef(podDef, filesToCopyToNodes);
 
       let networkNode: NetworkNode;
-      if(options?.inCI) {
+      if (options?.inCI) {
         const nodeIp = await client.getNodeIP(podDef.metadata.name);
         networkNode = new NetworkNode(
           podDef.metadata.name,
-          WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}", RPC_HTTP_PORT.toString()),
-          METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}", PROMETHEUS_PORT.toString()),
+          WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+            "{{PORT}}",
+            RPC_HTTP_PORT.toString()
+          ),
+          METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+            "{{PORT}}",
+            PROMETHEUS_PORT.toString()
+          ),
           userDefinedTypes
         );
       } else {
         const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-        const rpcPort = await client.startPortForwarding(endpointPort, nodeIdentifier);
+        const rpcPort = await client.startPortForwarding(
+          endpointPort,
+          nodeIdentifier
+        );
 
         networkNode = new NetworkNode(
           podDef.metadata.name,
-          WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace("{{PORT}}", rpcPort.toString()),
+          WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+            "{{PORT}}",
+            rpcPort.toString()
+          ),
           "" // TODO: needs to connect for metrics?
         );
       }
