@@ -32,41 +32,42 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   }
 }
 
-export async function getHistogramBuckets(metricUri: string, metricName: string): Promise<BucketHash> {
+export async function getHistogramBuckets(
+  metricUri: string,
+  metricName: string
+): Promise<BucketHash> {
   debug(`fetching: ${metricUri}`);
   const response = await axios.get(metricUri, { timeout: 2000 });
   let previousBucketValue = 0;
   let buckets: any = {};
 
-  const resolvedMetricName = metricName.includes("_bucket") ? metricName : `${metricName}_bucket`;
+  const resolvedMetricName = metricName.includes("_bucket")
+    ? metricName
+    : `${metricName}_bucket`;
   const parsedMetricInput = parseLine(resolvedMetricName);
-
 
   for (const line of response.data.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
     const parsedLine = parseLine(line);
 
-
-
-    if( parsedMetricInput.name === parsedLine.name) {
+    if (parsedMetricInput.name === parsedLine.name) {
       // check labels if are presents
       let thereAreSomeMissingLabel = false;
       for (const [k, v] of parsedMetricInput.labels.entries()) {
         console.log(`looking for key ${k}`);
-        if(! parsedLine.labels.has(k) || parsedLine.labels.get(k) !== v) {
+        if (!parsedLine.labels.has(k) || parsedLine.labels.get(k) !== v) {
           thereAreSomeMissingLabel = true;
           break;
         }
       }
 
-      if( thereAreSomeMissingLabel ) continue; // don't match
+      if (thereAreSomeMissingLabel) continue; // don't match
 
       const metricValue = parseInt(parsedLine.value);
       const leLabel = parsedLine.labels.get("le");
       buckets[leLabel] = metricValue - previousBucketValue;
       previousBucketValue = metricValue;
       debug(`${parsedLine.name} le:${leLabel} ${metricValue}`);
-
     }
   }
 

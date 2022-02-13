@@ -108,11 +108,7 @@ export async function addParachainToGenesis(
   if (paras) {
     let new_para = [
       parseInt(para_id),
-      [
-        readDataFile(head),
-        readDataFile(wasm),
-        parachain,
-      ],
+      [readDataFile(head), readDataFile(wasm), parachain],
     ];
 
     paras.push(new_para);
@@ -150,29 +146,30 @@ export async function changeGenesisConfig(spec_path: string, updates: any) {
 }
 
 export async function addBootNodes(spec_path: string, addresses: string[]) {
-	let rawdata = fs.readFileSync(spec_path);
-	let chainSpec = JSON.parse(rawdata);
-	chainSpec.bootNodes = addresses;
-	let data = JSON.stringify(chainSpec, null, 2);
+  let rawdata = fs.readFileSync(spec_path);
+  let chainSpec = JSON.parse(rawdata);
+  chainSpec.bootNodes = addresses;
+  let data = JSON.stringify(chainSpec, null, 2);
 
-	fs.writeFileSync(spec_path, data);
-  if(addresses.length) {
-    console.log(`\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`);
+  fs.writeFileSync(spec_path, data);
+  if (addresses.length) {
+    console.log(
+      `\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`
+    );
   } else {
     console.log(`\n\t\t ${decorators.green("⚙ Clear Boot Nodes")}`);
   }
 }
 
 export async function addHrmpChannelsToGenesis(
-	spec_path: string,
-	hrmpChannels: HrmpChannelsConfig[]
+  spec_path: string,
+  hrmpChannels: HrmpChannelsConfig[]
 ) {
-	console.log("⛓ Adding Genesis HRMP Channels");
-	let rawdata = fs.readFileSync(spec_path);
-	let chainSpec = JSON.parse(rawdata);
+  console.log("⛓ Adding Genesis HRMP Channels");
+  let rawdata = fs.readFileSync(spec_path);
+  let chainSpec = JSON.parse(rawdata);
 
-
-	for (const hrmpChannel of hrmpChannels) {
+  for (const hrmpChannel of hrmpChannels) {
     let newHrmpChannel = [
       hrmpChannel.sender,
       hrmpChannel.recipient,
@@ -208,7 +205,7 @@ export async function addHrmpChannelsToGenesis(
 
     let data = JSON.stringify(chainSpec, null, 2);
     fs.writeFileSync(spec_path, data);
-	}
+  }
 }
 
 // Look at the key + values from `obj1` and try to replace them in `obj2`.

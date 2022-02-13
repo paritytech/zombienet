@@ -8,7 +8,10 @@ import {
 import { Node } from "./types";
 import { getRandomPort } from "./utils";
 
-function parseCmdWithArguments(commandWithArgs: string, useWrapper = true): string[] {
+function parseCmdWithArguments(
+  commandWithArgs: string,
+  useWrapper = true
+): string[] {
   const parts = commandWithArgs.split(" ");
   let finalCommand: string[] = [];
   if (["bash", "ash"].includes(parts[0])) {
@@ -24,7 +27,7 @@ function parseCmdWithArguments(commandWithArgs: string, useWrapper = true): stri
     finalCommand = [...finalCommand, ...[parts.slice(partIndex).join(" ")]];
   } else {
     finalCommand = [commandWithArgs];
-    if(useWrapper) finalCommand.unshift("/cfg/zombie-wrapper.sh");
+    if (useWrapper) finalCommand.unshift("/cfg/zombie-wrapper.sh");
   }
 
   return finalCommand;
@@ -117,11 +120,17 @@ export async function genCumulusCollatorCmd(
     }
   }
 
-  if(useWrapper) fullCmd.unshift("/cfg/zombie-wrapper.sh");
+  if (useWrapper) fullCmd.unshift("/cfg/zombie-wrapper.sh");
   return fullCmd;
 }
 
-export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath: string = "/data", useWrapper = true, portFlags?: { [flag: string]: number } ): Promise<string[]> {
+export async function genCmd(
+  nodeSetup: Node,
+  cfgPath: string = "/cfg",
+  dataPath: string = "/data",
+  useWrapper = true,
+  portFlags?: { [flag: string]: number }
+): Promise<string[]> {
   let {
     name,
     key,
@@ -156,7 +165,7 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath
 
   args.push("--no-mdns");
 
-  if(key) args.push(...["--node-key", key]);
+  if (key) args.push(...["--node-key", key]);
 
   if (!telemetry) args.push("--no-telemetry");
   else args.push(...["--telemetry-url", telemetryUrl]);
@@ -168,39 +177,38 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
 
-
-  if(portFlags) {
+  if (portFlags) {
     // ensure port are set as desired
-    for(const flag of Object.keys(portFlags)) {
-      const index = args.findIndex( arg => arg === flag);
-      if(index < 0) args.push(...[flag, portFlags[flag].toString()]);
+    for (const flag of Object.keys(portFlags)) {
+      const index = args.findIndex((arg) => arg === flag);
+      if (index < 0) args.push(...[flag, portFlags[flag].toString()]);
       else {
-        args[index+1] = portFlags[flag].toString()
+        args[index + 1] = portFlags[flag].toString();
       }
     }
 
     const port = portFlags["--port"];
-    const listenIndex = args.findIndex(arg => arg === "--listen-addr")
-    if(listenIndex >= 0) {
-      const parts = args[listenIndex+1].split("/");
+    const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
+    if (listenIndex >= 0) {
+      const parts = args[listenIndex + 1].split("/");
       parts[4] = port.toString();
-      args[listenIndex+1] = parts.join("/");
+      args[listenIndex + 1] = parts.join("/");
     } else {
-      args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`])
+      args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`]);
     }
 
-    const portFlagIndex = args.findIndex(arg => arg === "--port");
-    if(portFlagIndex >= 0) args.splice(portFlagIndex, 2);
+    const portFlagIndex = args.findIndex((arg) => arg === "--port");
+    if (portFlagIndex >= 0) args.splice(portFlagIndex, 2);
   } else {
     // ensure listen on `ws`
-    const listenIndex = args.findIndex(arg => arg === "--listen-addr");
-    if(listenIndex >= 0) args.splice(listenIndex, 2);
+    const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
+    if (listenIndex >= 0) args.splice(listenIndex, 2);
     args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
   }
 
   // set our base path
-  const basePathFlagIndex = args.findIndex(arg => arg === "--base-path");
-  if(basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
+  const basePathFlagIndex = args.findIndex((arg) => arg === "--base-path");
+  if (basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
   args.push(...["--base-path", dataPath]);
 
   const finalArgs: string[] = [
@@ -219,6 +227,6 @@ export async function genCmd(nodeSetup: Node, cfgPath: string = "/cfg", dataPath
   ];
 
   const resolvedCmd = [finalArgs.join(" ")];
-  if(useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
+  if (useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
   return resolvedCmd;
 }

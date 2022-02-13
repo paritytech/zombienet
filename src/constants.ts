@@ -26,7 +26,7 @@ export const DEFAULT_CHAIN_SPEC = "{{chainName}}-plain.json";
 export const DEFAULT_CHAIN_SPEC_RAW = "{{chainName}}-raw.json";
 export const DEFAULT_CHAIN_SPEC_COMMAND =
   "{{DEFAULT_COMMAND}} build-spec --chain {{chainName}} --disable-default-bootnode";
-export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND ="export-genesis-state";
+export const DEFAULT_GENESIS_GENERATE_SUBCOMMAND = "export-genesis-state";
 export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 export const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
 export const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-collator";
@@ -38,8 +38,9 @@ export const GENESIS_WASM_FILENAME = "genesis-wasm";
 export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
 export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 export const ZOMBIE_BUCKET = "zombienet-logs";
-export const WS_URI_PATTERN = "ws://127.0.0.1:{{PORT}}";
-export const METRICS_URI_PATTERN = "http://127.0.0.1:{{PORT}}/metrics";
+export const WS_URI_PATTERN = "ws://{{IP}}:{{PORT}}";
+export const METRICS_URI_PATTERN = "http://{{IP}}:{{PORT}}/metrics";
+export const LOCALHOST = "127.0.0.1";
 export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
 export const BAKCCHANNEL_PORT = 3000;
 export const BAKCCHANNEL_POD_NAME = "backchannel";
@@ -50,4 +51,13 @@ export const LOKI_URL_FOR_NODE =
   "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
 
 export const AVAILABLE_PROVIDERS = ["podman", "kubernetes", "native"];
-export const DEV_ACCOUNTS = ["alice", "bob", "charlie", "dave", "eve", "ferdie", "one", "two"];
+export const DEV_ACCOUNTS = [
+  "alice",
+  "bob",
+  "charlie",
+  "dave",
+  "eve",
+  "ferdie",
+  "one",
+  "two",
+];

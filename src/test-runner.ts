@@ -17,7 +17,7 @@ const {
   chainUpgrade,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
-  findPatternInSystemEventSubscription
+  findPatternInSystemEventSubscription,
 } = require("./jsapi-helpers");
 
 const debug = require("debug")("zombie::test-runner");
@@ -42,7 +42,7 @@ export interface BackchannelMap {
 export async function run(
   testFile: string,
   provider: string,
-  isCI: boolean = false,
+  inCI: boolean = false,
   concurrency: number = 1
 ) {
   let network: Network;
@@ -68,7 +68,7 @@ export async function run(
   config.settings.provider = provider;
 
   // find creds file
-  let credsFile = isCI ? "config" : testDef.creds;
+  let credsFile = inCI ? "config" : testDef.creds;
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {
@@ -97,7 +97,10 @@ export async function run(
     console.log(`\t Launching network... this can take a while.`);
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
-    network = await zombie.start(creds, config, {spawnConcurrency: concurrency});
+    network = await zombie.start(creds, config, {
+      spawnConcurrency: concurrency,
+      inCI,
+    });
 
     network.showNetworkInfo(config.settings.provider);
     return;
@@ -204,13 +207,19 @@ function parseAssertionLine(assertion: string) {
   );
 
   // Logs assertion
-  const assertLogLineRegex = new RegExp(/^(([\w-]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
+  const assertLogLineRegex = new RegExp(
+    /^(([\w-]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
+  );
 
   // system events
-  const assertSystemEventRegex = new RegExp(/^(([\w-]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i);
+  const assertSystemEventRegex = new RegExp(
+    /^(([\w-]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
+  );
 
   // Custom js-script
-  const assertCustomJsRegex = new RegExp(/^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i);
+  const assertCustomJsRegex = new RegExp(
+    /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
+  );
 
   // Backchannel
   // alice: wait for name and use as X within 30s
@@ -282,14 +291,14 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = isHistogram.exec(assertion);
-  if(m && m[2] && m[3] && m[5]) {
+  if (m && m[2] && m[3] && m[5]) {
     let timeout: number;
     let value: number;
     const nodeName = m[2];
     const metricName = m[3];
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
-    const buckets = m[6].split(",").map(x => x.replaceAll('"',"").trim());
+    const buckets = m[6].split(",").map((x) => x.replaceAll('"', "").trim());
     if (m[8]) timeout = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       let value;
@@ -297,8 +306,15 @@ function parseAssertionLine(assertion: string) {
         value = timeout
           ? await network
               .node(nodeName)
-              .getHistogramSamplesInBuckets(metricName, buckets, targetValue, timeout)
-          : await network.node(nodeName).getHistogramSamplesInBuckets(metricName, buckets);
+              .getHistogramSamplesInBuckets(
+                metricName,
+                buckets,
+                targetValue,
+                timeout
+              )
+          : await network
+              .node(nodeName)
+              .getHistogramSamplesInBuckets(metricName, buckets);
       } catch (err) {
         if (comparatorFn === "equal" && targetValue === 0) value = 0;
         else throw err;
@@ -319,11 +335,12 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network, backchannelMap: BackchannelMap) => {
       let value;
       try {
-        value = (timeout && !(comparatorFn === "equal" && targetValue === 0))
-          ? await network
-              .node(nodeName)
-              .getMetric(metricName, targetValue, timeout)
-          : await network.node(nodeName).getMetric(metricName);
+        value =
+          timeout && !(comparatorFn === "equal" && targetValue === 0)
+            ? await network
+                .node(nodeName)
+                .getMetric(metricName, targetValue, timeout)
+            : await network.node(nodeName).getMetric(metricName);
       } catch (err) {
         if (comparatorFn === "equal" && targetValue === 0) value = 0;
         else throw err;
@@ -333,33 +350,37 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = assertLogLineRegex.exec(assertion);
-  if(m && m[2] && m[5]) {
+  if (m && m[2] && m[5]) {
     let timeout: number;
     const nodeName = m[2];
     const pattern = m[5];
-    const isGlob = m[4] && m[4].trim() === "glob" || false;
+    const isGlob = (m[4] && m[4].trim() === "glob") || false;
     if (m[7]) timeout = parseInt(m[7], 10);
 
     return async (network: Network) => {
-      const found = timeout ?
-        await network.node(nodeName).findPattern(pattern, isGlob, timeout) :
-        await network.node(nodeName).findPattern(pattern, isGlob);
+      const found = timeout
+        ? await network.node(nodeName).findPattern(pattern, isGlob, timeout)
+        : await network.node(nodeName).findPattern(pattern, isGlob);
       expect(found).to.be.ok;
     };
   }
 
   m = assertSystemEventRegex.exec(assertion);
-  if(m && m[2] && m[5]) {
+  if (m && m[2] && m[5]) {
     const nodeName = m[2];
     const pattern = m[5];
-    const isGlob = m[4] && m[4].trim() === "glob" || false;
+    const isGlob = (m[4] && m[4].trim() === "glob") || false;
     const timeout = m[7] ? parseInt(m[7], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
 
     return async (network: Network) => {
       const node = network.node(nodeName);
       const api: ApiPromise = await connect(node.wsUri);
-      const re = (isGlob) ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
-      const found = await findPatternInSystemEventSubscription(api, re, timeout);
+      const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const found = await findPatternInSystemEventSubscription(
+        api,
+        re,
+        timeout
+      );
       api.disconnect();
 
       expect(found).to.be.ok;
@@ -367,34 +388,47 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = assertCustomJsRegex.exec(assertion);
-  if(m && m[1] && m[2]) {
+  if (m && m[1] && m[2]) {
     const nodeName = m[1];
     const jsFile = m[2];
     const withArgs = m[3] ? m[3] : "";
     const comparatorFn = getComparatorFn(m[5] || "");
-    let targetValue: string|number|undefined = m[6];
+    let targetValue: string | number | undefined = m[6];
     const timeout = m[8] ? parseInt(m[8], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
 
-    return async (network: Network, backchannelMap: BackchannelMap, testFile: string) => {
+    return async (
+      network: Network,
+      backchannelMap: BackchannelMap,
+      testFile: string
+    ) => {
       let limitTimeout;
       const networkInfo = {
-        chainSpecPath : network.chainSpecFullPath,
-        relay: network.relay.map(node => {
-          const {name, wsUri, prometheusUri, userDefinedTypes} = node;
-          return {name, wsUri, prometheusUri, userDefinedTypes};
+        chainSpecPath: network.chainSpecFullPath,
+        relay: network.relay.map((node) => {
+          const { name, wsUri, prometheusUri, userDefinedTypes } = node;
+          return { name, wsUri, prometheusUri, userDefinedTypes };
         }),
         paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
-          memo[paraId] = network.paras[paraId].map(node => {
-            return {...node};
+          memo[paraId] = network.paras[paraId].map((node) => {
+            return { ...node };
           });
           return memo;
         }, {}),
-        nodesByName: Object.keys(network.nodesByName).reduce((memo: any, nodeName) => {
-          const {name, wsUri, prometheusUri, userDefinedTypes, parachainId} = network.nodesByName[nodeName];
-          memo[nodeName] = {name, wsUri, prometheusUri, userDefinedTypes};
-          if(parachainId) memo[nodeName].parachainId = parachainId;
-          return memo;
-        }, {})
+        nodesByName: Object.keys(network.nodesByName).reduce(
+          (memo: any, nodeName) => {
+            const {
+              name,
+              wsUri,
+              prometheusUri,
+              userDefinedTypes,
+              parachainId,
+            } = network.nodesByName[nodeName];
+            memo[nodeName] = { name, wsUri, prometheusUri, userDefinedTypes };
+            if (parachainId) memo[nodeName].parachainId = parachainId;
+            return memo;
+          },
+          {}
+        ),
       };
 
       limitTimeout = setTimeout(() => {
@@ -406,15 +440,17 @@ function parseAssertionLine(assertion: string) {
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
       // shim with jsdom
-      const dom = new JSDOM("<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>");
+      const dom = new JSDOM(
+        "<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>"
+      );
       (global as any).window = dom.window;
       (global as any).document = dom.window.document;
       const jsScript = await import(resolvedJsFilePath);
-      const args = (withArgs === "") ? [] : withArgs.split(",");
+      const args = withArgs === "" ? [] : withArgs.split(",");
       let value;
       try {
         value = await jsScript.run(nodeName, networkInfo, args);
-      } catch(err) {
+      } catch (err) {
         console.log(`\n\t ${decorators.red("Error running custom-js.")}`);
         console.log(err);
         expect(false).to.be.ok;
@@ -424,8 +460,9 @@ function parseAssertionLine(assertion: string) {
       (global as any).window = undefined;
       (global as any).document = undefined;
       clearTimeout(limitTimeout);
-      if(targetValue) {
-        if(comparatorFn !== "equals") targetValue = parseInt(targetValue as string,10);
+      if (targetValue) {
+        if (comparatorFn !== "equals")
+          targetValue = parseInt(targetValue as string, 10);
         assert[comparatorFn](value, targetValue);
       } else {
         // test don't have matching output
@@ -433,7 +470,6 @@ function parseAssertionLine(assertion: string) {
       }
     };
   }
-
 
   m = backchannelWait.exec(assertion);
   if (m && m[1] && m[2] && m[3]) {

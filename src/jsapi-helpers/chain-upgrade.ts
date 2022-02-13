@@ -16,7 +16,7 @@ export async function chainUpgrade(
 
   const file = await axios({
     url: wasmFileUrl,
-    responseType: 'arraybuffer'
+    responseType: "arraybuffer",
   });
 
   const buff = Buffer.from(file.data);
@@ -30,7 +30,9 @@ export async function chainUpgrade(
 // It's required by the standard that custom sections cannot have any semantic differences
 // and can be ignored in the general case.
 // The wasm format consists of bunch of sections. Here we just slap a custom section to the end.
-export async function chainCustomSectionUpgrade(api: ApiPromise): Promise<string> {
+export async function chainCustomSectionUpgrade(
+  api: ApiPromise
+): Promise<string> {
   const code: any = await api.rpc.state.getStorage(":code");
   const codeHex = code.toString().slice(2);
   const codeBuf = Buffer.from(hexToBytes(codeHex));
@@ -39,7 +41,10 @@ export async function chainCustomSectionUpgrade(api: ApiPromise): Promise<string
   // add a custom section
   // Same as echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A" >> file.wasm
   const customSection = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a];
-  const withCustomSectionCode = Buffer.concat([decompressed, Buffer.from(customSection)]);
+  const withCustomSectionCode = Buffer.concat([
+    decompressed,
+    Buffer.from(customSection),
+  ]);
 
   // compress again
   const compressed = compress(withCustomSectionCode);

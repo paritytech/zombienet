@@ -34,7 +34,7 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  zombieRole?: "temp"|"node"|"bootnode"|"collator";
+  zombieRole?: "temp" | "node" | "bootnode" | "collator";
   initContainers?: object[];
   telemetry?: boolean;
   telemetryUrl: string;
@@ -172,9 +172,8 @@ export interface NodeGroupConfig {
   args?: string[];
   env?: envVars[];
   overrides?: Override[];
-  count: string|number,
+  count: string | number;
 }
-
 
 export interface ParachainConfig {
   id: number;
@@ -198,6 +197,7 @@ export interface ParachainConfig {
 export interface fileMap {
   localFilePath: string;
   remoteFilePath: string;
+  unique?: boolean;
 }
 
 export interface Override {
@@ -206,12 +206,12 @@ export interface Override {
 }
 
 export interface HrmpChannelsConfig {
-	sender: number;
-	recipient: number;
-	maxCapacity: number;
-	maxMessageSize: number;
+  sender: number;
+  recipient: number;
+  maxCapacity: number;
+  maxMessageSize: number;
 }
 
 interface ObjectJSON {
-	[key: string]: ObjectJSON | number | string;
+  [key: string]: ObjectJSON | number | string;
 }

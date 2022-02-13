@@ -1,8 +1,15 @@
 import execa from "execa";
-import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT, RPC_HTTP_PORT, RPC_WS_PORT } from "../../constants";
+import {
+  DEFAULT_DATA_DIR,
+  DEFAULT_REMOTE_DIR,
+  P2P_PORT,
+  PROMETHEUS_PORT,
+  RPC_HTTP_PORT,
+  RPC_WS_PORT,
+} from "../../constants";
 import { writeLocalJsonFile } from "../../utils";
 const fs = require("fs");
-const fsPromise = require("fs").promises;
+import { copy as fseCopy } from "fs-extra";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../colors";
@@ -34,14 +41,14 @@ export class NativeClient extends Client {
   dataDir: string;
   processMap: {
     [name: string]: {
-      pid?: number,
-      logs: string,
-      portMapping : {
+      pid?: number;
+      logs: string;
+      portMapping: {
         // Map know ports to random selected ones.
         // 9944 : 56045
-        [original: number] : number
-      }
-    }
+        [original: number]: number;
+      };
+    };
   };
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
@@ -78,7 +85,7 @@ export class NativeClient extends Client {
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Native provider don't have the `namespace` isolation.
     // but we create the `remoteDir` to place files
-    await fsPromise.mkdir(this.remoteDir, { recursive: true });
+    await fs.promises.mkdir(this.remoteDir, { recursive: true });
     return;
   }
   // Podman ONLY support `pods`
@@ -103,16 +110,13 @@ export class NativeClient extends Client {
 
   async destroyNamespace(): Promise<void> {
     // get pod names
-    let args = [
-      "bash",
-      "-c"
-    ];
+    let args = ["bash", "-c"];
 
     const memo: string[] = [];
     const pids: string[] = Object.keys(this.processMap).reduce((memo, key) => {
       if (this.processMap[key] && this.processMap[key].pid) {
         const pid = this.processMap[key].pid;
-        if(pid) memo.push(pid.toString());
+        if (pid) memo.push(pid.toString());
       }
       return memo;
     }, memo);
@@ -122,16 +126,19 @@ export class NativeClient extends Client {
     await this.runCommand(args);
   }
 
-  async getNodeLogs(name: string, since: number|undefined = undefined): Promise<string> {
+  async getNodeLogs(
+    name: string,
+    since: number | undefined = undefined
+  ): Promise<string> {
     // For now in native let's just return all the logs
-    const lines = await fsPromise.readFile(`${this.tmpDir}/${name}.log`);
+    const lines = await fs.promises.readFile(`${this.tmpDir}/${name}.log`);
     return lines.toString();
   }
 
   async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
-    await fsPromise.writeFile(dstFileName, logs);
+    await fs.promises.writeFile(dstFileName, logs);
   }
 
   upsertCronJob(minutes: number): Promise<void> {
@@ -153,11 +160,9 @@ export class NativeClient extends Client {
     return ["127.0.0.1", hostPort];
   }
 
-  async runCommand(
-    args: string[],
-  ): Promise<RunCommandResponse> {
+  async runCommand(args: string[]): Promise<RunCommandResponse> {
     try {
-      if(args[0] === "bash") args.splice(0,1);
+      if (args[0] === "bash") args.splice(0, 1);
       debug(args);
       const result = await execa(this.command, args);
 
@@ -181,44 +186,45 @@ export class NativeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    filesToGet: fileMap[] = []
+    keystore: string
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
     // keep this in the client.
     this.processMap[name] = {
       logs: `${this.tmpDir}/${name}.log`,
-      portMapping: podDef.spec.ports.reduce((memo:any, item:any) => {
+      portMapping: podDef.spec.ports.reduce((memo: any, item: any) => {
         memo[item.containerPort] = item.hostPort;
         return memo;
-      },{})
+      }, {}),
     };
 
     console.log(`\n\tlaunching ${decorators.green(name)}`);
     console.log(
-      `\t\t with command: ${decorators.magenta(
-        podDef.spec.command.join(" ")
-      )}`
+      `\t\t with command: ${decorators.magenta(podDef.spec.command.join(" "))}`
     );
 
-    // initialize keystore
-    await fsPromise.mkdir(`${podDef.spec.dataPath}/chains/${this.chainId}/keystore`, { recursive: true });
+    if (keystore) {
+      // initialize keystore
+      const keystoreRemoteDir = `${podDef.spec.dataPath}/chains/${this.chainId}/keystore`;
+      await fs.promises.mkdir(keystoreRemoteDir, { recursive: true });
+      // inject keys
+      await fseCopy(keystore, keystoreRemoteDir);
+    }
 
     // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
+      debug("localFilePath", localFilePath);
       debug("remoteFilePath", remoteFilePath);
       debug("remote dir", this.remoteDir);
       debug("data dir", this.dataDir);
 
-      const resolvedRemoteFilePath = remoteFilePath.includes(this.remoteDir) ?
-        `${podDef.spec.cfgPath}/${remoteFilePath.replace(this.remoteDir, "")}` :
-        `${podDef.spec.dataPath}/${remoteFilePath.replace(this.dataDir, "")}`;
+      const resolvedRemoteFilePath = remoteFilePath.includes(this.remoteDir)
+        ? `${podDef.spec.cfgPath}/${remoteFilePath.replace(this.remoteDir, "")}`
+        : `${podDef.spec.dataPath}/${remoteFilePath.replace(this.dataDir, "")}`;
 
-      await fsPromise.copyFile(
-        localFilePath,
-        resolvedRemoteFilePath
-      );
+      await fs.promises.copyFile(localFilePath, resolvedRemoteFilePath);
     }
 
     await this.createResource(podDef);
@@ -232,10 +238,7 @@ export class NativeClient extends Client {
     container?: string
   ): Promise<void> {
     debug(`cp ${podFilePath}  ${localFilePath}`);
-    await fsPromise.copyFile(
-      podFilePath,
-      localFilePath
-    );
+    await fs.promises.copyFile(podFilePath, localFilePath);
   }
 
   async putLocalMagicFile(name: string, container?: string): Promise<void> {
@@ -243,25 +246,27 @@ export class NativeClient extends Client {
     return;
   }
 
-  async createResource(
-    resourseDef: any
-  ): Promise<void> {
+  async createResource(resourseDef: any): Promise<void> {
     const name = resourseDef.metadata.name;
     const doc = new YAML.Document(resourseDef);
     const docInYaml = doc.toString();
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
-    await fsPromise.writeFile(localFilePath, docInYaml);
+    await fs.promises.writeFile(localFilePath, docInYaml);
 
-    if(resourseDef.metadata.labels["zombie-role"] === "temp" ) {
+    if (resourseDef.metadata.labels["zombie-role"] === "temp") {
       await this.runCommand(resourseDef.spec.command);
     } else {
-      if(resourseDef.spec.command[0] === "bash") resourseDef.spec.command.splice(0,1);
+      if (resourseDef.spec.command[0] === "bash")
+        resourseDef.spec.command.splice(0, 1);
       debug(this.command);
       debug(resourseDef.spec.command);
 
       const logFile = `${this.tmpDir}/${name}.log`;
       const log = fs.createWriteStream(logFile);
-      const nodeProcess = spawn(this.command, [ "-c", ...resourseDef.spec.command]);
+      const nodeProcess = spawn(this.command, [
+        "-c",
+        ...resourseDef.spec.command,
+      ]);
       debug(nodeProcess.pid);
       nodeProcess.stdout.pipe(log);
       nodeProcess.stderr.pipe(log);
@@ -271,17 +276,17 @@ export class NativeClient extends Client {
     }
   }
 
-  async wait_node_ready(
-    nodeName: string,
-    logFile: string,
-  ): Promise<void> {
+  async wait_node_ready(nodeName: string, logFile: string): Promise<void> {
     // loop until ready
     let t = this.timeout;
-    const args = ["-c", `grep 'Listening for new connections'  ${logFile} | wc -l`];
+    const args = [
+      "-c",
+      `grep 'Listening for new connections'  ${logFile} | wc -l`,
+    ];
     do {
       const result = await this.runCommand(args);
       debug(result);
-      if(result.stdout.trim() === "1") return;
+      if (result.stdout.trim() === "1") return;
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       t -= 3;

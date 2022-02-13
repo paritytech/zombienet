@@ -46,13 +46,11 @@ export async function genBootnodeDef(
   };
 }
 
-export async function genPrometheusDef(
-  namespace: string
-): Promise<any> {
+export async function genPrometheusDef(namespace: string): Promise<any> {
   const client = getClient();
   const volume_mounts = [
     { name: "prom-cfg", mountPath: "/etc/prometheus", readOnly: false },
-    { name: "prom-data", mountPath: "/data", readOnly: false }
+    { name: "prom-data", mountPath: "/data", readOnly: false },
   ];
   const cfgPath = `${client.tmpDir}/prometheus/etc`;
   const dataPath = `${client.tmpDir}/prometheus/data`;
@@ -61,7 +59,7 @@ export async function genPrometheusDef(
 
   const devices = [
     { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
-    { name: "prom-data", hostPath: { type: "Directory", path: dataPath } }
+    { name: "prom-data", hostPath: { type: "Directory", path: dataPath } },
   ];
 
   const config = `# config
@@ -89,7 +87,7 @@ scrape_configs:
       containerPort: 9090,
       name: "prometheus_endpoint",
       hostPort: await getRandomPort(),
-    }
+    },
   ];
 
   const containerDef = {
@@ -129,13 +127,20 @@ export async function genGrafanaDef(
 ): Promise<any> {
   const client = getClient();
   const volume_mounts = [
-    { name: "datasources-cfg", mountPath: "/etc/grafana/provisioning/datasources", readOnly: false }
+    {
+      name: "datasources-cfg",
+      mountPath: "/etc/grafana/provisioning/datasources",
+      readOnly: false,
+    },
   ];
   const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
   await fs.mkdir(datasourcesPath, { recursive: true });
 
   const devices = [
-    { name: "datasources-cfg", hostPath: { type: "Directory", path: datasourcesPath } }
+    {
+      name: "datasources-cfg",
+      hostPath: { type: "Directory", path: datasourcesPath },
+    },
   ];
 
   const datasource = `
@@ -158,7 +163,7 @@ datasources:
       containerPort: 3000,
       name: "grafana_web",
       hostPort: await getRandomPort(),
-    }
+    },
   ];
 
   const containerDef = {
@@ -246,20 +251,18 @@ function make_transfer_containter(): any {
 async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
-    { name: "tmp-z", mountPath: "/z", readOnly: false },
+    { name: "tmp-data", mountPath: "/data", readOnly: false },
   ];
 
   const client = getClient();
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  const zPath = `${client.tmpDir}/${name}/z`;
   const dataPath = `${client.tmpDir}/${name}/data`;
   await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(zPath, { recursive: true });
+
   await fs.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
-    { name: "tmp-z", hostPath: { type: "Directory", path: zPath } },
     { name: "tmp-data", hostPath: { type: "Directory", path: dataPath } },
   ];
 

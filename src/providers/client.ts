@@ -37,7 +37,11 @@ export abstract class Client {
   abstract createNamespace(): Promise<void>;
   abstract staticSetup(): Promise<void>;
   abstract destroyNamespace(): Promise<void>;
-  abstract getNodeLogs(podName: string, since?: number, withTimestamp?: boolean ): Promise<string>;
+  abstract getNodeLogs(
+    podName: string,
+    since?: number,
+    withTimestamp?: boolean
+  ): Promise<string>;
   abstract dumpLogs(path: string, podName: string): Promise<void>;
   abstract upsertCronJob(minutes: number): Promise<void>;
   abstract startPortForwarding(
@@ -52,7 +56,7 @@ export abstract class Client {
   abstract spawnFromDef(
     podDef: any,
     filesToCopy?: fileMap[],
-    filesToGet?: fileMap[]
+    keystore?: string
   ): Promise<void>;
   abstract copyFileFromPod(
     identifier: string,

@@ -68,8 +68,15 @@ process.on("exit", async function () {
 });
 
 program
-  .addOption(new Option("-m, --monitor", "Start as monitor, do not auto cleanup network"))
-  .addOption(new Option("-c, --spawn-concurrency <concurrency>", "Number of concurrent spawning process to launch, default is 1"))
+  .addOption(
+    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network")
+  )
+  .addOption(
+    new Option(
+      "-c, --spawn-concurrency <concurrency>",
+      "Number of concurrent spawning process to launch, default is 1"
+    )
+  )
   .command("spawn")
   .description("Spawn the network defined in the config")
   .argument("<networkConfig>", "Network config file path")

@@ -27,12 +27,23 @@ export async function generateParachainFiles(
   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
     let commands = [];
     if (parachain.genesisStateGenerator)
-      commands.push(parachain.genesisStateGenerator.replace("{{CLIENT_REMOTE_DIR}}", client.remoteDir as string));
+      commands.push(
+        parachain.genesisStateGenerator.replace(
+          "{{CLIENT_REMOTE_DIR}}",
+          client.remoteDir as string
+        )
+      );
     if (parachain.genesisWasmGenerator)
-      commands.push(parachain.genesisWasmGenerator.replace("{{CLIENT_REMOTE_DIR}}", client.remoteDir as string));
+      commands.push(
+        parachain.genesisWasmGenerator.replace(
+          "{{CLIENT_REMOTE_DIR}}",
+          client.remoteDir as string
+        )
+      );
 
     // Native provider doesn't need to wait
-    if( client.providerName !== "native") commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
+    if (client.providerName !== "native")
+      commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
     let node: Node = {
       name: getUniqueName("temp-collator"),
@@ -45,7 +56,7 @@ export async function generateParachainFiles(
       env: [],
       telemetryUrl: "",
       overrides: [],
-      zombieRole: "temp"
+      zombieRole: "temp",
     };
 
     const provider = Providers.get(client.providerName);
