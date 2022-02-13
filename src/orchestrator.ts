@@ -297,12 +297,6 @@ export async function start(
 
         const keystoreFiles = await generateKeystoreFiles(node, `${tmpDir.path}/${node.name}`);
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
-
-        // finalFilesToCopyToNode.push({
-        //   localFilePath: keystoreLocalDir,
-        //   remoteFilePath: `${client.dataDir}/chains/${client.chainId}/`,
-        //   unique: true
-        // });
       }
       await client.spawnFromDef(podDef, finalFilesToCopyToNode, keystoreLocalDir);
 
