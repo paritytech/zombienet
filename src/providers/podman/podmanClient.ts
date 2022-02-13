@@ -243,10 +243,13 @@ export class PodmanClient extends Client {
     if(keystore) {
       // initialize keystore
       const dataPath = podDef.spec.volumes.find((vol:any)  => vol.name === "tmp-data");
+      debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${this.chainId}/keystore`;
+      debug("keystoreRemoteDir", keystoreRemoteDir);
       await fs.mkdir(keystoreRemoteDir, { recursive: true });
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
+      debug("keys injected");
     }
 
 
