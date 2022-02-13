@@ -4,6 +4,7 @@ import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
   FINISH_MAGIC_FILE,
+  P2P_PORT,
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
 import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
@@ -83,7 +84,7 @@ export class KubeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    filesToGet: fileMap[] = []
+    keystore: string
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -101,25 +102,37 @@ export class KubeClient extends Client {
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
 
-    // initialize keystore
-    await this.runCommand([
-      "exec",
-      name,
-      "-c",
-      TRANSFER_CONTAINER_NAME,
-      "--",
-      "/bin/mkdir",
-      "-p",
-      `/data/chains/${this.chainId}/keystore`
-    ], undefined, true);
+    if(keystore) {
+      // initialize keystore
+      await this.runCommand([
+        "exec",
+        name,
+        "-c",
+        TRANSFER_CONTAINER_NAME,
+        "--",
+        "/bin/mkdir",
+        "-p",
+        `/data/chains/${this.chainId}/keystore`
+      ], undefined, true);
+
+      // inject keys
+      await this.copyFileToPod(
+        name,
+        keystore,
+        `/data/chains/${this.chainId}`,
+        TRANSFER_CONTAINER_NAME,
+        true
+      );
+    }
 
     for (const fileMap of filesToCopy) {
-      const { localFilePath, remoteFilePath } = fileMap;
+      const { localFilePath, remoteFilePath, unique } = fileMap;
       await this.copyFileToPod(
         name,
         localFilePath,
         remoteFilePath,
-        TRANSFER_CONTAINER_NAME
+        TRANSFER_CONTAINER_NAME,
+        unique
       );
     }
 
@@ -282,50 +295,58 @@ export class KubeClient extends Client {
     identifier: string,
     localFilePath: string,
     podFilePath: string,
-    container: string | undefined = undefined
+    container: string | undefined = undefined,
+    unique: boolean = false
   ) {
-    const hashedName = getSha256(localFilePath);
-    const parts = localFilePath.split("/");
-    const fileName = parts[parts.length - 1];
-    if (!fileUploadCache[hashedName]) {
-      console.log(
-        "uploading to fileserver: " + localFilePath + " as:" + hashedName
-      );
-      const args = [
-        "cp",
-        localFilePath,
-        `fileserver:/usr/share/nginx/html/${hashedName}`,
-      ];
-
-      debug("copyFileToPod", args);
+    if(unique) {
+      const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
+      if (container) args.push("-c", container);
       const result = await this.runCommand(args, undefined, true);
+      debug("copyFileToPod", args);
+    } else {
+      const hashedName = getSha256(localFilePath);
+      const parts = localFilePath.split("/");
+      const fileName = parts[parts.length - 1];
+      if (!fileUploadCache[hashedName]) {
+        console.log(
+          "uploading to fileserver: " + localFilePath + " as:" + hashedName
+        );
+        const args = [
+          "cp",
+          localFilePath,
+          `fileserver:/usr/share/nginx/html/${hashedName}`,
+        ];
+
+        debug("copyFileToPod", args);
+        const result = await this.runCommand(args, undefined, true);
+        debug(result);
+        fileUploadCache[hashedName] = fileName;
+      }
+
+      // download the file in the container
+      const args = ["exec", identifier];
+      if (container) args.push("-c", container);
+      let extraArgs = [
+        "--",
+        "/usr/bin/wget",
+        "-O",
+        podFilePath,
+        `http://fileserver/${hashedName}`,
+      ];
+      debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
+      let result = await this.runCommand(
+        [...args, ...extraArgs],
+        undefined,
+        true
+      );
       debug(result);
-      fileUploadCache[hashedName] = fileName;
+
+      if (container) args.push("-c", container);
+      extraArgs = ["--", "/bin/chmod", "+x", podFilePath];
+      debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
+      result = await this.runCommand([...args, ...extraArgs], undefined, true);
+      debug(result);
     }
-
-    // download the file in the container
-    const args = ["exec", identifier];
-    if (container) args.push("-c", container);
-    let extraArgs = [
-      "--",
-      "/usr/bin/wget",
-      "-O",
-      podFilePath,
-      `http://fileserver/${hashedName}`,
-    ];
-    debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
-    let result = await this.runCommand(
-      [...args, ...extraArgs],
-      undefined,
-      true
-    );
-    debug(result);
-
-    if (container) args.push("-c", container);
-    extraArgs = ["--", "/bin/chmod", "+x", podFilePath];
-    debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
-    result = await this.runCommand([...args, ...extraArgs], undefined, true);
-    debug(result);
   }
 
   async copyFileFromPod(
@@ -367,7 +388,7 @@ export class KubeClient extends Client {
 
   async getNodeInfo(identifier: string): Promise<[string, number]> {
     const ip = await this.getNodeIP(identifier);
-    return [ip, 30333];
+    return [ip, P2P_PORT];
   }
 
   async staticSetup() {

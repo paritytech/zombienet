@@ -52,7 +52,7 @@ export abstract class Client {
   abstract spawnFromDef(
     podDef: any,
     filesToCopy?: fileMap[],
-    filesToGet?: fileMap[]
+    keystore?: string
   ): Promise<void>;
   abstract copyFileFromPod(
     identifier: string,

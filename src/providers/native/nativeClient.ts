@@ -2,7 +2,7 @@ import execa from "execa";
 import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT, RPC_HTTP_PORT, RPC_WS_PORT } from "../../constants";
 import { writeLocalJsonFile } from "../../utils";
 const fs = require("fs");
-const fsPromise = require("fs").promises;
+import { copy as fseCopy } from "fs-extra";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../colors";
@@ -78,7 +78,7 @@ export class NativeClient extends Client {
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Native provider don't have the `namespace` isolation.
     // but we create the `remoteDir` to place files
-    await fsPromise.mkdir(this.remoteDir, { recursive: true });
+    await fs.promises.mkdir(this.remoteDir, { recursive: true });
     return;
   }
   // Podman ONLY support `pods`
@@ -124,14 +124,14 @@ export class NativeClient extends Client {
 
   async getNodeLogs(name: string, since: number|undefined = undefined): Promise<string> {
     // For now in native let's just return all the logs
-    const lines = await fsPromise.readFile(`${this.tmpDir}/${name}.log`);
+    const lines = await fs.promises.readFile(`${this.tmpDir}/${name}.log`);
     return lines.toString();
   }
 
   async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
-    await fsPromise.writeFile(dstFileName, logs);
+    await fs.promises.writeFile(dstFileName, logs);
   }
 
   upsertCronJob(minutes: number): Promise<void> {
@@ -181,7 +181,7 @@ export class NativeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    filesToGet: fileMap[] = []
+    keystore: string
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
@@ -201,12 +201,18 @@ export class NativeClient extends Client {
       )}`
     );
 
-    // initialize keystore
-    await fsPromise.mkdir(`${podDef.spec.dataPath}/chains/${this.chainId}/keystore`, { recursive: true });
+    if( keystore ) {
+      // initialize keystore
+      const keystoreRemoteDir = `${podDef.spec.dataPath}/chains/${this.chainId}/keystore`;
+      await fs.promises.mkdir(keystoreRemoteDir, { recursive: true });
+      // inject keys
+      await fseCopy(keystore, keystoreRemoteDir);
+    }
 
     // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
+      debug("localFilePath", localFilePath);
       debug("remoteFilePath", remoteFilePath);
       debug("remote dir", this.remoteDir);
       debug("data dir", this.dataDir);
@@ -215,7 +221,7 @@ export class NativeClient extends Client {
         `${podDef.spec.cfgPath}/${remoteFilePath.replace(this.remoteDir, "")}` :
         `${podDef.spec.dataPath}/${remoteFilePath.replace(this.dataDir, "")}`;
 
-      await fsPromise.copyFile(
+      await fs.promises.copyFile(
         localFilePath,
         resolvedRemoteFilePath
       );
@@ -232,7 +238,7 @@ export class NativeClient extends Client {
     container?: string
   ): Promise<void> {
     debug(`cp ${podFilePath}  ${localFilePath}`);
-    await fsPromise.copyFile(
+    await fs.promises.copyFile(
       podFilePath,
       localFilePath
     );
@@ -250,7 +256,7 @@ export class NativeClient extends Client {
     const doc = new YAML.Document(resourseDef);
     const docInYaml = doc.toString();
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
-    await fsPromise.writeFile(localFilePath, docInYaml);
+    await fs.promises.writeFile(localFilePath, docInYaml);
 
     if(resourseDef.metadata.labels["zombie-role"] === "temp" ) {
       await this.runCommand(resourseDef.spec.command);

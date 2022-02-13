@@ -1,5 +1,6 @@
 import execa from "execa";
 import { resolve } from "path";
+import { copy as fseCopy } from "fs-extra";
 import { DEFAULT_DATA_DIR, DEFAULT_REMOTE_DIR, P2P_PORT, PROMETHEUS_PORT } from "../../constants";
 import { writeLocalJsonFile, getHostIp } from "../../utils";
 const fs = require("fs").promises;
@@ -224,7 +225,7 @@ export class PodmanClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    filesToGet: fileMap[] = []
+    keystore: string
   ): Promise<void> {
     const name = podDef.metadata.name;
 
@@ -239,9 +240,15 @@ export class PodmanClient extends Client {
       )}`
     );
 
-    // initialize keystore
-    const dataPath = podDef.spec.volumes.find((vol:any)  => vol.name === "tmp-data");
-    await fs.mkdir(`${dataPath.hostPath.path}/chains/${this.chainId}/keystore`, { recursive: true });
+    if(keystore) {
+      // initialize keystore
+      const dataPath = podDef.spec.volumes.find((vol:any)  => vol.name === "tmp-data");
+      const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${this.chainId}/keystore`;
+      await fs.mkdir(keystoreRemoteDir, { recursive: true });
+      // inject keys
+      await fseCopy(keystore, keystoreRemoteDir);
+    }
+
 
     // copy files to volumes
     for (const fileMap of filesToCopy) {

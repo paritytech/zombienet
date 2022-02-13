@@ -5,6 +5,9 @@ import {
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
+  RPC_HTTP_PORT,
+  RPC_WS_PORT,
+  P2P_PORT,
 } from "../../constants";
 import { getUniqueName } from "../../configManager";
 import { Node } from "../../types";
@@ -123,7 +126,12 @@ async function make_main_container(
   nodeSetup: Node,
   volume_mounts: any[]
 ): Promise<any> {
-  const ports = [{ containerPort: PROMETHEUS_PORT, name: "prometheus" }];
+  const ports = [
+    { containerPort: PROMETHEUS_PORT, name: "prometheus" },
+    { containerPort: RPC_HTTP_PORT, name: "rpc-http" },
+    { containerPort: RPC_WS_PORT, name: "rpc-ws" },
+    { containerPort: P2P_PORT, name: "p2p" }
+  ];
   const command = await genCmd(nodeSetup);
 
   let containerDef = {

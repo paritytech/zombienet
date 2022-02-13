@@ -42,7 +42,7 @@ export interface BackchannelMap {
 export async function run(
   testFile: string,
   provider: string,
-  isCI: boolean = false,
+  inCI: boolean = false,
   concurrency: number = 1
 ) {
   let network: Network;
@@ -68,7 +68,7 @@ export async function run(
   config.settings.provider = provider;
 
   // find creds file
-  let credsFile = isCI ? "config" : testDef.creds;
+  let credsFile = inCI ? "config" : testDef.creds;
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {
@@ -97,7 +97,7 @@ export async function run(
     console.log(`\t Launching network... this can take a while.`);
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
-    network = await zombie.start(creds, config, {spawnConcurrency: concurrency});
+    network = await zombie.start(creds, config, {spawnConcurrency: concurrency, inCI});
 
     network.showNetworkInfo(config.settings.provider);
     return;

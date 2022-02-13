@@ -198,6 +198,7 @@ export interface ParachainConfig {
 export interface fileMap {
   localFilePath: string;
   remoteFilePath: string;
+  unique?: boolean;
 }
 
 export interface Override {

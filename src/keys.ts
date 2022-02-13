@@ -43,6 +43,9 @@ export async function generateKeyForNode(): Promise<any> {
 }
 
 export async function generateKeystoreFiles(node: Node, path: string): Promise<string[]> {
+    const keystoreDir = `${path}/keystore`;
+    await fs.promises.mkdir(keystoreDir);
+
     const paths: string[] = [];
     const keysHash = {
         aura: node.accounts.sr_account.publicKey,
@@ -56,9 +59,9 @@ export async function generateKeystoreFiles(node: Node, path: string): Promise<s
 
     for( const [k,v] of Object.entries(keysHash)) {
         const filename = Buffer.from(k).toString('hex') + v.replace(/^0x/, "");
-        const keystorePath = `${path}/${filename}`;
-        paths.push(keystorePath);
-        await fs.promises.writeFile(keystorePath, `"${node.accounts.seed}"`);
+        const keystoreFilePath = `${keystoreDir}/${filename}`;
+        paths.push(keystoreFilePath);
+        await fs.promises.writeFile(keystoreFilePath, `"${node.accounts.seed}"`);
     }
 
     return paths;
