@@ -71,6 +71,7 @@ export async function generateNetworkSpec(
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
+      defaultResources: config.relaychain.default_resources
     },
     parachains: [],
   };
@@ -136,6 +137,7 @@ export async function generateNetworkSpec(
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
+        resources: nodeGroup.resources || networkSpec.relaychain.defaultResources
       };
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
@@ -396,6 +398,7 @@ async function getNodeFromConfig(
     prometheus: prometheusExternal,
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
+    resources: node.resources || networkSpec.relaychain.defaultResources
   };
 
   return nodeSetup;

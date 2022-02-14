@@ -10,6 +10,7 @@ export interface ComputedNetwork {
     nodes: Node[];
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
+    defaultResources?: Resources;
   };
   parachains: Parachain[];
   types: any;
@@ -41,6 +42,7 @@ export interface Node {
   prometheus?: boolean;
   overrides: Override[];
   addToBootnodes?: boolean;
+  resources?: Resources;
 }
 
 export interface Collator {
@@ -137,6 +139,7 @@ export interface InitContainer {
 export interface RelayChainConfig {
   default_command?: string;
   default_image?: string;
+  default_resources?: Resources
   chain: string; // rococo-local | local (TODO: move to enum)
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -163,6 +166,7 @@ export interface NodeConfig {
   initContainers?: object[];
   overrides?: Override[];
   add_to_bootnodes?: boolean;
+  resources?: Resources;
 }
 
 export interface NodeGroupConfig {
@@ -173,6 +177,7 @@ export interface NodeGroupConfig {
   env?: envVars[];
   overrides?: Override[];
   count: string | number;
+  resources?: Resources;
 }
 
 export interface ParachainConfig {
@@ -214,4 +219,17 @@ export interface HrmpChannelsConfig {
 
 interface ObjectJSON {
   [key: string]: ObjectJSON | number | string;
+}
+
+export interface Resources {
+  resources: {
+    requests?: {
+      memory?: string,
+      cpu?: string
+    },
+    limits?: {
+      memory?: string
+      cpu?: string
+    }
+  }
 }
