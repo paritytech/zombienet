@@ -131,7 +131,7 @@ async function make_main_container(
   ];
   const command = await genCmd(nodeSetup);
 
-  let containerDef = {
+  const containerDef: any = {
     image: nodeSetup.image,
     name: nodeSetup.name,
     imagePullPolicy: "Always",
@@ -140,6 +140,8 @@ async function make_main_container(
     volumeMounts: volume_mounts,
     command,
   };
+
+  if (nodeSetup.resources) containerDef.resources = nodeSetup.resources;
 
   return containerDef;
 }
