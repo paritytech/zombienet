@@ -37,7 +37,7 @@ export function addMinutes(howMany: number, baseDate?: Date): [number,number] {
 
   let targetTs = baseTs + howMany * 60 * 1000;
   const targetDate = new Date(targetTs);
-  return [targetDate.getHours(), targetDate.getMinutes()];
+  return [targetDate.getUTCHours(), targetDate.getUTCMinutes()];
 }
 
 export function filterConsole(excludePatterns: string[], options?: any) {
