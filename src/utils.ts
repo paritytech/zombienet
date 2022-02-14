@@ -30,11 +30,14 @@ export function readDataFile(filepath: string): string {
   }
 }
 
-export function addMinutes(howMany: number, baseDate?: Date): number {
-  const baseHours = baseDate
-    ? baseDate.getUTCMinutes()
-    : new Date().getUTCMinutes();
-  return (baseHours + 59 + howMany) % 59;
+export function addMinutes(howMany: number, baseDate?: Date): [number,number] {
+  const baseTs = baseDate
+    ? baseDate.getTime()
+    : new Date().getTime();
+
+  let targetTs = baseTs + howMany * 60 * 1000;
+  const targetDate = new Date(targetTs);
+  return [targetDate.getHours(), targetDate.getMinutes()];
 }
 
 export function filterConsole(excludePatterns: string[], options?: any) {
