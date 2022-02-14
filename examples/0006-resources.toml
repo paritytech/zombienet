@@ -1,6 +1,5 @@
 [settings]
 timeout = 1000
-# provider = "Podman"
 
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
