@@ -430,6 +430,8 @@ export class KubeClient extends Client {
   }
 
   async setupCleaner(): Promise<NodeJS.Timer> {
+    this.podMonitorAvailable = await this.isPodMonitorAvailable();
+
     // create CronJob cleanner for namespace
     await this.cronJobCleanerSetup();
     await this.upsertCronJob();
@@ -453,15 +455,16 @@ export class KubeClient extends Client {
   async upsertCronJob(minutes = 10) {
     const isActive = await this.isNamespaceActive();
     if (isActive) {
+      const now = new Date();
       if (this.podMonitorAvailable) {
-        const podMonitorCleanerMinutes = addMinutes(minutes);
-        let schedule = `${podMonitorCleanerMinutes} * * * *`;
+        const [hr, min] = addMinutes(minutes, now);
+        let schedule = `${min} ${hr} * * *`;
         await this.updateResource("job-delete-podmonitor.yaml", { schedule });
       }
 
       minutes += 1;
-      const nsCleanerMinutes = addMinutes(minutes);
-      const nsSchedule = `${nsCleanerMinutes} * * * *`;
+      const [hr, min] = addMinutes(minutes, now);
+      const nsSchedule = `${min} ${hr} * * *`;
       await this.updateResource("job-delete-namespace.yaml", {
         schedule: nsSchedule,
       });
