@@ -207,6 +207,33 @@ zombienet-tests-integration:
   tags:
     - zombienet-polkadot-integration-test
 
+zombienet-tests-integration-pr:
+  stage:                           deploy
+  <<:                              *kubernetes-env
+  image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+  <<:                              *common-refs
+
+  variables:
+    GH_DIR:                        'https://github.com/paritytech/polkadot/tree/sandreim/zombienet-perf-step1/zombienet_tests/functional'
+
+  before_script:
+    - echo "Zombienet Tests Funcional"
+    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+    - echo "${GH_DIR}"
+    - export DEBUG=zombie*
+    - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/synth-wave:4797-0.9.17-54d1b265-a5a1e959"
+    - export MALUS_IMAGE="docker.io/paritypr/malus:4797-54d1b265"
+    - export COL_IMAGE="docker.io/paritypr/colander:4797-54d1b265"
+
+  script:
+    - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
+        --github-remote-dir="${GH_DIR}"
+        -c 4
+  allow_failure:                   true
+  retry: 2
+  tags:
+    - zombienet-polkadot-integration-test
+
 # zombienet-dummy-chain-upgrade:
 #   stage:                           deploy
 #   <<:                              *kubernetes-env

@@ -18,6 +18,7 @@ Usage: ${SCRIPT_NAME} OPTION
 
 OPTION
  -t, --test          OPTIONAL Test file to run
+ -c, --concurrency   concurrency for spawn nodes
                      If omitted "all" test in the directory will be used.
   -g, --github-remote-dir
                      OPTIONAL URL to a directory hosted on github, e.g.:
@@ -97,6 +98,7 @@ function parse_args {
     fi
     case "$OPT" in
       t | test)                 needs_arg ; TEST_TO_RUN="${OPTARG}"  ;;
+      c | concurrency)          needs_arg ; CONCURRENCY="${OPTARG}"  ;;
       g | github-remote-dir)    needs_arg ; GH_REMOTE_DIR="${OPTARG}"          ;;
       h | help )                usage     ; exit 0                             ;;
       o | output-dir)           needs_arg ; OUTPUT_DIR="${OPTARG}"             ;;
@@ -213,11 +215,16 @@ function run_test {
   cd "${OUTPUT_DIR}"
   set -x
   set +e
+  if [[ ! -z $CONCURRENCY]]; then
+    C=2
+  else
+    C=$CONCURRENCY
+  fi;
   if [[ ! -z $TEST_TO_RUN ]]; then
     TEST_FOUND=0
     for i in $(find ${OUTPUT_DIR} -name "${TEST_TO_RUN}"| head -1); do
       TEST_FOUND=1
-      zombie test $i
+      zombie -c $CONCURRENCY test $i
       EXIT_STATUS=$?
     done;
     if [[ $TEST_FOUND -lt 1 ]]; then
@@ -226,7 +233,7 @@ function run_test {
   else
     for i in $(find ${OUTPUT_DIR} -name *.feature | sort); do
       echo "running test: ${i}"
-      zombie test $i
+      zombie -c $CONCURRENCY test $i
       TEST_EXIT_STATUS=$?
       EXIT_STATUS=$((EXIT_STATUS+TEST_EXIT_STATUS))
     done;
