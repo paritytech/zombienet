@@ -486,10 +486,13 @@ export async function start(
           parachainId: parachain.id,
         };
         const podDef = await genNodeDef(namespace, collator);
-        const filesToCopyToCollator = [{
-          localFilePath: `${tmpDir.path}/${chainName}-${parachain.id}.json`,
-          remoteFilePath: `${client.remoteDir}/${chainName}-${parachain.id}.json`,
-        }];
+        const filesToCopyToCollator = [];
+        if(parachain.collator.command.includes("polkadot-collator")) {
+          filesToCopyToCollator.push({
+            localFilePath: `${tmpDir.path}/${chainName}-${parachain.id}.json`,
+            remoteFilePath: `${client.remoteDir}/${chainName}-${parachain.id}.json`,
+          });
+        }
 
         await client.spawnFromDef(podDef, [...filesToCopyToNodes, ...filesToCopyToCollator]);
 
