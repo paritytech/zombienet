@@ -25,10 +25,11 @@ export async function generateParachainFiles(
 
   fs.mkdirSync(parachainFilesPath);
 
+  let chainSpecFullPath;
   if(parachain.collator.command.includes("polkadot-collator")) {
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
-    const chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
+    chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
     debug("creating chain spec plain");
     // create or copy chain spec
     await setupChainSpec(
@@ -41,7 +42,7 @@ export async function generateParachainFiles(
     const plainData = JSON.parse(fs.readFileSync(chainSpecFullPathPlain).toString());
     plainData.para_id = parachain.id;
     plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
-    plainData.relay_chain = "rococo_local_testnet";
+    plainData.relay_chain = "rococo-local";
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
 
@@ -59,20 +60,22 @@ export async function generateParachainFiles(
   // check if we need to create files
   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
     let commands = [];
-    if (parachain.genesisStateGenerator)
-      commands.push(
-        parachain.genesisStateGenerator.replace(
-          "{{CLIENT_REMOTE_DIR}}",
-          client.remoteDir as string
-        )
-      );
-    if (parachain.genesisWasmGenerator)
-      commands.push(
-        parachain.genesisWasmGenerator.replace(
-          "{{CLIENT_REMOTE_DIR}}",
-          client.remoteDir as string
-        )
-      );
+    if (parachain.genesisStateGenerator) {
+      let genesisStateGenerator = parachain.genesisStateGenerator.replace( "{{CLIENT_REMOTE_DIR}}",client.remoteDir as string);
+      // cumulus
+      if(parachain.collator.command.includes("polkadot-collator")) {
+        genesisStateGenerator = genesisStateGenerator.replace(" > ", ` --chain ${chainSpecFullPath} > `);
+      }
+      commands.push(genesisStateGenerator);
+    }
+    if (parachain.genesisWasmGenerator) {
+      let genesisWasmGenerator = parachain.genesisWasmGenerator.replace("{{CLIENT_REMOTE_DIR}}",client.remoteDir as string);
+      // cumulus
+      if(parachain.collator.command.includes("polkadot-collator")) {
+        genesisWasmGenerator = genesisWasmGenerator.replace(" > ", ` --chain ${chainSpecFullPath} > `);
+      }
+      commands.push(genesisWasmGenerator);
+    }
 
     // Native provider doesn't need to wait
     if (client.providerName !== "native")
