@@ -4,6 +4,7 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
+  getUniqueName,
 } from "./configManager";
 import {
   GENESIS_STATE_FILENAME,
@@ -465,66 +466,68 @@ export async function start(
         );
       }
 
-      // create collator
-      const collatorName = parachain.collator.name;
-      let collator: Node = {
-        name: collatorName,
-        key: getSha256(collatorName),
-        validator: false,
-        image: parachain.collator.image,
-        command: parachain.collator.command,
-        commandWithArgs: parachain.collator.commandWithArgs,
-        chain: networkSpec.relaychain.chain,
-        args: parachain.collator.args,
-        bootnodes: bootnodes,
-        env: parachain.collator.env,
-        telemetryUrl: "",
-        overrides: [],
-        zombieRole: "collator",
-        parachainId: parachain.id,
-      };
-      const podDef = await genNodeDef(namespace, collator);
-      const filesToCopyToCollator = [{
-        localFilePath: `${tmpDir.path}/${chainName}-${parachain.id}.json`,
-        remoteFilePath: `${client.remoteDir}/${chainName}-${parachain.id}.json`,
-      }];
+      for(let i = 0; i < parachain.collator.count!; i++ ) {
+        // create collator
+        const collatorName = getUniqueName(parachain.collator.name);
+        let collator: Node = {
+          name: collatorName,
+          key: getSha256(collatorName),
+          validator: false,
+          image: parachain.collator.image,
+          command: parachain.collator.command,
+          commandWithArgs: parachain.collator.commandWithArgs,
+          chain: networkSpec.relaychain.chain,
+          args: parachain.collator.args,
+          bootnodes: bootnodes,
+          env: parachain.collator.env,
+          telemetryUrl: "",
+          overrides: [],
+          zombieRole: "collator",
+          parachainId: parachain.id,
+        };
+        const podDef = await genNodeDef(namespace, collator);
+        const filesToCopyToCollator = [{
+          localFilePath: `${tmpDir.path}/${chainName}-${parachain.id}.json`,
+          remoteFilePath: `${client.remoteDir}/${chainName}-${parachain.id}.json`,
+        }];
 
-      await client.spawnFromDef(podDef, [...filesToCopyToNodes, ...filesToCopyToCollator]);
+        await client.spawnFromDef(podDef, [...filesToCopyToNodes, ...filesToCopyToCollator]);
 
-      let networkNode: NetworkNode;
-      if (options?.inCI) {
-        const nodeIp = await client.getNodeIP(podDef.metadata.name);
-        networkNode = new NetworkNode(
-          podDef.metadata.name,
-          WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
-            "{{PORT}}",
-            RPC_HTTP_PORT.toString()
-          ),
-          METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
-            "{{PORT}}",
-            PROMETHEUS_PORT.toString()
-          ),
-          userDefinedTypes
-        );
-      } else {
-        const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
-        const rpcPort = await client.startPortForwarding(
-          endpointPort,
-          nodeIdentifier
-        );
+        let networkNode: NetworkNode;
+        if (options?.inCI) {
+          const nodeIp = await client.getNodeIP(podDef.metadata.name);
+          networkNode = new NetworkNode(
+            podDef.metadata.name,
+            WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+              "{{PORT}}",
+              RPC_HTTP_PORT.toString()
+            ),
+            METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+              "{{PORT}}",
+              PROMETHEUS_PORT.toString()
+            ),
+            userDefinedTypes
+          );
+        } else {
+          const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
+          const rpcPort = await client.startPortForwarding(
+            endpointPort,
+            nodeIdentifier
+          );
 
-        networkNode = new NetworkNode(
-          podDef.metadata.name,
-          WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
-            "{{PORT}}",
-            rpcPort.toString()
-          ),
-          "" // TODO: needs to connect for metrics?
-        );
+          networkNode = new NetworkNode(
+            podDef.metadata.name,
+            WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+              "{{PORT}}",
+              rpcPort.toString()
+            ),
+            "" // TODO: needs to connect for metrics?
+          );
+        }
+
+        networkNode.parachainId = parachain.id;
+        network.addNode(networkNode, Scope.PARA);
       }
-
-      networkNode.parachainId = parachain.id;
-      network.addNode(networkNode, Scope.PARA);
     }
 
     // prevent global timeout

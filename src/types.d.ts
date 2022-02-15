@@ -55,6 +55,7 @@ export interface Collator {
   args: string[];
   env: envVars[];
   bootnodes: string[];
+  count?: number;
 }
 
 export interface Parachain {
@@ -197,6 +198,7 @@ export interface ParachainConfig {
     name?: string;
     args?: string[];
     env?: envVars[];
+    count?: number;
   };
 }
 
