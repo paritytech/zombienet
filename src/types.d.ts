@@ -43,6 +43,7 @@ export interface Node {
   overrides: Override[];
   addToBootnodes?: boolean;
   resources?: Resources;
+  parachainId?: number;
 }
 
 export interface Collator {

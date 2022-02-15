@@ -481,9 +481,15 @@ export async function start(
         telemetryUrl: "",
         overrides: [],
         zombieRole: "collator",
+        parachainId: parachain.id,
       };
       const podDef = await genNodeDef(namespace, collator);
-      await client.spawnFromDef(podDef, filesToCopyToNodes);
+      const filesToCopyToCollator = [{
+        localFilePath: `${tmpDir.path}/${chainName}-${parachain.id}.json`,
+        remoteFilePath: `${client.remoteDir}/${chainName}-${parachain.id}.json`,
+      }];
+
+      await client.spawnFromDef(podDef, [...filesToCopyToNodes, ...filesToCopyToCollator]);
 
       let networkNode: NetworkNode;
       if (options?.inCI) {

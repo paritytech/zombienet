@@ -13,7 +13,7 @@ const fs = require("fs").promises;
 
 export async function setupChainSpec(
   namespace: string,
-  networkSpec: ComputedNetwork,
+  networkSpec: ComputedNetwork|any,
   chainName: string,
   chainFullPath: string
 ): Promise<any> {

@@ -9,6 +9,8 @@ import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { Node, Parachain } from "./types";
 import fs from "fs";
+import { getChainSpecRaw, setupChainSpec } from "./providers/native/chain-spec";
+const debug = require("debug")("zombie::paras");
 
 export async function generateParachainFiles(
   namespace: string,
@@ -22,6 +24,36 @@ export async function generateParachainFiles(
   const client = getClient();
 
   fs.mkdirSync(parachainFilesPath);
+
+  if(parachain.collator.command === "polkadot-collator") {
+    // need to create the parachain spec
+    const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
+    const chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
+    debug("creating chain spec plain");
+    // create or copy chain spec
+    await setupChainSpec(
+      namespace,
+      {relaychain: { chainSpecCommand: `${parachain.collator.command} build-spec --disable-default-bootnode`}},
+      chainName,
+      chainSpecFullPathPlain
+    );
+
+    const plainData = JSON.parse(fs.readFileSync(chainSpecFullPathPlain).toString());
+    plainData.para_id = parachain.id;
+    plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
+    const data = JSON.stringify(plainData, null, 2);
+    fs.writeFileSync(chainSpecFullPathPlain, data);
+
+    debug("creating chain spec raw");
+    // generate the raw chain spec
+    await getChainSpecRaw(
+      namespace,
+      parachain.collator.image,
+      `${chainName}-${parachain.id}`,
+      parachain.collator.command,
+      chainSpecFullPath
+    );
+  }
 
   // check if we need to create files
   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
