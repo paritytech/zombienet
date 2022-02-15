@@ -185,9 +185,9 @@ export async function generateNetworkSpec(
           ? parachain.genesis_state_generator
           : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
 
-        // if (!collatorBinary.includes("adder")) {
-        //   computedStateCommand += ` --parachain-id ${parachain.id}`;
-        // }
+        if (!collatorBinary.includes("adder")) {
+          computedStateCommand += ` --parachain-id ${parachain.id}`;
+        }
 
         computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
