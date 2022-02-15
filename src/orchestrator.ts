@@ -477,7 +477,7 @@ export async function start(
           command: parachain.collator.command,
           commandWithArgs: parachain.collator.commandWithArgs,
           chain: networkSpec.relaychain.chain,
-          args: parachain.collator.args,
+          args: [...parachain.collator.args],
           bootnodes: bootnodes,
           env: parachain.collator.env,
           telemetryUrl: "",
