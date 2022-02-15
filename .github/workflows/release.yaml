@@ -6,9 +6,11 @@ on:
       - 'v*'
 
 jobs:
-  build_release:
-    name: build_release
+  build_release_for_linux:
+    name: build_release_for_linux
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}    
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -40,12 +42,28 @@ jobs:
           asset_path: ./bins/zombienet-linux
           asset_name: zombienet-linux
           asset_content_type: application/octet-stream
+  build_release_for_mac:
+    name: build_release_for_mac
+    needs: build_release_for_linux
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - run: npm install
+      - run: npm run build
+      - run: npm run package          
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
           asset_path: ./bins/zombienet-macos
           asset_name: zombienet-macos
           asset_content_type: application/octet-stream
