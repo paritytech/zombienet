@@ -215,7 +215,7 @@ function run_test {
   cd "${OUTPUT_DIR}"
   set -x
   set +e
-  if [[ ! -z $CONCURRENCY]]; then
+  if [[ ! -z $CONCURRENCY ]]; then
     C=2
   else
     C=$CONCURRENCY
