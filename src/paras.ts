@@ -25,7 +25,7 @@ export async function generateParachainFiles(
 
   fs.mkdirSync(parachainFilesPath);
 
-  if(parachain.collator.command === "polkadot-collator") {
+  if(parachain.collator.command.includes("polkadot-collator")) {
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
     const chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
