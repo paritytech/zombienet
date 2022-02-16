@@ -482,7 +482,7 @@ export async function start(
           commandWithArgs: collator.commandWithArgs,
           chain: networkSpec.relaychain.chain,
           args: collator.args,
-          bootnodes: bootnodes,
+          bootnodes: collator.bootnodes,
           env: collator.env,
           telemetryUrl: "",
           overrides: [],
