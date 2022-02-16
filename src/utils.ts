@@ -97,7 +97,7 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
       : toml.parse(content);
 
   config.configBasePath = configBasePath;
-  debug(config);
+  debug(JSON.stringify(config));
   return config;
 }
 
