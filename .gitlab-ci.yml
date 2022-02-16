@@ -214,7 +214,7 @@ zombienet-tests-integration-pr:
   <<:                              *common-refs
 
   variables:
-    GH_DIR:                        'https://github.com/paritytech/polkadot/tree/sandreim/zombienet-perf-step1/zombienet_tests/functional'
+    GH_DIR:                        'https://github.com/paritytech/polkadot/tree/54d1b265c236a9ac1c8b2cf598a034cf080db771/zombienet_tests/functional'
 
   before_script:
     - echo "Zombienet Tests Funcional"
