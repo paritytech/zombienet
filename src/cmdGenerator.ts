@@ -163,6 +163,7 @@ export async function genCmd(
     return await genCumulusCollatorCmd(command, nodeSetup);
   }
 
+  args = [...args];
   args.push("--no-mdns");
 
   if (key) args.push(...["--node-key", key]);

@@ -64,7 +64,7 @@ export interface Parachain {
   genesisStatePath?: string;
   genesisStateGenerator?: string;
   balance?: number;
-  collator: Collator;
+  collators: Collator[];
 }
 
 export interface CollatorNodeConfig {
@@ -180,6 +180,20 @@ export interface NodeGroupConfig {
   resources?: Resources;
 }
 
+export interface CollatorConfig {
+  image?: string;
+  command?: string;
+  commandWithArgs?: string;
+  name?: string;
+  args?: string[];
+  env?: envVars[];
+}
+
+export interface CollatorGroupConfig {
+  collator: CollatorConfig;
+  count: number;
+}
+
 export interface ParachainConfig {
   id: number;
   addToGenesis?: boolean;
@@ -189,14 +203,8 @@ export interface ParachainConfig {
   genesis_state_path?: string;
   genesis_state_generator?: string;
   bootnodes?: string[];
-  collator: {
-    image?: string;
-    command?: string;
-    commandWithArgs?: string;
-    name?: string;
-    args?: string[];
-    env?: envVars[];
-  };
+  collator?: CollatorConfig;
+  collator_groups?: CollatorGroupConfig[];
 }
 
 export interface fileMap {
