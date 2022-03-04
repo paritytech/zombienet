@@ -35,7 +35,7 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  zombieRole?: "temp" | "node" | "bootnode" | "collator";
+  zombieRole?: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
   initContainers?: object[];
   telemetry?: boolean;
   telemetryUrl: string;
@@ -43,6 +43,7 @@ export interface Node {
   overrides: Override[];
   addToBootnodes?: boolean;
   resources?: Resources;
+  parachainId?: number;
 }
 
 export interface Collator {
@@ -54,6 +55,8 @@ export interface Collator {
   args: string[];
   env: envVars[];
   bootnodes: string[];
+  count?: number;
+  isCumulus?: boolean;
 }
 
 export interface Parachain {
@@ -73,6 +76,7 @@ export interface CollatorNodeConfig {
   commandWithArgs?: string;
   name?: string;
   args?: string[];
+  cumulus_based?: boolean;
   initContainers?: object[];
 }
 
@@ -187,6 +191,7 @@ export interface CollatorConfig {
   name?: string;
   args?: string[];
   env?: envVars[];
+  cumulus_based?: boolean;
 }
 
 export interface CollatorGroupConfig {

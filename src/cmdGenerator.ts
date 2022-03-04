@@ -37,21 +37,38 @@ export async function genCumulusCollatorCmd(
   command: string,
   nodeSetup: Node,
   cfgPath: string = "/cfg",
+  dataPath: string = "/data",
   useWrapper = true
 ): Promise<string[]> {
-  const { name, args, chain, bootnodes } = nodeSetup;
+  console.log(arguments);
+  const { name, args, chain, parachainId } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
     "--force-authoring": true,
+    "--base-path": true,
+    "--port": true,
+    "--ws-port": true,
+    "--chain": true,
+
   };
 
+  const collatorPort = await getRandomPort();
+  const collatorWsPort = await getRandomPort();
   let fullCmd: string[] = [
     command,
     "--name",
     name,
     "--collator",
     "--force-authoring",
+    "--chain",
+    `${cfgPath}/${chain}-${parachainId}.json`,
+    "--base-path",
+    dataPath,
+    "--port",
+    collatorPort.toString(),
+    "--ws-port",
+    collatorWsPort.toString()
   ];
 
   if (nodeSetup.args.length > 0) {
@@ -81,8 +98,8 @@ export async function genCumulusCollatorCmd(
 
     const collatorPorts: any = {
       "--port": 0,
-      "ws-port": 0,
-      "rpc-port": 0,
+      "--ws-port": 0,
+      "--rpc-port": 0,
     };
 
     if (argsCollator) {
@@ -117,11 +134,21 @@ export async function genCumulusCollatorCmd(
 
       fullCmd = fullCmd.concat(argsCollator);
       console.log(`Added ${argsCollator} to collator`);
+    } else {
+      // ensure ports
+      for (const portArg of Object.keys(collatorPorts)) {
+        if (collatorPorts[portArg] === 0) {
+          const randomPort = await getRandomPort();
+          fullCmd.push(portArg);
+          fullCmd.push(randomPort.toString());
+          console.log(`Added ${portArg} with value ${randomPort}`);
+        }
+      }
     }
   }
 
   if (useWrapper) fullCmd.unshift("/cfg/zombie-wrapper.sh");
-  return fullCmd;
+  return [fullCmd.join(" ")];
 }
 
 export async function genCmd(
@@ -129,7 +156,7 @@ export async function genCmd(
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
   useWrapper = true,
-  portFlags?: { [flag: string]: number }
+  portFlags?: { [flag: string]: number },
 ): Promise<string[]> {
   let {
     name,
@@ -159,8 +186,8 @@ export async function genCmd(
   if (!command) command = DEFAULT_COMMAND;
 
   // IFF the node is a cumulus based collator
-  if (zombieRole === "collator" && command.includes("polkadot-collator")) {
-    return await genCumulusCollatorCmd(command, nodeSetup);
+  if ((zombieRole === "collator" && command.includes("polkadot-collator")) || zombieRole === "cumulus-collator") {
+    return await genCumulusCollatorCmd(command, nodeSetup, cfgPath, dataPath, useWrapper);
   }
 
   args = [...args];

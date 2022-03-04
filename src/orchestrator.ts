@@ -4,6 +4,7 @@ import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
+  getUniqueName,
 } from "./configManager";
 import {
   GENESIS_STATE_FILENAME,
