@@ -26,7 +26,7 @@ export async function generateParachainFiles(
   fs.mkdirSync(parachainFilesPath);
 
   let chainSpecFullPath;
-  if(parachain.collator.command.includes("polkadot-collator")) {
+  if(parachain.collators[0].command.includes("polkadot-collator")) {
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
     chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
@@ -34,7 +34,7 @@ export async function generateParachainFiles(
     // create or copy chain spec
     await setupChainSpec(
       namespace,
-      {relaychain: { chainSpecCommand: `${parachain.collator.command} build-spec --disable-default-bootnode`}},
+      {relaychain: { chainSpecCommand: `${parachain.collators[0].command} build-spec --disable-default-bootnode`}},
       chainName,
       chainSpecFullPathPlain
     );
@@ -50,9 +50,9 @@ export async function generateParachainFiles(
     // generate the raw chain spec
     await getChainSpecRaw(
       namespace,
-      parachain.collator.image,
+      parachain.collators[0].image,
       `${chainName}-${parachain.id}`,
-      parachain.collator.command,
+      parachain.collators[0].command,
       chainSpecFullPath
     );
   }
@@ -63,7 +63,7 @@ export async function generateParachainFiles(
     if (parachain.genesisStateGenerator) {
       let genesisStateGenerator = parachain.genesisStateGenerator.replace( "{{CLIENT_REMOTE_DIR}}",client.remoteDir as string);
       // cumulus
-      if(parachain.collator.command.includes("polkadot-collator")) {
+      if(parachain.collators[0].command.includes("polkadot-collator")) {
         genesisStateGenerator = genesisStateGenerator.replace(" > ", ` --chain ${chainSpecFullPath} > `);
       }
       commands.push(genesisStateGenerator);
@@ -71,7 +71,7 @@ export async function generateParachainFiles(
     if (parachain.genesisWasmGenerator) {
       let genesisWasmGenerator = parachain.genesisWasmGenerator.replace("{{CLIENT_REMOTE_DIR}}",client.remoteDir as string);
       // cumulus
-      if(parachain.collator.command.includes("polkadot-collator")) {
+      if(parachain.collators[0].command.includes("polkadot-collator")) {
         genesisWasmGenerator = genesisWasmGenerator.replace(" > ", ` --chain ${chainSpecFullPath} > `);
       }
       commands.push(genesisWasmGenerator);
