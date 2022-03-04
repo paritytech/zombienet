@@ -185,7 +185,7 @@ export async function genCmd(
   if (!command) command = DEFAULT_COMMAND;
 
   // IFF the node is a cumulus based collator
-  if (zombieRole === "collator" && command.includes("polkadot-collator")) {
+  if ((zombieRole === "collator" && command.includes("polkadot-collator")) || zombieRole === "cumulus-collator") {
     return await genCumulusCollatorCmd(command, nodeSetup, cfgPath, dataPath, useWrapper);
   }
 

@@ -363,6 +363,7 @@ function getCollatorFromConfig(
     chain,
     env,
     bootnodes,
+    isCumulus: collatorConfig.cumulus_based || false
   };
 
   console.log("collator");
