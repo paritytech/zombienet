@@ -84,7 +84,7 @@ export async function generateParachainFiles(
     let node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,
-      image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
+      image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
       chain: chainName,
       bootnodes: [],
