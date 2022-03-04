@@ -236,21 +236,7 @@ export async function generateNetworkSpec(
         id: parachain.id,
         addToGenesis:
           parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
-<<<<<<< HEAD
-        collator: {
-          name: getUniqueName(parachain.collator.name || "collator"),
-          command: collatorBinary,
-          commandWithArgs: parachain.collator.commandWithArgs,
-          image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
-          chain: networkSpec.relaychain.chain,
-          args: parachain.collator.args || [],
-          env: env,
-          bootnodes,
-          count: parachain.collator.count || 1
-        },
-=======
         collators
->>>>>>> main
       };
 
       parachainSetup = {
