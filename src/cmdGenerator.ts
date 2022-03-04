@@ -1,4 +1,3 @@
-import { debug } from "console";
 import { decorators } from "./colors";
 import {
   DEFAULT_COMMAND,
@@ -41,7 +40,6 @@ export async function genCumulusCollatorCmd(
   dataPath: string = "/data",
   useWrapper = true
 ): Promise<string[]> {
-  console.log("PASE");
   console.log(arguments);
   const { name, args, chain, parachainId } = nodeSetup;
   const parachainAddedArgs: any = {
