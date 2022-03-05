@@ -1,5 +1,11 @@
 import { Providers } from "./providers/";
-import { LaunchConfig, ComputedNetwork, Node, fileMap, Collator } from "./types";
+import {
+  LaunchConfig,
+  ComputedNetwork,
+  Node,
+  fileMap,
+  Collator,
+} from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
@@ -297,7 +303,12 @@ export async function start(
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
 
-    const spawnNode = async (node: Node, network: Network, paraId?: number) => {
+    const spawnNode = async (
+      node: Node,
+      network: Network,
+      paraId?: number,
+      parachainSpecPath?: string
+    ) => {
       node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
@@ -306,6 +317,14 @@ export async function start(
         : genNodeDef(namespace, node));
 
       let finalFilesToCopyToNode = [...filesToCopyToNodes];
+
+      // add spec file if is provided
+      if (parachainSpecPath) {
+        finalFilesToCopyToNode.push({
+          localFilePath: parachainSpecPath,
+          remoteFilePath: `${client.remoteDir}/${node.chain}-${paraId}.json`,
+        });
+      }
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
           localFilePath: override.local_path,
@@ -387,7 +406,7 @@ export async function start(
         );
       }
 
-      if( paraId) {
+      if (paraId) {
         networkNode.parachainId = paraId;
         network.addNode(networkNode, Scope.PARA);
       } else {
@@ -472,25 +491,31 @@ export async function start(
       }
 
       // create collator/s
-      const promiseGenerators = parachain.collators.map((collator: Collator) => {
-        const collatorName = collator.name;
-        const node: Node = {
-          name: collatorName,
-          key: getSha256(collatorName),
-          validator: false,
-          image: collator.image,
-          command: collator.command,
-          commandWithArgs: collator.commandWithArgs,
-          chain: networkSpec.relaychain.chain,
-          args: collator.args,
-          bootnodes: collator.bootnodes,
-          env: collator.env,
-          telemetryUrl: "",
-          overrides: [],
-          zombieRole: "collator",
+      const promiseGenerators = parachain.collators.map(
+        (collator: Collator) => {
+          const collatorName = collator.name;
+          const node: Node = {
+            name: collatorName,
+            key: getSha256(collatorName),
+            validator: false,
+            image: collator.image,
+            command: collator.command,
+            commandWithArgs: collator.commandWithArgs,
+            chain: networkSpec.relaychain.chain,
+            args: collator.args,
+            bootnodes: collator.bootnodes,
+            env: collator.env,
+            telemetryUrl: "",
+            overrides: [],
+            zombieRole: parachain.cumulusBased
+              ? "cumulus-collator"
+              : "collator",
+            parachainId: parachain.id,
+          };
+          return () =>
+            spawnNode(node, network!, parachain.id, parachain.specPath);
         }
-        return () => spawnNode(node, network!);
-      });
+      );
 
       await series(promiseGenerators, opts.spawnConcurrency);
     }

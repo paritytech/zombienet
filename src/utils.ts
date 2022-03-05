@@ -30,10 +30,8 @@ export function readDataFile(filepath: string): string {
   }
 }
 
-export function addMinutes(howMany: number, baseDate?: Date): [number,number] {
-  const baseTs = baseDate
-    ? baseDate.getTime()
-    : new Date().getTime();
+export function addMinutes(howMany: number, baseDate?: Date): [number, number] {
+  const baseTs = baseDate ? baseDate.getTime() : new Date().getTime();
 
   let targetTs = baseTs + howMany * 60 * 1000;
   const targetDate = new Date(targetTs);

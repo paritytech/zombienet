@@ -56,16 +56,17 @@ export interface Collator {
   env: envVars[];
   bootnodes: string[];
   count?: number;
-  isCumulus?: boolean;
 }
 
 export interface Parachain {
   id: number;
   addToGenesis: boolean;
+  cumulusBased: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
   genesisStatePath?: string;
   genesisStateGenerator?: string;
+  specPath?: string;
   balance?: number;
   collators: Collator[];
 }
@@ -76,7 +77,6 @@ export interface CollatorNodeConfig {
   commandWithArgs?: string;
   name?: string;
   args?: string[];
-  cumulus_based?: boolean;
   initContainers?: object[];
 }
 
@@ -143,7 +143,7 @@ export interface InitContainer {
 export interface RelayChainConfig {
   default_command?: string;
   default_image?: string;
-  default_resources?: Resources
+  default_resources?: Resources;
   chain: string; // rococo-local | local (TODO: move to enum)
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -207,6 +207,7 @@ export interface ParachainConfig {
   genesis_wasm_generator?: string;
   genesis_state_path?: string;
   genesis_state_generator?: string;
+  cumulus_based?: boolean;
   bootnodes?: string[];
   collator?: CollatorConfig;
   collator_groups?: CollatorGroupConfig[];
@@ -237,12 +238,12 @@ interface ObjectJSON {
 export interface Resources {
   resources: {
     requests?: {
-      memory?: string,
-      cpu?: string
-    },
+      memory?: string;
+      cpu?: string;
+    };
     limits?: {
-      memory?: string
-      cpu?: string
-    }
-  }
+      memory?: string;
+      cpu?: string;
+    };
+  };
 }

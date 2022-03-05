@@ -1,6 +1,7 @@
 import { decorators } from "./colors";
 import {
   DEFAULT_COMMAND,
+  DEV_ACCOUNTS,
   P2P_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
@@ -40,7 +41,6 @@ export async function genCumulusCollatorCmd(
   dataPath: string = "/data",
   useWrapper = true
 ): Promise<string[]> {
-  console.log(arguments);
   const { name, args, chain, parachainId } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
@@ -50,15 +50,16 @@ export async function genCumulusCollatorCmd(
     "--port": true,
     "--ws-port": true,
     "--chain": true,
-
   };
 
+  const colIndex = getCollatorIndex(name);
   const collatorPort = await getRandomPort();
   const collatorWsPort = await getRandomPort();
   let fullCmd: string[] = [
     command,
     "--name",
     name,
+    `--${DEV_ACCOUNTS[colIndex]}`,
     "--collator",
     "--force-authoring",
     "--chain",
@@ -68,7 +69,7 @@ export async function genCumulusCollatorCmd(
     "--port",
     collatorPort.toString(),
     "--ws-port",
-    collatorWsPort.toString()
+    collatorWsPort.toString(),
   ];
 
   if (nodeSetup.args.length > 0) {
@@ -156,7 +157,7 @@ export async function genCmd(
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
   useWrapper = true,
-  portFlags?: { [flag: string]: number },
+  portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
   let {
     name,
@@ -186,8 +187,17 @@ export async function genCmd(
   if (!command) command = DEFAULT_COMMAND;
 
   // IFF the node is a cumulus based collator
-  if ((zombieRole === "collator" && command.includes("polkadot-collator")) || zombieRole === "cumulus-collator") {
-    return await genCumulusCollatorCmd(command, nodeSetup, cfgPath, dataPath, useWrapper);
+  if (
+    (zombieRole === "collator" && command.includes("polkadot-collator")) ||
+    zombieRole === "cumulus-collator"
+  ) {
+    return await genCumulusCollatorCmd(
+      command,
+      nodeSetup,
+      cfgPath,
+      dataPath,
+      useWrapper
+    );
   }
 
   args = [...args];
@@ -257,4 +267,11 @@ export async function genCmd(
   const resolvedCmd = [finalArgs.join(" ")];
   if (useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
   return resolvedCmd;
+}
+
+// helpers
+function getCollatorIndex(name: string): number {
+  const parts = name.split("-");
+  const index = parseInt(parts[parts.length - 1],10);
+  return isNaN(index) ? 0 : index;
 }
