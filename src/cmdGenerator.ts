@@ -272,6 +272,6 @@ export async function genCmd(
 // helpers
 function getCollatorIndex(name: string): number {
   const parts = name.split("-");
-  const index = parseInt(parts[parts.length - 1],10);
+  const index = parseInt(parts[parts.length - 1], 10);
   return isNaN(index) ? 0 : index;
 }
