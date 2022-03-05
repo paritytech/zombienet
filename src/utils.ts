@@ -10,7 +10,6 @@ const dns = require("dns");
 const os = require("os");
 import { LaunchConfig, Node } from "./types";
 import { RelativeLoader } from "./nunjucks-relative-loader";
-import { debug } from "console";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -95,7 +94,6 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
       : toml.parse(content);
 
   config.configBasePath = configBasePath;
-  debug(config);
   return config;
 }
 

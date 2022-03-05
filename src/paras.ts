@@ -78,7 +78,7 @@ export async function generateParachainFiles(
         client.remoteDir as string
       );
       // cumulus
-      if (parachain.collators[0].command.includes("polkadot-collator")) {
+      if (parachain.cumulusBased) {
         genesisStateGenerator = genesisStateGenerator.replace(
           " > ",
           ` --chain ${chainSpecFullPath} > `
