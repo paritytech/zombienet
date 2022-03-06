@@ -1,5 +1,5 @@
-import { Client, getClient } from "./providers/client";
-import { cryptoWaitReady, keyExtractPath } from "@polkadot/util-crypto";
+import { Client } from "./providers/client";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
 import { readDataFile } from "./utils";

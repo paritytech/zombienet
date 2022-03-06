@@ -10,7 +10,6 @@ const dns = require("dns");
 const os = require("os");
 import { LaunchConfig, Node } from "./types";
 import { RelativeLoader } from "./nunjucks-relative-loader";
-import { debug } from "console";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -30,10 +29,8 @@ export function readDataFile(filepath: string): string {
   }
 }
 
-export function addMinutes(howMany: number, baseDate?: Date): [number,number] {
-  const baseTs = baseDate
-    ? baseDate.getTime()
-    : new Date().getTime();
+export function addMinutes(howMany: number, baseDate?: Date): [number, number] {
+  const baseTs = baseDate ? baseDate.getTime() : new Date().getTime();
 
   let targetTs = baseTs + howMany * 60 * 1000;
   const targetDate = new Date(targetTs);
@@ -97,7 +94,6 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
       : toml.parse(content);
 
   config.configBasePath = configBasePath;
-  debug(config);
   return config;
 }
 

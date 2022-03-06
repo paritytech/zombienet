@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euxo pipefail
+
 # add /cfg as first `looking dir` to allow to overrides commands.
 export PATH="{{REMOTE_DIR}}":$PATH
 

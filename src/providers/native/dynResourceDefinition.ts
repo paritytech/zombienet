@@ -116,7 +116,7 @@ async function getPorts() {
       name: "p2p",
       flag: "--port",
       hostPort: await getRandomPort(),
-    }, //p2p
+    },
   ];
 
   return ports;

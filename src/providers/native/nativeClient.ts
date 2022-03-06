@@ -281,7 +281,7 @@ export class NativeClient extends Client {
     let t = this.timeout;
     const args = [
       "-c",
-      `grep 'Listening for new connections'  ${logFile} | wc -l`,
+      `grep -E 'Listening for new connections|Is collating'  ${logFile} | wc -l`,
     ];
     do {
       const result = await this.runCommand(args);

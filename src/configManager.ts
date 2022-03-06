@@ -72,7 +72,7 @@ export async function generateNetworkSpec(
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
-      defaultResources: config.relaychain.default_resources
+      defaultResources: config.relaychain.default_resources,
     },
     parachains: [],
   };
@@ -138,7 +138,8 @@ export async function generateNetworkSpec(
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
-        resources: nodeGroup.resources || networkSpec.relaychain.defaultResources
+        resources:
+          nodeGroup.resources || networkSpec.relaychain.defaultResources,
       };
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
@@ -165,17 +166,25 @@ export async function generateNetworkSpec(
       // collator could by defined in groups or
       // just using one collator definiton
       let collators = [];
-      if(parachain.collator) collators.push(getCollatorFromConfig(parachain.collator, chainName, bootnodes));
+      if (parachain.collator)
+        collators.push(
+          getCollatorFromConfig(parachain.collator, chainName, bootnodes)
+        );
 
-      for(const collatorGroup of parachain.collator_groups || []) {
-        for( let i = 0; i < collatorGroup.count; i++ ) {
-          collators.push(getCollatorFromConfig(collatorGroup.collator, chainName, bootnodes));
+      for (const collatorGroup of parachain.collator_groups || []) {
+        for (let i = 0; i < collatorGroup.count; i++) {
+          collators.push(
+            getCollatorFromConfig(collatorGroup.collator, chainName, bootnodes)
+          );
         }
       }
 
       // use the first collator for state/wasm generation
       const firstCollator = collators[0];
-      if(! firstCollator ) throw new Error(`No Collator defined for parachain ${parachain.id}, please review.`);
+      if (!firstCollator)
+        throw new Error(
+          `No Collator defined for parachain ${parachain.id}, please review.`
+        );
 
       debug("firstCollator");
       debug(firstCollator);
@@ -205,10 +214,6 @@ export async function generateNetworkSpec(
           ? parachain.genesis_state_generator
           : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
 
-        if (!computedStateCommand.includes("adder")) {
-          computedStateCommand += ` --parachain-id ${parachain.id}`;
-        }
-
         computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
 
@@ -234,9 +239,10 @@ export async function generateNetworkSpec(
 
       let parachainSetup: Parachain = {
         id: parachain.id,
+        cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
           parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
-        collators
+        collators,
       };
 
       parachainSetup = {
@@ -335,7 +341,7 @@ function isValidatorbyArgs(nodeArgs: string[]): boolean {
 function getCollatorFromConfig(
   collatorConfig: CollatorConfig,
   chain: string,
-  bootnodes: string[],
+  bootnodes: string[]
 ): Collator {
   console.log("collator config");
   console.log(JSON.stringify(collatorConfig));
@@ -349,10 +355,10 @@ function getCollatorFromConfig(
   if (collatorConfig.env) env.push(...collatorConfig.env);
 
   const collatorBinary = collatorConfig.commandWithArgs
-  ? collatorConfig.commandWithArgs.split(" ")[0]
-  : collatorConfig.command
-  ? collatorConfig.command
-  : DEFAULT_ADDER_COLLATOR_BIN;
+    ? collatorConfig.commandWithArgs.split(" ")[0]
+    : collatorConfig.command
+    ? collatorConfig.command
+    : DEFAULT_ADDER_COLLATOR_BIN;
 
   const collator: Collator = {
     name: getUniqueName(collatorConfig.name || "collator"),
@@ -438,7 +444,7 @@ async function getNodeFromConfig(
     prometheus: prometheusExternal,
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
-    resources: node.resources || networkSpec.relaychain.defaultResources
+    resources: node.resources || networkSpec.relaychain.defaultResources,
   };
 
   return nodeSetup;
