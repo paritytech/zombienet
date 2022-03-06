@@ -188,7 +188,7 @@ zombienet-tests-integration:
   <<:                              *common-refs
 
   variables:
-    GH_DIR:                        'https://github.com/paritytech/polkadot/tree/master/zombienet_tests/parachains'
+    GH_DIR:                        'https://github.com/paritytech/polkadot/tree/master/zombienet_tests/smoke'
 
   before_script:
     - echo "Zombienet Tests Parachain smoke test"
