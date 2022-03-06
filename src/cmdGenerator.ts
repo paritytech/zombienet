@@ -39,7 +39,8 @@ export async function genCumulusCollatorCmd(
   nodeSetup: Node,
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
-  useWrapper = true
+  useWrapper = true,
+  portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
   const { name, args, chain, parachainId } = nodeSetup;
   const parachainAddedArgs: any = {
@@ -53,8 +54,15 @@ export async function genCumulusCollatorCmd(
   };
 
   const colIndex = getCollatorIndex(name);
-  const collatorPort = await getRandomPort();
-  const collatorWsPort = await getRandomPort();
+  let collatorPort;
+  let collatorWsPort;
+  if(portFlags) {
+    collatorPort = portFlags["--port"];
+    collatorWsPort =  portFlags["--ws-port"];
+  } else {
+    collatorPort = await getRandomPort();
+    collatorWsPort = await getRandomPort();
+  }
   let fullCmd: string[] = [
     command,
     "--name",
@@ -196,7 +204,8 @@ export async function genCmd(
       nodeSetup,
       cfgPath,
       dataPath,
-      useWrapper
+      useWrapper,
+      portFlags
     );
   }
 

@@ -407,6 +407,7 @@ export async function start(
       }
 
       if (paraId) {
+        if(!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
         networkNode.parachainId = paraId;
         network.addNode(networkNode, Scope.PARA);
       } else {

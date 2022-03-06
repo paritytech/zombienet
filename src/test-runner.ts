@@ -411,7 +411,8 @@ function parseAssertionLine(assertion: string) {
           return { name, wsUri, prometheusUri, userDefinedTypes };
         }),
         paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
-          memo[paraId] = network.paras[paraId].map((node) => {
+          memo[paraId] = { spec: network.paras[paraId].spec }
+          memo[paraId].nodes = network.paras[paraId].nodes.map((node) => {
             return { ...node };
           });
           return memo;
@@ -581,7 +582,7 @@ function parseAssertionLine(assertion: string) {
       backchannelMap: BackchannelMap,
       testFile: string
     ) => {
-      const collator = network.paras[parachainId][0];
+      const collator = network.paras[parachainId].nodes[0];
       let node = network.node(collator.name);
       let api: ApiPromise = await connect(node.wsUri);
       const hash = await chainCustomSectionUpgrade(api);

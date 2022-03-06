@@ -33,7 +33,10 @@ export enum Scope {
 
 export class Network {
   relay: NetworkNode[] = [];
-  paras: { [id: number]: NetworkNode[] } = {};
+  paras: { [id: number]: {
+    spec?: string,
+    nodes: NetworkNode[]
+  } } = {};
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
@@ -49,16 +52,24 @@ export class Network {
     this.tmpDir = tmpDir;
   }
 
+  addPara(parachainId: number, spec?: string) {
+    if(!this.paras[parachainId]) {
+      this.paras[parachainId] = {
+        nodes: [],
+        spec
+      };
+    }
+  }
+
   addNode(node: NetworkNode, scope: Scope) {
     if (scope === Scope.RELAY) this.relay.push(node);
     else {
-      if (!node.parachainId)
+      if (!node.parachainId || !this.paras[node.parachainId])
         throw new Error(
           "Invalid network node configuration, collator must set the parachainId"
         );
-      if (!this.paras[node.parachainId]) this.paras[node.parachainId] = [];
 
-      this.paras[node.parachainId].push(node);
+      this.paras[node.parachainId].nodes.push(node);
     }
 
     this.nodesByName[node.name] = node;
@@ -74,11 +85,12 @@ export class Network {
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
       (memo: NetworkNode[], key) => {
         const paraId = parseInt(key, 10);
-        memo.concat(this.paras[paraId]);
+        memo.concat(this.paras[paraId].nodes);
         return memo;
       },
       []
     );
+
     const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
       this.client.dumpLogs(this.tmpDir, node.name);
     });
@@ -268,8 +280,9 @@ export class Network {
     for (const [paraId, parachain] of Object.entries(this.paras)) {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
+      if(parachain.spec) console.log("\n\t Parachain spec path: " + parachain.spec);
 
-      for (const node of parachain) {
+      for (const node of parachain.nodes) {
         this.showNodeInfo(node, provider);
       }
     }
