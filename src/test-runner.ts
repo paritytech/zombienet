@@ -27,6 +27,8 @@ const { Test, Suite } = Mocha;
 const mocha = new Mocha();
 
 import { JSDOM } from "jsdom";
+import { Environment } from "nunjucks";
+import { RelativeLoader } from "./nunjucks-relative-loader";
 
 interface TestDefinition {
   networkConfig: string;
@@ -644,7 +646,12 @@ function getTestNameFromFileName(testFile: string): string {
 
 function parseTestFile(testFile: string): TestDefinition {
   let testDefinition: TestDefinition | undefined = undefined;
-  const content = fs.readFileSync(testFile).toString();
+
+  const configBasePath = path.dirname(testFile);
+  const env = new Environment(new RelativeLoader([configBasePath]));
+  const temmplateContent = fs.readFileSync(testFile).toString();
+  const content = env.renderString(temmplateContent, process.env);
+
   let networkConfig: string = "";
   let description: string = "";
   let creds: string = "";
