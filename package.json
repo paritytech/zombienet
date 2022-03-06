@@ -1,6 +1,6 @@
 {
   "name": "zombienet",
-  "version": "1.2.12",
+  "version": "1.2.15",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Javier Viola <javier@parity.io>",
@@ -10,7 +10,7 @@
     "clean": "rm -rf ./dist/* ",
     "build": "tsc",
     "start": "yarn build && node dist/cli.js",
-    "lint": "npx prettier --write .",
+    "lint": "npx prettier --write ./src",
     "package": "pkg . --out-path ./bins"
   },
   "dependencies": {

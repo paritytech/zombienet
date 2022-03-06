@@ -1,6 +1,7 @@
 import { decorators } from "./colors";
 import {
   DEFAULT_COMMAND,
+  DEV_ACCOUNTS,
   P2P_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
@@ -37,21 +38,38 @@ export async function genCumulusCollatorCmd(
   command: string,
   nodeSetup: Node,
   cfgPath: string = "/cfg",
+  dataPath: string = "/data",
   useWrapper = true
 ): Promise<string[]> {
-  const { name, args, chain, bootnodes } = nodeSetup;
+  const { name, args, chain, parachainId } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
     "--force-authoring": true,
+    "--base-path": true,
+    "--port": true,
+    "--ws-port": true,
+    "--chain": true,
   };
 
+  const colIndex = getCollatorIndex(name);
+  const collatorPort = await getRandomPort();
+  const collatorWsPort = await getRandomPort();
   let fullCmd: string[] = [
     command,
     "--name",
     name,
+    `--${DEV_ACCOUNTS[colIndex]}`,
     "--collator",
     "--force-authoring",
+    "--chain",
+    `${cfgPath}/${chain}-${parachainId}.json`,
+    "--base-path",
+    dataPath,
+    "--port",
+    collatorPort.toString(),
+    "--ws-port",
+    collatorWsPort.toString(),
   ];
 
   if (nodeSetup.args.length > 0) {
@@ -81,8 +99,8 @@ export async function genCumulusCollatorCmd(
 
     const collatorPorts: any = {
       "--port": 0,
-      "ws-port": 0,
-      "rpc-port": 0,
+      "--ws-port": 0,
+      "--rpc-port": 0,
     };
 
     if (argsCollator) {
@@ -117,11 +135,21 @@ export async function genCumulusCollatorCmd(
 
       fullCmd = fullCmd.concat(argsCollator);
       console.log(`Added ${argsCollator} to collator`);
+    } else {
+      // ensure ports
+      for (const portArg of Object.keys(collatorPorts)) {
+        if (collatorPorts[portArg] === 0) {
+          const randomPort = await getRandomPort();
+          fullCmd.push(portArg);
+          fullCmd.push(randomPort.toString());
+          console.log(`Added ${portArg} with value ${randomPort}`);
+        }
+      }
     }
   }
 
   if (useWrapper) fullCmd.unshift("/cfg/zombie-wrapper.sh");
-  return fullCmd;
+  return [fullCmd.join(" ")];
 }
 
 export async function genCmd(
@@ -159,10 +187,20 @@ export async function genCmd(
   if (!command) command = DEFAULT_COMMAND;
 
   // IFF the node is a cumulus based collator
-  if (zombieRole === "collator" && command.includes("polkadot-collator")) {
-    return await genCumulusCollatorCmd(command, nodeSetup);
+  if (
+    (zombieRole === "collator" && command.includes("polkadot-collator")) ||
+    zombieRole === "cumulus-collator"
+  ) {
+    return await genCumulusCollatorCmd(
+      command,
+      nodeSetup,
+      cfgPath,
+      dataPath,
+      useWrapper
+    );
   }
 
+  args = [...args];
   args.push("--no-mdns");
 
   if (key) args.push(...["--node-key", key]);
@@ -229,4 +267,11 @@ export async function genCmd(
   const resolvedCmd = [finalArgs.join(" ")];
   if (useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
   return resolvedCmd;
+}
+
+// helpers
+function getCollatorIndex(name: string): number {
+  const parts = name.split("-");
+  const index = parseInt(parts[parts.length - 1], 10);
+  return isNaN(index) ? 0 : index;
 }

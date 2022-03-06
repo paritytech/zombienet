@@ -7,9 +7,10 @@ import {
   Node,
   Parachain,
   Override,
-  RelayChainConfig,
   NodeConfig,
   envVars,
+  Collator,
+  CollatorConfig,
 } from "./types";
 import { getSha256 } from "./utils";
 import {
@@ -71,7 +72,7 @@ export async function generateNetworkSpec(
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
-      defaultResources: config.relaychain.default_resources
+      defaultResources: config.relaychain.default_resources,
     },
     parachains: [],
   };
@@ -137,7 +138,8 @@ export async function generateNetworkSpec(
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
-        resources: nodeGroup.resources || networkSpec.relaychain.defaultResources
+        resources:
+          nodeGroup.resources || networkSpec.relaychain.defaultResources,
       };
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
@@ -160,10 +162,37 @@ export async function generateNetworkSpec(
         computedWasmPath,
         computedWasmCommand;
       const bootnodes = relayChainBootnodes;
-      const collatorBinary = parachain.collator.commandWithArgs
-        ? parachain.collator.commandWithArgs.split(" ")[0]
-        : parachain.collator.command
-        ? parachain.collator.command
+
+      // collator could by defined in groups or
+      // just using one collator definiton
+      let collators = [];
+      if (parachain.collator)
+        collators.push(
+          getCollatorFromConfig(parachain.collator, chainName, bootnodes)
+        );
+
+      for (const collatorGroup of parachain.collator_groups || []) {
+        for (let i = 0; i < collatorGroup.count; i++) {
+          collators.push(
+            getCollatorFromConfig(collatorGroup.collator, chainName, bootnodes)
+          );
+        }
+      }
+
+      // use the first collator for state/wasm generation
+      const firstCollator = collators[0];
+      if (!firstCollator)
+        throw new Error(
+          `No Collator defined for parachain ${parachain.id}, please review.`
+        );
+
+      debug("firstCollator");
+      debug(firstCollator);
+
+      const collatorBinary = firstCollator.commandWithArgs
+        ? firstCollator.commandWithArgs.split(" ")[0]
+        : firstCollator.command
+        ? firstCollator.command
         : DEFAULT_ADDER_COLLATOR_BIN;
 
       if (parachain.genesis_state_path) {
@@ -184,10 +213,6 @@ export async function generateNetworkSpec(
         computedStateCommand = parachain.genesis_state_generator
           ? parachain.genesis_state_generator
           : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
-
-        if (!collatorBinary.includes("adder")) {
-          computedStateCommand += ` --parachain-id ${parachain.id}`;
-        }
 
         computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
@@ -212,29 +237,12 @@ export async function generateNetworkSpec(
           : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND} > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
-      let args: string[] = [];
-      if (parachain.collator.args) args = args.concat(parachain.collator.args);
-
-      const env = [
-        { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-        { name: "RUST_BACKTRACE", value: "FULL" },
-      ];
-      if (parachain.collator.env) env.push(...parachain.collator.env);
-
       let parachainSetup: Parachain = {
         id: parachain.id,
+        cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
           parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
-        collator: {
-          name: getUniqueName(parachain.collator.name || "collator"),
-          command: collatorBinary,
-          commandWithArgs: parachain.collator.commandWithArgs,
-          image: parachain.collator.image || DEFAULT_COLLATOR_IMAGE,
-          chain: networkSpec.relaychain.chain,
-          args: parachain.collator.args || [],
-          env: env,
-          bootnodes,
-        },
+        collators,
       };
 
       parachainSetup = {
@@ -330,6 +338,44 @@ function isValidatorbyArgs(nodeArgs: string[]): boolean {
   return validatorAccount ? true : false;
 }
 
+function getCollatorFromConfig(
+  collatorConfig: CollatorConfig,
+  chain: string,
+  bootnodes: string[]
+): Collator {
+  console.log("collator config");
+  console.log(JSON.stringify(collatorConfig));
+  let args: string[] = [];
+  if (collatorConfig.args) args = args.concat(collatorConfig.args);
+
+  const env = [
+    { name: "COLORBT_SHOW_HIDDEN", value: "1" },
+    { name: "RUST_BACKTRACE", value: "FULL" },
+  ];
+  if (collatorConfig.env) env.push(...collatorConfig.env);
+
+  const collatorBinary = collatorConfig.commandWithArgs
+    ? collatorConfig.commandWithArgs.split(" ")[0]
+    : collatorConfig.command
+    ? collatorConfig.command
+    : DEFAULT_ADDER_COLLATOR_BIN;
+
+  const collator: Collator = {
+    name: getUniqueName(collatorConfig.name || "collator"),
+    command: collatorBinary,
+    commandWithArgs: collatorConfig.commandWithArgs,
+    image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
+    args: collatorConfig.args || [],
+    chain,
+    env,
+    bootnodes,
+  };
+
+  console.log("collator");
+  console.log(JSON.stringify(collator));
+  return collator;
+}
+
 async function getNodeFromConfig(
   networkSpec: any,
   node: NodeConfig,
@@ -398,7 +444,7 @@ async function getNodeFromConfig(
     prometheus: prometheusExternal,
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
-    resources: node.resources || networkSpec.relaychain.defaultResources
+    resources: node.resources || networkSpec.relaychain.defaultResources,
   };
 
   return nodeSetup;

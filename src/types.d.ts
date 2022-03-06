@@ -35,7 +35,7 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  zombieRole?: "temp" | "node" | "bootnode" | "collator";
+  zombieRole?: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
   initContainers?: object[];
   telemetry?: boolean;
   telemetryUrl: string;
@@ -43,6 +43,7 @@ export interface Node {
   overrides: Override[];
   addToBootnodes?: boolean;
   resources?: Resources;
+  parachainId?: number;
 }
 
 export interface Collator {
@@ -54,17 +55,20 @@ export interface Collator {
   args: string[];
   env: envVars[];
   bootnodes: string[];
+  count?: number;
 }
 
 export interface Parachain {
   id: number;
   addToGenesis: boolean;
+  cumulusBased: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
   genesisStatePath?: string;
   genesisStateGenerator?: string;
+  specPath?: string;
   balance?: number;
-  collator: Collator;
+  collators: Collator[];
 }
 
 export interface CollatorNodeConfig {
@@ -139,7 +143,7 @@ export interface InitContainer {
 export interface RelayChainConfig {
   default_command?: string;
   default_image?: string;
-  default_resources?: Resources
+  default_resources?: Resources;
   chain: string; // rococo-local | local (TODO: move to enum)
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -180,6 +184,21 @@ export interface NodeGroupConfig {
   resources?: Resources;
 }
 
+export interface CollatorConfig {
+  image?: string;
+  command?: string;
+  commandWithArgs?: string;
+  name?: string;
+  args?: string[];
+  env?: envVars[];
+  cumulus_based?: boolean;
+}
+
+export interface CollatorGroupConfig {
+  collator: CollatorConfig;
+  count: number;
+}
+
 export interface ParachainConfig {
   id: number;
   addToGenesis?: boolean;
@@ -188,15 +207,10 @@ export interface ParachainConfig {
   genesis_wasm_generator?: string;
   genesis_state_path?: string;
   genesis_state_generator?: string;
+  cumulus_based?: boolean;
   bootnodes?: string[];
-  collator: {
-    image?: string;
-    command?: string;
-    commandWithArgs?: string;
-    name?: string;
-    args?: string[];
-    env?: envVars[];
-  };
+  collator?: CollatorConfig;
+  collator_groups?: CollatorGroupConfig[];
 }
 
 export interface fileMap {
@@ -224,12 +238,12 @@ interface ObjectJSON {
 export interface Resources {
   resources: {
     requests?: {
-      memory?: string,
-      cpu?: string
-    },
+      memory?: string;
+      cpu?: string;
+    };
     limits?: {
-      memory?: string
-      cpu?: string
-    }
-  }
+      memory?: string;
+      cpu?: string;
+    };
+  };
 }
