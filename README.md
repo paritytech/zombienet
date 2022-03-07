@@ -114,7 +114,7 @@ A **minimal** configuration example with two validators and one parachain:
 timeout = 1000
 
 [relaychain]
-default_image = "paritypr/synth-wave:3639-0.9.9-7edc6602-ed5fb773"
+default_image = "paritypr/polkadot-debug:master"
 chain = "rococo-local"
 
   [[relaychain.nodes]]
@@ -217,7 +217,7 @@ addToGenesis = false
 Then you can `export` the needed values before run the command to spawn the network again:
 
 ```bash
-export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/synth-wave:4131-0.9.12-ccd09bbf-29a1ac18
+export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
 export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 
 ./zombienet-macos spawn examples/0001-simple-network.toml
@@ -294,4 +294,4 @@ Commands:
 
 ## Acknowledgement
 
-This project take inspiration and some patters from [polkadot-launch](https://github.com/paritytech/polkadot-launch) and [simnet](https://gitlab.parity.io/parity/simnet/-/tree/master).
+This project take inspiration and some patterns from [polkadot-launch](https://github.com/paritytech/polkadot-launch) and [simnet](https://gitlab.parity.io/parity/simnet/-/tree/master).
