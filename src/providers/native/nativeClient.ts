@@ -286,7 +286,7 @@ export class NativeClient extends Client {
     do {
       const result = await this.runCommand(args);
       debug(result);
-      if (result.stdout.trim() === "1") return;
+      if (parseInt(result.stdout.trim(),10) >= 1) return;
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       t -= 3;
