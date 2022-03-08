@@ -56,9 +56,9 @@ export async function genCumulusCollatorCmd(
   const colIndex = getCollatorIndex(name);
   let collatorPort;
   let collatorWsPort;
-  if(portFlags) {
+  if (portFlags) {
     collatorPort = portFlags["--port"];
-    collatorWsPort =  portFlags["--ws-port"];
+    collatorWsPort = portFlags["--ws-port"];
   } else {
     collatorPort = await getRandomPort();
     collatorWsPort = await getRandomPort();

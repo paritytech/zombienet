@@ -310,7 +310,8 @@ export async function start(
       parachainSpecPath?: string
     ) => {
       // for relay chain we can have more than one bootnode.
-      if(node.zombieRole === "node") node.bootnodes = node.bootnodes.concat(bootnodes);
+      if (node.zombieRole === "node")
+        node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
       const podDef = await (node.name === "bootnode"
@@ -409,7 +410,7 @@ export async function start(
       }
 
       if (paraId) {
-        if(!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
+        if (!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
         networkNode.parachainId = paraId;
         network.addNode(networkNode, Scope.PARA);
       } else {
@@ -493,22 +494,36 @@ export async function start(
         );
       }
 
-      if(parachain.cumulusBased) {
+      if (parachain.cumulusBased) {
         const firstCollatorNode = parachain.collators.shift();
         if (firstCollatorNode) {
-          await spawnNode(firstCollatorNode, network, parachain.id, parachain.specPath);
+          await spawnNode(
+            firstCollatorNode,
+            network,
+            parachain.id,
+            parachain.specPath
+          );
           await sleep(2000);
 
-          const [nodeIp, nodePort] = await client.getNodeInfo(firstCollatorNode.name);
+          const [nodeIp, nodePort] = await client.getNodeInfo(
+            firstCollatorNode.name
+          );
           // add bootnodes to chain spec
-          await addBootNodes(parachain.specPath!, [await generateBootnodeString(firstCollatorNode.key!, nodeIp, nodePort)]);
+          await addBootNodes(parachain.specPath!, [
+            await generateBootnodeString(
+              firstCollatorNode.key!,
+              nodeIp,
+              nodePort
+            ),
+          ]);
           // flush require cache since we change the chain-spec
           delete require.cache[require.resolve(parachain.specPath!)];
         }
       }
 
       const promiseGenerators = parachain.collators.map((node: Node) => {
-        return () => spawnNode(node, network!, parachain.id, parachain.specPath);
+        return () =>
+          spawnNode(node, network!, parachain.id, parachain.specPath);
       });
 
       await series(promiseGenerators, opts.spawnConcurrency);

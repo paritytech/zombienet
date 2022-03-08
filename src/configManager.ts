@@ -168,13 +168,23 @@ export async function generateNetworkSpec(
       let collators = [];
       if (parachain.collator)
         collators.push(
-          getCollatorNodeFromConfig(parachain.collator, parachain.id, chainName, bootnodes)
+          getCollatorNodeFromConfig(
+            parachain.collator,
+            parachain.id,
+            chainName,
+            bootnodes
+          )
         );
 
       for (const collatorGroup of parachain.collator_groups || []) {
         for (let i = 0; i < collatorGroup.count; i++) {
           collators.push(
-            getCollatorNodeFromConfig(collatorGroup.collator, parachain.id, chainName, bootnodes)
+            getCollatorNodeFromConfig(
+              collatorGroup.collator,
+              parachain.id,
+              chainName,
+              bootnodes
+            )
           );
         }
       }
@@ -373,11 +383,9 @@ function getCollatorNodeFromConfig(
     env,
     telemetryUrl: "",
     overrides: [],
-    zombieRole: collatorConfig.cumulus_based
-      ? "cumulus-collator"
-      : "collator",
-    parachainId: para_id
-  }
+    zombieRole: collatorConfig.cumulus_based ? "cumulus-collator" : "collator",
+    parachainId: para_id,
+  };
 
   return node;
 }
@@ -451,7 +459,7 @@ async function getNodeFromConfig(
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
-    zombieRole: "node"
+    zombieRole: "node",
   };
 
   return nodeSetup;
