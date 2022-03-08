@@ -50,6 +50,11 @@ resume() {
 "${CMD[@]}" &
 child_pid="$!"
 
+# check if the process is running
+if ! ls /proc/$child_pid > /dev/null 2>&1 ; then
+    exit 1
+fi;
+
 # keep listening from the pipe
 while read line <$pipe
 do
