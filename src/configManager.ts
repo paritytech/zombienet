@@ -168,13 +168,13 @@ export async function generateNetworkSpec(
       let collators = [];
       if (parachain.collator)
         collators.push(
-          getCollatorFromConfig(parachain.collator, chainName, bootnodes)
+          getCollatorNodeFromConfig(parachain.collator, parachain.id, chainName, bootnodes)
         );
 
       for (const collatorGroup of parachain.collator_groups || []) {
         for (let i = 0; i < collatorGroup.count; i++) {
           collators.push(
-            getCollatorFromConfig(collatorGroup.collator, chainName, bootnodes)
+            getCollatorNodeFromConfig(collatorGroup.collator, parachain.id, chainName, bootnodes)
           );
         }
       }
@@ -338,13 +338,12 @@ function isValidatorbyArgs(nodeArgs: string[]): boolean {
   return validatorAccount ? true : false;
 }
 
-function getCollatorFromConfig(
+function getCollatorNodeFromConfig(
   collatorConfig: CollatorConfig,
-  chain: string,
-  bootnodes: string[]
-): Collator {
-  console.log("collator config");
-  console.log(JSON.stringify(collatorConfig));
+  para_id: number,
+  chain: string, // relay-chain
+  bootnodes: string[] // parachain bootnodes
+): Node {
   let args: string[] = [];
   if (collatorConfig.args) args = args.concat(collatorConfig.args);
 
@@ -360,20 +359,27 @@ function getCollatorFromConfig(
     ? collatorConfig.command
     : DEFAULT_ADDER_COLLATOR_BIN;
 
-  const collator: Collator = {
-    name: getUniqueName(collatorConfig.name || "collator"),
+  const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const node: Node = {
+    name: collatorName,
+    key: getSha256(collatorName),
+    validator: false,
+    image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.commandWithArgs,
-    image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     args: collatorConfig.args || [],
     chain,
-    env,
     bootnodes,
-  };
+    env,
+    telemetryUrl: "",
+    overrides: [],
+    zombieRole: collatorConfig.cumulus_based
+      ? "cumulus-collator"
+      : "collator",
+    parachainId: para_id
+  }
 
-  console.log("collator");
-  console.log(JSON.stringify(collator));
-  return collator;
+  return node;
 }
 
 async function getNodeFromConfig(
@@ -445,6 +451,7 @@ async function getNodeFromConfig(
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
+    zombieRole: "node"
   };
 
   return nodeSetup;

@@ -74,8 +74,8 @@ export async function genCumulusCollatorCmd(
     `${cfgPath}/${chain}-${parachainId}.json`,
     "--base-path",
     dataPath,
-    "--port",
-    collatorPort.toString(),
+    "--listen-addr",
+    `/ip4/0.0.0.0/tcp/${collatorPort}/ws`,
     "--ws-port",
     collatorWsPort.toString(),
   ];

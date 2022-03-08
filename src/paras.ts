@@ -57,7 +57,7 @@ export async function generateParachainFiles(
       namespace,
       parachain.collators[0].image,
       `${chainName}-${parachain.id}`,
-      parachain.collators[0].command,
+      parachain.collators[0].command!,
       chainSpecFullPath
     );
 
@@ -88,7 +88,7 @@ export async function generateParachainFiles(
         client.remoteDir as string
       );
       // cumulus
-      if (parachain.collators[0].command.includes("polkadot-collator")) {
+      if (parachain.collators[0].zombieRole === "cumulus-collator") {
         genesisWasmGenerator = genesisWasmGenerator.replace(
           " > ",
           ` --chain ${chainSpecFullPath} > `

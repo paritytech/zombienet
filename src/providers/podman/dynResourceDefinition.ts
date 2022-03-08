@@ -318,6 +318,7 @@ export function createTempNodeDef(
     env: [],
     telemetryUrl: "",
     overrides: [],
+    zombieRole: "temp"
   };
 
   return node;
