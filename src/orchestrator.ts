@@ -309,7 +309,9 @@ export async function start(
       paraId?: number,
       parachainSpecPath?: string
     ) => {
-      node.bootnodes = node.bootnodes.concat(bootnodes);
+      // for relay chain we can have more than one bootnode.
+      if (node.zombieRole === "node" || node.zombieRole === "collator")
+        node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
       const podDef = await (node.name === "bootnode"
@@ -346,6 +348,7 @@ export async function start(
         );
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
+
       await client.spawnFromDef(
         podDef,
         finalFilesToCopyToNode,
@@ -407,7 +410,7 @@ export async function start(
       }
 
       if (paraId) {
-        if(!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
+        if (!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
         networkNode.parachainId = paraId;
         network.addNode(networkNode, Scope.PARA);
       } else {
@@ -491,32 +494,37 @@ export async function start(
         );
       }
 
-      // create collator/s
-      const promiseGenerators = parachain.collators.map(
-        (collator: Collator) => {
-          const collatorName = collator.name;
-          const node: Node = {
-            name: collatorName,
-            key: getSha256(collatorName),
-            validator: false,
-            image: collator.image,
-            command: collator.command,
-            commandWithArgs: collator.commandWithArgs,
-            chain: networkSpec.relaychain.chain,
-            args: collator.args,
-            bootnodes: collator.bootnodes,
-            env: collator.env,
-            telemetryUrl: "",
-            overrides: [],
-            zombieRole: parachain.cumulusBased
-              ? "cumulus-collator"
-              : "collator",
-            parachainId: parachain.id,
-          };
-          return () =>
-            spawnNode(node, network!, parachain.id, parachain.specPath);
+      if (parachain.cumulusBased) {
+        const firstCollatorNode = parachain.collators.shift();
+        if (firstCollatorNode) {
+          await spawnNode(
+            firstCollatorNode,
+            network,
+            parachain.id,
+            parachain.specPath
+          );
+          await sleep(2000);
+
+          const [nodeIp, nodePort] = await client.getNodeInfo(
+            firstCollatorNode.name
+          );
+          // add bootnodes to chain spec
+          await addBootNodes(parachain.specPath!, [
+            await generateBootnodeString(
+              firstCollatorNode.key!,
+              nodeIp,
+              nodePort
+            ),
+          ]);
+          // flush require cache since we change the chain-spec
+          delete require.cache[require.resolve(parachain.specPath!)];
         }
-      );
+      }
+
+      const promiseGenerators = parachain.collators.map((node: Node) => {
+        return () =>
+          spawnNode(node, network!, parachain.id, parachain.specPath);
+      });
 
       await series(promiseGenerators, opts.spawnConcurrency);
     }

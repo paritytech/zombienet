@@ -33,10 +33,12 @@ export enum Scope {
 
 export class Network {
   relay: NetworkNode[] = [];
-  paras: { [id: number]: {
-    spec?: string,
-    nodes: NetworkNode[]
-  } } = {};
+  paras: {
+    [id: number]: {
+      spec?: string;
+      nodes: NetworkNode[];
+    };
+  } = {};
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
@@ -53,10 +55,10 @@ export class Network {
   }
 
   addPara(parachainId: number, spec?: string) {
-    if(!this.paras[parachainId]) {
+    if (!this.paras[parachainId]) {
       this.paras[parachainId] = {
         nodes: [],
-        spec
+        spec,
       };
     }
   }
@@ -280,7 +282,8 @@ export class Network {
     for (const [paraId, parachain] of Object.entries(this.paras)) {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
-      if(parachain.spec) console.log("\n\t Parachain spec path: " + parachain.spec);
+      if (parachain.spec)
+        console.log("\n\t Parachain spec path: " + parachain.spec);
 
       for (const node of parachain.nodes) {
         this.showNodeInfo(node, provider);

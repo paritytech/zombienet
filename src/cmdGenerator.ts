@@ -56,9 +56,9 @@ export async function genCumulusCollatorCmd(
   const colIndex = getCollatorIndex(name);
   let collatorPort;
   let collatorWsPort;
-  if(portFlags) {
+  if (portFlags) {
     collatorPort = portFlags["--port"];
-    collatorWsPort =  portFlags["--ws-port"];
+    collatorWsPort = portFlags["--ws-port"];
   } else {
     collatorPort = await getRandomPort();
     collatorWsPort = await getRandomPort();
@@ -74,8 +74,8 @@ export async function genCumulusCollatorCmd(
     `${cfgPath}/${chain}-${parachainId}.json`,
     "--base-path",
     dataPath,
-    "--port",
-    collatorPort.toString(),
+    "--listen-addr",
+    `/ip4/0.0.0.0/tcp/${collatorPort}/ws`,
     "--ws-port",
     collatorWsPort.toString(),
   ];

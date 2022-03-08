@@ -35,7 +35,7 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  zombieRole?: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
+  zombieRole: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
   initContainers?: object[];
   telemetry?: boolean;
   telemetryUrl: string;
@@ -68,7 +68,7 @@ export interface Parachain {
   genesisStateGenerator?: string;
   specPath?: string;
   balance?: number;
-  collators: Collator[];
+  collators: Node[];
 }
 
 export interface CollatorNodeConfig {
