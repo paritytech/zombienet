@@ -99,13 +99,18 @@ export async function run(
     console.log(`\t Launching network... this can take a while.`);
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
-    network = await zombie.start(creds, config, {
-      spawnConcurrency: concurrency,
-      inCI,
-    });
+    try {
+      network = await zombie.start(creds, config, {
+        spawnConcurrency: concurrency,
+        inCI,
+      });
 
-    network.showNetworkInfo(config.settings.provider);
-    return;
+      network.showNetworkInfo(config.settings.provider);
+      return;
+    } catch (err) {
+      console.log("Error launching the network");
+      exitMocha(100);
+    }
   });
 
   suite.afterAll("teardown", async function () {

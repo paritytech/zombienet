@@ -39,7 +39,7 @@ export async function genBootnodeDef(
       initContainers: nodeSetup.initContainers?.concat([
         transferContainter,
       ]) || [transferContainter],
-      restartPolicy: "OnFailure",
+      restartPolicy: "Never",
       volumes: devices,
       securityContext: {
         fsGroup: 1000,
@@ -80,7 +80,7 @@ export async function genNodeDef(
       initContainers: nodeSetup.initContainers?.concat([
         transferContainter,
       ]) || [transferContainter],
-      restartPolicy: "OnFailure",
+      restartPolicy: "Never",
       volumes: devices,
       securityContext: {
         fsGroup: 1000,
