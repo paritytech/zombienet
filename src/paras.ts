@@ -48,7 +48,6 @@ export async function generateParachainFiles(
     );
     plainData.para_id = parachain.id;
     plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
-    plainData.relay_chain = "rococo-local";
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
 
