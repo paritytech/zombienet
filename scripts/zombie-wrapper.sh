@@ -51,7 +51,7 @@ resume() {
 child_pid="$!"
 
 # check if the process is running
-if ! ps -p $child_pid >/dev/null ; then
+if ! ls /proc/308937 > /dev/null 2>&1 ; then
     exit 1
 fi;
 
