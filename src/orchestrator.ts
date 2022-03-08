@@ -310,7 +310,7 @@ export async function start(
       parachainSpecPath?: string
     ) => {
       // for relay chain we can have more than one bootnode.
-      if (node.zombieRole === "node")
+      if (node.zombieRole === "node" || node.zombieRole === "collator")
         node.bootnodes = node.bootnodes.concat(bootnodes);
 
       debug(`creating node: ${node.name}`);
