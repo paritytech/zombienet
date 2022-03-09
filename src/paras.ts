@@ -30,6 +30,7 @@ export async function generateParachainFiles(
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
     chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
+    const relayChainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
     debug("creating chain spec plain");
     // create or copy chain spec
     await setupChainSpec(
@@ -46,7 +47,10 @@ export async function generateParachainFiles(
     const plainData = JSON.parse(
       fs.readFileSync(chainSpecFullPathPlain).toString()
     );
+
+    const relayChainSpec = JSON.parse(fs.readFileSync(relayChainSpecFullPath).toString());
     plainData.para_id = parachain.id;
+    plainData.relay_chain = relayChainSpec.id;
     plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
