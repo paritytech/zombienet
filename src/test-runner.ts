@@ -305,7 +305,6 @@ function parseAssertionLine(assertion: string) {
     const metricName = m[3];
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
-    console.log(m[6]);
     const buckets = m[6].split(",").map((x) => x.replaceAll('"', "").trim());
     if (m[8]) timeout = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
