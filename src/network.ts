@@ -35,7 +35,7 @@ export class Network {
   relay: NetworkNode[] = [];
   paras: {
     [id: number]: {
-      spec?: string;
+      chainSpecPath?: string;
       nodes: NetworkNode[];
     };
   } = {};
@@ -54,11 +54,11 @@ export class Network {
     this.tmpDir = tmpDir;
   }
 
-  addPara(parachainId: number, spec?: string) {
+  addPara(parachainId: number, chainSpecPath?: string) {
     if (!this.paras[parachainId]) {
       this.paras[parachainId] = {
         nodes: [],
-        spec,
+        chainSpecPath,
       };
     }
   }
@@ -282,8 +282,8 @@ export class Network {
     for (const [paraId, parachain] of Object.entries(this.paras)) {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
-      if (parachain.spec)
-        console.log("\n\t Parachain spec path: " + parachain.spec);
+      if (parachain.chainSpecPath)
+        console.log("\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath);
 
       for (const node of parachain.nodes) {
         this.showNodeInfo(node, provider);
