@@ -416,7 +416,7 @@ function parseAssertionLine(assertion: string) {
           return { name, wsUri, prometheusUri, userDefinedTypes };
         }),
         paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
-          memo[paraId] = { spec: network.paras[paraId].spec };
+          memo[paraId] = { chainSpecPath: network.paras[paraId].chainSpecPath };
           memo[paraId].nodes = network.paras[paraId].nodes.map((node) => {
             return { ...node };
           });
