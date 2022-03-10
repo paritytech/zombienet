@@ -9,7 +9,6 @@ import {
   Override,
   NodeConfig,
   envVars,
-  Collator,
   CollatorConfig,
 } from "./types";
 import { getSha256 } from "./utils";
@@ -172,7 +171,8 @@ export async function generateNetworkSpec(
             parachain.collator,
             parachain.id,
             chainName,
-            bootnodes
+            bootnodes,
+            Boolean(parachain.cumulus_based)
           )
         );
 
@@ -183,7 +183,8 @@ export async function generateNetworkSpec(
               collatorGroup.collator,
               parachain.id,
               chainName,
-              bootnodes
+              bootnodes,
+              Boolean(parachain.cumulus_based)
             )
           );
         }
@@ -352,7 +353,8 @@ function getCollatorNodeFromConfig(
   collatorConfig: CollatorConfig,
   para_id: number,
   chain: string, // relay-chain
-  bootnodes: string[] // parachain bootnodes
+  bootnodes: string[], // parachain bootnodes
+  cumulusBased: boolean
 ): Node {
   let args: string[] = [];
   if (collatorConfig.args) args = args.concat(collatorConfig.args);
@@ -383,7 +385,7 @@ function getCollatorNodeFromConfig(
     env,
     telemetryUrl: "",
     overrides: [],
-    zombieRole: collatorConfig.cumulus_based ? "cumulus-collator" : "collator",
+    zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
   };
 

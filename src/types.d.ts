@@ -191,7 +191,6 @@ export interface CollatorConfig {
   name?: string;
   args?: string[];
   env?: envVars[];
-  cumulus_based?: boolean;
 }
 
 export interface CollatorGroupConfig {

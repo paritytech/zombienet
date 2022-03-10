@@ -37,7 +37,6 @@ export async function setupChainSpec(
     );
 
     const podDef = await genNodeDef(namespace, node);
-    const podName = podDef.metadata.name;
     await client.spawnFromDef(podDef);
 
     await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);

@@ -29,8 +29,9 @@ export async function generateParachainFiles(
   if (parachain.cumulusBased) {
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
+    const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
     chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
-    const relayChainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
+
     debug("creating chain spec plain");
     // create or copy chain spec
     await setupChainSpec(
@@ -49,7 +50,7 @@ export async function generateParachainFiles(
     );
 
     const relayChainSpec = JSON.parse(
-      fs.readFileSync(relayChainSpecFullPath).toString()
+      fs.readFileSync(relayChainSpecFullPathPlain).toString()
     );
     plainData.para_id = parachain.id;
     plainData.relay_chain = relayChainSpec.id;
