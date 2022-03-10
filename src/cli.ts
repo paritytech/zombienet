@@ -59,7 +59,7 @@ process.on("exit", async function () {
   if (network && !alreadyTry) {
     alreadyTry = true;
     debug("removing namespace: " + network.namespace);
-    await network.uploadLogs();
+    await network.dumpLogs();
     await network.stop();
   }
   const exitCode = process.exitCode !== undefined ? process.exitCode : 2;

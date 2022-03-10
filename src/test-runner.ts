@@ -116,7 +116,7 @@ export async function run(
   suite.afterAll("teardown", async function () {
     this.timeout(180 * 1000);
     if (network) {
-      await network.uploadLogs();
+      await network.dumpLogs();
       const tests = this.test?.parent?.tests;
       if (tests) {
         const fail = tests.find((test) => {

@@ -81,7 +81,7 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async uploadLogs() {
+  async dumpLogs() {
     // create dump directory in local temp
     fs.mkdirSync(`${this.tmpDir}/logs`);
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
@@ -98,7 +98,7 @@ export class Network {
     });
     await Promise.all(dumpsPromises);
 
-    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir)}`);
+    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir)}/logs`);
   }
 
   async upsertCronJob(minutes = 10) {

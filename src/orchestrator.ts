@@ -538,7 +538,7 @@ export async function start(
   } catch (error) {
     console.error(error);
     if (network) {
-      await network.uploadLogs();
+      await network.dumpLogs();
       await network.stop();
     }
     if (cronInterval) clearInterval(cronInterval);
@@ -559,7 +559,7 @@ export async function test(
     console.error(error);
   } finally {
     if (network) {
-      await network.uploadLogs();
+      await network.dumpLogs();
       await network.stop();
     }
   }
