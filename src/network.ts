@@ -81,7 +81,7 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async uploadLogs() {
+  async dumpLogs() {
     // create dump directory in local temp
     fs.mkdirSync(`${this.tmpDir}/logs`);
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
@@ -97,21 +97,8 @@ export class Network {
       this.client.dumpLogs(this.tmpDir, node.name);
     });
     await Promise.all(dumpsPromises);
-    const args = [
-      "cp",
-      "-r",
-      `${this.tmpDir}/*`,
-      `gs://${ZOMBIE_BUCKET}/${this.namespace}/`,
-    ];
-    try {
-      await execa("gsutil", args);
-    } catch (err) {
-      console.log(
-        `\n\t ${decorators.red(
-          "Could NOT upload logs"
-        )} to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`
-      );
-    }
+
+    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir)}/logs`);
   }
 
   async upsertCronJob(minutes = 10) {
