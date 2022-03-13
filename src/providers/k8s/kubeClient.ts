@@ -7,12 +7,13 @@ import {
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
-import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
+import { addMinutes, getSha256 } from "../../utils/misc-utils";
+import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../colors";
+import { decorators } from "../../utils/colors";
 
 const debug = require("debug")("zombie::kube::client");
 

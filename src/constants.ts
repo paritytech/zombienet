@@ -61,3 +61,21 @@ export const DEV_ACCOUNTS = [
   "one",
   "two",
 ];
+
+export const flagsToRemove = {
+  alice: 1,
+  bob: 1,
+  charlie: 1,
+  dave: 1,
+  eve: 1,
+  ferdie: 1,
+  one: 1,
+  two: 1,
+  port: 2,
+  "ws-port": 2,
+  "rpc-port": 2,
+  "node-key": 2,
+  "listen-addr": 2,
+  "d": 2,
+  "base-path": 2
+}

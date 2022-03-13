@@ -4,14 +4,12 @@ import {
   ComputedNetwork,
   Node,
   fileMap,
-  Collator,
 } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
-  getUniqueName,
-} from "./configManager";
+} from "./configGenerator";
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -37,15 +35,14 @@ import {
 import {
   generateNamespace,
   sleep,
-  filterConsole,
-  loadTypeDef,
-  getSha256,
-  series,
-} from "./utils";
+  filterConsole
+} from "./utils/misc-utils";
+import { series } from "./utils/promise-series";
+import { loadTypeDef } from "./utils/fs-utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import { generateBootnodeString } from "./bootnode";
 import { generateKeystoreFiles } from "./keys";
 import path from "path";
@@ -67,7 +64,7 @@ export interface orchestratorOptions {
 
 export async function start(
   credentials: string,
-  networkConfig: LaunchConfig,
+  launchConfig: LaunchConfig,
   options?: orchestratorOptions
 ) {
   const opts = {
@@ -75,15 +72,12 @@ export async function start(
     ...options,
   };
 
-  debug("options", options);
-  debug("opts", opts);
-
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
-      networkConfig
+      launchConfig
     );
     debug(JSON.stringify(networkSpec, null, 4));
 
@@ -296,7 +290,7 @@ export async function start(
 
     let bootnodes: string[] = [];
 
-    if (networkConfig.settings.bootnode) {
+    if (launchConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
       networkSpec.relaychain.nodes.unshift(bootnodeSpec);
     }

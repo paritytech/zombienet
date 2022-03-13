@@ -6,9 +6,9 @@ import {
   RPC_HTTP_PORT,
   P2P_PORT,
 } from "../../constants";
-import { getUniqueName } from "../../configManager";
+import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils";
+import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 
 const fs = require("fs").promises;
@@ -37,9 +37,7 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
@@ -226,9 +224,7 @@ export async function genNodeDef(
     spec: {
       hostname: nodeSetup.name,
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
     },

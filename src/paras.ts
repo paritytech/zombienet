@@ -4,7 +4,7 @@ import {
   GENESIS_WASM_FILENAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
-import { getUniqueName } from "./configManager";
+import { getUniqueName } from "./configGenerator";
 import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { Node, Parachain } from "./types";

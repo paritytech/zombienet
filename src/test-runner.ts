@@ -1,16 +1,16 @@
 const chai = require("chai");
 import Mocha from "mocha";
 import fs from "fs";
-import axios from "axios";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "./types";
-import { readNetworkConfig, sleep } from "./utils";
+import { sleep } from "./utils/misc-utils";
+import {readNetworkConfig} from "./utils/fs-utils";
 import { Network } from "./network";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./constants";
 import minimatch from "minimatch";
-import { node } from "execa";
+
 const zombie = require("../");
 const {
   connect,
@@ -28,7 +28,7 @@ const mocha = new Mocha();
 
 import { JSDOM } from "jsdom";
 import { Environment } from "nunjucks";
-import { RelativeLoader } from "./nunjucks-relative-loader";
+import { RelativeLoader } from "./utils/nunjucks-relative-loader";
 
 interface TestDefinition {
   networkConfig: string;

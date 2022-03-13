@@ -2,17 +2,14 @@ import execa from "execa";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
-  P2P_PORT,
-  PROMETHEUS_PORT,
-  RPC_HTTP_PORT,
-  RPC_WS_PORT,
+  P2P_PORT
 } from "../../constants";
-import { writeLocalJsonFile } from "../../utils";
+import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs");
 import { copy as fseCopy } from "fs-extra";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../colors";
+import { decorators } from "../../utils/colors";
 import YAML from "yaml";
 import { spawn } from "child_process";
 

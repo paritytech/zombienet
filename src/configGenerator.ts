@@ -11,7 +11,7 @@ import {
   envVars,
   CollatorConfig,
 } from "./types";
-import { getSha256 } from "./utils";
+import { getSha256 } from "./utils/misc-utils";
 import {
   DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_CHAIN,
@@ -25,8 +25,6 @@ import {
   DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  P2P_PORT,
-  RPC_WS_PORT,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
@@ -197,9 +195,6 @@ export async function generateNetworkSpec(
           `No Collator defined for parachain ${parachain.id}, please review.`
         );
 
-      debug("firstCollator");
-      debug(firstCollator);
-
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
         : firstCollator.command
@@ -286,8 +281,6 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     command: config.relaychain.defaultCommand || DEFAULT_COMMAND,
     image: config.relaychain.defaultImage || DEFAULT_IMAGE,
     chain: config.relaychain.chain,
-    port: P2P_PORT,
-    wsPort: RPC_WS_PORT,
     validator: false,
     args: [
       "--ws-external",
@@ -404,7 +397,6 @@ async function getNodeFromConfig(
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = [];
   if (node.args) args = args.concat(node.args);
-  if (node.extra_args) args = args.concat(node.extra_args);
 
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
@@ -446,8 +438,6 @@ async function getNodeFromConfig(
     command: command || DEFAULT_COMMAND,
     commandWithArgs: node.commandWithArgs,
     image: image || DEFAULT_IMAGE,
-    wsPort: node.wsPort ? node.wsPort : RPC_WS_PORT,
-    port: node.port ? node.port : P2P_PORT,
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
     args,

@@ -1,7 +1,7 @@
 import { encodeAddress } from "@polkadot/util-crypto";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig } from "./types";
-import { readDataFile } from "./utils";
+import { readDataFile } from "./utils/fs-utils";
 const fs = require("fs");
 
 // Get authority keys from within chainSpec data

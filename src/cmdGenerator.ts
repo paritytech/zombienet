@@ -1,4 +1,4 @@
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import {
   DEFAULT_COMMAND,
   DEV_ACCOUNTS,
@@ -7,7 +7,7 @@ import {
   RPC_WS_PORT,
 } from "./constants";
 import { Node } from "./types";
-import { getRandomPort } from "./utils";
+import { getRandomPort } from "./utils/net-utils";
 
 function parseCmdWithArguments(
   commandWithArgs: string,

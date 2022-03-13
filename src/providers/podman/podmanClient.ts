@@ -7,11 +7,12 @@ import {
   P2P_PORT,
   PROMETHEUS_PORT,
 } from "../../constants";
-import { writeLocalJsonFile, getHostIp } from "../../utils";
+import { getHostIp } from "../../utils/net-utils";
+import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../colors";
+import { decorators } from "../../utils/colors";
 import YAML from "yaml";
 import { genGrafanaDef, genPrometheusDef } from "./dynResourceDefinition";
 

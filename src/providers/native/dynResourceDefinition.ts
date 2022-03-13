@@ -5,9 +5,9 @@ import {
   P2P_PORT,
   RPC_WS_PORT,
 } from "../../constants";
-import { getUniqueName } from "../../configManager";
+import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils";
+import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 
 const fs = require("fs").promises;
