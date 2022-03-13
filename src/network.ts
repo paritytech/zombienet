@@ -98,11 +98,7 @@ export class Network {
     });
     await Promise.all(dumpsPromises);
 
-    console.log(
-      `\n\t ${decorators.green(
-        "Node's logs are available in"
-      )} ${decorators.magenta(this.tmpDir)}/logs`
-    );
+    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir + "/logs")}`);
   }
 
   async upsertCronJob(minutes = 10) {
