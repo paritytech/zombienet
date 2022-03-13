@@ -137,8 +137,7 @@ export class NativeClient extends Client {
 
   async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
-    const logs = await this.getNodeLogs(podName);
-    await fs.promises.writeFile(dstFileName, logs);
+    await fs.promises.copyFile(`${this.tmpDir}/${podName}.log`, dstFileName);
   }
 
   upsertCronJob(minutes: number): Promise<void> {
