@@ -1,10 +1,5 @@
 import { Providers } from "./providers/";
-import {
-  LaunchConfig,
-  ComputedNetwork,
-  Node,
-  fileMap,
-} from "./types";
+import { LaunchConfig, ComputedNetwork, Node, fileMap } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
@@ -32,11 +27,7 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes,
 } from "./chain-spec";
-import {
-  generateNamespace,
-  sleep,
-  filterConsole
-} from "./utils/misc-utils";
+import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils";
 import { series } from "./utils/promise-series";
 import { loadTypeDef } from "./utils/fs-utils";
 import tmp from "tmp-promise";

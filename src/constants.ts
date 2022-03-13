@@ -76,6 +76,6 @@ export const flagsToRemove = {
   "rpc-port": 2,
   "node-key": 2,
   "listen-addr": 2,
-  "d": 2,
-  "base-path": 2
-}
+  d: 2,
+  "base-path": 2,
+};

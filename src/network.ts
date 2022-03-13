@@ -98,7 +98,11 @@ export class Network {
     });
     await Promise.all(dumpsPromises);
 
-    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir)}/logs`);
+    console.log(
+      `\n\t ${decorators.green(
+        "Node's logs are available in"
+      )} ${decorators.magenta(this.tmpDir)}/logs`
+    );
   }
 
   async upsertCronJob(minutes = 10) {
@@ -270,7 +274,9 @@ export class Network {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
       if (parachain.chainSpecPath)
-        console.log("\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath);
+        console.log(
+          "\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath
+        );
 
       for (const node of parachain.nodes) {
         this.showNodeInfo(node, provider);

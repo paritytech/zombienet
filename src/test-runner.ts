@@ -5,7 +5,7 @@ import path from "path";
 import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "./types";
 import { sleep } from "./utils/misc-utils";
-import {readNetworkConfig} from "./utils/fs-utils";
+import { readNetworkConfig } from "./utils/fs-utils";
 import { Network } from "./network";
 import { decorators } from "./utils/colors";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./constants";

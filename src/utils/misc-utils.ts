@@ -59,6 +59,3 @@ export function filterConsole(excludePatterns: string[], options?: any) {
     }
   };
 }
-
-
-

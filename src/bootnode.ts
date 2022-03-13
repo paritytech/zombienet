@@ -14,6 +14,8 @@ export async function generateBootnodeString(
     1024
   );
   let peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes);
-  const multiaddress = `/ip4/${ip}/tcp/${port}/${useWs ? "ws/" : "/"}p2p/${peerId.toB58String()}`;
+  const multiaddress = `/ip4/${ip}/tcp/${port}/${
+    useWs ? "ws/" : "/"
+  }p2p/${peerId.toB58String()}`;
   return multiaddress;
 }

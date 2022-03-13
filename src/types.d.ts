@@ -96,7 +96,6 @@ export interface HrmpChannelsConfig {
   maxMessageSize: number;
 }
 
-
 // Computed Network
 // T
 export interface ComputedNetwork {
@@ -181,7 +180,6 @@ export interface envVars {
   value: string;
 }
 
-
 export interface ChainSpec {
   name: string;
   id: string;
@@ -204,7 +202,6 @@ export interface ChainSpec {
   };
 }
 
-
 // Utils
 export interface GlobalVolume {
   name: string;
@@ -222,8 +219,6 @@ export interface Override {
   local_path: string;
   remote_name: string;
 }
-
-
 
 interface ObjectJSON {
   [key: string]: ObjectJSON | number | string;

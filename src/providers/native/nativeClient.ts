@@ -2,7 +2,7 @@ import execa from "execa";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
-  P2P_PORT
+  P2P_PORT,
 } from "../../constants";
 import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs");
