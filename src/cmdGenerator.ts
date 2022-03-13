@@ -194,21 +194,6 @@ export async function genCmd(
 
   if (!command) command = DEFAULT_COMMAND;
 
-  // IFF the node is a cumulus based collator
-  if (
-    (zombieRole === "collator" && command.includes("polkadot-collator")) ||
-    zombieRole === "cumulus-collator"
-  ) {
-    return await genCumulusCollatorCmd(
-      command,
-      nodeSetup,
-      cfgPath,
-      dataPath,
-      useWrapper,
-      portFlags
-    );
-  }
-
   args = [...args];
   args.push("--no-mdns");
 
@@ -217,9 +202,9 @@ export async function genCmd(
   if (!telemetry) args.push("--no-telemetry");
   else args.push(...["--telemetry-url", telemetryUrl]);
 
-  if (prometheus) args.push("--prometheus-external");
+  if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
 
-  if (validator) args.push("--validator");
+  if (validator && args.includes("--validato")) args.push("--validator");
 
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));

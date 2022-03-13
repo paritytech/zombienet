@@ -1,10 +1,11 @@
-import { genCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
   RPC_HTTP_PORT,
   P2P_PORT,
+  DEFAULT_COMMAND,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
@@ -282,7 +283,14 @@ async function make_main_container(
     },
     { containerPort: P2P_PORT, name: "p2p", hostPort: await getRandomPort() },
   ];
-  const command = await genCmd(nodeSetup);
+
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
+  if( nodeSetup.zombieRole === "cumulus-collator" || nodeSetup.zombieRole === "collator") {
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
+  } else {
+    computedCommand = await genCmd(nodeSetup);
+  }
 
   let containerDef = {
     image: nodeSetup.image,
@@ -291,7 +299,7 @@ async function make_main_container(
     ports,
     env: nodeSetup.env,
     volumeMounts: volume_mounts,
-    command,
+    command: computedCommand,
   };
 
   return containerDef;

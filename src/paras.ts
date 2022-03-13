@@ -15,15 +15,14 @@ const debug = require("debug")("zombie::paras");
 export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
+  parachainFilesPath: string,
   chainName: string,
   parachain: Parachain
-): Promise<string> {
-  const parachainFilesPath = `${tmpDir}/${parachain.id}`;
+): Promise<void> {
+
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
   const client = getClient();
-
-  fs.mkdirSync(parachainFilesPath);
 
   let chainSpecFullPath;
   if (parachain.cumulusBased) {
@@ -155,5 +154,5 @@ export async function generateParachainFiles(
     fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
 
-  return parachainFilesPath;
+  return;
 }

@@ -1,5 +1,5 @@
 import { Providers } from "./providers/";
-import { LaunchConfig, ComputedNetwork, Node, fileMap } from "./types";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
@@ -206,13 +206,24 @@ export async function start(
         );
       }
 
-      for (const parachain of networkSpec.parachains) {
-        const parachainFilesPath = await generateParachainFiles(
+      const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
+        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
+        await fs.promises.mkdir(parachainFilesPath);
+        await generateParachainFiles(
           namespace,
           tmpDir.path,
+          parachainFilesPath,
           chainName,
           parachain
         );
+      }
+      const parachainPromiseGenerators = networkSpec.parachains.map((parachain: Parachain) => {
+        return () => parachainFilesPromiseGenerator(parachain);
+      });
+
+      await series(parachainPromiseGenerators, opts.spawnConcurrency);
+      for (const parachain of networkSpec.parachains) {
+        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
         const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
         const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
         if (parachain.addToGenesis)
@@ -222,6 +233,7 @@ export async function start(
             stateLocalFilePath,
             wasmLocalFilePath
           );
+
       }
 
       if (networkSpec.hrmpChannels) {
