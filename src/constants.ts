@@ -62,7 +62,7 @@ export const DEV_ACCOUNTS = [
   "two",
 ];
 
-export const flagsToRemove = {
+export const ARGS_TO_REMOVE: {[key:string]:number} = {
   alice: 1,
   bob: 1,
   charlie: 1,
@@ -72,10 +72,12 @@ export const flagsToRemove = {
   one: 1,
   two: 1,
   port: 2,
+  "prometheus-external": 1,
   "ws-port": 2,
   "rpc-port": 2,
   "node-key": 2,
   "listen-addr": 2,
   d: 2,
   "base-path": 2,
+
 };

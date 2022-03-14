@@ -204,7 +204,7 @@ export async function genCmd(
 
   if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
 
-  if (validator && args.includes("--validato")) args.push("--validator");
+  if (validator && ! args.includes("--validator")) args.push("--validator");
 
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));

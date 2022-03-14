@@ -13,6 +13,7 @@ import {
 } from "./types";
 import { getSha256 } from "./utils/misc-utils";
 import {
+  ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
@@ -128,10 +129,7 @@ export async function generateNetworkSpec(
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
-        args: nodeGroup.args?.filter(
-          (arg) =>
-            !DEV_ACCOUNTS.includes(arg.toLocaleLowerCase().replace("--", ""))
-        ),
+        args: sanitizeArgs(nodeGroup.args||[]),
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
@@ -350,7 +348,7 @@ function getCollatorNodeFromConfig(
   cumulusBased: boolean
 ): Node {
   let args: string[] = [];
-  if (collatorConfig.args) args = args.concat(collatorConfig.args);
+  if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args));
 
   const env = [
     { name: "COLORBT_SHOW_HIDDEN", value: "1" },
@@ -396,7 +394,7 @@ async function getNodeFromConfig(
     : networkSpec.relaychain.defaultCommand;
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = [];
-  if (node.args) args = args.concat(node.args);
+  if (node.args) args = args.concat(sanitizeArgs(node.args));
 
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
@@ -455,4 +453,22 @@ async function getNodeFromConfig(
   };
 
   return nodeSetup;
+}
+
+function sanitizeArgs(args: string[]): string[] {
+  let removeNext = false;
+  return args.filter(arg=> {
+    if(removeNext) {
+      removeNext = false;
+      return false;
+    }
+
+    const argParsed = (arg === "-d") ? "d" : arg.replace(/--/g, "");
+    if(ARGS_TO_REMOVE[argParsed]) {
+      if(ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
+      return false;
+    } else {
+      true
+    }
+  });
 }
