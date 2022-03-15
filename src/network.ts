@@ -2,7 +2,7 @@ import { Client } from "./providers/client";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
-import { readDataFile } from "./utils";
+import { readDataFile } from "./utils/fs-utils";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
@@ -15,7 +15,7 @@ import { NetworkNode } from "./networkNode";
 import fs from "fs";
 import execa from "execa";
 import axios from "axios";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -270,7 +270,9 @@ export class Network {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
       if (parachain.chainSpecPath)
-        console.log("\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath);
+        console.log(
+          "\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath
+        );
 
       for (const node of parachain.nodes) {
         this.showNodeInfo(node, provider);

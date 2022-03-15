@@ -4,7 +4,7 @@ import { start } from "./orchestrator";
 import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
-import { getCredsFilePath, readNetworkConfig } from "./utils";
+import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
@@ -69,14 +69,21 @@ process.on("exit", async function () {
 
 program
   .addOption(
-    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network")
-  )
-  .addOption(
     new Option(
       "-c, --spawn-concurrency <concurrency>",
       "Number of concurrent spawning process to launch, default is 1"
     )
   )
+  .addOption(
+    new Option("-p, --provider <provider>", "Override provider to use")
+      .choices(["podman", "kubernetes", "native"])
+      .default("kubernetes", "kubernetes")
+  )
+  .addOption(
+    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network")
+  );
+
+program
   .command("spawn")
   .description("Spawn the network defined in the config")
   .argument("<networkConfig>", "Network config file path")
@@ -84,11 +91,7 @@ program
   .action(spawn);
 
 program
-  .addOption(
-    new Option("-p, --provider <provider>", "Override provider to use")
-      .choices(["podman", "kubernetes", "native"])
-      .default("kubernetes", "kubernetes")
-  )
+
   .command("test")
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")

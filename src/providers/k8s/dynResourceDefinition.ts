@@ -1,4 +1,3 @@
-import fs from "fs";
 import { genCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
@@ -9,10 +8,9 @@ import {
   RPC_WS_PORT,
   P2P_PORT,
 } from "../../constants";
-import { getUniqueName } from "../../configManager";
+import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getSha256 } from "../../utils";
-import { getClient } from "../client";
+import { getSha256 } from "../../utils/misc-utils";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -36,9 +34,7 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "Never",
       volumes: devices,
       securityContext: {
@@ -77,9 +73,7 @@ export async function genNodeDef(
     spec: {
       hostname: nodeSetup.name,
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "Never",
       volumes: devices,
       securityContext: {

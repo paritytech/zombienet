@@ -11,8 +11,9 @@ import {
   envVars,
   CollatorConfig,
 } from "./types";
-import { getSha256 } from "./utils";
+import { getSha256 } from "./utils/misc-utils";
 import {
+  ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
@@ -25,8 +26,6 @@ import {
   DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  P2P_PORT,
-  RPC_WS_PORT,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
@@ -130,10 +129,7 @@ export async function generateNetworkSpec(
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
-        args: nodeGroup.args?.filter(
-          (arg) =>
-            !DEV_ACCOUNTS.includes(arg.toLocaleLowerCase().replace("--", ""))
-        ),
+        args: sanitizeArgs(nodeGroup.args||[]),
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
@@ -197,9 +193,6 @@ export async function generateNetworkSpec(
           `No Collator defined for parachain ${parachain.id}, please review.`
         );
 
-      debug("firstCollator");
-      debug(firstCollator);
-
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
         : firstCollator.command
@@ -256,6 +249,8 @@ export async function generateNetworkSpec(
         collators,
       };
 
+      if(parachain.chain) parachainSetup.chain = parachain.chain;
+
       parachainSetup = {
         ...parachainSetup,
         ...(parachain.balance ? { balance: parachain.balance } : {}),
@@ -286,8 +281,6 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     command: config.relaychain.defaultCommand || DEFAULT_COMMAND,
     image: config.relaychain.defaultImage || DEFAULT_IMAGE,
     chain: config.relaychain.chain,
-    port: P2P_PORT,
-    wsPort: RPC_WS_PORT,
     validator: false,
     args: [
       "--ws-external",
@@ -357,7 +350,7 @@ function getCollatorNodeFromConfig(
   cumulusBased: boolean
 ): Node {
   let args: string[] = [];
-  if (collatorConfig.args) args = args.concat(collatorConfig.args);
+  if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args));
 
   const env = [
     { name: "COLORBT_SHOW_HIDDEN", value: "1" },
@@ -403,8 +396,7 @@ async function getNodeFromConfig(
     : networkSpec.relaychain.defaultCommand;
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = [];
-  if (node.args) args = args.concat(node.args);
-  if (node.extra_args) args = args.concat(node.extra_args);
+  if (node.args) args = args.concat(sanitizeArgs(node.args));
 
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
@@ -424,11 +416,9 @@ async function getNodeFromConfig(
     );
   }
 
-  const isValidator = node.validator
-    ? true
-    : isValidatorbyArgs(args)
-    ? true
-    : false;
+  // by default nodes are validators except for those
+  // set explicit to not be validators.
+  const isValidator = node.validator !== false;
 
   // enable --prometheus-external by default
   const prometheusExternal =
@@ -446,8 +436,6 @@ async function getNodeFromConfig(
     command: command || DEFAULT_COMMAND,
     commandWithArgs: node.commandWithArgs,
     image: image || DEFAULT_IMAGE,
-    wsPort: node.wsPort ? node.wsPort : RPC_WS_PORT,
-    port: node.port ? node.port : P2P_PORT,
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
     args,
@@ -465,4 +453,22 @@ async function getNodeFromConfig(
   };
 
   return nodeSetup;
+}
+
+function sanitizeArgs(args: string[]): string[] {
+  let removeNext = false;
+  return args.filter(arg=> {
+    if(removeNext) {
+      removeNext = false;
+      return false;
+    }
+
+    const argParsed = (arg === "-d") ? "d" : arg.replace(/--/g, "");
+    if(ARGS_TO_REMOVE[argParsed]) {
+      if(ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
+      return false;
+    } else {
+      true
+    }
+  });
 }

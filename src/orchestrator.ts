@@ -1,17 +1,10 @@
 import { Providers } from "./providers/";
-import {
-  LaunchConfig,
-  ComputedNetwork,
-  Node,
-  fileMap,
-  Collator,
-} from "./types";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
-  getUniqueName,
-} from "./configManager";
+} from "./configGenerator";
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -34,18 +27,13 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes,
 } from "./chain-spec";
-import {
-  generateNamespace,
-  sleep,
-  filterConsole,
-  loadTypeDef,
-  getSha256,
-  series,
-} from "./utils";
+import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils";
+import { series } from "./utils/promise-series";
+import { loadTypeDef } from "./utils/fs-utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import { generateBootnodeString } from "./bootnode";
 import { generateKeystoreFiles } from "./keys";
 import path from "path";
@@ -67,7 +55,7 @@ export interface orchestratorOptions {
 
 export async function start(
   credentials: string,
-  networkConfig: LaunchConfig,
+  launchConfig: LaunchConfig,
   options?: orchestratorOptions
 ) {
   const opts = {
@@ -75,15 +63,12 @@ export async function start(
     ...options,
   };
 
-  debug("options", options);
-  debug("opts", opts);
-
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
-      networkConfig
+      launchConfig
     );
     debug(JSON.stringify(networkSpec, null, 4));
 
@@ -221,13 +206,24 @@ export async function start(
         );
       }
 
-      for (const parachain of networkSpec.parachains) {
-        const parachainFilesPath = await generateParachainFiles(
+      const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
+        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
+        await fs.promises.mkdir(parachainFilesPath);
+        await generateParachainFiles(
           namespace,
           tmpDir.path,
+          parachainFilesPath,
           chainName,
           parachain
         );
+      }
+      const parachainPromiseGenerators = networkSpec.parachains.map((parachain: Parachain) => {
+        return () => parachainFilesPromiseGenerator(parachain);
+      });
+
+      await series(parachainPromiseGenerators, opts.spawnConcurrency);
+      for (const parachain of networkSpec.parachains) {
+        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
         const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
         const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
         if (parachain.addToGenesis)
@@ -237,6 +233,7 @@ export async function start(
             stateLocalFilePath,
             wasmLocalFilePath
           );
+
       }
 
       if (networkSpec.hrmpChannels) {
@@ -296,7 +293,7 @@ export async function start(
 
     let bootnodes: string[] = [];
 
-    if (networkConfig.settings.bootnode) {
+    if (launchConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
       networkSpec.relaychain.nodes.unshift(bootnodeSpec);
     }

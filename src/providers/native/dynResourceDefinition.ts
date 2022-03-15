@@ -1,13 +1,14 @@
-import { genCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   P2P_PORT,
   RPC_WS_PORT,
+  DEFAULT_COMMAND,
 } from "../../constants";
-import { getUniqueName } from "../../configManager";
+import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils";
+import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 
 const fs = require("fs").promises;
@@ -64,7 +65,13 @@ export async function genNodeDef(
   const dataPath = `${client.tmpDir}/${name}/data`;
   await fs.mkdir(dataPath, { recursive: true });
 
-  const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
+  if( nodeSetup.zombieRole === "cumulus-collator" || nodeSetup.zombieRole === "collator") {
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup, cfgPath, dataPath, false, portFlags);
+  } else {
+    computedCommand = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
+  }
 
   return {
     metadata: {
@@ -86,7 +93,7 @@ export async function genNodeDef(
       cfgPath,
       dataPath,
       ports,
-      command,
+      command: computedCommand,
     },
   };
 }
