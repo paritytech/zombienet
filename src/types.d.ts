@@ -169,14 +169,6 @@ export interface Parachain {
   collators: Node[];
 }
 
-// export interface CollatorNodeConfig {
-//   image?: string;
-//   command?: string;
-//   commandWithArgs?: string;
-//   name?: string;
-//   args?: string[];
-// }
-
 export interface envVars {
   name: string;
   value: string;
