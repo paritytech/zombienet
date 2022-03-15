@@ -29,7 +29,7 @@ export async function generateParachainFiles(
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
-    chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
+    chainSpecFullPath = `${tmpDir}/${parachain.chain ? parachain.chain : chainName}-${parachain.id}.json`;
 
     debug("creating chain spec plain");
     // create or copy chain spec
@@ -37,7 +37,7 @@ export async function generateParachainFiles(
       namespace,
       {
         relaychain: {
-          chainSpecCommand: `${parachain.collators[0].command} build-spec --disable-default-bootnode`,
+          chainSpecCommand: `${parachain.collators[0].command} build-spec ${parachain.chain ? "--chain " + parachain.chain : ""} --disable-default-bootnode`,
         },
       },
       chainName,

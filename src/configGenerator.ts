@@ -249,6 +249,8 @@ export async function generateNetworkSpec(
         collators,
       };
 
+      if(parachain.chain) parachainSetup.chain = parachain.chain;
+
       parachainSetup = {
         ...parachainSetup,
         ...(parachain.balance ? { balance: parachain.balance } : {}),
