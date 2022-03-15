@@ -416,11 +416,9 @@ async function getNodeFromConfig(
     );
   }
 
-  const isValidator = node.validator
-    ? true
-    : isValidatorbyArgs(args)
-    ? true
-    : false;
+  // by default nodes are validators except for those
+  // set explicit to not be validators.
+  const isValidator = node.validator !== false;
 
   // enable --prometheus-external by default
   const prometheusExternal =
