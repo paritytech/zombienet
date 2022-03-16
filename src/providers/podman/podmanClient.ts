@@ -14,7 +14,7 @@ import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
 import YAML from "yaml";
-import { genGrafanaDef, genPrometheusDef } from "./dynResourceDefinition";
+import { genGrafanaDef, genPrometheusDef, genTempoDef } from "./dynResourceDefinition";
 
 const debug = require("debug")("zombie::podman::client");
 
@@ -88,7 +88,14 @@ export class PodmanClient extends Client {
       )} - url: http://127.0.0.1:${promPort}`
     );
 
+    const tempoSpec = await genTempoDef(this.namespace);
+    await this.createResource(tempoSpec, false, false);
+    const jaegerPort = tempoSpec.spec.containers[0].ports[0].hostPort;
+    const tempoPort = tempoSpec.spec.containers[0].ports[0].hostPort;
+
+
     const prometheusIp = await this.getPodIp("prometheus");
+    const tempoIp = await this.getPodIp("tempo");
     const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp);
     await this.createResource(grafanaSpec, false, false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;

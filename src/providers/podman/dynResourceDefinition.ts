@@ -196,6 +196,87 @@ datasources:
   };
 }
 
+export async function genTempoDef(
+  namespace: string
+): Promise<any> {
+  const client = getClient();
+
+  const volume_mounts = [
+    { name: "tempo-cfg", mountPath: "/etc/tempo", readOnly: false },
+    { name: "tempo-data", mountPath: "/data", readOnly: false },
+  ];
+  const cfgPath = `${client.tmpDir}/tempo/etc`;
+  const dataPath = `${client.tmpDir}/tempo/data`;
+  await fs.mkdir(cfgPath, { recursive: true });
+  await fs.mkdir(dataPath, { recursive: true });
+
+  const devices = [
+    { name: "tempo-cfg", hostPath: { type: "Directory", path: cfgPath } },
+    { name: "tempo-data", hostPath: { type: "Directory", path: dataPath } },
+  ];
+
+  await fs.copyFile("../../../static-configs/tempo.yaml",`${cfgPath}/tempo.yaml`);
+
+  const ports = [
+    {
+      containerPort: 14268,
+      name: "jaeger_ingest",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 3200,
+      name: "tempo",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 4317,
+      name: "otlp_grpc",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 4318,
+      name: "otlp_http",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 9411,
+      name: "zipkin",
+      hostPort: await getRandomPort(),
+    }
+  ];
+
+  const containerDef = {
+    image: "grafana/tempo:latest",
+    name: "tempo",
+    command: [ "-config.file=/etc/tempo/tempo.yaml" ],
+    imagePullPolicy: "Always",
+    ports,
+    volumeMounts: volume_mounts,
+  };
+
+  return {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: "tempo",
+      namespace: namespace,
+      labels: {
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": "tempo",
+        "zombie-role": "tempo",
+        app: "zombienet",
+        "zombie-ns": namespace,
+      },
+    },
+    spec: {
+      hostname: "tempo",
+      containers: [containerDef],
+      restartPolicy: "OnFailure",
+      volumes: devices,
+    },
+  };
+}
+
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node

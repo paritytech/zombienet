@@ -299,6 +299,12 @@ export async function start(
     }
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
+    let jaegerUrl: string;
+    if(client.providerName === "podman") {
+      const jaegerIp = client.getPodIp("tempo");
+      const jaegerPort = client.getPodIp(14268, "tempo");
+      jaegerUrl = `${jaegerPort}:${jaegerPort}`;
+    }
 
     const spawnNode = async (
       node: Node,
@@ -309,6 +315,8 @@ export async function start(
       // for relay chain we can have more than one bootnode.
       if (node.zombieRole === "node" || node.zombieRole === "collator")
         node.bootnodes = node.bootnodes.concat(bootnodes);
+
+      if(jaegerUrl) node.jaegerUrl = jaegerUrl;
 
       debug(`creating node: ${node.name}`);
       const podDef = await (node.name === "bootnode"

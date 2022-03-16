@@ -42,7 +42,7 @@ export async function genCumulusCollatorCmd(
   useWrapper = true,
   portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
-  const { name, args, chain, parachainId, key } = nodeSetup;
+  const { name, args, chain, parachainId, key, jaegerUrl } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
@@ -81,6 +81,8 @@ export async function genCumulusCollatorCmd(
     "--ws-port",
     collatorWsPort.toString(),
   ];
+
+  if(jaegerUrl) args.push(...["--jaeger-agent", jaegerUrl]);
 
   if (nodeSetup.args.length > 0) {
     let argsCollator = null;
@@ -183,6 +185,7 @@ export async function genCmd(
     bootnodes,
     args,
     zombieRole,
+    jaegerUrl
   } = nodeSetup;
 
   // fullCommand is NOT decorated by the `zombie` wrapper
@@ -205,6 +208,8 @@ export async function genCmd(
   else args.push(...["--telemetry-url", telemetryUrl]);
 
   if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
+
+  if(jaegerUrl) args.push(...["--jaeger-agent", jaegerUrl]);
 
   if (validator && ! args.includes("--validator")) args.push("--validator");
 
