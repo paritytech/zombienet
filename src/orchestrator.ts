@@ -301,9 +301,8 @@ export async function start(
     const monitorIsAvailable = await client.isPodMonitorAvailable();
     let jaegerUrl: string;
     if(client.providerName === "podman") {
-      const jaegerIp = client.getPodIp("tempo");
-      const jaegerPort = client.getPodIp(14268, "tempo");
-      jaegerUrl = `${jaegerPort}:${jaegerPort}`;
+      const jaegerIp = await client.getPodIp("tempo");
+      jaegerUrl = `${jaegerIp}:6831`;
     }
 
     const spawnNode = async (

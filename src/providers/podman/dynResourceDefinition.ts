@@ -11,6 +11,7 @@ import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
+import { resolve } from "path";
 
 const fs = require("fs").promises;
 
@@ -122,7 +123,8 @@ scrape_configs:
 
 export async function genGrafanaDef(
   namespace: string,
-  prometheusIp: number
+  prometheusIp: string,
+  tempoIp: string
 ): Promise<any> {
   const client = getClient();
   const volume_mounts = [
@@ -151,6 +153,13 @@ datasources:
     access: proxy
     orgId: 1
     url: http://${prometheusIp}:9090
+    version: 1
+    editable: true
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    url: http://${tempoIp}:3200
     version: 1
     editable: true
 `;
@@ -215,7 +224,8 @@ export async function genTempoDef(
     { name: "tempo-data", hostPath: { type: "Directory", path: dataPath } },
   ];
 
-  await fs.copyFile("../../../static-configs/tempo.yaml",`${cfgPath}/tempo.yaml`);
+  const tempoConfigPath = resolve(__dirname, `../../../static-configs/tempo.yaml`);
+  await fs.copyFile(tempoConfigPath,`${cfgPath}/tempo.yaml`);
 
   const ports = [
     {
@@ -248,7 +258,7 @@ export async function genTempoDef(
   const containerDef = {
     image: "grafana/tempo:latest",
     name: "tempo",
-    command: [ "-config.file=/etc/tempo/tempo.yaml" ],
+    args: [ "-config.file=/etc/tempo/tempo.yaml" ],
     imagePullPolicy: "Always",
     ports,
     volumeMounts: volume_mounts,
@@ -367,7 +377,7 @@ async function make_main_container(
 
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
-  if( nodeSetup.zombieRole === "cumulus-collator" || nodeSetup.zombieRole === "collator") {
+  if( nodeSetup.zombieRole === "cumulus-collator") {
     computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);

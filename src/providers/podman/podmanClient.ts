@@ -92,11 +92,16 @@ export class PodmanClient extends Client {
     await this.createResource(tempoSpec, false, false);
     const jaegerPort = tempoSpec.spec.containers[0].ports[0].hostPort;
     const tempoPort = tempoSpec.spec.containers[0].ports[0].hostPort;
+    console.log(
+      `\n\t Monitor: ${decorators.green(
+        tempoSpec.metadata.name
+      )} - url: http://127.0.0.1:${tempoPort}`
+    );
 
 
     const prometheusIp = await this.getPodIp("prometheus");
     const tempoIp = await this.getPodIp("tempo");
-    const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp);
+    const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp.toString(), tempoIp.toString());
     await this.createResource(grafanaSpec, false, false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;
     console.log(
