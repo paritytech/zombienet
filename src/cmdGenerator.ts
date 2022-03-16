@@ -42,7 +42,7 @@ export async function genCumulusCollatorCmd(
   useWrapper = true,
   portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
-  const { name, args, chain, parachainId } = nodeSetup;
+  const { name, args, chain, parachainId, key } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
@@ -67,6 +67,8 @@ export async function genCumulusCollatorCmd(
     command,
     "--name",
     name,
+    "--node-key",
+    key!,
     `--${DEV_ACCOUNTS[colIndex]}`,
     "--collator",
     "--force-authoring",
