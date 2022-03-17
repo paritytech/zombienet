@@ -141,6 +141,7 @@ export interface Node {
   addToBootnodes?: boolean;
   resources?: Resources;
   parachainId?: number;
+  jaegerUrl?: string;
 }
 
 export interface Collator {

@@ -67,7 +67,7 @@ export async function genNodeDef(
 
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
-  if( nodeSetup.zombieRole === "cumulus-collator" || nodeSetup.zombieRole === "collator") {
+  if( nodeSetup.zombieRole === "cumulus-collator" ) {
     computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup, cfgPath, dataPath, false, portFlags);
   } else {
     computedCommand = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
