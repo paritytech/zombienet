@@ -14,21 +14,21 @@ This project is still in early stage and very much work in progress. More featur
 
 ## What is Zombienet?
 
-Zombienet aim to be a testing framework for substrate based blockchains,  providing a simple **cli** tool that allow users to spawn and test ephemeral networks with assertions based in a set of `natural language` expresions. Also, is designed to integrate in a `CI` pipeline easily.
+Zombienet aim to be a testing framework for substrate based blockchains, providing a simple **cli** tool that allow users to spawn and test ephemeral networks with assertions based in a set of `natural language` expresions. Also, is designed to easily integrate in a `CI` pipeline easily.
 
-Internally is a `javascript` library, designed to run on NodeJS and support different `providers` to run the *nodes*, at this moment`kubernetes`, `podman` and `native`.
+Internally is a `javascript` library, designed to run on NodeJS and support different backend `providers` to run the *nodes*, at this moment`kubernetes`, `podman` and `native`.
 
 ## Usage
 
 Zombienet releases are available in `github`. Each one provide an executable for both `linux` and `macos` crated with [pkg](https://github.com/vercel/pkg) and allow to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` (e.g. k8s, podman) needs to be installed.
 
-## Requeriments by provider
+## Requerimients by provider
 
 ### With kubernetes
 
 Zombienet should works with any k8s cluster (e.g [GKE](https://cloud.google.com/kubernetes-engine), [docker-desktop](https://docs.docker.com/desktop/kubernetes/), [kind](https://kind.sigs.k8s.io/)) **but** you need to have `kubectl` installed to interact with your cluster.
 
-Also, you need *access* to create resources (e.g `namespaces`, `pods` and `cronJobs`) in the target cluster.
+Also, you need *permission* to create resources (e.g `namespaces`, `pods` and `cronJobs`) in the target cluster.
 
 #### Using `Zombienet` GKE cluster (internally).
 
@@ -47,34 +47,33 @@ To use it either set in the *network* file or with the `--provider` flag in the 
 
 *Alternative:* You can set the `command` to the binary directly if is available in your `PATH`.
 
-Example:
+## Features by provider
 
-```toml
-[settings]
-timeout = 1000
+### kubernetes
 
-[relaychain]
-default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
-chain = "rococo-local"
-default_command = "../polkadot/target/release/polkadot"
+With `k8s` zombienet use `Prometheus operator` (if is available) to offload the `monitoring/visibility` layer, so only the network's pods are deployed by zombienet.
 
-  [[relaychain.nodes]]
-  name = "alice"
-  extra_args = [ "--alice" ]
+### Podman
 
-  [[relaychain.nodes]]
-  name = "bob"
-  extra_args = [ "--bob" ]
+With `podman` zombienet deploy a couple of extra pods to add a layer of monitoring/visibility to the running network. In particular pods for `prometheus`, `tempo` and `grafana` are deployed. Also, `grafana` is configured to have `prometheus` and `tempo` as datasource.
 
-[[parachains]]
-id = 100
-addToGenesis = true
+To access those services you can find the `url` in the output of zombinet
 
-  [parachains.collator]
-  name = "collator01"
-  image = "{{COL_IMAGE}}"
-  command = "../polkadot/target/testnet/adder-collator"
+```bash
+  Monitor: prometheus - url: http://127.0.0.1:34123
+
+  Monitor: tempo - url: http://127.0.0.1:34125
+
+  Monitor: grafana - url: http://127.0.0.1:41461
 ```
+
+*Note*: Grafana is deployed with the default admin access.
+
+Once the network is stopped, by ctrl+c on a running spawn or by finishing the test, these pods are removed with the rest of the pods launched by zombienet.
+
+### Native
+
+Native provider doesn't run any extra layer/process at the moment.
 
 ---
 
@@ -87,10 +86,10 @@ addToGenesis = true
 Usage: zombienet [options] [command]
 
 Options:
-  -m, --monitor                  Start as monitor, do not auto cleanup network
-  -p, --provider <provider>      Override provider to use (choices: "podman", "kubernetes",
-                                 "native", default: kubernetes)
-  -h, --help                     display help for command
+  -c, --spawn-concurrency <concurrency>  Number of concurrent spawning process to launch, default is 1
+  -p, --provider <provider>              Override provider to use (choices: "podman","kubernetes", "native", default: kubernetes)
+  -m, --monitor                          Start as monitor, do not auto cleanup network
+  -h, --help                             display help for command
 
 Commands:
   spawn <networkConfig> [creds]  Spawn the network defined in the config
@@ -119,11 +118,9 @@ chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "alice"
-  extra_args = [ "--alice" ]
 
   [[relaychain.nodes]]
   name = "bob"
-  extra_args = [ "--bob" ]
 
 [[parachains]]
 id = 100
@@ -182,7 +179,7 @@ You can follow the output of the `steps` to spawn the network and once the netwo
 		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52742#/explorer
 ```
 
-Both the `prometheus` and the ` node` links are accesibles in your local machine to get the `metrics` or connect to the node.
+Both the `prometheus` and the `node` links are accesibles in your local machine to get the `metrics` or connect to the node.
 
 #### Using `env` variables in network config
 
@@ -197,11 +194,9 @@ chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "alice"
-  extra_args = [ "--alice" ]
 
   [[relaychain.nodes]]
   name = "bob"
-  extra_args = [ "--bob" ]
 
 [[parachains]]
 id = 100
@@ -237,7 +232,7 @@ Those assertions should be defined in a *feature test*, and the `dsl` and format
 The following is an small example to spawn a network (using the previos `simple network definition`) and assert that:
   - Both `nodes` are running
   - The definded `parachain` is registered
-   - The defined `parachain` is producing blocks and produced at least 10 within 200 seconds.
+  - The defined `parachain` is producing blocks and produced at least 10 within 200 seconds.
 
 ```feature
 Description: Simple Network Smoke Test
