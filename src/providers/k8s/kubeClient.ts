@@ -53,7 +53,7 @@ export class KubeClient extends Client {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
-    this.timeout = 60; // secs
+    this.timeout = 120; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
