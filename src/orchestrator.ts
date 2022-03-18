@@ -488,6 +488,7 @@ export async function start(
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
 
+    const collatorPromiseGenerators = [];
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis) {
         // register parachain on a running network
@@ -525,13 +526,14 @@ export async function start(
         }
       }
 
-      const promiseGenerators = parachain.collators.map((node: Node) => {
+      collatorPromiseGenerators.push( ...parachain.collators.map((node: Node) => {
         return () =>
           spawnNode(node, network!, parachain.id, parachain.specPath);
-      });
-
-      await series(promiseGenerators, opts.spawnConcurrency);
+      }));
     }
+
+    // launch all collator in series
+    await series(collatorPromiseGenerators, opts.spawnConcurrency);
 
     // prevent global timeout
     network.launched = true;
