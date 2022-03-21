@@ -84,6 +84,12 @@ export async function genCumulusCollatorCmd(
 
   if(jaegerUrl) args.push(...["--jaeger-agent", jaegerUrl]);
 
+  const collatorPorts: any = {
+    "--port": 0,
+    "--ws-port": 0,
+    "--rpc-port": 0,
+  };
+
   if (nodeSetup.args.length > 0) {
     let argsCollator = null;
     let argsParachain = null;
@@ -108,12 +114,6 @@ export async function genCumulusCollatorCmd(
 
     // Arguments for the relay chain node part of the collator binary.
     fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`]);
-
-    const collatorPorts: any = {
-      "--port": 0,
-      "--ws-port": 0,
-      "--rpc-port": 0,
-    };
 
     if (argsCollator) {
       // Add any additional flags to the CLI
@@ -156,6 +156,21 @@ export async function genCumulusCollatorCmd(
           fullCmd.push(randomPort.toString());
           console.log(`Added ${portArg} with value ${randomPort}`);
         }
+      }
+    }
+  } else {
+    // no args
+
+    // Arguments for the relay chain node part of the collator binary.
+    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`]);
+
+    // ensure ports
+    for (const portArg of Object.keys(collatorPorts)) {
+      if (collatorPorts[portArg] === 0) {
+        const randomPort = await getRandomPort();
+        fullCmd.push(portArg);
+        fullCmd.push(randomPort.toString());
+        console.log(`Added ${portArg} with value ${randomPort}`);
       }
     }
   }
