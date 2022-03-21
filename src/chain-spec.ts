@@ -148,7 +148,8 @@ export async function changeGenesisConfig(spec_path: string, updates: any) {
 export async function addBootNodes(spec_path: string, addresses: string[]) {
   let rawdata = fs.readFileSync(spec_path);
   let chainSpec = JSON.parse(rawdata);
-  chainSpec.bootNodes = addresses;
+  // prevent dups bootnodes
+  chainSpec.bootNodes = [...new Set(addresses)];
   let data = JSON.stringify(chainSpec, null, 2);
 
   fs.writeFileSync(spec_path, data);
