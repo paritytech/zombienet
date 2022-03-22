@@ -1,12 +1,12 @@
-FROM node:16-buster-slim AS runtime
+FROM docker.io/library/node:16-buster-slim
 
 LABEL io.parity.image.authors="devops-team@parity.io" \
-	io.parity.image.vendor="Parity Technologies" \
-	io.parity.image.title="parity/zombienet" \
-	io.parity.image.description="Zombienet" \
-	io.parity.image.source="https://github.com/paritytech/zombienet/blob/${VCS_REF}/scripts/docker/zombienet_injected.Dockerfile" \
-	io.parity.image.revision="${VCS_REF}" \
-	io.parity.image.created="${BUILD_DATE}"
+    io.parity.image.vendor="Parity Technologies" \
+    io.parity.image.title="parity/zombienet" \
+    io.parity.image.description="Zombienet" \
+    io.parity.image.source="https://github.com/paritytech/zombienet/blob/${VCS_REF}/scripts/docker/zombienet_injected.Dockerfile" \
+    io.parity.image.revision="${VCS_REF}" \
+    io.parity.image.created="${BUILD_DATE}"
 
 RUN apt-get update && \
     apt-get install -y curl gnupg lsb-release jq tini && \
@@ -31,11 +31,11 @@ RUN gcloud components install kubectl
 # such a user does not exist.
 RUN groupadd --gid 10001 nonroot && \
     useradd  --home-dir /home/nonroot \
-             --create-home \
-             --shell /bin/bash \
-             --gid nonroot \
-             --groups nonroot \
-             --uid 10000 nonroot
+    --create-home \
+    --shell /bin/bash \
+    --gid nonroot \
+    --groups nonroot \
+    --uid 10000 nonroot
 
 WORKDIR /home/nonroot/zombie-net
 COPY ./artifacts/dist ./dist
