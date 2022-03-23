@@ -55,6 +55,14 @@ export async function genNodeDef(
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
 
+  const containersToRun = [container];
+  if((nodeSetup.zombieRole === "node" || nodeSetup.zombieRole === "cumulus-collator" ) &&
+      nodeSetup.jaegerUrl && nodeSetup.jaegerUrl === "localhost:6831") {
+    // add sidecar
+    containersToRun.push(jaegerAgentDef());
+  }
+
+
   return {
     apiVersion: "v1",
     kind: "Pod",
@@ -73,7 +81,7 @@ export async function genNodeDef(
     },
     spec: {
       hostname: nodeSetup.name,
-      containers: [container],
+      containers: containersToRun,
       initContainers: [transferContainter],
       restartPolicy: "Never",
       volumes: devices,
@@ -147,6 +155,47 @@ async function make_main_container(
   if (nodeSetup.resources) containerDef.resources = nodeSetup.resources;
 
   return containerDef;
+}
+
+
+function jaegerAgentDef() {
+  return {
+    "name": "jaeger-agent",
+    "image": "jaegertracing/jaeger-agent:1.28.0",
+    "ports": [
+      {
+        "containerPort": 5775,
+        "protocol": "UDP"
+      },
+      {
+        "containerPort": 5778,
+        "protocol": "TCP"
+      },
+      {
+        "containerPort": 6831,
+        "protocol": "UDP"
+      },
+      {
+        "containerPort": 6832,
+        "protocol": "UDP"
+      }
+    ],
+    "command": [
+      "/go/bin/agent-linux",
+      "--reporter.type=grpc",
+      "--reporter.grpc.host-port=tempo-tempo-distributed-distributor.tempo.svc.cluster.local:14250"
+    ],
+    "resources": {
+      "limits": {
+        "memory": "50M",
+        "cpu": "100m"
+      },
+      "requests": {
+        "memory": "50M",
+        "cpu": "100m"
+      }
+    }
+  }
 }
 
 export function createTempNodeDef(

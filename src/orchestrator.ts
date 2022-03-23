@@ -303,6 +303,13 @@ export async function start(
     if(client.providerName === "podman") {
       const jaegerIp = await client.getPodIp("tempo");
       jaegerUrl = `${jaegerIp}:6831`;
+    } else if(client.providerName === "kubernetes" && networkSpec.settings.enable_tracing === true) {
+      // default to sidecar
+      jaegerUrl = "localhost:6831";
+      // try to get the jaegerUrl from config or process env
+      if(networkSpec.settings.jaeger_agent) jaegerUrl = networkSpec.settings.jaeger_agent;
+      // override with env
+      if(process.env.ZOMBIE_JAEGER_URL) jaegerUrl = process.env.ZOMBIE_JAEGER_URL;
     }
 
     const spawnNode = async (
