@@ -18,6 +18,8 @@ export interface Settings {
   grafana?: boolean;
   telemetry?: boolean;
   prometheus?: boolean;
+  jaeger_agent?: string; // agent or collator
+  enable_tracing?: boolean;
   provider: string;
 }
 

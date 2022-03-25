@@ -224,7 +224,7 @@ export async function genCmd(
 
   if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
 
-  if(jaegerUrl) args.push(...["--jaeger-agent", jaegerUrl]);
+  if(jaegerUrl && zombieRole === "node") args.push(...["--jaeger-agent", jaegerUrl]);
 
   if (validator && ! args.includes("--validator")) args.push("--validator");
 
