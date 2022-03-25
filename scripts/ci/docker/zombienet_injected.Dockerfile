@@ -4,7 +4,7 @@ LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.vendor="Parity Technologies" \
     io.parity.image.title="parity/zombienet" \
     io.parity.image.description="Zombienet" \
-    io.parity.image.source="https://github.com/paritytech/zombienet/blob/${VCS_REF}/scripts/docker/zombienet_injected.Dockerfile" \
+    io.parity.image.source="https://github.com/paritytech/zombienet/blob/${VCS_REF}/scripts/ci/docker/zombienet_injected.Dockerfile" \
     io.parity.image.revision="${VCS_REF}" \
     io.parity.image.created="${BUILD_DATE}"
 
