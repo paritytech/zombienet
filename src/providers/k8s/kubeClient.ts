@@ -53,7 +53,7 @@ export class KubeClient extends Client {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
-    this.timeout = 120; // secs
+    this.timeout = 300; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
@@ -537,7 +537,7 @@ export class KubeClient extends Client {
     const args = ["logs"];
     if (since && since > 0) args.push(`--since=${since}s`);
     if (withTimestamp) args.push("--timestamps=true");
-    args.push(...[podName, "--namespace", this.namespace]);
+    args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
 
     const result = await this.runCommand(args, undefined, false);
     return result.stdout;
