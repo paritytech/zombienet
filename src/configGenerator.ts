@@ -82,6 +82,7 @@ export async function generateNetworkSpec(
   // settings
   networkSpec.settings = {
     timeout: DEFAULT_GLOBAL_TIMEOUT,
+    enable_tracing: true,
     ...(config.settings ? config.settings : {}),
   };
 
