@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Based on https://gitlab.parity.io/parity/simnet/-/blob/master/scripts/run-test-environment-manager-v2.sh
+# Based on https://gitlab.parity.io/parity/simnet/-/blob/master/scripts/ci/run-test-environment-manager-v2.sh
 
 set -eou pipefail
 

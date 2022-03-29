@@ -21,7 +21,7 @@ variables:
   VAULT_SERVER_URL:                "https://vault.parity-mgmt-vault.parity.io"
   VAULT_AUTH_PATH:                 "gitlab-parity-io-jwt"
   VAULT_AUTH_ROLE:                 "cicd_gitlab_parity_${CI_PROJECT_NAME}"
-  DOCKERFILE:                      scripts/docker/zombienet_injected.Dockerfile
+  DOCKERFILE:                      scripts/ci/docker/zombienet_injected.Dockerfile
   DOCKERHUB_REPO:                  paritytech
   IMAGE_NAME:                      $DOCKERHUB_REPO/zombienet
 
@@ -199,7 +199,7 @@ zombienet-tests-integration:
     - export COL_IMAGE="docker.io/paritypr/colander:master"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-env-manager.sh
         --github-remote-dir="${GH_DIR}"
         --test="0001-parachains-smoke-test.feature"
   allow_failure:                   true
@@ -226,7 +226,7 @@ zombienet-tests-integration-pr:
     - export COL_IMAGE="docker.io/paritypr/colander:master"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-env-manager.sh
         --github-remote-dir="${GH_DIR}"
         -c 4
   allow_failure:                   true
@@ -250,7 +250,7 @@ zombienet-tests-integration-pr:
 #     - export DEBUG=zombie*
 
 #   script:
-#     - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+#     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
 #         --test="0004-parachains-upgrade-smoke-test.feature"
 #   allow_failure:                   true
 #   retry: 2
@@ -275,7 +275,7 @@ zombienet-logs-assertion:
     - export COL_IMAGE="docker.io/paritypr/colander:4519"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0006-logs.feature"
   allow_failure:                   true
   retry: 2
@@ -300,7 +300,7 @@ zombienet-system-event-assertion:
     - export COL_IMAGE="docker.io/paritypr/colander:4519"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0007-events.feature"
   allow_failure:                   true
   retry: 2
@@ -325,7 +325,7 @@ zombienet-custom-js-assertion:
     - export COL_IMAGE="docker.io/paritypr/colander:4519"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0008-custom-js.feature"
   allow_failure:                   true
   retry: 2
@@ -356,7 +356,7 @@ zombienet-histogram-assertion:
     - export COL_IMAGE="docker.io/paritypr/colander:4519"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0010-histogram-smoke-test.feature"
   allow_failure:                   true
   retry: 2
@@ -387,7 +387,7 @@ zombienet-update-genesis-config:
     - export COL_IMAGE="docker.io/paritypr/colander:4519"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0011-update-genesis-config.feature"
   allow_failure:                   true
   retry: 2
@@ -418,7 +418,7 @@ zombienet-scale-net-config:
     - export COL_IMAGE="docker.io/paritypr/colander:4519"
 
   script:
-    - /home/nonroot/zombie-net/scripts/run-test-local-env-manager.sh
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0001-scale-net.feature"
   allow_failure:                   true
   retry: 2
