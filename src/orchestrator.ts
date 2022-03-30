@@ -543,7 +543,7 @@ export async function start(
     await series(collatorPromiseGenerators, opts.spawnConcurrency);
 
     // check if polkador-instrospector is enabled
-    if(networkSpec.settings.polkador_instrospector && ["podman", "kubernetes"].includes(networkSpec.settings.provider)) {
+    if(networkSpec.settings.polkadot_introspector && ["podman", "kubernetes"].includes(networkSpec.settings.provider)) {
       const firstNode = network.relay[0];
       const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT);
       const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}",port);

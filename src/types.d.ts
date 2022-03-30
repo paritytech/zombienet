@@ -21,7 +21,7 @@ export interface Settings {
   jaeger_agent?: string; // agent or collator
   enable_tracing?: boolean;
   provider: string;
-  polkador_introspector?: boolean;
+  polkadot_introspector?: boolean;
 }
 
 export interface RelayChainConfig {
