@@ -238,13 +238,20 @@ export class KubeClient extends Client {
 
   async createStaticResource(
     filename: string,
-    scopeNamespace?: string
+    scopeNamespace?: string,
+    replacements?: {[properyName: string]: string}
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
-    const resourceDef = fileContent
+    let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
+
+    if(replacements) {
+      for(const replacementKey of Object.keys(replacements)) {
+        resourceDef = resourceDef.replace(new RegExp(`{{${replacementKey}}}`, "g"), replacements[replacementKey]);
+      }
+    }
 
     if (scopeNamespace) {
       await this.runCommand(
@@ -391,9 +398,9 @@ export class KubeClient extends Client {
     return result.stdout;
   }
 
-  async getNodeInfo(identifier: string): Promise<[string, number]> {
+  async getNodeInfo(identifier: string, port?: number): Promise<[string, number]> {
     const ip = await this.getNodeIP(identifier);
-    return [ip, P2P_PORT];
+    return [ip, port ? port : P2P_PORT];
   }
 
   async staticSetup() {
@@ -586,5 +593,20 @@ export class KubeClient extends Client {
     } finally {
       return available;
     }
+  }
+
+  async spawnInstrospector(wsUri: string) {
+    await this.createStaticResource(
+      "introspector-pod.yaml",
+      this.namespace,
+      {WS_URI: wsUri}
+    );
+
+    await this.createStaticResource(
+      "introspector-service.yaml",
+      this.namespace
+    );
+
+    await this.wait_pod_ready("introspector");
   }
 }
