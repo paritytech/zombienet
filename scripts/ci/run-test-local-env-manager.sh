@@ -109,8 +109,8 @@ function copy_to_isolated {
   cd "${SCRIPT_PATH}"
   echo $(pwd)
   echo $(ls)
-  echo $(ls ..)
-  cp -r ../tests/* "${OUTPUT_DIR}"
+  echo $(ls ../..)
+  cp -r ../../tests/* "${OUTPUT_DIR}"
 }
 function run_test {
   # RUN_IN_CONTAINER is env var that is set in the dockerfile
