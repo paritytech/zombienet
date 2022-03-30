@@ -595,7 +595,7 @@ export class KubeClient extends Client {
     }
   }
 
-  async spawnInstrospector(wsUri: string) {
+  async spawnIntrospector(wsUri: string) {
     await this.createStaticResource(
       "introspector-pod.yaml",
       this.namespace,

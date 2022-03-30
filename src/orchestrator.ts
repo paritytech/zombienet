@@ -547,7 +547,7 @@ export async function start(
       const firstNode = network.relay[0];
       const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT);
       const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}",port);
-      await client.spawnInstrospector(wsUri);
+      await client.spawnIntrospector(wsUri);
     }
 
     // prevent global timeout

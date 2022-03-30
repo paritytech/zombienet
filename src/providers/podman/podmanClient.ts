@@ -111,12 +111,18 @@ export class PodmanClient extends Client {
     );
   }
 
-  async createStaticResource(filename: string): Promise<void> {
+  async createStaticResource(filename: string, replacements?: {[properyName: string]: string}): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
-    const resourceDef = fileContent
+    let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
+
+    if(replacements) {
+      for(const replacementKey of Object.keys(replacements)) {
+        resourceDef = resourceDef.replace(new RegExp(`{{${replacementKey}}}`, "g"), replacements[replacementKey]);
+      }
+    }
 
     const doc = new YAML.Document(JSON.parse(resourceDef));
 
@@ -363,5 +369,14 @@ export class PodmanClient extends Client {
   async isPodMonitorAvailable(): Promise<boolean> {
     // NOOP
     return false;
+  }
+
+  async spawnIntrospector(wsUri: string) {
+    await this.createStaticResource(
+      "introspector-pod.yaml",
+      {WS_URI: wsUri}
+    );
+
+    await this.wait_pod_ready("introspector");
   }
 }
