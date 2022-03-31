@@ -399,7 +399,6 @@ async function getNodeFromConfig(
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = [];
   if(node.args) args = args.concat(sanitizeArgs(node.args));
-  console.log(args);
 
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
