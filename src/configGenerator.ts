@@ -392,12 +392,13 @@ async function getNodeFromConfig(
   relayChainBootnodes: string[],
   globalOverrides: Override[]
 ): Promise<Node> {
+
   const command = node.command
     ? node.command
     : networkSpec.relaychain.defaultCommand;
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = [];
-  if (node.args) args = args.concat(sanitizeArgs(node.args));
+  if(node.args) args = args.concat(sanitizeArgs(node.args));
 
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
@@ -458,7 +459,7 @@ async function getNodeFromConfig(
 
 function sanitizeArgs(args: string[]): string[] {
   let removeNext = false;
-  return args.filter(arg=> {
+  const filteredArgs = args.filter(arg=> {
     if(removeNext) {
       removeNext = false;
       return false;
@@ -469,7 +470,9 @@ function sanitizeArgs(args: string[]): string[] {
       if(ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
       return false;
     } else {
-      true
+      return true;
     }
   });
+
+  return filteredArgs;
 }
