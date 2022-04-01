@@ -439,11 +439,6 @@ function parseAssertionLine(assertion: string) {
         ),
       };
 
-      limitTimeout = setTimeout(() => {
-        debug(`Timeout running custom js-script (${timeout})`);
-        throw new Error(`Timeout running custom js-script (${timeout})`);
-      }, timeout * 1000);
-
       const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
@@ -457,7 +452,13 @@ function parseAssertionLine(assertion: string) {
       const args = withArgs === "" ? [] : withArgs.split(",");
       let value;
       try {
-        value = await jsScript.run(nodeName, networkInfo, args);
+        const resp = await Promise.race([
+          jsScript.run(nodeName, networkInfo, args),
+          new Promise((resolve) => setTimeout(() => resolve( new Error(`Timeout running custom js-script (${timeout})`)), timeout * 1000))
+        ]);
+        if( resp instanceof Error ) throw resp
+        else value = resp;
+
       } catch (err) {
         console.log(`\n\t ${decorators.red("Error running custom-js.")}`);
         console.log(err);
