@@ -551,14 +551,14 @@ export async function start(
       const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}",port);
       await client.spawnIntrospector(wsUri);
 
-      const introspectorIp = await client.getNodeIP(INTROSPECTOR_POD_NAME);
+      const IP = (options?.inCI) ? await client.getNodeIP(INTROSPECTOR_POD_NAME) : LOCALHOST;
+      const PORT = (options?.inCI) ? INTROSPECTOR_PORT :  await client.startPortForwarding(INTROSPECTOR_PORT, INTROSPECTOR_POD_NAME);
+
       const introspectorNetworkNode = new NetworkNode(
         INTROSPECTOR_POD_NAME,
         "",
-        METRICS_URI_PATTERN.replace("{{IP}}", introspectorIp).replace(
-          "{{PORT}}",
-          INTROSPECTOR_PORT.toString()
-        )
+        METRICS_URI_PATTERN.replace("{{IP}}", IP).replace(
+          "{{PORT}}",PORT.toString())
       );
 
       network.addNode(introspectorNetworkNode, Scope.COMPANION);

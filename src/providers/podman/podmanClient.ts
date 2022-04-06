@@ -14,7 +14,7 @@ import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
 import YAML from "yaml";
-import { genGrafanaDef, genPrometheusDef, genTempoDef } from "./dynResourceDefinition";
+import { genGrafanaDef, genPrometheusDef, genTempoDef, getIntrospectorDef } from "./dynResourceDefinition";
 
 const debug = require("debug")("zombie::podman::client");
 
@@ -203,7 +203,7 @@ export class PodmanClient extends Client {
   }
 
   async startPortForwarding(port: number, identifier: string): Promise<number> {
-    const podName = identifier.split("/")[1];
+    const podName = identifier.includes("/") ? identifier.split("/")[1] : identifier;
     const hostPort = await this.getPortMapping(port, podName);
     return hostPort;
   }
@@ -372,11 +372,7 @@ export class PodmanClient extends Client {
   }
 
   async spawnIntrospector(wsUri: string) {
-    await this.createStaticResource(
-      "introspector-pod.yaml",
-      {WS_URI: wsUri}
-    );
-
-    await this.wait_pod_ready("introspector");
+    const spec = await getIntrospectorDef(this.namespace, wsUri);
+    await this.createResource(spec, false, true);
   }
 }
