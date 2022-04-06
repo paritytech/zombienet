@@ -16,6 +16,8 @@ import {
   RPC_WS_PORT,
   RPC_HTTP_PORT,
   LOCALHOST,
+  INTROSPECTOR_POD_NAME,
+  INTROSPECTOR_PORT,
 } from "./constants";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -301,7 +303,7 @@ export async function start(
     const monitorIsAvailable = await client.isPodMonitorAvailable();
     let jaegerUrl: string;
     if(client.providerName === "podman") {
-      const jaegerIp = await client.getPodIp("tempo");
+      const jaegerIp = await client.getNodeIP("tempo");
       jaegerUrl = `${jaegerIp}:6831`;
     } else if(client.providerName === "kubernetes" && networkSpec.settings.enable_tracing === true) {
       // default to sidecar
@@ -548,6 +550,18 @@ export async function start(
       const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT);
       const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}",port);
       await client.spawnIntrospector(wsUri);
+
+      const IP = (options?.inCI) ? await client.getNodeIP(INTROSPECTOR_POD_NAME) : LOCALHOST;
+      const PORT = (options?.inCI) ? INTROSPECTOR_PORT :  await client.startPortForwarding(INTROSPECTOR_PORT, INTROSPECTOR_POD_NAME);
+
+      const introspectorNetworkNode = new NetworkNode(
+        INTROSPECTOR_POD_NAME,
+        "",
+        METRICS_URI_PATTERN.replace("{{IP}}", IP).replace(
+          "{{PORT}}",PORT.toString())
+      );
+
+      network.addNode(introspectorNetworkNode, Scope.COMPANION);
     }
 
     // prevent global timeout

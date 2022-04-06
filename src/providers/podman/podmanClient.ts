@@ -14,7 +14,7 @@ import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
 import YAML from "yaml";
-import { genGrafanaDef, genPrometheusDef, genTempoDef } from "./dynResourceDefinition";
+import { genGrafanaDef, genPrometheusDef, genTempoDef, getIntrospectorDef } from "./dynResourceDefinition";
 
 const debug = require("debug")("zombie::podman::client");
 
@@ -99,8 +99,8 @@ export class PodmanClient extends Client {
     );
 
 
-    const prometheusIp = await this.getPodIp("prometheus");
-    const tempoIp = await this.getPodIp("tempo");
+    const prometheusIp = await this.getNodeIP("prometheus");
+    const tempoIp = await this.getNodeIP("tempo");
     const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp.toString(), tempoIp.toString());
     await this.createResource(grafanaSpec, false, false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;
@@ -172,7 +172,7 @@ export class PodmanClient extends Client {
   }
 
   async addNodeToPrometheus(podName: string) {
-    const podIp = await this.getPodIp(podName);
+    const podIp = await this.getNodeIP(podName);
     const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
     await fs.writeFile(
       `${this.tmpDir}/prometheus/data/sd_config_${podName}.json`,
@@ -203,7 +203,7 @@ export class PodmanClient extends Client {
   }
 
   async startPortForwarding(port: number, identifier: string): Promise<number> {
-    const podName = identifier.split("/")[1];
+    const podName = identifier.includes("/") ? identifier.split("/")[1] : identifier;
     const hostPort = await this.getPortMapping(port, podName);
     return hostPort;
   }
@@ -217,7 +217,7 @@ export class PodmanClient extends Client {
     return hostPort;
   }
 
-  async getPodIp(podName: string): Promise<number> {
+  async getNodeIP(podName: string): Promise<string> {
     const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
     const result = await this.runCommand(args, undefined, false);
     const resultJson = JSON.parse(result.stdout);
@@ -372,11 +372,7 @@ export class PodmanClient extends Client {
   }
 
   async spawnIntrospector(wsUri: string) {
-    await this.createStaticResource(
-      "introspector-pod.yaml",
-      {WS_URI: wsUri}
-    );
-
-    await this.wait_pod_ready("introspector");
+    const spec = await getIntrospectorDef(this.namespace, wsUri);
+    await this.createResource(spec, false, true);
   }
 }

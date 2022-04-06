@@ -6,6 +6,7 @@ import {
   RPC_HTTP_PORT,
   P2P_PORT,
   DEFAULT_COMMAND,
+  INTROSPECTOR_POD_NAME,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
@@ -201,6 +202,50 @@ datasources:
       containers: [containerDef],
       restartPolicy: "OnFailure",
       volumes: devices,
+    },
+  };
+}
+
+export async function getIntrospectorDef(namespace:string, wsUri: string): Promise<any> {
+  const ports = [
+    {
+      containerPort: 65432,
+      name: "prometheus",
+      hostPort: await getRandomPort(),
+    }
+  ];
+
+  const containerDef = {
+    image: "paritytech/polkadot-introspector:latest",
+    name: INTROSPECTOR_POD_NAME,
+    args: [
+      "block-time-monitor",
+      `--ws=${wsUri}`,
+      "prometheus"
+    ],
+    imagePullPolicy: "Always",
+    ports,
+    volumeMounts: [],
+  };
+
+  return {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: INTROSPECTOR_POD_NAME,
+      namespace: namespace,
+      labels: {
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": INTROSPECTOR_POD_NAME,
+        "zombie-role": INTROSPECTOR_POD_NAME,
+        app: "zombienet",
+        "zombie-ns": namespace,
+      },
+    },
+    spec: {
+      hostname: INTROSPECTOR_POD_NAME,
+      containers: [containerDef],
+      restartPolicy: "OnFailure"
     },
   };
 }

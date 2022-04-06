@@ -44,6 +44,8 @@ export const LOCALHOST = "127.0.0.1";
 export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
 export const BAKCCHANNEL_PORT = 3000;
 export const BAKCCHANNEL_POD_NAME = "backchannel";
+export const INTROSPECTOR_PORT = 65432;
+export const INTROSPECTOR_POD_NAME = "introspector";
 
 export const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 

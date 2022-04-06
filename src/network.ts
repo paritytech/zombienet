@@ -1,5 +1,5 @@
 import { Client } from "./providers/client";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { cryptoWaitReady, sortAddresses } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
 import { readDataFile } from "./utils/fs-utils";
@@ -29,6 +29,7 @@ export interface NodeMappingMetrics {
 export enum Scope {
   RELAY,
   PARA,
+  COMPANION
 }
 
 export class Network {
@@ -39,6 +40,7 @@ export class Network {
       nodes: NetworkNode[];
     };
   } = {};
+  companions: NetworkNode[] = [];
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
@@ -65,6 +67,7 @@ export class Network {
 
   addNode(node: NetworkNode, scope: Scope) {
     if (scope === Scope.RELAY) this.relay.push(node);
+    else if (scope == Scope.COMPANION) this.companions.push(node);
     else {
       if (!node.parachainId || !this.paras[node.parachainId])
         throw new Error(
@@ -275,6 +278,13 @@ export class Network {
         );
 
       for (const node of parachain.nodes) {
+        this.showNodeInfo(node, provider);
+      }
+    }
+
+    if(this.companions.length) {
+      console.log("\n\t Companions:");
+      for (const node of this.companions) {
         this.showNodeInfo(node, provider);
       }
     }

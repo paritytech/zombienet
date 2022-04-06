@@ -9,6 +9,7 @@ import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
 import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants";
+import { decorators } from "./utils/colors";
 
 const debug = require("debug")("zombie-cli");
 
@@ -49,7 +50,9 @@ let alreadyTry = false;
 process.on("SIGINT", async function () {
   if (network && !alreadyTry) {
     alreadyTry = true;
-    debug("Ctrl+c ... removing namespace: " + network.namespace);
+    const msg = "Ctrl+c ... removing namespace: " + network.namespace;
+    console.log(decorators.magenta(msg));
+    debug(msg);
     await network.stop();
   }
   process.exit(2);
