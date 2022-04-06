@@ -454,15 +454,18 @@ function parseAssertionLine(assertion: string) {
       try {
         const resp = await Promise.race([
           jsScript.run(nodeName, networkInfo, args),
-          new Promise((resolve) => setTimeout(() => resolve( new Error(`Timeout running custom js-script (${timeout})`)), timeout * 1000))
+          new Promise((resolve) => setTimeout(() => {
+            const err = new Error(`Timeout(${timeout}), "custom-js ${jsFile} within ${timeout} secs" didn't complete on time.`);
+            return resolve(err);
+          }, timeout * 1000))
         ]);
         if( resp instanceof Error ) throw resp
         else value = resp;
 
-      } catch (err) {
-        console.log(`\n\t ${decorators.red("Error running custom-js.")}`);
-        console.log(err);
-        expect(false).to.be.ok;
+      } catch (err: any) {
+        console.log(`\n\t ${decorators.red(`Error running script: ${jsFile}`)}`);
+        console.log(`\t\t ${err.message}\n`);
+        throw err;
       }
 
       // remove shim
