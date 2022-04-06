@@ -303,7 +303,7 @@ export async function start(
     const monitorIsAvailable = await client.isPodMonitorAvailable();
     let jaegerUrl: string;
     if(client.providerName === "podman") {
-      const jaegerIp = await client.getNodeIp("tempo");
+      const jaegerIp = await client.getNodeIP("tempo");
       jaegerUrl = `${jaegerIp}:6831`;
     } else if(client.providerName === "kubernetes" && networkSpec.settings.enable_tracing === true) {
       // default to sidecar
