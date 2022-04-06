@@ -281,6 +281,13 @@ export class Network {
         this.showNodeInfo(node, provider);
       }
     }
+
+    if(this.companions.length) {
+      console.log("\n\t Companions:");
+      for (const node of this.companions) {
+        this.showNodeInfo(node, provider);
+      }
+    }
   }
 
   showNodeInfo(node: NetworkNode, provider: String) {
