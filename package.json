@@ -48,9 +48,12 @@
       "scripts/*"
     ],
     "targets": [
-      "node14-macos-x64",
-      "node14-linux-x64"
+      "node16-macos-x64",
+      "node16-linux-x64"
     ]
+  },
+  "engines": {
+      "node": ">=16"
   },
   "devDependencies": {
     "@substrate/connect": "^0.4.7",

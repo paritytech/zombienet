@@ -10,7 +10,7 @@ jobs:
     name: build_release_for_linux
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}    
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -19,10 +19,10 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - run: npm install
       - run: npm run build
-      - run: npm run package      
+      - run: npm run package
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -32,7 +32,7 @@ jobs:
           release_name: ${{ github.ref }}
           tag_name: ${{ github.ref }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}     
+          GITHUB_TOKEN: ${{ github.token }}
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1
         env:
@@ -54,10 +54,10 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
       - run: npm install
       - run: npm run build
-      - run: npm run package          
+      - run: npm run package
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
         env:
