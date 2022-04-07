@@ -1,16 +1,16 @@
 const chai = require("chai");
 import Mocha from "mocha";
 import fs from "fs";
-import axios from "axios";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "./types";
-import { readNetworkConfig, sleep } from "./utils";
+import { sleep } from "./utils/misc-utils";
+import { readNetworkConfig } from "./utils/fs-utils";
 import { Network } from "./network";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./constants";
 import minimatch from "minimatch";
-import { node } from "execa";
+
 const zombie = require("../");
 const {
   connect,
@@ -28,7 +28,7 @@ const mocha = new Mocha();
 
 import { JSDOM } from "jsdom";
 import { Environment } from "nunjucks";
-import { RelativeLoader } from "./nunjucks-relative-loader";
+import { RelativeLoader } from "./utils/nunjucks-relative-loader";
 
 interface TestDefinition {
   networkConfig: string;
@@ -116,7 +116,7 @@ export async function run(
   suite.afterAll("teardown", async function () {
     this.timeout(180 * 1000);
     if (network) {
-      await network.uploadLogs();
+      await network.dumpLogs();
       const tests = this.test?.parent?.tests;
       if (tests) {
         const fail = tests.find((test) => {
@@ -439,11 +439,6 @@ function parseAssertionLine(assertion: string) {
         ),
       };
 
-      limitTimeout = setTimeout(() => {
-        debug(`Timeout running custom js-script (${timeout})`);
-        throw new Error(`Timeout running custom js-script (${timeout})`);
-      }, timeout * 1000);
-
       const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
@@ -457,11 +452,20 @@ function parseAssertionLine(assertion: string) {
       const args = withArgs === "" ? [] : withArgs.split(",");
       let value;
       try {
-        value = await jsScript.run(nodeName, networkInfo, args);
-      } catch (err) {
-        console.log(`\n\t ${decorators.red("Error running custom-js.")}`);
-        console.log(err);
-        expect(false).to.be.ok;
+        const resp = await Promise.race([
+          jsScript.run(nodeName, networkInfo, args),
+          new Promise((resolve) => setTimeout(() => {
+            const err = new Error(`Timeout(${timeout}), "custom-js ${jsFile} within ${timeout} secs" didn't complete on time.`);
+            return resolve(err);
+          }, timeout * 1000))
+        ]);
+        if( resp instanceof Error ) throw resp
+        else value = resp;
+
+      } catch (err: any) {
+        console.log(`\n\t ${decorators.red(`Error running script: ${jsFile}`)}`);
+        console.log(`\t\t ${err.message}\n`);
+        throw err;
       }
 
       // remove shim

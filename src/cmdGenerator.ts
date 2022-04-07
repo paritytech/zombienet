@@ -1,4 +1,4 @@
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import {
   DEFAULT_COMMAND,
   DEV_ACCOUNTS,
@@ -7,7 +7,7 @@ import {
   RPC_WS_PORT,
 } from "./constants";
 import { Node } from "./types";
-import { getRandomPort } from "./utils";
+import { getRandomPort } from "./utils/net-utils";
 
 function parseCmdWithArguments(
   commandWithArgs: string,
@@ -42,7 +42,7 @@ export async function genCumulusCollatorCmd(
   useWrapper = true,
   portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
-  const { name, args, chain, parachainId } = nodeSetup;
+  const { name, args, chain, parachainId, key, jaegerUrl } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
@@ -67,6 +67,8 @@ export async function genCumulusCollatorCmd(
     command,
     "--name",
     name,
+    "--node-key",
+    key!,
     `--${DEV_ACCOUNTS[colIndex]}`,
     "--collator",
     "--force-authoring",
@@ -79,6 +81,14 @@ export async function genCumulusCollatorCmd(
     "--ws-port",
     collatorWsPort.toString(),
   ];
+
+  if(jaegerUrl) args.push(...["--jaeger-agent", jaegerUrl]);
+
+  const collatorPorts: any = {
+    "--port": 0,
+    "--ws-port": 0,
+    "--rpc-port": 0,
+  };
 
   if (nodeSetup.args.length > 0) {
     let argsCollator = null;
@@ -104,12 +114,6 @@ export async function genCumulusCollatorCmd(
 
     // Arguments for the relay chain node part of the collator binary.
     fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`]);
-
-    const collatorPorts: any = {
-      "--port": 0,
-      "--ws-port": 0,
-      "--rpc-port": 0,
-    };
 
     if (argsCollator) {
       // Add any additional flags to the CLI
@@ -154,6 +158,21 @@ export async function genCumulusCollatorCmd(
         }
       }
     }
+  } else {
+    // no args
+
+    // Arguments for the relay chain node part of the collator binary.
+    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`]);
+
+    // ensure ports
+    for (const portArg of Object.keys(collatorPorts)) {
+      if (collatorPorts[portArg] === 0) {
+        const randomPort = await getRandomPort();
+        fullCmd.push(portArg);
+        fullCmd.push(randomPort.toString());
+        console.log(`Added ${portArg} with value ${randomPort}`);
+      }
+    }
   }
 
   if (useWrapper) fullCmd.unshift("/cfg/zombie-wrapper.sh");
@@ -181,6 +200,7 @@ export async function genCmd(
     bootnodes,
     args,
     zombieRole,
+    jaegerUrl
   } = nodeSetup;
 
   // fullCommand is NOT decorated by the `zombie` wrapper
@@ -194,21 +214,6 @@ export async function genCmd(
 
   if (!command) command = DEFAULT_COMMAND;
 
-  // IFF the node is a cumulus based collator
-  if (
-    (zombieRole === "collator" && command.includes("polkadot-collator")) ||
-    zombieRole === "cumulus-collator"
-  ) {
-    return await genCumulusCollatorCmd(
-      command,
-      nodeSetup,
-      cfgPath,
-      dataPath,
-      useWrapper,
-      portFlags
-    );
-  }
-
   args = [...args];
   args.push("--no-mdns");
 
@@ -217,9 +222,11 @@ export async function genCmd(
   if (!telemetry) args.push("--no-telemetry");
   else args.push(...["--telemetry-url", telemetryUrl]);
 
-  if (prometheus) args.push("--prometheus-external");
+  if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
 
-  if (validator) args.push("--validator");
+  if(jaegerUrl && zombieRole === "node") args.push(...["--jaeger-agent", jaegerUrl]);
+
+  if (validator && ! args.includes("--validator")) args.push("--validator");
 
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));

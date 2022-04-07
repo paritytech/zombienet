@@ -1,5 +1,4 @@
-import fs from "fs";
-import { genCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
@@ -8,11 +7,11 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
   P2P_PORT,
+  DEFAULT_COMMAND,
 } from "../../constants";
-import { getUniqueName } from "../../configManager";
+import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getSha256 } from "../../utils";
-import { getClient } from "../client";
+import { getSha256 } from "../../utils/misc-utils";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -36,9 +35,7 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "Never",
       volumes: devices,
       securityContext: {
@@ -58,6 +55,14 @@ export async function genNodeDef(
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
 
+  const containersToRun = [container];
+  if((nodeSetup.zombieRole === "node" || nodeSetup.zombieRole === "cumulus-collator" ) &&
+      nodeSetup.jaegerUrl && nodeSetup.jaegerUrl === "localhost:6831") {
+    // add sidecar
+    containersToRun.push(jaegerAgentDef());
+  }
+
+
   return {
     apiVersion: "v1",
     kind: "Pod",
@@ -76,10 +81,8 @@ export async function genNodeDef(
     },
     spec: {
       hostname: nodeSetup.name,
-      containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      containers: containersToRun,
+      initContainers: [transferContainter],
       restartPolicy: "Never",
       volumes: devices,
       securityContext: {
@@ -129,7 +132,15 @@ async function make_main_container(
     { containerPort: RPC_WS_PORT, name: "rpc-ws" },
     { containerPort: P2P_PORT, name: "p2p" },
   ];
-  const command = await genCmd(nodeSetup);
+
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
+  if( nodeSetup.zombieRole === "cumulus-collator" ) {
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup,);
+  } else {
+    computedCommand = await genCmd(nodeSetup);
+  }
+
 
   const containerDef: any = {
     image: nodeSetup.image,
@@ -138,12 +149,53 @@ async function make_main_container(
     ports,
     env: nodeSetup.env,
     volumeMounts: volume_mounts,
-    command,
+    command: computedCommand,
   };
 
   if (nodeSetup.resources) containerDef.resources = nodeSetup.resources;
 
   return containerDef;
+}
+
+
+function jaegerAgentDef() {
+  return {
+    "name": "jaeger-agent",
+    "image": "jaegertracing/jaeger-agent:1.28.0",
+    "ports": [
+      {
+        "containerPort": 5775,
+        "protocol": "UDP"
+      },
+      {
+        "containerPort": 5778,
+        "protocol": "TCP"
+      },
+      {
+        "containerPort": 6831,
+        "protocol": "UDP"
+      },
+      {
+        "containerPort": 6832,
+        "protocol": "UDP"
+      }
+    ],
+    "command": [
+      "/go/bin/agent-linux",
+      "--reporter.type=grpc",
+      "--reporter.grpc.host-port=tempo-tempo-distributed-distributor.tempo.svc.cluster.local:14250"
+    ],
+    "resources": {
+      "limits": {
+        "memory": "50M",
+        "cpu": "100m"
+      },
+      "requests": {
+        "memory": "50M",
+        "cpu": "100m"
+      }
+    }
+  }
 }
 
 export function createTempNodeDef(

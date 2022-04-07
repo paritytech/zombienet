@@ -7,12 +7,13 @@ import {
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
-import { addMinutes, writeLocalJsonFile, getSha256 } from "../../utils";
+import { addMinutes, getSha256 } from "../../utils/misc-utils";
+import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs").promises;
 import { spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../colors";
+import { decorators } from "../../utils/colors";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -52,7 +53,7 @@ export class KubeClient extends Client {
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
-    this.timeout = 60; // secs
+    this.timeout = 300; // secs
     this.tmpDir = tmpDir;
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
@@ -237,13 +238,20 @@ export class KubeClient extends Client {
 
   async createStaticResource(
     filename: string,
-    scopeNamespace?: string
+    scopeNamespace?: string,
+    replacements?: {[properyName: string]: string}
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
-    const resourceDef = fileContent
+    let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
+
+    if(replacements) {
+      for(const replacementKey of Object.keys(replacements)) {
+        resourceDef = resourceDef.replace(new RegExp(`{{${replacementKey}}}`, "g"), replacements[replacementKey]);
+      }
+    }
 
     if (scopeNamespace) {
       await this.runCommand(
@@ -390,9 +398,9 @@ export class KubeClient extends Client {
     return result.stdout;
   }
 
-  async getNodeInfo(identifier: string): Promise<[string, number]> {
+  async getNodeInfo(identifier: string, port?: number): Promise<[string, number]> {
     const ip = await this.getNodeIP(identifier);
-    return [ip, P2P_PORT];
+    return [ip, port ? port : P2P_PORT];
   }
 
   async staticSetup() {
@@ -536,7 +544,7 @@ export class KubeClient extends Client {
     const args = ["logs"];
     if (since && since > 0) args.push(`--since=${since}s`);
     if (withTimestamp) args.push("--timestamps=true");
-    args.push(...[podName, "--namespace", this.namespace]);
+    args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
 
     const result = await this.runCommand(args, undefined, false);
     return result.stdout;
@@ -585,5 +593,20 @@ export class KubeClient extends Client {
     } finally {
       return available;
     }
+  }
+
+  async spawnIntrospector(wsUri: string) {
+    await this.createStaticResource(
+      "introspector-pod.yaml",
+      this.namespace,
+      {WS_URI: wsUri}
+    );
+
+    await this.createStaticResource(
+      "introspector-service.yaml",
+      this.namespace
+    );
+
+    await this.wait_pod_ready("introspector");
   }
 }

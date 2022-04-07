@@ -1,17 +1,10 @@
 import { Providers } from "./providers/";
-import {
-  LaunchConfig,
-  ComputedNetwork,
-  Node,
-  fileMap,
-  Collator,
-} from "./types";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
-  getUniqueName,
-} from "./configManager";
+} from "./configGenerator";
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -23,6 +16,8 @@ import {
   RPC_WS_PORT,
   RPC_HTTP_PORT,
   LOCALHOST,
+  INTROSPECTOR_POD_NAME,
+  INTROSPECTOR_PORT,
 } from "./constants";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -34,18 +29,13 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes,
 } from "./chain-spec";
-import {
-  generateNamespace,
-  sleep,
-  filterConsole,
-  loadTypeDef,
-  getSha256,
-  series,
-} from "./utils";
+import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils";
+import { series } from "./utils/promise-series";
+import { loadTypeDef } from "./utils/fs-utils";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 import { generateBootnodeString } from "./bootnode";
 import { generateKeystoreFiles } from "./keys";
 import path from "path";
@@ -67,7 +57,7 @@ export interface orchestratorOptions {
 
 export async function start(
   credentials: string,
-  networkConfig: LaunchConfig,
+  launchConfig: LaunchConfig,
   options?: orchestratorOptions
 ) {
   const opts = {
@@ -75,15 +65,12 @@ export async function start(
     ...options,
   };
 
-  debug("options", options);
-  debug("opts", opts);
-
   let network: Network | undefined;
   let cronInterval = undefined;
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
-      networkConfig
+      launchConfig
     );
     debug(JSON.stringify(networkSpec, null, 4));
 
@@ -221,13 +208,24 @@ export async function start(
         );
       }
 
-      for (const parachain of networkSpec.parachains) {
-        const parachainFilesPath = await generateParachainFiles(
+      const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
+        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
+        await fs.promises.mkdir(parachainFilesPath);
+        await generateParachainFiles(
           namespace,
           tmpDir.path,
+          parachainFilesPath,
           chainName,
           parachain
         );
+      }
+      const parachainPromiseGenerators = networkSpec.parachains.map((parachain: Parachain) => {
+        return () => parachainFilesPromiseGenerator(parachain);
+      });
+
+      await series(parachainPromiseGenerators, opts.spawnConcurrency);
+      for (const parachain of networkSpec.parachains) {
+        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
         const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
         const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
         if (parachain.addToGenesis)
@@ -237,6 +235,7 @@ export async function start(
             stateLocalFilePath,
             wasmLocalFilePath
           );
+
       }
 
       if (networkSpec.hrmpChannels) {
@@ -296,12 +295,24 @@ export async function start(
 
     let bootnodes: string[] = [];
 
-    if (networkConfig.settings.bootnode) {
+    if (launchConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
       networkSpec.relaychain.nodes.unshift(bootnodeSpec);
     }
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
+    let jaegerUrl: string;
+    if(client.providerName === "podman") {
+      const jaegerIp = await client.getNodeIP("tempo");
+      jaegerUrl = `${jaegerIp}:6831`;
+    } else if(client.providerName === "kubernetes" && networkSpec.settings.enable_tracing === true) {
+      // default to sidecar
+      jaegerUrl = "localhost:6831";
+      // try to get the jaegerUrl from config or process env
+      if(networkSpec.settings.jaeger_agent) jaegerUrl = networkSpec.settings.jaeger_agent;
+      // override with env
+      if(process.env.ZOMBIE_JAEGER_URL) jaegerUrl = process.env.ZOMBIE_JAEGER_URL;
+    }
 
     const spawnNode = async (
       node: Node,
@@ -312,6 +323,8 @@ export async function start(
       // for relay chain we can have more than one bootnode.
       if (node.zombieRole === "node" || node.zombieRole === "collator")
         node.bootnodes = node.bootnodes.concat(bootnodes);
+
+      if(jaegerUrl) node.jaegerUrl = jaegerUrl;
 
       debug(`creating node: ${node.name}`);
       const podDef = await (node.name === "bootnode"
@@ -484,6 +497,7 @@ export async function start(
     console.log("\t All relay chain nodes spawned...");
     debug("\t All relay chain nodes spawned...");
 
+    const collatorPromiseGenerators = [];
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis) {
         // register parachain on a running network
@@ -521,12 +535,33 @@ export async function start(
         }
       }
 
-      const promiseGenerators = parachain.collators.map((node: Node) => {
+      collatorPromiseGenerators.push( ...parachain.collators.map((node: Node) => {
         return () =>
           spawnNode(node, network!, parachain.id, parachain.specPath);
-      });
+      }));
+    }
 
-      await series(promiseGenerators, opts.spawnConcurrency);
+    // launch all collator in series
+    await series(collatorPromiseGenerators, opts.spawnConcurrency);
+
+    // check if polkador-instrospector is enabled
+    if(networkSpec.settings.polkadot_introspector && ["podman", "kubernetes"].includes(networkSpec.settings.provider)) {
+      const firstNode = network.relay[0];
+      const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT);
+      const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}",port);
+      await client.spawnIntrospector(wsUri);
+
+      const IP = (options?.inCI) ? await client.getNodeIP(INTROSPECTOR_POD_NAME) : LOCALHOST;
+      const PORT = (options?.inCI) ? INTROSPECTOR_PORT :  await client.startPortForwarding(INTROSPECTOR_PORT, INTROSPECTOR_POD_NAME);
+
+      const introspectorNetworkNode = new NetworkNode(
+        INTROSPECTOR_POD_NAME,
+        "",
+        METRICS_URI_PATTERN.replace("{{IP}}", IP).replace(
+          "{{PORT}}",PORT.toString())
+      );
+
+      network.addNode(introspectorNetworkNode, Scope.COMPANION);
     }
 
     // prevent global timeout
@@ -538,7 +573,7 @@ export async function start(
   } catch (error) {
     console.error(error);
     if (network) {
-      await network.uploadLogs();
+      await network.dumpLogs();
       await network.stop();
     }
     if (cronInterval) clearInterval(cronInterval);
@@ -559,7 +594,7 @@ export async function test(
     console.error(error);
   } finally {
     if (network) {
-      await network.uploadLogs();
+      await network.dumpLogs();
       await network.stop();
     }
   }

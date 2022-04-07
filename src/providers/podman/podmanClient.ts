@@ -7,13 +7,14 @@ import {
   P2P_PORT,
   PROMETHEUS_PORT,
 } from "../../constants";
-import { writeLocalJsonFile, getHostIp } from "../../utils";
+import { getHostIp } from "../../utils/net-utils";
+import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../colors";
+import { decorators } from "../../utils/colors";
 import YAML from "yaml";
-import { genGrafanaDef, genPrometheusDef } from "./dynResourceDefinition";
+import { genGrafanaDef, genPrometheusDef, genTempoDef, getIntrospectorDef } from "./dynResourceDefinition";
 
 const debug = require("debug")("zombie::podman::client");
 
@@ -87,8 +88,20 @@ export class PodmanClient extends Client {
       )} - url: http://127.0.0.1:${promPort}`
     );
 
-    const prometheusIp = await this.getPodIp("prometheus");
-    const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp);
+    const tempoSpec = await genTempoDef(this.namespace);
+    await this.createResource(tempoSpec, false, false);
+    const jaegerPort = tempoSpec.spec.containers[0].ports[0].hostPort;
+    const tempoPort = tempoSpec.spec.containers[0].ports[0].hostPort;
+    console.log(
+      `\n\t Monitor: ${decorators.green(
+        tempoSpec.metadata.name
+      )} - url: http://127.0.0.1:${tempoPort}`
+    );
+
+
+    const prometheusIp = await this.getNodeIP("prometheus");
+    const tempoIp = await this.getNodeIP("tempo");
+    const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp.toString(), tempoIp.toString());
     await this.createResource(grafanaSpec, false, false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;
     console.log(
@@ -98,12 +111,18 @@ export class PodmanClient extends Client {
     );
   }
 
-  async createStaticResource(filename: string): Promise<void> {
+  async createStaticResource(filename: string, replacements?: {[properyName: string]: string}): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
-    const resourceDef = fileContent
+    let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
+
+    if(replacements) {
+      for(const replacementKey of Object.keys(replacements)) {
+        resourceDef = resourceDef.replace(new RegExp(`{{${replacementKey}}}`, "g"), replacements[replacementKey]);
+      }
+    }
 
     const doc = new YAML.Document(JSON.parse(resourceDef));
 
@@ -153,7 +172,7 @@ export class PodmanClient extends Client {
   }
 
   async addNodeToPrometheus(podName: string) {
-    const podIp = await this.getPodIp(podName);
+    const podIp = await this.getNodeIP(podName);
     const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
     await fs.writeFile(
       `${this.tmpDir}/prometheus/data/sd_config_${podName}.json`,
@@ -184,7 +203,7 @@ export class PodmanClient extends Client {
   }
 
   async startPortForwarding(port: number, identifier: string): Promise<number> {
-    const podName = identifier.split("/")[1];
+    const podName = identifier.includes("/") ? identifier.split("/")[1] : identifier;
     const hostPort = await this.getPortMapping(port, podName);
     return hostPort;
   }
@@ -198,7 +217,7 @@ export class PodmanClient extends Client {
     return hostPort;
   }
 
-  async getPodIp(podName: string): Promise<number> {
+  async getNodeIP(podName: string): Promise<string> {
     const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
     const result = await this.runCommand(args, undefined, false);
     const resultJson = JSON.parse(result.stdout);
@@ -207,8 +226,8 @@ export class PodmanClient extends Client {
     return podIp;
   }
 
-  async getNodeInfo(podName: string): Promise<[string, number]> {
-    const hostPort = await this.getPortMapping(P2P_PORT, podName);
+  async getNodeInfo(podName: string, port?: number): Promise<[string, number]> {
+    const hostPort = await ( port ? this.getPortMapping(port, podName) : this.getPortMapping(P2P_PORT, podName));
     const hostIp = await getHostIp();
     return [hostIp, hostPort];
   }
@@ -350,5 +369,10 @@ export class PodmanClient extends Client {
   async isPodMonitorAvailable(): Promise<boolean> {
     // NOOP
     return false;
+  }
+
+  async spawnIntrospector(wsUri: string) {
+    const spec = await getIntrospectorDef(this.namespace, wsUri);
+    await this.createResource(spec, false, true);
   }
 }

@@ -4,7 +4,7 @@ import {
   GENESIS_WASM_FILENAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
-import { getUniqueName } from "./configManager";
+import { getUniqueName } from "./configGenerator";
 import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { Node, Parachain } from "./types";
@@ -15,29 +15,29 @@ const debug = require("debug")("zombie::paras");
 export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
+  parachainFilesPath: string,
   chainName: string,
   parachain: Parachain
-): Promise<string> {
-  const parachainFilesPath = `${tmpDir}/${parachain.id}`;
+): Promise<void> {
+
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
   const client = getClient();
-
-  fs.mkdirSync(parachainFilesPath);
 
   let chainSpecFullPath;
   if (parachain.cumulusBased) {
     // need to create the parachain spec
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
-    chainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
-    const relayChainSpecFullPath = `${tmpDir}/${chainName}-${parachain.id}.json`;
+    const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
+    chainSpecFullPath = `${tmpDir}/${parachain.chain ? parachain.chain : chainName}-${parachain.id}.json`;
+
     debug("creating chain spec plain");
     // create or copy chain spec
     await setupChainSpec(
       namespace,
       {
         relaychain: {
-          chainSpecCommand: `${parachain.collators[0].command} build-spec --disable-default-bootnode`,
+          chainSpecCommand: `${parachain.collators[0].command} build-spec ${parachain.chain ? "--chain " + parachain.chain : ""} --disable-default-bootnode`,
         },
       },
       chainName,
@@ -49,7 +49,7 @@ export async function generateParachainFiles(
     );
 
     const relayChainSpec = JSON.parse(
-      fs.readFileSync(relayChainSpecFullPath).toString()
+      fs.readFileSync(relayChainSpecFullPathPlain).toString()
     );
     plainData.para_id = parachain.id;
     plainData.relay_chain = relayChainSpec.id;
@@ -154,5 +154,5 @@ export async function generateParachainFiles(
     fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
 
-  return parachainFilesPath;
+  return;
 }

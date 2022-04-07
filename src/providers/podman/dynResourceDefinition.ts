@@ -1,15 +1,18 @@
-import { genCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
   TRANSFER_CONTAINER_NAME,
   RPC_HTTP_PORT,
   P2P_PORT,
+  DEFAULT_COMMAND,
+  INTROSPECTOR_POD_NAME,
 } from "../../constants";
-import { getUniqueName } from "../../configManager";
+import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils";
+import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
+import { resolve } from "path";
 
 const fs = require("fs").promises;
 
@@ -37,9 +40,7 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
@@ -123,7 +124,8 @@ scrape_configs:
 
 export async function genGrafanaDef(
   namespace: string,
-  prometheusIp: number
+  prometheusIp: string,
+  tempoIp: string
 ): Promise<any> {
   const client = getClient();
   const volume_mounts = [
@@ -152,6 +154,13 @@ datasources:
     access: proxy
     orgId: 1
     url: http://${prometheusIp}:9090
+    version: 1
+    editable: true
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    url: http://${tempoIp}:3200
     version: 1
     editable: true
 `;
@@ -197,6 +206,132 @@ datasources:
   };
 }
 
+export async function getIntrospectorDef(namespace:string, wsUri: string): Promise<any> {
+  const ports = [
+    {
+      containerPort: 65432,
+      name: "prometheus",
+      hostPort: await getRandomPort(),
+    }
+  ];
+
+  const containerDef = {
+    image: "paritytech/polkadot-introspector:latest",
+    name: INTROSPECTOR_POD_NAME,
+    args: [
+      "block-time-monitor",
+      `--ws=${wsUri}`,
+      "prometheus"
+    ],
+    imagePullPolicy: "Always",
+    ports,
+    volumeMounts: [],
+  };
+
+  return {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: INTROSPECTOR_POD_NAME,
+      namespace: namespace,
+      labels: {
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": INTROSPECTOR_POD_NAME,
+        "zombie-role": INTROSPECTOR_POD_NAME,
+        app: "zombienet",
+        "zombie-ns": namespace,
+      },
+    },
+    spec: {
+      hostname: INTROSPECTOR_POD_NAME,
+      containers: [containerDef],
+      restartPolicy: "OnFailure"
+    },
+  };
+}
+
+export async function genTempoDef(
+  namespace: string
+): Promise<any> {
+  const client = getClient();
+
+  const volume_mounts = [
+    { name: "tempo-cfg", mountPath: "/etc/tempo", readOnly: false },
+    { name: "tempo-data", mountPath: "/data", readOnly: false },
+  ];
+  const cfgPath = `${client.tmpDir}/tempo/etc`;
+  const dataPath = `${client.tmpDir}/tempo/data`;
+  await fs.mkdir(cfgPath, { recursive: true });
+  await fs.mkdir(dataPath, { recursive: true });
+
+  const devices = [
+    { name: "tempo-cfg", hostPath: { type: "Directory", path: cfgPath } },
+    { name: "tempo-data", hostPath: { type: "Directory", path: dataPath } },
+  ];
+
+  const tempoConfigPath = resolve(__dirname, `../../../static-configs/tempo.yaml`);
+  await fs.copyFile(tempoConfigPath,`${cfgPath}/tempo.yaml`);
+
+  const ports = [
+    {
+      containerPort: 14268,
+      name: "jaeger_ingest",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 3200,
+      name: "tempo",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 4317,
+      name: "otlp_grpc",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 4318,
+      name: "otlp_http",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: 9411,
+      name: "zipkin",
+      hostPort: await getRandomPort(),
+    }
+  ];
+
+  const containerDef = {
+    image: "grafana/tempo:latest",
+    name: "tempo",
+    args: [ "-config.file=/etc/tempo/tempo.yaml" ],
+    imagePullPolicy: "Always",
+    ports,
+    volumeMounts: volume_mounts,
+  };
+
+  return {
+    apiVersion: "v1",
+    kind: "Pod",
+    metadata: {
+      name: "tempo",
+      namespace: namespace,
+      labels: {
+        "app.kubernetes.io/name": namespace,
+        "app.kubernetes.io/instance": "tempo",
+        "zombie-role": "tempo",
+        app: "zombienet",
+        "zombie-ns": namespace,
+      },
+    },
+    spec: {
+      hostname: "tempo",
+      containers: [containerDef],
+      restartPolicy: "OnFailure",
+      volumes: devices,
+    },
+  };
+}
+
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node
@@ -226,9 +361,7 @@ export async function genNodeDef(
     spec: {
       hostname: nodeSetup.name,
       containers: [container],
-      initContainers: nodeSetup.initContainers?.concat([
-        transferContainter,
-      ]) || [transferContainter],
+      initContainers: [transferContainter],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
@@ -286,7 +419,14 @@ async function make_main_container(
     },
     { containerPort: P2P_PORT, name: "p2p", hostPort: await getRandomPort() },
   ];
-  const command = await genCmd(nodeSetup);
+
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
+  if( nodeSetup.zombieRole === "cumulus-collator") {
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
+  } else {
+    computedCommand = await genCmd(nodeSetup);
+  }
 
   let containerDef = {
     image: nodeSetup.image,
@@ -295,7 +435,7 @@ async function make_main_container(
     ports,
     env: nodeSetup.env,
     volumeMounts: volume_mounts,
-    command,
+    command: computedCommand,
   };
 
   return containerDef;

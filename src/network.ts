@@ -1,8 +1,8 @@
 import { Client } from "./providers/client";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { cryptoWaitReady, sortAddresses } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
-import { readDataFile } from "./utils";
+import { readDataFile } from "./utils/fs-utils";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
@@ -15,7 +15,7 @@ import { NetworkNode } from "./networkNode";
 import fs from "fs";
 import execa from "execa";
 import axios from "axios";
-import { decorators } from "./colors";
+import { decorators } from "./utils/colors";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -29,6 +29,7 @@ export interface NodeMappingMetrics {
 export enum Scope {
   RELAY,
   PARA,
+  COMPANION
 }
 
 export class Network {
@@ -39,6 +40,7 @@ export class Network {
       nodes: NetworkNode[];
     };
   } = {};
+  companions: NetworkNode[] = [];
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
@@ -65,6 +67,7 @@ export class Network {
 
   addNode(node: NetworkNode, scope: Scope) {
     if (scope === Scope.RELAY) this.relay.push(node);
+    else if (scope == Scope.COMPANION) this.companions.push(node);
     else {
       if (!node.parachainId || !this.paras[node.parachainId])
         throw new Error(
@@ -81,7 +84,7 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async uploadLogs() {
+  async dumpLogs() {
     // create dump directory in local temp
     fs.mkdirSync(`${this.tmpDir}/logs`);
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
@@ -97,21 +100,8 @@ export class Network {
       this.client.dumpLogs(this.tmpDir, node.name);
     });
     await Promise.all(dumpsPromises);
-    const args = [
-      "cp",
-      "-r",
-      `${this.tmpDir}/*`,
-      `gs://${ZOMBIE_BUCKET}/${this.namespace}/`,
-    ];
-    try {
-      await execa("gsutil", args);
-    } catch (err) {
-      console.log(
-        `\n\t ${decorators.red(
-          "Could NOT upload logs"
-        )} to ${ZOMBIE_BUCKET} bucket, check if you have access and gsutil installed.`
-      );
-    }
+
+    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir + "/logs")}`);
   }
 
   async upsertCronJob(minutes = 10) {
@@ -283,9 +273,18 @@ export class Network {
       console.log("\n");
       console.log("\n\t Parachain ID: " + paraId);
       if (parachain.chainSpecPath)
-        console.log("\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath);
+        console.log(
+          "\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath
+        );
 
       for (const node of parachain.nodes) {
+        this.showNodeInfo(node, provider);
+      }
+    }
+
+    if(this.companions.length) {
+      console.log("\n\t Companions:");
+      for (const node of this.companions) {
         this.showNodeInfo(node, provider);
       }
     }

@@ -44,6 +44,8 @@ export const LOCALHOST = "127.0.0.1";
 export const BAKCCHANNEL_URI_PATTERN = "http://127.0.0.1:{{PORT}}";
 export const BAKCCHANNEL_PORT = 3000;
 export const BAKCCHANNEL_POD_NAME = "backchannel";
+export const INTROSPECTOR_PORT = 65432;
+export const INTROSPECTOR_POD_NAME = "introspector";
 
 export const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 
@@ -61,3 +63,23 @@ export const DEV_ACCOUNTS = [
   "one",
   "two",
 ];
+
+export const ARGS_TO_REMOVE: {[key:string]:number} = {
+  alice: 1,
+  bob: 1,
+  charlie: 1,
+  dave: 1,
+  eve: 1,
+  ferdie: 1,
+  one: 1,
+  two: 1,
+  port: 2,
+  "prometheus-external": 1,
+  "ws-port": 2,
+  "rpc-port": 2,
+  "node-key": 2,
+  "listen-addr": 2,
+  d: 2,
+  "base-path": 2,
+
+};
