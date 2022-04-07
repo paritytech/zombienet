@@ -91,7 +91,7 @@ export class PodmanClient extends Client {
     const tempoSpec = await genTempoDef(this.namespace);
     await this.createResource(tempoSpec, false, false);
     const jaegerPort = tempoSpec.spec.containers[0].ports[0].hostPort;
-    const tempoPort = tempoSpec.spec.containers[0].ports[0].hostPort;
+    const tempoPort = tempoSpec.spec.containers[0].ports[1].hostPort;
     console.log(
       `\n\t Monitor: ${decorators.green(
         tempoSpec.metadata.name
