@@ -119,8 +119,11 @@ export async function generateNetworkSpec(
       networkSpec,
       node,
       relayChainBootnodes,
-      globalOverrides
+      globalOverrides,
+      node.name // group of 1
     );
+
+    console.log(nodeSetup);
     networkSpec.relaychain.nodes.push(nodeSetup);
   }
 
@@ -141,7 +144,8 @@ export async function generateNetworkSpec(
         networkSpec,
         node,
         relayChainBootnodes,
-        globalOverrides
+        globalOverrides,
+        nodeGroup.name
       );
       networkSpec.relaychain.nodes.push(nodeSetup);
     }
@@ -335,14 +339,6 @@ async function getLocalOverridePath(
   return local_real_path;
 }
 
-function isValidatorbyArgs(nodeArgs: string[]): boolean {
-  const defaultAccounts = ["alice", "bob", "charlie", "dave", "eve", "ferdie"];
-  const validatorAccount = defaultAccounts.find((acc) =>
-    nodeArgs.includes(`--${acc}`)
-  );
-  return validatorAccount ? true : false;
-}
-
 function getCollatorNodeFromConfig(
   collatorConfig: CollatorConfig,
   para_id: number,
@@ -390,7 +386,8 @@ async function getNodeFromConfig(
   networkSpec: any,
   node: NodeConfig,
   relayChainBootnodes: string[],
-  globalOverrides: Override[]
+  globalOverrides: Override[],
+  group?: string
 ): Promise<Node> {
 
   const command = node.command
@@ -454,6 +451,7 @@ async function getNodeFromConfig(
     zombieRole: "node",
   };
 
+  if(group) nodeSetup.group = group;
   return nodeSetup;
 }
 

@@ -11,7 +11,8 @@ import {
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./constants";
 import { getClient } from "./providers/client";
 
-import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
+import { paraGetBlockHeight, paraIsRegistered, validateRuntimeCode } from "./jsapi-helpers";
+import { decorators } from "./utils/colors";
 
 const debug = require("debug")("zombie::network-node");
 
@@ -33,6 +34,7 @@ export class NetworkNode implements NetworkNodeInterface {
   parachainId?: number;
   lastLogLineCheckedTimestamp?: string;
   lastLogLineCheckedIndex?: number;
+  group?: string;
 
   constructor(
     name: string,
@@ -147,40 +149,36 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredValue: number,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
   ): Promise<number> {
-    let expired = false;
-    let limitTimeout;
+    let value: number = 0;
     try {
-      limitTimeout = setTimeout(() => {
-        expired = true;
-      }, timeout * 1000);
+      const getValue = async () => {
+        while(desiredValue > value) {
+          // reconnect iff needed
+          if (!this.apiInstance) await this.connectApi();
 
-      // reconnect iff needed
-      if (!this.apiInstance) await this.connectApi();
-      let done = false;
-      let value: number = 0;
-      while (!done) {
-        if (expired) throw new Error(`Timeout(${timeout}s)`);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          let blockNumber = await paraGetBlockHeight(
+            this.apiInstance as ApiPromise,
+            parachainId
+          );
 
-        let blockNumber = await paraGetBlockHeight(
-          this.apiInstance as ApiPromise,
-          parachainId
-        );
-        if (desiredValue <= blockNumber) {
-          done = true;
           value = blockNumber;
         }
-
-        // wait 2 secs between checks
-        if (!done) await new Promise((resolve) => setTimeout(resolve, 2000));
+        return;
       }
 
-      debug("returning: " + value);
-      clearTimeout(limitTimeout);
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) => setTimeout(() => {
+          const err = new Error(`Timeout(${timeout}), "getting desired parachain block height ${desiredValue} within ${timeout} secs".`);
+          return resolve(err);
+        }, timeout * 1000))
+      ]);
+      if( resp instanceof Error ) throw resp
+      return value;
+    } catch(err: any) {
+      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
       return value || 0;
-    } catch (err) {
-      console.log(err);
-      if (limitTimeout) clearTimeout(limitTimeout);
-      return 0;
     }
   }
 
@@ -189,71 +187,59 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
   ): Promise<number> {
-    let limitTimeout;
-    let expired: boolean = false;
+    let value;
     try {
-      limitTimeout = setTimeout(() => {
-        debug(`Timeout getting metric ${rawmetricName} (${timeout})`);
-        expired = true;
-      }, timeout * 1000);
-
       if (desiredMetricValue === null || !this.cachedMetrics) {
         debug("reloading cache");
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
       }
+
       const metricName = getMetricName(rawmetricName);
-      let value = this._getMetric(metricName, desiredMetricValue === null);
+      value = this._getMetric(metricName, desiredMetricValue === null);
       if (value !== undefined) {
         if (desiredMetricValue === null || value >= desiredMetricValue) {
           debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
-          clearTimeout(limitTimeout);
           return value;
         }
       }
 
-      // loop until get the desired value or timeout
-      let done = false;
-      let c = 0;
-      while (!done) {
-        if (expired) throw new Error(`Timeout(${timeout}s)`);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        c += 1;
-        // refresh metrics
-        try {
+      const getValue = async () => {
+        let c = 0;
+        let done = false;
+        while(!done) {
+          c++;
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
           this.cachedMetrics = await fetchMetrics(this.prometheusUri);
-        } catch (err) {
-          debug(`Error fetching metrics, recreating port-fw`);
-          debug(err);
-          // re-create port-fw
-          const client = getClient();
-          const newPort = await client.startPortForwarding(
-            PROMETHEUS_PORT,
-            `Pod/${this.name}`
-          );
-          this.prometheusUri = `http://127.0.0.1:${newPort}/metrics`;
-          continue;
-        }
-        value = this._getMetric(metricName, desiredMetricValue === null);
-        if (
-          value !== undefined &&
-          desiredMetricValue !== null &&
-          desiredMetricValue <= value
-        ) {
-          done = true;
-        } else {
-          debug(
-            `current value: ${value} for metric ${rawmetricName}, keep trying...`
-          );
+          value = this._getMetric(metricName, desiredMetricValue === null);
+
+          if (
+            value !== undefined &&
+            desiredMetricValue !== null &&
+            desiredMetricValue <= value
+          ) {
+            done = true;
+          } else {
+            debug(
+              `current value: ${value} for metric ${rawmetricName}, keep trying...`
+            );
+          }
         }
       }
 
-      debug("returning: " + value);
-      clearTimeout(limitTimeout);
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) => setTimeout(() => {
+          const err = new Error(`Timeout(${timeout}), "getting desired metric value ${desiredMetricValue} within ${timeout} secs".`);
+          return resolve(err);
+        }, timeout * 1000))
+      ]);
+      if( resp instanceof Error ) throw resp;
+
       return value || 0;
-    } catch (err) {
-      if (limitTimeout) clearTimeout(limitTimeout);
-      throw new Error(`Error getting metric: ${rawmetricName}`);
+    } catch(err: any) {
+      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+      return value || 0;
     }
   }
 
@@ -263,14 +249,8 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
   ): Promise<number> {
-    let limitTimeout;
-    let expired: boolean = false;
+    let value;
     try {
-      limitTimeout = setTimeout(() => {
-        debug(`Timeout getting metric ${rawmetricName} (${timeout})`);
-        expired = true;
-      }, timeout * 1000);
-
       const metricName = getMetricName(rawmetricName);
       let histogramBuckets = await getHistogramBuckets(
         this.prometheusUri,
@@ -279,57 +259,48 @@ export class NetworkNode implements NetworkNodeInterface {
       let value = this._getSamplesCount(histogramBuckets, buckets);
       if (desiredMetricValue === null || value >= desiredMetricValue) {
         debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
-        clearTimeout(limitTimeout);
         return value;
       }
 
-      // loop until get the desired value or timeout
-      let done = false;
-      let c = 0;
-      while (!done) {
-        if (expired) throw new Error(`Timeout(${timeout}s)`);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        c += 1;
-        // refresh metrics
-        try {
-          debug(`fetching buckets - q: ${c}  time:  ${new Date()}`);
+      const getValue = async () => {
+        let c = 0;
+        let done = false;
+        while(!done) {
+          c++;
+          await new Promise((resolve) => setTimeout(resolve, 1000));
           histogramBuckets = await getHistogramBuckets(
             this.prometheusUri,
             metricName
           );
-        } catch (err) {
-          debug(`Error fetching buckets, recreating port-fw`);
-          debug(err);
-          // re-create port-fw
-          const client = getClient();
-          const newPort = await client.startPortForwarding(
-            PROMETHEUS_PORT,
-            `Pod/${this.name}`
-          );
-          this.prometheusUri = `http://127.0.0.1:${newPort}/metrics`;
-          continue;
-        }
-        value = this._getSamplesCount(histogramBuckets, buckets);
-        if (
-          value !== undefined &&
-          desiredMetricValue !== null &&
-          desiredMetricValue <= value
-        ) {
-          done = true;
-        } else {
-          debug(
-            `current value: ${value} for sameples count of ${rawmetricName}, keep trying...`
-          );
+
+          value = this._getSamplesCount(histogramBuckets, buckets);
+          if (
+            value !== undefined &&
+            desiredMetricValue !== null &&
+            desiredMetricValue <= value
+          ) {
+            done = true;
+          } else {
+            debug(
+              `current value: ${value} for samples count of ${rawmetricName}, keep trying...`
+            );
+          }
         }
       }
 
-      debug("returning: " + value);
-      clearTimeout(limitTimeout);
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) => setTimeout(() => {
+          const err = new Error(`Timeout(${timeout}), "getting samples count value ${desiredMetricValue} within ${timeout} secs".`);
+          return resolve(err);
+        }, timeout * 1000))
+      ]);
+      if( resp instanceof Error ) throw resp;
+
       return value || 0;
-    } catch (err) {
-      if (limitTimeout) clearTimeout(limitTimeout);
-      console.log(err);
-      throw new Error(`Error getting samples count : ${rawmetricName}`);
+    } catch(err: any){
+      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+      return value || 0;
     }
   }
 
@@ -338,52 +309,50 @@ export class NetworkNode implements NetworkNodeInterface {
     isGlob: boolean,
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
   ): Promise<boolean> {
-    let limitTimeout;
-    let expired: boolean = false;
     try {
-      limitTimeout = setTimeout(() => {
-        debug(`Timeout getting pattern ${pattern} (${timeout})`);
-        expired = true;
-      }, timeout * 1000);
-
       const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
       const client = getClient();
 
-      // loop until get the desired value or timeout
-      let done = false;
-      while (!done) {
-        if (expired) throw new Error(`Timeout(${timeout}s)`);
+      const getValue = async () => {
+        let done = false;
+        while (!done) {
+          const logs = await client.getNodeLogs(this.name, 2, true);
+          const dedupedLogs = this._dedupLogs(
+            logs.split("\n"),
+            client.providerName === "native"
+          );
+          const index = dedupedLogs.findIndex((line) => {
+            if (client.providerName !== "native") {
+              // remove the extra timestamp
+              line = line.split(" ").slice(1).join(" ");
+            }
+            return re.test(line);
+          });
 
-        // By default use 2s since we sleep 1s.
-        const logs = await client.getNodeLogs(this.name, 2, true);
-        const dedupedLogs = this._dedupLogs(
-          logs.split("\n"),
-          client.providerName === "native"
-        );
-        const index = dedupedLogs.findIndex((line) => {
-          if (client.providerName !== "native") {
-            // remove the extra timestamp
-            line = line.split(" ").slice(1).join(" ");
+          if (index >= 0) {
+            done = true;
+            this.lastLogLineCheckedTimestamp = dedupedLogs[index];
+            this.lastLogLineCheckedIndex = index;
+            debug(this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
-          return re.test(line);
-        });
-
-        if (index >= 0) {
-          done = true;
-          this.lastLogLineCheckedTimestamp = dedupedLogs[index];
-          this.lastLogLineCheckedIndex = index;
-          debug(this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
-          clearTimeout(limitTimeout);
-        } else {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
-      clearTimeout(limitTimeout);
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) => setTimeout(() => {
+          const err = new Error(`Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`);
+          return resolve(err);
+        }, timeout * 1000))
+      ]);
+      if( resp instanceof Error ) throw resp;
+
       return true;
-    } catch (err) {
-      if (limitTimeout) clearTimeout(limitTimeout);
-      throw new Error(`Error getting pattern: ${pattern}`);
+    } catch(err: any) {
+      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+      return false;
     }
   }
 
@@ -412,17 +381,18 @@ export class NetworkNode implements NetworkNodeInterface {
         this.cachedMetrics[namespace] &&
         this.cachedMetrics[namespace][metricName] !== undefined
       ) {
-        debug("returning for: " + metricName);
+        debug("returning for: " + metricName + " from ns: " + namespace);
         debug("returning: " + this.cachedMetrics[namespace][metricName]);
         return this.cachedMetrics[namespace][metricName];
       }
     }
-    if (metricShouldExists) throw new Error("Metric not found!");
+    if (metricShouldExists) throw new Error(`Metric: ${metricName} not found!`);
   }
 
   _getSamplesCount(buckets: BucketHash, bucketKeys: string[]): number {
     debug("buckets samples count:");
     debug(buckets);
+    debug(bucketKeys);
     let count = 0;
     for (const key of bucketKeys) {
       if (buckets[key] === undefined)

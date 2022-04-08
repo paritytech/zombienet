@@ -3,22 +3,22 @@ import Mocha from "mocha";
 import fs from "fs";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
-import { LaunchConfig } from "./types";
-import { sleep } from "./utils/misc-utils";
-import { readNetworkConfig } from "./utils/fs-utils";
-import { Network } from "./network";
-import { decorators } from "./utils/colors";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "./constants";
+import { LaunchConfig } from "../types";
+import { sleep } from "../utils/misc-utils";
+import { readNetworkConfig } from "../utils/fs-utils";
+import { Network } from "../network";
+import { decorators } from "../utils/colors";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 import minimatch from "minimatch";
 
-const zombie = require("../");
+import zombie from "../";
 const {
   connect,
   chainUpgrade,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
   findPatternInSystemEventSubscription,
-} = require("./jsapi-helpers");
+} = require("../jsapi-helpers");
 
 const debug = require("debug")("zombie::test-runner");
 
@@ -28,7 +28,7 @@ const mocha = new Mocha();
 
 import { JSDOM } from "jsdom";
 import { Environment } from "nunjucks";
-import { RelativeLoader } from "./utils/nunjucks-relative-loader";
+import { RelativeLoader } from "../utils/nunjucks-relative-loader";
 
 interface TestDefinition {
   networkConfig: string;
@@ -100,7 +100,7 @@ export async function run(
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {
-      network = await zombie.start(creds, config, {
+      network = await zombie.start(creds!, config, {
         spawnConcurrency: concurrency,
         inCI,
       });
@@ -108,7 +108,8 @@ export async function run(
       network.showNetworkInfo(config.settings.provider);
       return;
     } catch (err) {
-      console.log("Error launching the network");
+      console.log("Error launching the network!");
+      console.log(`\n\t ${err}`);
       exitMocha(100);
     }
   });
@@ -184,67 +185,71 @@ const exitMocha = (code: number) => {
   done();
 };
 
+
+// REGEX
+// Node general
+const isUpRegex = new RegExp(/^([\w-]+): is up$/i);
+
+// parachains
+const parachainIsRegistered = new RegExp(
+  /^(([\w-]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i
+);
+const parachainBlockHeight = new RegExp(
+  /^(([\w-]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
+);
+const chainUpgradeRegex = new RegExp(
+  /^(([\w-]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i
+);
+const chainDummyUpgradeRegex = new RegExp(
+  /^(([\w-]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i
+);
+
+// Metrics - histograms
+// e.g alice: reports histogram pvf_execution_time has at last X samples in buckets ["3", "4", "6", "+Inf"]
+const isHistogram = new RegExp(
+  /^(([\w-]+): reports histogram (.*?) has (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) samples in buckets \[(.+)\])+( within (\d+) (seconds|secs|s))?$/i
+);
+
+// Metrics
+const isReports = new RegExp(
+  /^(([\w-]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
+);
+
+// Logs assertion
+const assertLogLineRegex = new RegExp(
+  /^(([\w-]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
+);
+
+// system events
+const assertSystemEventRegex = new RegExp(
+  /^(([\w-]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
+);
+
+// Custom js-script
+const assertCustomJsRegex = new RegExp(
+  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
+);
+
+// Backchannel
+// alice: wait for name and use as X within 30s
+const backchannelWait = new RegExp(
+  /^([\w-]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i
+);
+
+// Alice: ensure var:X is used
+const isEnsure = new RegExp(/^([\w-]+): ensure var:([\w]+) is used$/i);
+
+// Commands
+const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
+const restartRegex = new RegExp(
+  /^(([\w-]+): restart)+( after (\d+) (seconds|secs|s))?$/i
+);
+const pauseRegex = new RegExp(/^([\w-]+): pause$/i);
+const resumeRegex = new RegExp(/^([\w-]+): resume$/i);
+
+
+
 function parseAssertionLine(assertion: string) {
-  // Node general
-  const isUpRegex = new RegExp(/^([\w-]+): is up$/i);
-
-  // parachains
-  const parachainIsRegistered = new RegExp(
-    /^(([\w-]+): parachain (\d+) is registered)+( within (\d+) (seconds|secs|s)?)?$/i
-  );
-  const parachainBlockHeight = new RegExp(
-    /^(([\w-]+): parachain (\d+) block height is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
-  );
-  const chainUpgradeRegex = new RegExp(
-    /^(([\w-]+): parachain (\d+) perform upgrade with (.*?))+( within (\d+) (seconds|secs|s)?)$/i
-  );
-  const chainDummyUpgradeRegex = new RegExp(
-    /^(([\w-]+): parachain (\d+) perform dummy upgrade)+( within (\d+) (seconds|secs|s)?)$/i
-  );
-
-  // Metrics - histograms
-  // e.g alice: reports histogram pvf_execution_time has at last X samples in buckets ["3", "4", "6", "+Inf"]
-  const isHistogram = new RegExp(
-    /^(([\w-]+): reports histogram (.*?) has (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+) samples in buckets \[(.+)\])+( within (\d+) (seconds|secs|s))?$/i
-  );
-
-  // Metrics
-  const isReports = new RegExp(
-    /^(([\w-]+): reports (.*?) is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))+( within (\d+) (seconds|secs|s))?$/i
-  );
-
-  // Logs assertion
-  const assertLogLineRegex = new RegExp(
-    /^(([\w-]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
-  );
-
-  // system events
-  const assertSystemEventRegex = new RegExp(
-    /^(([\w-]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
-  );
-
-  // Custom js-script
-  const assertCustomJsRegex = new RegExp(
-    /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
-  );
-
-  // Backchannel
-  // alice: wait for name and use as X within 30s
-  const backchannelWait = new RegExp(
-    /^([\w-]+): wait for (.*?) and use as (.*?) within (\d+) (seconds|secs|s)?$/i
-  );
-
-  // Alice: ensure var:X is used
-  const isEnsure = new RegExp(/^([\w-]+): ensure var:([\w]+) is used$/i);
-
-  // Commands
-  const sleepRegex = new RegExp(/^sleep *(\d+) (seconds|secs|s)?$/i);
-  const restartRegex = new RegExp(
-    /^(([\w-]+): restart)+( after (\d+) (seconds|secs|s))?$/i
-  );
-  const pauseRegex = new RegExp(/^([\w-]+): pause$/i);
-  const resumeRegex = new RegExp(/^([\w-]+): resume$/i);
-
   // Matchs
   let m: string[] | null;
 
@@ -252,39 +257,36 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2] && m[3]) {
     const nodeName = m[2];
     const parachainId = parseInt(m[3], 10);
-    let timeout: number;
-    if (m[5]) timeout = parseInt(m[5], 10);
+    let t: number;
+    if (m[5]) t = parseInt(m[5], 10);
 
     return async (network: Network) => {
-      const parachainIsRegistered = timeout
-        ? await network
-            .node(nodeName)
-            .parachainIsRegistered(parachainId, timeout)
-        : await network.node(nodeName).parachainIsRegistered(parachainId);
+      const timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.parachainIsRegistered(parachainId, timeout)));
 
+      const parachainIsRegistered = results.every(Boolean);
       expect(parachainIsRegistered).to.be.ok;
     };
   }
 
   m = parachainBlockHeight.exec(assertion);
   if (m && m[2] && m[3] && m[4] && m[5]) {
-    let timeout: number;
+    let t: number;
     const nodeName = m[2];
     const parachainId = parseInt(m[3], 10);
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
-    if (m[7]) timeout = parseInt(m[7], 10);
+    if (m[7]) t = parseInt(m[7], 10);
 
     return async (network: Network) => {
-      const value = timeout
-        ? await network
-            .node(nodeName)
-            .parachainBlockHeight(parachainId, targetValue, timeout)
-        : await network
-            .node(nodeName)
-            .parachainBlockHeight(parachainId, targetValue);
+      const timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
 
-      assert[comparatorFn](value, targetValue);
+      const results = await Promise.all(nodes.map(node => node.parachainBlockHeight(parachainId, targetValue, timeout)));
+      for( const value of results) {
+        assert[comparatorFn](value, targetValue);
+      }
     };
   }
 
@@ -292,82 +294,66 @@ function parseAssertionLine(assertion: string) {
   if (m && m[1] !== null) {
     const nodeName = m[1];
     return async (network: Network) => {
-      await network.node(nodeName).getMetric("process_start_time_seconds");
-      return true;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds")));
+      const AllNodeUps = results.every(Boolean);
+      expect(AllNodeUps).to.be.ok;
     };
   }
 
   m = isHistogram.exec(assertion);
   if (m && m[2] && m[3] && m[5]) {
-    let timeout: number;
-    let value: number;
+    let t: number;
     const nodeName = m[2];
     const metricName = m[3];
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
     const buckets = m[6].split(",").map((x) => x.replaceAll('"', "").trim());
-    if (m[8]) timeout = parseInt(m[8], 10);
+    if (m[8]) t = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      let value;
-      try {
-        value = timeout
-          ? await network
-              .node(nodeName)
-              .getHistogramSamplesInBuckets(
-                metricName,
-                buckets,
-                targetValue,
-                timeout
-              )
-          : await network
-              .node(nodeName)
-              .getHistogramSamplesInBuckets(metricName, buckets);
-      } catch (err) {
-        if (comparatorFn === "equal" && targetValue === 0) value = 0;
-        else throw err;
+      const timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.getHistogramSamplesInBuckets(metricName, buckets, targetValue, timeout)));
+
+      for( const value of results) {
+        assert[comparatorFn](value, targetValue);
       }
-      assert[comparatorFn](value, targetValue);
     };
   }
 
   m = isReports.exec(assertion);
   if (m && m[2] && m[3] && m[5]) {
-    let timeout: number;
-    let value: number;
+    let t: number;
     const nodeName = m[2];
     const metricName = m[3];
     const comparatorFn = getComparatorFn(m[4] || "");
     const targetValue = parseInt(m[5]);
-    if (m[7]) timeout = parseInt(m[7], 10);
+    if (m[7]) t = parseInt(m[7], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      let value;
-      try {
-        value =
-          timeout && !(comparatorFn === "equal" && targetValue === 0)
-            ? await network
-                .node(nodeName)
-                .getMetric(metricName, targetValue, timeout)
-            : await network.node(nodeName).getMetric(metricName);
-      } catch (err) {
-        if (comparatorFn === "equal" && targetValue === 0) value = 0;
-        else throw err;
+      const timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.getMetric(metricName, targetValue, timeout)));
+
+      for( const value of results) {
+        assert[comparatorFn](value, targetValue);
       }
-      assert[comparatorFn](value, targetValue);
     };
   }
 
   m = assertLogLineRegex.exec(assertion);
   if (m && m[2] && m[5]) {
-    let timeout: number;
+    let t: number;
     const nodeName = m[2];
     const pattern = m[5];
     const isGlob = (m[4] && m[4].trim() === "glob") || false;
-    if (m[7]) timeout = parseInt(m[7], 10);
+    if (m[7]) t = parseInt(m[7], 10);
 
     return async (network: Network) => {
-      const found = timeout
-        ? await network.node(nodeName).findPattern(pattern, isGlob, timeout)
-        : await network.node(nodeName).findPattern(pattern, isGlob);
+      const timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.findPattern(pattern, isGlob, timeout)));
+
+      const found = results.every(Boolean);
       expect(found).to.be.ok;
     };
   }
@@ -377,9 +363,10 @@ function parseAssertionLine(assertion: string) {
     const nodeName = m[2];
     const pattern = m[5];
     const isGlob = (m[4] && m[4].trim() === "glob") || false;
-    const timeout = m[7] ? parseInt(m[7], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
+    const t = m[7] ? parseInt(m[7], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
 
     return async (network: Network) => {
+      const timeout: number|undefined = t;
       const node = network.node(nodeName);
       const api: ApiPromise = await connect(node.wsUri);
       const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
