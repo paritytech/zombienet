@@ -503,12 +503,15 @@ function parseAssertionLine(assertion: string) {
   m = restartRegex.exec(assertion);
   if (m && m[2]) {
     const nodeName = m[2];
-    let timeout: number;
-    if (m[4]) timeout = parseInt(m[4], 10);
+    let t: number;
+    if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      if (timeout) await network.node(nodeName).restart(timeout);
-      else await network.node(nodeName).restart();
-      expect(true).to.be.ok;
+      const timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.restart(timeout)));
+
+      const restarted = results.every(Boolean);
+      expect(restarted).to.be.ok;
     };
   }
 
@@ -516,8 +519,11 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2]) {
     const nodeName = m[2];
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      await network.node(nodeName).pause();
-      expect(true).to.be.ok;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.pause()));
+
+      const paused = results.every(Boolean);
+      expect(paused).to.be.ok;
     };
   }
 
