@@ -7,13 +7,11 @@ import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
   BAKCCHANNEL_URI_PATTERN,
-  DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  ZOMBIE_BUCKET,
+  DEFAULT_INDIVIDUAL_TEST_TIMEOUT
 } from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import fs from "fs";
-import execa from "execa";
 import axios from "axios";
 import { decorators } from "./utils/colors";
 const debug = require("debug")("zombie::network");
@@ -39,6 +37,9 @@ export class Network {
       chainSpecPath?: string;
       nodes: NetworkNode[];
     };
+  } = {};
+  groups: {
+    [id: string]: NetworkNode[]
   } = {};
   companions: NetworkNode[] = [];
   nodesByName: NodeMapping = {};
@@ -78,6 +79,11 @@ export class Network {
     }
 
     this.nodesByName[node.name] = node;
+
+    if(node.group) {
+      if(!this.groups[node.group]) this.groups[node.group] = [];
+      this.groups[node.group].push(node);
+    }
   }
 
   async stop() {
@@ -231,6 +237,12 @@ export class Network {
     const node = this.nodesByName[nodeName];
     if (!node) throw new Error(`NODE: ${nodeName} not present`);
     return node;
+  }
+
+  getNodesInGroup(nodeName: string): NetworkNode[] {
+    const nodes = this.groups[nodeName];
+    if (!nodes) throw new Error(`GROUP: ${nodeName} not present`);
+    return nodes;
   }
 
   node(nodeName: string): NetworkNode {

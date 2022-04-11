@@ -422,6 +422,8 @@ export async function start(
         );
       }
 
+      networkNode.group = node.group;
+
       if (paraId) {
         if (!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
         networkNode.parachainId = paraId;

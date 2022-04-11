@@ -137,6 +137,7 @@ export interface Node {
   env: envVars[];
   bootnodes: string[];
   zombieRole: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
+  group?: string;
   telemetry?: boolean;
   telemetryUrl: string;
   prometheus?: boolean;

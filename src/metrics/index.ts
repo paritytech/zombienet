@@ -98,6 +98,7 @@ export function getMetricName(metricName: string): string {
 
 function _extractMetrics(text: string): Metrics {
   let rawMetrics: Metrics = {};
+  rawMetrics["_raw"] = {};
   for (const line of text.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
     const [key] = line.split(" ", 1);
@@ -123,20 +124,20 @@ function _extractMetrics(text: string): Metrics {
       rawMetrics[ns][
         `${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`
       ] = metricValue;
+      rawMetrics["_raw"][`${parsedLine.name}{${labelStrings.join(",")}}`] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
+      rawMetrics["_raw"][parsedLine.name] = metricValue;
     }
     if (labelStringsWithOutChain.length > 0) {
       rawMetrics[ns][
         `${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`
       ] = metricValue;
+      rawMetrics["_raw"][`${parsedLine.name}{${labelStringsWithOutChain.join(",")}}`] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
+      rawMetrics["_raw"][parsedLine.name] = metricValue;
     }
-
-    // store the metrics as is in _raw
-    rawMetrics["_raw"] = {};
-    rawMetrics["_raw"][key] = metricValue;
   }
 
   return rawMetrics;

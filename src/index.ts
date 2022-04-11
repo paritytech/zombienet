@@ -1,1 +1,6 @@
-export * from "./orchestrator";
+import { start, test } from "./orchestrator";
+
+export default {
+    start,
+    test
+}
