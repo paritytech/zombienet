@@ -2,46 +2,44 @@
 
 **NOTE**: Final config spec is TBD, check [examples](../examples) for use cases.
 
-## `settings`
+The network config can be provided both in `json` or `toml` format and each section can contain `provider` specific *keys* that are ignored by others, e.g. when you use the `native` provider all references to `image/s` for nodes are ignored.
 
-<!-- - `init_containers`: An array of initialization containers to run before bootstrap the Network.
-  - `image`: Docker image to use.
-  - `command`: Command to excecute. -->
-<!-- - `global_volumes`: An array of volumes to create
-  - `name`: Name of the volume.
-  - `fs_type`: Type of fs to use.
-  - `mount_path`: Destination path to mount. -->
+
+## `settings`
 - `bootnode`: (Boolean, default true) add bootnode to network.
-- `bootnode_domain`: optional bootnode domain name.
-- `timeout`: (number) global timeout to use for spawning the network.
-- `provider`: Provider to use (e.g kubernetes, podman).
+- `timeout`: (number) global timeout to use for spawning the whole network.
+- `provider`: (String, default `kubernetes`) Provider to use (e.g kubernetes, podman).
+- `polkadot_introspector`: (Boolean, default false) Deploy an instance of [polkadot-introspector](https://github.com/paritytech/polkadot-introspector), **only** available on `podman` and `kubernetes`.
+- `jaeger_agent`: (String) The jaeger agent endpoint passed to the *nodes*, **only** available on `kubernetes`.
+- `enable_tracing`: (Boolean, default true) Enable the tracing system, **only** available on  `kubernetes`.
 
 ## `relaychain`
 
-- `default_command` : The default command to run. (`polkadot` by default).
-- `default_image` : The default image to use for the nodes of the `relaychain`. (*TBD*: define a default value)
-- `chain`: The chain you want to use to generate your spec (probably `rococo-local`).
-- `chain_spec_path` : Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
-- `chain_spec_command` : Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
-- `default_args` : An array of arguments to use as default to pass to the `command`.
-- `default_overrides`: An array of overrides to upload to the nodes, objects with:
+- `default_command`: (String, default polkadot) The default command to run.
+- `default_image` : (String, default polkadot-debug:master) The default image to use for the nodes of the `relaychain`.
+- `chain`: (String, default `rococo-local`) The chain name.
+- `chain_spec_path`: (String) Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
+- `chain_spec_command`: (String) Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
+- `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+- `default_overrides`: (Array of objects) An array of overrides to upload to the nodes, objects with:
   - `local_path`: string;
   - `remote_name`: string;
-- `nodes` :
-  - `name` : Name to use.
-  - `image` : Override default docker image to use for this node.
-  - `command`: Override default command.
-  - `commandWithArgs`: Override default command and args.
-  - `wsPort`: The WS port for this node. (`9944` by default).
-  - `port`: The TCP port for this node. (`30444` by default).
-  - `args`: Arguments to be passed to the `command`.
-  - `extra_args`: Array of strings to pass as arguments to the command.
-  - `validator`: Pass the `--validator` flag to the `command`.
+- `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
+- `nodes`:
+  - `name`: (String) Name of the node.
+  - `image`: (String) Override default docker image to use for this node.
+  - `command`: (String) Override default command.
+  - `commandWithArgs`: (String) Override default command and args.
+  - `args`: (Array of strings) Arguments to be passed to the `command`.
+  - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
   - `env`: Array of env vars Object to set in the container.
-    - Env var objects must have `name` and `value` key.
+    - name: (String) name of the `env` var.
+    - value: (String| number) Value of the env var.
   - `bootnodes`: Array of bootnodes to use.
-  - `initContainers`: Array of `initContainer` definition to run.
   - `overrides`: Array of `overrides` definitions.
+  - `add_to_bootnodes`: (Boolean, default false) Add this node to the bootnode list.
+  - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
+- `node_groups`:
 
 ## `parachains`
 
