@@ -67,6 +67,7 @@ export async function generateNetworkSpec(
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
+      defaultArgs: config.relaychain.default_args || [],
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
@@ -394,8 +395,10 @@ async function getNodeFromConfig(
     ? node.command
     : networkSpec.relaychain.defaultCommand;
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
-  let args: string[] = [];
+  let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || []);
   if(node.args) args = args.concat(sanitizeArgs(node.args));
+
+  const uniqueArgs = [...new Set(args)];
 
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
@@ -437,7 +440,7 @@ async function getNodeFromConfig(
     image: image || DEFAULT_IMAGE,
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
-    args,
+    args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,
     telemetryUrl: networkSpec.settings?.telemetry
