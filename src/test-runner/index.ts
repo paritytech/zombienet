@@ -29,7 +29,6 @@ const mocha = new Mocha();
 import { JSDOM } from "jsdom";
 import { Environment } from "nunjucks";
 import { RelativeLoader } from "../utils/nunjucks-relative-loader";
-import { TIMEOUT } from "dns";
 
 interface TestDefinition {
   networkConfig: string;
