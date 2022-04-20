@@ -108,6 +108,8 @@ export async function run(
       });
 
       network.showNetworkInfo(config.settings.provider);
+
+      await sleep(5 * 1000);
       return;
     } catch (err) {
       console.log("Error launching the network!");
