@@ -14,13 +14,18 @@ This project is still in early stage and very much work in progress. More featur
 
 ## What is Zombienet?
 
-Zombienet aim to be a testing framework for substrate based blockchains, providing a simple **cli** tool that allow users to spawn and test ephemeral networks with assertions based in a set of `natural language` expresions. Also, is designed to easily integrate in a `CI` pipeline easily.
+Zombienet aim to be a testing framework for substrate based blockchains, providing a simple **cli** tool that allow users to spawn and test ephemeral networks. The assertions using in the tests can include on-chain storage, metrics, logs and custom javascript scripts that interact with the chain. To make easy to define those zombienet has a set of `natural languaje` built-in allowing to write test as smooth as posible.
 
-Internally is a `javascript` library, designed to run on NodeJS and support different backend `providers` to run the *nodes*, at this moment`kubernetes`, `podman` and `native`.
+Internally is a `javascript` library, designed to run on NodeJS and support different backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are supported.
 
 ## Usage
 
-Zombienet releases are available in `github`. Each one provide an executable for both `linux` and `macos` crated with [pkg](https://github.com/vercel/pkg) and allow to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` (e.g. k8s, podman) needs to be installed.
+Zombienet releases are available in `github`. Each one provide an executable for both `linux` and `macos` crated with [pkg](https://github.com/vercel/pkg) and allow to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` define it's own requirements (e.g. k8s, podman).
+
+
+## Status
+
+At the moment Zombienet *only* works with `local` chains (e.g. rococo-local, polkadot-local, etc).
 
 ## Requeriments by provider
 

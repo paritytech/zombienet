@@ -8,7 +8,7 @@ import { sleep } from "../utils/misc-utils";
 import { readNetworkConfig } from "../utils/fs-utils";
 import { Network } from "../network";
 import { decorators } from "../utils/colors";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
+import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 import minimatch from "minimatch";
 
 import zombie from "../";
@@ -67,7 +67,8 @@ export async function run(
   }
 
   // set the provider
-  config.settings.provider = provider;
+  if(!config.settings) config.settings = {provider, timeout: DEFAULT_GLOBAL_TIMEOUT};
+  else config.settings.provider = provider;
 
   // find creds file
   let credsFile = inCI ? "config" : testDef.creds;
@@ -106,6 +107,8 @@ export async function run(
       });
 
       network.showNetworkInfo(config.settings.provider);
+
+      await sleep(5 * 1000);
       return;
     } catch (err) {
       console.log("Error launching the network!");

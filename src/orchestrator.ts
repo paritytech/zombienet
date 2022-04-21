@@ -459,11 +459,11 @@ export async function start(
         switch (networkSpec.settings.provider) {
           case "podman":
             console.log(
-              `\n\t\t\t podman logs ${podDef.metadata.name}_pod-${podDef.metadata.name}`
+              `\n\t\t\t podman logs -f ${podDef.metadata.name}_pod-${podDef.metadata.name}`
             );
             break;
           case "kubernetes":
-            console.log(`\n\t\t\t kubectl logs ${podDef.metadata.name}`);
+            console.log(`\n\t\t\t kubectl logs -f ${podDef.metadata.name}`);
             break;
           case "native":
             console.log(

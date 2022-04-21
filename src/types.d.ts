@@ -107,6 +107,7 @@ export interface ComputedNetwork {
   relaychain: {
     defaultImage: string;
     defaultCommand: string;
+    defaultArgs: string[];
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
