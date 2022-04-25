@@ -350,16 +350,14 @@ function parseAssertionLine(assertion: string) {
     let t: number;
     const nodeName = m[2];
     const traceId = m[3];
-    // const comparatorFn = getComparatorFn(m[4] || "");
-    // const targetValue = parseInt(m[5]);
     const spanNames = m[4].split(",").map((x) => x.replaceAll('"', "").trim());
     if (m[8]) t = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      const timeout: number|undefined = t;
+      const _timeout: number|undefined = t;
       const nodes = network.getNodesInGroup(nodeName);
       const results = await Promise.all(nodes.map(node => node.getSpansByTraceId(traceId, network.tracingCollatorUrl!)));
 
-      for( const value of results) {
+      for(const value of results) {
         assert.includeOrderedMembers(value, spanNames);
       }
     };

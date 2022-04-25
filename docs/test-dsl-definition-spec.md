@@ -8,6 +8,7 @@ One of the goals of Zombienet it to provide a simple way to create tests, for th
 - Histograms
 - Logs
 - System events
+- Tracing
 - Custom api calls (through polkadot.js)
 - Commands
 
@@ -53,6 +54,10 @@ The first lines are used to define the *header fields*:
 - System events assertion: Find a `system event` from subscription by matching a `pattern`. *NOTE* the subscription is made when we start this particular test, so we **can not** match on event in the past.
   - `node-name`: system event (contains|matches)( regex| glob) "pattern" [within x seconds]
     - alice: system event matches "\"paraId\":[0-9]+" within 10 seconds
+
+- Tracing assertion: Match an array of `span names` from the supplyed traceID. *NOTE* this is **not** supported with the native provider.
+  - `node-name`: trace with traceID <id> contains ["name", "name2",...]
+    - alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]
 
 - Custom js scripts: Allow to run a defined script and assert on the completeness or return value.
   - `node-name`: js-script *script_relative_path* [ return is *comparator target_value*] [within x seconds]
