@@ -154,7 +154,6 @@ async function spawn(
 
 // test
 async function test(testFile: string, runningNetworkSpec: string|undefined, _opts: any) {
-  console.log(arguments);
   const opts = program.opts();
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";

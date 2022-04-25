@@ -22,6 +22,7 @@ import {
   TRACING_COLLATOR_PORT,
   TRACING_COLLATOR_SERVICE,
   TRACING_COLLATOR_NAMESPACE,
+  TRACING_COLLATOR_PODNAME,
 } from "./constants";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -574,11 +575,11 @@ export async function start(
     if(networkSpec.settings.tracing_collator_url) {
       network.tracingCollatorUrl = networkSpec.settings.tracing_collator_url;
     } else {
+      const servicePort = networkSpec.settings.tracing_collator_service_port || TRACING_COLLATOR_PORT;
       switch(networkSpec.settings.provider) {
         case "kubernetes":
           // check if we have the service available
           const serviceName = networkSpec.settings.tracing_collator_service_name || TRACING_COLLATOR_SERVICE;
-          const servicePort = networkSpec.settings.tracing_collator_service_port || TRACING_COLLATOR_PORT;
           const serviceNamespace = networkSpec.settings.tracing_collator_service_namespace || TRACING_COLLATOR_NAMESPACE;
           try {
             const tracingPort = await client.startPortForwarding(servicePort, `service/${serviceName}`, serviceNamespace);
@@ -589,10 +590,11 @@ export async function start(
           }
           break;
         case "podman":
+          const tracingPort = await client.getPortMapping(servicePort, TRACING_COLLATOR_PODNAME);
+          network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
           break;
       }
     }
-
 
 
     // prevent global timeout

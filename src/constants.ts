@@ -51,6 +51,7 @@ export const INTROSPECTOR_POD_NAME = "introspector";
 export const TRACING_COLLATOR_NAME = "tracing_collator";
 export const TRACING_COLLATOR_SERVICE = "tempo-tempo-distributed-query-frontend"; // tempo installation in k8s
 export const TRACING_COLLATOR_NAMESPACE = "tempo"; // tempo installation in k8s
+export const TRACING_COLLATOR_PODNAME = "tempo"; // tempo installation in podman
 export const TRACING_COLLATOR_PORT = 3100;
 
 
