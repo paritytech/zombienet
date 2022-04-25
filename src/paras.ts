@@ -60,7 +60,7 @@ export async function generateParachainFiles(
     );
     plainData.para_id = parachain.id;
     plainData.relay_chain = relayChainSpec.id;
-    plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
+    if( plainData.genesis.runtime.parachainInfo?.parachainId) plainData.genesis.runtime.parachainInfo.parachainId  = parachain.id;
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
 
@@ -73,6 +73,11 @@ export async function generateParachainFiles(
       parachain.collators[0].command!,
       chainSpecFullPath
     );
+
+    // ensure the correct para_id
+    const paraSpecRaw = JSON.parse(fs.readFileSync(chainSpecFullPath).toString());
+    paraSpecRaw.para_id = parachain.id;
+    fs.writeFileSync(chainSpecFullPath, JSON.stringify(paraSpecRaw, null, 2));
 
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;

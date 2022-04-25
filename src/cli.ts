@@ -94,10 +94,10 @@ program
   .action(spawn);
 
 program
-
   .command("test")
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")
+  .argument("[runningNetworkSpec]", "Path to the network spec json, for using a running network for running the test")
   .action(test);
 
 program
@@ -153,7 +153,8 @@ async function spawn(
 }
 
 // test
-async function test(testFile: string, _opts: any) {
+async function test(testFile: string, runningNetworkSpec: string|undefined, _opts: any) {
+  console.log(arguments);
   const opts = program.opts();
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
@@ -162,7 +163,7 @@ async function test(testFile: string, _opts: any) {
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
-  await run(testFile, providerToUse, inCI, opts.spawnConcurrency);
+  await run(testFile, providerToUse, inCI, opts.spawnConcurrency, runningNetworkSpec);
 }
 
 program.parse(process.argv);

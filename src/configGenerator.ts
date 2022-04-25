@@ -244,7 +244,9 @@ export async function generateNetworkSpec(
       } else {
         computedWasmCommand = parachain.genesis_wasm_generator
           ? parachain.genesis_wasm_generator
-          : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND} > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
+          : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND}`;
+
+          computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
       let parachainSetup: Parachain = {

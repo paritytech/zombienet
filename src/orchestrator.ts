@@ -18,6 +18,10 @@ import {
   LOCALHOST,
   INTROSPECTOR_POD_NAME,
   INTROSPECTOR_PORT,
+  TRACING_COLLATOR_NAME,
+  TRACING_COLLATOR_PORT,
+  TRACING_COLLATOR_SERVICE,
+  TRACING_COLLATOR_NAMESPACE,
 } from "./constants";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -566,11 +570,39 @@ export async function start(
       network.addNode(introspectorNetworkNode, Scope.COMPANION);
     }
 
+    // Add span collator if is available
+    if(networkSpec.settings.tracing_collator_url) {
+      network.tracingCollatorUrl = networkSpec.settings.tracing_collator_url;
+    } else {
+      switch(networkSpec.settings.provider) {
+        case "kubernetes":
+          // check if we have the service available
+          const serviceName = networkSpec.settings.tracing_collator_service_name || TRACING_COLLATOR_SERVICE;
+          const servicePort = networkSpec.settings.tracing_collator_service_port || TRACING_COLLATOR_PORT;
+          const serviceNamespace = networkSpec.settings.tracing_collator_service_namespace || TRACING_COLLATOR_NAMESPACE;
+          try {
+            const tracingPort = await client.startPortForwarding(servicePort, `service/${serviceName}`, serviceNamespace);
+            network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
+            console.log(network.tracingCollatorUrl);
+          } catch(_err) {
+            console.log(decorators.red(`\n\t Err: Can not create the forwarding to the tracing collator`));
+          }
+          break;
+        case "podman":
+          break;
+      }
+    }
+
+
+
     // prevent global timeout
     network.launched = true;
     debug(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`
     );
+
+    await fs.promises.writeFile(`${tmpDir.path}/zombie.json`, JSON.stringify(network));
+
     return network;
   } catch (error) {
     console.error(error);
