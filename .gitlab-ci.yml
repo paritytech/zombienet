@@ -111,6 +111,7 @@ package:
   script:
     - test "$Docker_Hub_User_Parity" -a "$Docker_Hub_Pass_Parity" ||
         ( echo "no docker credentials provided"; exit 1 )
+    - echo $Docker_Hub_User_Parity
     - buildah bud
         --format=docker
         --build-arg VCS_REF="${CI_COMMIT_SHA}"
