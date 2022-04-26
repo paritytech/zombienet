@@ -8,6 +8,9 @@ alice: is up
 bob: is up
 alice: parachain 100 is registered within 225 seconds
 
+# Tracing
+# alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]
+
 # metrics
 alice: reports node_roles is 4
 alice: reports sub_libp2p_is_major_syncing is 0

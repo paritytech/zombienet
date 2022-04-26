@@ -47,6 +47,14 @@ export const BAKCCHANNEL_POD_NAME = "backchannel";
 export const INTROSPECTOR_PORT = 65432;
 export const INTROSPECTOR_POD_NAME = "introspector";
 
+// Spans collator config
+export const TRACING_COLLATOR_NAME = "tracing_collator";
+export const TRACING_COLLATOR_SERVICE = "tempo-tempo-distributed-query-frontend"; // tempo installation in k8s
+export const TRACING_COLLATOR_NAMESPACE = "tempo"; // tempo installation in k8s
+export const TRACING_COLLATOR_PODNAME = "tempo"; // tempo installation in podman
+export const TRACING_COLLATOR_PORT = 3100;
+
+
 export const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 
 export const LOKI_URL_FOR_NODE =

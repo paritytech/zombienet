@@ -279,7 +279,7 @@ export async function genTempoDef(
       hostPort: await getRandomPort(),
     },
     {
-      containerPort: 3200,
+      containerPort: 3100,
       name: "tempo",
       hostPort: await getRandomPort(),
     },

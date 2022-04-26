@@ -6,10 +6,11 @@ import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "../types";
 import { sleep } from "../utils/misc-utils";
 import { readNetworkConfig } from "../utils/fs-utils";
-import { Network } from "../network";
+import { Network, rebuildNetwork } from "../network";
 import { decorators } from "../utils/colors";
 import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 import minimatch from "minimatch";
+import { Providers } from "../providers/";
 
 import zombie from "../";
 const {
@@ -45,7 +46,8 @@ export async function run(
   testFile: string,
   provider: string,
   inCI: boolean = false,
-  concurrency: number = 1
+  concurrency: number = 1,
+  runningNetworkSpecPath: string|undefined
 ) {
   let network: Network;
   let backchannelMap: BackchannelMap = {};
@@ -97,29 +99,41 @@ export async function run(
   const suite = Suite.create(mocha.suite, suiteName);
 
   suite.beforeAll("launching", async function () {
-    console.log(`\t Launching network... this can take a while.`);
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {
-      network = await zombie.start(creds!, config, {
-        spawnConcurrency: concurrency,
-        inCI,
-      });
+      console.log("runningNetworkSpecPath", runningNetworkSpecPath);
+      if(! runningNetworkSpecPath) {
+        console.log(`\t Launching network... this can take a while.`);
+        network = await zombie.start(creds!, config, {
+          spawnConcurrency: concurrency,
+          inCI,
+        });
+      } else {
+        const runningNetworkSpec: any = require(runningNetworkSpecPath);
+        if(provider !== runningNetworkSpec.client.providerName) throw new Error(`Invalid provider, the provider set doesn't match with the running network definition`);
+
+        const {namespace, tmpDir} = runningNetworkSpec;
+        // initialize the Client
+        const client = Providers.get(runningNetworkSpec.client.providerName).initClient(runningNetworkSpec.client.configPath, runningNetworkSpec.namespace, runningNetworkSpec.tmpDir);
+        // initialize the network
+        network = rebuildNetwork(client, runningNetworkSpec);
+      }
 
       network.showNetworkInfo(config.settings.provider);
 
       await sleep(5 * 1000);
       return;
     } catch (err) {
-      console.log("Error launching the network!");
-      console.log(`\n\t ${err}`);
+      console.log(`\n${decorators.red("Error launching the network!")}`);
+      console.log(`\t ${err}`);
       exitMocha(100);
     }
   });
 
   suite.afterAll("teardown", async function () {
     this.timeout(180 * 1000);
-    if (network) {
+    if (network && ! network.wasRunning) {
       await network.dumpLogs();
       const tests = this.test?.parent?.tests;
       if (tests) {
@@ -223,6 +237,12 @@ const assertLogLineRegex = new RegExp(
   /^(([\w-]+): log line (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
 );
 
+// Tracing assertion
+// alice: trace with traceID <id> contains ["name", "name2",...]
+const isTracing = new RegExp(
+  /^(([\w-]+): trace with traceID (.*?) contains \[(.+)\])+( within (\d+) (seconds|secs|s))?$/i
+);
+
 // system events
 const assertSystemEventRegex = new RegExp(
   /^(([\w-]+): system event (contains|matches)( regex| glob)? "(.+)")+( within (\d+) (seconds|secs|s))?$/i
@@ -320,6 +340,25 @@ function parseAssertionLine(assertion: string) {
 
       for( const value of results) {
         assert[comparatorFn](value, targetValue);
+      }
+    };
+  }
+
+  // alice: trace with traceID <id> contains ["name", "name2",...]
+  m = isTracing.exec(assertion);
+  if (m && m[2] && m[3] && m[4]) {
+    let t: number;
+    const nodeName = m[2];
+    const traceId = m[3];
+    const spanNames = m[4].split(",").map((x) => x.replaceAll('"', "").trim());
+    if (m[8]) t = parseInt(m[8], 10);
+    return async (network: Network, backchannelMap: BackchannelMap) => {
+      const _timeout: number|undefined = t;
+      const nodes = network.getNodesInGroup(nodeName);
+      const results = await Promise.all(nodes.map(node => node.getSpansByTraceId(traceId, network.tracingCollatorUrl!)));
+
+      for(const value of results) {
+        assert.includeOrderedMembers(value, spanNames);
       }
     };
   }

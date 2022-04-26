@@ -492,7 +492,7 @@ export class KubeClient extends Client {
     return true;
   }
 
-  async startPortForwarding(port: number, identifier: string): Promise<number> {
+  async startPortForwarding(port: number, identifier: string, namespace?: string): Promise<number> {
     return new Promise((resolve, reject) => {
       const mapping = `:${port}`;
       const args = [
@@ -500,7 +500,7 @@ export class KubeClient extends Client {
         identifier,
         mapping,
         "--namespace",
-        this.namespace,
+        namespace || this.namespace,
         "--kubeconfig",
         this.configPath,
       ];
