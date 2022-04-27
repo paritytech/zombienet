@@ -109,7 +109,7 @@ Commands:
 
 #### Spawning
 
-One of the goal of `zombienet` is easily spawn ephemeral networks, providing a simple but poweful *cli* that allow you to declare the desired network in `toml` or `json` format. You can check the [definition spec](/docs/network-definition-spec.md) to view the available options.
+One of the goal of `zombienet` is easily spawn ephemeral networks, providing a simple but poweful *cli* that allow you to declare the desired network in `toml` or `json` format. You can check the [definition spec](/docs/src/network-definition-spec.md) to view the available options.
 
 A **minimal** configuration example with two validators and one parachain:
 
@@ -232,7 +232,7 @@ You can teardown the network (and cleanup the used resources) by terminating the
 #### Testing
 
 The other goal of `zombienet` is provide a way to perform test/assertions agins the spawned network, using a set of `natural language expressions` that allow to make assertions based on metrics, logs and some `built-in` function that query the network usin `polkadot.js`.
-Those assertions should be defined in a *feature test*, and the `dsl` and format is documented in [here](/docs/test-dsl-definition-spec.md).
+Those assertions should be defined in a *feature test*, and the `dsl` and format is documented in [here](/docs/src/test-dsl-definition-spec.md).
 
 The following is an small example to spawn a network (using the previos `simple network definition`) and assert that:
   - Both `nodes` are running
