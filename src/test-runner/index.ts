@@ -250,7 +250,7 @@ const assertSystemEventRegex = new RegExp(
 
 // Custom js-script
 const assertCustomJsRegex = new RegExp(
-  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
+  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
 );
 
 // Backchannel
