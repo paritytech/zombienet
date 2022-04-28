@@ -150,10 +150,10 @@ publish-docker-pr:
   variables:
     CI_IMAGE:                      quay.io/buildah/stable
     DOCKERHUB_REPO:                paritypr
-    Docker_Hub_User_Parity:        $DOCKER_HUB_PR_USER
-    Docker_Hub_Pass_Parity:        $DOCKER_HUB_PR_PASS
   before_script:
     - export VERSION=${CI_COMMIT_SHORT_SHA}
+    - export Docker_Hub_User_Parity=$DOCKER_HUB_PR_USER
+    - export Docker_Hub_Pass_Parity=$DOCKER_HUB_PR_PASS
   <<:                              *kubernetes-env
   <<:                              *common-refs
   <<:                              *build-push-docker-image
