@@ -478,7 +478,7 @@ function parseAssertionLine(assertion: string) {
       (global as any).window = dom.window;
       (global as any).document = dom.window.document;
       const jsScript = await import(resolvedJsFilePath);
-      const args = withArgs === "" ? [] : withArgs.split(",");
+      const args = withArgs === "" ? [] : withArgs.split("with ").slice(1)[0].replaceAll('"',"").split(",");
       let value;
       try {
         const resp = await Promise.race([
