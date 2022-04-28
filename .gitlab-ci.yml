@@ -151,8 +151,8 @@ publish-docker-pr:
     DOCKERHUB_REPO:                paritypr
   before_script:
     - export VERSION=${CI_COMMIT_SHORT_SHA}
-    - export Docker_Hub_User_Parity=$DOCKER_HUB_PR_USER
-    - export Docker_Hub_Pass_Parity=$DOCKER_HUB_PR_PASS
+    - export Docker_Hub_User_Parity=$PARITYPR_USER
+    - export Docker_Hub_Pass_Parity=$PARITYPR_PASS
   <<:                              *kubernetes-env
   <<:                              *common-refs
   <<:                              *build-push-docker-image
