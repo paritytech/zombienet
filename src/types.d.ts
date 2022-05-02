@@ -27,6 +27,7 @@ export interface Settings {
   enable_tracing?: boolean;
   provider: string;
   polkadot_introspector?: boolean;
+  backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
 }
 
 export interface RelayChainConfig {

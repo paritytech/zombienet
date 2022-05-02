@@ -403,7 +403,7 @@ export class KubeClient extends Client {
     return [ip, port ? port : P2P_PORT];
   }
 
-  async staticSetup() {
+  async staticSetup(settings: any) {
     let storageFiles: string[] = (await this.runningOnMinikube())
       ? [
           "node-data-tmp-storage-class-minikube.yaml",
@@ -420,21 +420,28 @@ export class KubeClient extends Client {
         type: "services",
         files: [
           "bootnode-service.yaml",
-          "backchannel-service.yaml",
+          settings.backchannel ? "backchannel-service.yaml" : null,
           "fileserver-service.yaml",
         ],
       },
       {
         type: "deployment",
-        files: ["backchannel-pod.yaml", "fileserver-pod.yaml"],
+        files: [
+          settings.backchannel ? "backchannel-pod.yaml": null,
+          "fileserver-pod.yaml"
+        ],
       },
     ];
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
-        await this.createStaticResource(file);
+        if(file) await this.createStaticResource(file);
       }
     }
+  }
+
+  async spawnBackchannel() {
+
   }
 
   async setupCleaner(): Promise<NodeJS.Timer> {
