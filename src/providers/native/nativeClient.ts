@@ -86,7 +86,7 @@ export class NativeClient extends Client {
     return;
   }
   // Podman ONLY support `pods`
-  async staticSetup(): Promise<void> {
+  async staticSetup(_: any): Promise<void> {
     return;
   }
 

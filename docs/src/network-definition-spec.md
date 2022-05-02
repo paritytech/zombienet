@@ -9,6 +9,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `bootnode`: (Boolean, default true) add bootnode to network.
 - `timeout`: (number) global timeout to use for spawning the whole network.
 - `provider`: (String, default `kubernetes`) Provider to use (e.g kubernetes, podman).
+- `backchannel`: (Boolean, default false) Deploy an instance of backchannel server. **Only** available on `kubernetes`.
 - `polkadot_introspector`: (Boolean, default false) Deploy an instance of [polkadot-introspector](https://github.com/paritytech/polkadot-introspector), **only** available on `podman` and `kubernetes`.
 - `jaeger_agent`: (String) The jaeger agent endpoint passed to the *nodes*, **only** available on `kubernetes`.
 - `enable_tracing`: (Boolean, default true) Enable the tracing system, **only** available on  `kubernetes`.

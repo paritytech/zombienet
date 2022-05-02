@@ -78,7 +78,7 @@ export class PodmanClient extends Client {
   }
 
   // start a grafana and prometheus
-  async staticSetup(): Promise<void> {
+  async staticSetup(settings: any): Promise<void> {
     const prometheusSpec = await genPrometheusDef(this.namespace);
     const promPort = prometheusSpec.spec.containers[0].ports[0].hostPort;
     await this.createResource(prometheusSpec, false, true);

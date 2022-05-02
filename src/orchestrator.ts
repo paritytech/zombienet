@@ -179,7 +179,7 @@ export async function start(
 
     // Create bootnode and backchannel services
     debug(`Creating static resources (bootnode and backchannel services)`);
-    await client.staticSetup();
+    await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
     // create or copy chain spec
@@ -551,7 +551,7 @@ export async function start(
     // launch all collator in series
     await series(collatorPromiseGenerators, opts.spawnConcurrency);
 
-    // check if polkador-instrospector is enabled
+    // check if polkadot-instrospector is enabled
     if(networkSpec.settings.polkadot_introspector && ["podman", "kubernetes"].includes(networkSpec.settings.provider)) {
       const firstNode = network.relay[0];
       const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT);

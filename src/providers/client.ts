@@ -35,7 +35,7 @@ export abstract class Client {
   }
 
   abstract createNamespace(): Promise<void>;
-  abstract staticSetup(): Promise<void>;
+  abstract staticSetup(settings: any): Promise<void>;
   abstract destroyNamespace(): Promise<void>;
   abstract getNodeLogs(
     podName: string,
