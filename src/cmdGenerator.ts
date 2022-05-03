@@ -9,6 +9,8 @@ import {
 import { Node } from "./types";
 import { getRandomPort } from "./utils/net-utils";
 
+const debug = require("debug")("zombie::cmdGenerator");
+
 function parseCmdWithArguments(
   commandWithArgs: string,
   useWrapper = true
@@ -107,7 +109,7 @@ export async function genCumulusCollatorCmd(
         if (parachainAddedArgs[arg]) continue;
 
         // add
-        console.log(`adding ${arg}`);
+        debug(`adding ${arg}`);
         fullCmd.push(arg);
       }
     }
