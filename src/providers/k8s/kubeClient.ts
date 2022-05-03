@@ -583,7 +583,7 @@ export class KubeClient extends Client {
         stdout: result.stdout,
       };
     } catch (error) {
-      console.log(error);
+      debug(error);
       throw error;
     }
   }

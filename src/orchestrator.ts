@@ -581,12 +581,23 @@ export async function start(
           // check if we have the service available
           const serviceName = networkSpec.settings.tracing_collator_service_name || TRACING_COLLATOR_SERVICE;
           const serviceNamespace = networkSpec.settings.tracing_collator_service_namespace || TRACING_COLLATOR_NAMESPACE;
+          // check if service exists
+          let serviceExist;
           try {
-            const tracingPort = await client.startPortForwarding(servicePort, `service/${serviceName}`, serviceNamespace);
-            network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
-            console.log(network.tracingCollatorUrl);
-          } catch(_err) {
-            console.log(decorators.red(`\n\t Err: Can not create the forwarding to the tracing collator`));
+            await client.runCommand(["get","service", serviceName, "-n", serviceNamespace]);
+            serviceExist = true;
+          } catch(_) {
+            console.log(decorators.yellow(`\n\t Warn: Tracing collator service doesn't exist`));
+          }
+
+          if(serviceExist) {
+            try {
+              const tracingPort = await client.startPortForwarding(servicePort, `service/${serviceName}`, serviceNamespace);
+              network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
+              console.log(network.tracingCollatorUrl);
+            } catch(_) {
+              console.log(decorators.yellow(`\n\t Warn: Can not create the forwarding to the tracing collator`));
+            }
           }
           break;
         case "podman":
