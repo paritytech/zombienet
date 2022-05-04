@@ -16,13 +16,11 @@ chain = "rococo-local"
   args = ["--database=paritydb-experimental"]
 
 [[parachains]]
-id = 2000
+id = 100
 cumulus_based = true
-genesis_wasm_generator = "test-collator export-genesis-wasm"
-genesis_state_generator = "test-collator export-genesis-state"
 
   [parachains.collator]
   name = "collator01"
   image = "docker.io/parity/polkadot-collator:latest"
-  command = "test-collator"
+  command = "polkadot-collator"
   args = ["-lparachain=debug"]
