@@ -166,7 +166,17 @@ export async function generateNetworkSpec(
       // collator could by defined in groups or
       // just using one collator definiton
       let collators = [];
-      for(const collatorConfig of parachain.nodes || []) {
+      if(parachain.collator)
+        collators.push(
+          getCollatorNodeFromConfig(
+            parachain.collator,
+            parachain.id,
+            chainName,
+            bootnodes,
+            Boolean(parachain.cumulus_based)
+          )
+        );
+      for(const collatorConfig of parachain.collators || []) {
         collators.push(
           getCollatorNodeFromConfig(
             collatorConfig,
@@ -178,7 +188,7 @@ export async function generateNetworkSpec(
         );
       }
 
-      for (const collatorGroup of parachain.node_groups || []) {
+      for (const collatorGroup of parachain.collator_groups || []) {
 
         for (let i = 0; i < collatorGroup.count; i++) {
           let node: NodeConfig = {

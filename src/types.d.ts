@@ -81,8 +81,10 @@ export interface ParachainConfig {
   genesis_state_generator?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
-  nodes?: NodeConfig[];
-  node_groups?: NodeGroupConfig[];
+  // backward compatibility
+  collator?: NodeConfig;
+  collators?: NodeConfig[];
+  collator_groups?: NodeGroupConfig[];
 }
 
 export interface HrmpChannelsConfig {
