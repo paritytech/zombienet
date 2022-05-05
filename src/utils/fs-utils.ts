@@ -53,6 +53,11 @@ function getReplacementInText(content: string): string[] {
 export function readNetworkConfig(filepath: string): LaunchConfig {
   const configBasePath = path.dirname(filepath);
   const env = new Environment(new RelativeLoader([configBasePath]));
+
+  env.addFilter('zombie', function(nodeName){
+    return `{{ZOMBIE:${nodeName}}}`;
+  });
+
   const temmplateContent = fs.readFileSync(filepath).toString();
   const content = env.renderString(temmplateContent, process.env);
 

@@ -1,5 +1,5 @@
 import { Providers } from "./providers/";
-import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain } from "./types";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain, MultiAddressByNode } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
@@ -72,6 +72,7 @@ export async function start(
 
   let network: Network | undefined;
   let cronInterval = undefined;
+  let multiAddressByNode: MultiAddressByNode = {};
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
@@ -367,21 +368,35 @@ export async function start(
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
 
+      // replace command if needed
+      if(Array.isArray(podDef.spec.command)) {
+        const finalCommand = podDef.spec.command.map((item: string) => {
+          return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
+            return multiAddressByNode[nodeName];
+          });
+        });
+
+        debug(`finalCommand: ${finalCommand}`);
+        podDef.spec.command = finalCommand;
+      } else {
+        // string
+        podDef.spec.command = podDef.spec.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
+            return multiAddressByNode[nodeName];
+          });
+      }
+
       await client.spawnFromDef(
         podDef,
         finalFilesToCopyToNode,
         keystoreLocalDir
       );
 
+      const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
+      const nodeMultiAddress = await generateBootnodeString(node.key!, nodeIp, nodePort);
+      multiAddressByNode[podDef.metadata.name] = nodeMultiAddress;
+
       if (node.addToBootnodes) {
-        // add first node as bootnode
-        const [nodeIp, nodePort] = await client.getNodeInfo(
-          podDef.metadata.name
-        );
-        bootnodes.push(
-          await generateBootnodeString(node.key!, nodeIp, nodePort)
-        );
-        // add bootnodes to chain spec
+        bootnodes.push(nodeMultiAddress);
         await addBootNodes(chainSpecFullPath, bootnodes);
         // flush require cache since we change the chain-spec
         delete require.cache[require.resolve(chainSpecFullPath)];
@@ -594,7 +609,6 @@ export async function start(
             try {
               const tracingPort = await client.startPortForwarding(servicePort, `service/${serviceName}`, serviceNamespace);
               network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
-              console.log(network.tracingCollatorUrl);
             } catch(_) {
               console.log(decorators.yellow(`\n\t Warn: Can not create the forwarding to the tracing collator`));
             }
