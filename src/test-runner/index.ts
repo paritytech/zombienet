@@ -205,7 +205,7 @@ const exitMocha = (code: number) => {
 
 // REGEX
 // Node general
-const isUpRegex = new RegExp(/^([\w-]+): is up$/i);
+const isUpRegex = new RegExp(/^(([\w-]+): is up)+( within (\d+) (seconds|secs|s)?)?$/i);
 
 // parachains
 const parachainIsRegistered = new RegExp(
@@ -314,11 +314,14 @@ function parseAssertionLine(assertion: string) {
   }
 
   m = isUpRegex.exec(assertion);
-  if (m && m[1] !== null) {
-    const nodeName = m[1];
+  if (m && m[2] !== null) {
+    let t: number;
+    const nodeName = m[2];
+    if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network) => {
+      const timeout: number|undefined = t;
       const nodes = network.getNodesInGroup(nodeName);
-      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds")));
+      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", null, timeout)));
       const AllNodeUps = results.every(Boolean);
       expect(AllNodeUps).to.be.ok;
     };
