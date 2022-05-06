@@ -6,6 +6,7 @@
     "module": "commonjs",
     "lib": ["esnext"],
     "outDir": "dist",
+    "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
     "declaration": true,
