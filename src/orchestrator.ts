@@ -128,6 +128,7 @@ export async function start(
       initClient,
       setupChainSpec,
       getChainSpecRaw,
+      replaceMultiAddresReferences,
     } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
@@ -368,22 +369,8 @@ export async function start(
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
 
-      // replace command if needed
-      if(Array.isArray(podDef.spec.command)) {
-        const finalCommand = podDef.spec.command.map((item: string) => {
-          return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
-            return multiAddressByNode[nodeName];
-          });
-        });
-
-        debug(`finalCommand: ${finalCommand}`);
-        podDef.spec.command = finalCommand;
-      } else {
-        // string
-        podDef.spec.command = podDef.spec.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
-            return multiAddressByNode[nodeName];
-          });
-      }
+      // replace all multiaddress references in command
+      replaceMultiAddresReferences(podDef, multiAddressByNode)
 
       await client.spawnFromDef(
         podDef,
