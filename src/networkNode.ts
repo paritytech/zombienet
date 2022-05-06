@@ -313,11 +313,10 @@ export class NetworkNode implements NetworkNodeInterface {
     try {
       const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
       const client = getClient();
-
+      let logs = await client.getNodeLogs(this.name, undefined,  true);
       const getValue = async () => {
         let done = false;
         while (!done) {
-          const logs = await client.getNodeLogs(this.name, 2, true);
           const dedupedLogs = this._dedupLogs(
             logs.split("\n"),
             client.providerName === "native"
@@ -337,6 +336,7 @@ export class NetworkNode implements NetworkNodeInterface {
             debug(this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
+            logs = await client.getNodeLogs(this.name, 2,  true);
           }
         }
       }
