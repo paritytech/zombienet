@@ -16,6 +16,7 @@ export interface Settings {
   bootnode?: boolean;
   bootnode_domain?: string;
   timeout: number;
+  node_spawn_timeout?: number;
   grafana?: boolean;
   telemetry?: boolean;
   prometheus?: boolean;

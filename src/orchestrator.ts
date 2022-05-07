@@ -132,6 +132,8 @@ export async function start(
     const client = initClient(credentials, namespace, tmpDir.path);
     const endpointPort =
       client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT;
+
+    if(networkSpec.settings.node_spawn_timeout) client.timeout = networkSpec.settings.node_spawn_timeout;
     network = new Network(client, namespace, tmpDir.path);
 
     console.log(
