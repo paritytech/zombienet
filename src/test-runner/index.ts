@@ -320,7 +320,7 @@ function parseAssertionLine(assertion: string) {
     if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", null, timeout)));
       const AllNodeUps = results.every(Boolean);
       expect(AllNodeUps).to.be.ok;
