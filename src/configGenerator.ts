@@ -292,6 +292,7 @@ export async function generateNetworkSpec(
         ...(computedStateCommand
           ? { genesisStateGenerator: computedStateCommand }
           : {}),
+        ...(parachain.genesis ? { genesis: parachain.genesis} : {}),
       };
 
       networkSpec.parachains.push(parachainSetup);

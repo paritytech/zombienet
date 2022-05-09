@@ -9,6 +9,7 @@ import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { fileMap, Node, Parachain } from "./types";
 import fs from "fs";
+import { changeGenesisConfig } from "./chain-spec";
 const debug = require("debug")("zombie::paras");
 
 export async function generateParachainFiles(
@@ -63,6 +64,9 @@ export async function generateParachainFiles(
     if( plainData.genesis.runtime.parachainInfo?.parachainId) plainData.genesis.runtime.parachainInfo.parachainId  = parachain.id;
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
+
+    // customize if needed
+    if(parachain.genesis) await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
 
     debug("creating chain spec raw");
     // generate the raw chain spec

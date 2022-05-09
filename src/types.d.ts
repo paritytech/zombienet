@@ -85,6 +85,7 @@ export interface ParachainConfig {
   collator?: NodeConfig;
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
+  genesis?: JSON | ObjectJSON;
 }
 
 export interface HrmpChannelsConfig {
@@ -166,6 +167,7 @@ export interface Parachain {
   specPath?: string;
   balance?: number;
   collators: Node[];
+  genesis?: JSON | ObjectJSON
 }
 
 export interface envVars {
