@@ -69,7 +69,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `collator`:
     - `*name`: (String) Name of the collator.
     - `image`: (String) Image to use.
-    - `command`: (String, default `polkadot-collator`) Command to run.
+    - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
     - `commandWithArgs`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
@@ -80,7 +80,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `*name`: (String) Name of the collator.
     - `*count`: (Number) Number of `collators` to launch for this group.
     - `image`: (String) Image to use.
-    - `command`: (String, default `polkadot-collator`) Command to run.
+    - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
     - `commandWithArgs`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.

@@ -306,8 +306,8 @@ cumulus_based = true
 
   [parachains.collator]
   name = &quot;collator01&quot;
-  image = &quot;docker.io/parity/polkadot-collator:latest&quot;
-  command = &quot;polkadot-collator&quot;
+  image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
+  command = &quot;polkadot-parachain&quot;
 </code></pre>
 <p>And again, we just <em>launch</em> the network using the following command:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml

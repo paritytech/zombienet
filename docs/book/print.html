@@ -476,8 +476,8 @@ cumulus_based = true
 
   [parachains.collator]
   name = &quot;collator01&quot;
-  image = &quot;docker.io/parity/polkadot-collator:latest&quot;
-  command = &quot;polkadot-collator&quot;
+  image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
+  command = &quot;polkadot-parachain&quot;
 </code></pre>
 <p>And again, we just <em>launch</em> the network using the following command:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml
@@ -675,7 +675,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <ul>
 <li><code>*name</code>: (String) Name of the collator.</li>
 <li><code>image</code>: (String) Image to use.</li>
-<li><code>command</code>: (String, default <code>polkadot-collator</code>) Command to run.</li>
+<li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
 <li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
 <li><code>commandWithArgs</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
@@ -692,7 +692,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>*name</code>: (String) Name of the collator.</li>
 <li><code>*count</code>: (Number) Number of <code>collators</code> to launch for this group.</li>
 <li><code>image</code>: (String) Image to use.</li>
-<li><code>command</code>: (String, default <code>polkadot-collator</code>) Command to run.</li>
+<li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
 <li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
 <li><code>commandWithArgs</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
