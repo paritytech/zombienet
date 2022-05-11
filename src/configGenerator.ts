@@ -9,7 +9,7 @@ import {
   Override,
   NodeConfig,
   envVars,
-  CollatorConfig,
+  NodeGroupConfig,
 } from "./types";
 import { getSha256 } from "./utils/misc-utils";
 import {
@@ -124,7 +124,6 @@ export async function generateNetworkSpec(
       node.name // group of 1
     );
 
-    console.log(nodeSetup);
     networkSpec.relaychain.nodes.push(nodeSetup);
   }
 
@@ -167,7 +166,7 @@ export async function generateNetworkSpec(
       // collator could by defined in groups or
       // just using one collator definiton
       let collators = [];
-      if (parachain.collator)
+      if(parachain.collator)
         collators.push(
           getCollatorNodeFromConfig(
             parachain.collator,
@@ -177,12 +176,35 @@ export async function generateNetworkSpec(
             Boolean(parachain.cumulus_based)
           )
         );
+      for(const collatorConfig of parachain.collators || []) {
+        collators.push(
+          getCollatorNodeFromConfig(
+            collatorConfig,
+            parachain.id,
+            chainName,
+            bootnodes,
+            Boolean(parachain.cumulus_based)
+          )
+        );
+      }
 
       for (const collatorGroup of parachain.collator_groups || []) {
+
         for (let i = 0; i < collatorGroup.count; i++) {
+          let node: NodeConfig = {
+            name: `${collatorGroup.name}-${i}`,
+            image: collatorGroup.image || networkSpec.relaychain.defaultImage,
+            command: collatorGroup.command,
+            args: sanitizeArgs(collatorGroup.args||[]),
+            validator: true, // groups are always validators
+            env: collatorGroup.env,
+            overrides: collatorGroup.overrides,
+            resources:
+            collatorGroup.resources || networkSpec.relaychain.defaultResources,
+          };
           collators.push(
             getCollatorNodeFromConfig(
-              collatorGroup.collator,
+              node,
               parachain.id,
               chainName,
               bootnodes,
@@ -270,6 +292,7 @@ export async function generateNetworkSpec(
         ...(computedStateCommand
           ? { genesisStateGenerator: computedStateCommand }
           : {}),
+        ...(parachain.genesis ? { genesis: parachain.genesis} : {}),
       };
 
       networkSpec.parachains.push(parachainSetup);
@@ -343,7 +366,7 @@ async function getLocalOverridePath(
 }
 
 function getCollatorNodeFromConfig(
-  collatorConfig: CollatorConfig,
+  collatorConfig: NodeConfig,
   para_id: number,
   chain: string, // relay-chain
   bootnodes: string[], // parachain bootnodes
@@ -368,7 +391,7 @@ function getCollatorNodeFromConfig(
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
-    validator: false,
+    validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.commandWithArgs,

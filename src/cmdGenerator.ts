@@ -44,7 +44,7 @@ export async function genCumulusCollatorCmd(
   useWrapper = true,
   portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
-  const { name, args, chain, parachainId, key, jaegerUrl } = nodeSetup;
+  const { name, args, chain, parachainId, key, jaegerUrl, validator } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
@@ -53,17 +53,21 @@ export async function genCumulusCollatorCmd(
     "--port": true,
     "--ws-port": true,
     "--chain": true,
+    "--prometheus-port": true
   };
 
   const colIndex = getCollatorIndex(name);
   let collatorPort;
   let collatorWsPort;
+  let collatorPrometheusPort;
   if (portFlags) {
     collatorPort = portFlags["--port"];
     collatorWsPort = portFlags["--ws-port"];
+    collatorPrometheusPort = portFlags["--prometheus-port"];
   } else {
     collatorPort = await getRandomPort();
     collatorWsPort = await getRandomPort();
+    collatorPrometheusPort =  await getRandomPort();
   }
   let fullCmd: string[] = [
     command,
@@ -71,9 +75,6 @@ export async function genCumulusCollatorCmd(
     name,
     "--node-key",
     key!,
-    `--${DEV_ACCOUNTS[colIndex]}`,
-    "--collator",
-    "--force-authoring",
     "--chain",
     `${cfgPath}/${chain}-${parachainId}.json`,
     "--base-path",
@@ -82,9 +83,13 @@ export async function genCumulusCollatorCmd(
     `/ip4/0.0.0.0/tcp/${collatorPort}/ws`,
     "--ws-port",
     collatorWsPort.toString(),
+    "--prometheus-external",
+    "--prometheus-port",
+    collatorPrometheusPort.toString()
   ];
 
-  if(jaegerUrl) args.push(...["--jaeger-agent", jaegerUrl]);
+  if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  if(jaegerUrl) fullCmd.push(...["--jaeger-agent", jaegerUrl]);
 
   const collatorPorts: any = {
     "--port": 0,
@@ -143,12 +148,12 @@ export async function genCumulusCollatorCmd(
           const randomPort = await getRandomPort();
           argsCollator.push(portArg);
           argsCollator.push(randomPort.toString());
-          console.log(`Added ${portArg} with value ${randomPort}`);
+          debug(`Added ${portArg} with value ${randomPort}`);
         }
       }
 
       fullCmd = fullCmd.concat(argsCollator);
-      console.log(`Added ${argsCollator} to collator`);
+      debug(`Added ${argsCollator} to collator`);
     } else {
       // ensure ports
       for (const portArg of Object.keys(collatorPorts)) {
@@ -156,7 +161,7 @@ export async function genCumulusCollatorCmd(
           const randomPort = await getRandomPort();
           fullCmd.push(portArg);
           fullCmd.push(randomPort.toString());
-          console.log(`Added ${portArg} with value ${randomPort}`);
+          debug(`Added ${portArg} with value ${randomPort}`);
         }
       }
     }
@@ -172,7 +177,7 @@ export async function genCumulusCollatorCmd(
         const randomPort = await getRandomPort();
         fullCmd.push(portArg);
         fullCmd.push(randomPort.toString());
-        console.log(`Added ${portArg} with value ${randomPort}`);
+        debug(`Added ${portArg} with value ${randomPort}`);
       }
     }
   }

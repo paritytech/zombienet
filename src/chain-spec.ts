@@ -132,9 +132,9 @@ export async function addParachainToGenesis(
 export async function changeGenesisConfig(spec_path: string, updates: any) {
   let rawdata = fs.readFileSync(spec_path);
   let chainSpec = JSON.parse(rawdata);
-
+  const msg = `⚙ Updating Chain Genesis Configuration (path: ${spec_path})`;
   console.log(
-    `\n\t\t ${decorators.green("⚙ Updating Relay Chain Genesis Configuration")}`
+    `\n\t\t ${decorators.green(msg)}`
   );
 
   if (chainSpec.genesis) {

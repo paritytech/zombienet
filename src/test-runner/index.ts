@@ -285,7 +285,7 @@ function parseAssertionLine(assertion: string) {
 
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.parachainIsRegistered(parachainId, timeout)));
 
       const parachainIsRegistered = results.every(Boolean);
@@ -304,7 +304,7 @@ function parseAssertionLine(assertion: string) {
 
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
 
       const results = await Promise.all(nodes.map(node => node.parachainBlockHeight(parachainId, targetValue, timeout)));
       for( const value of results) {
@@ -320,7 +320,7 @@ function parseAssertionLine(assertion: string) {
     if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", null, timeout)));
       const AllNodeUps = results.every(Boolean);
       expect(AllNodeUps).to.be.ok;
@@ -338,7 +338,7 @@ function parseAssertionLine(assertion: string) {
     if (m[8]) t = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getHistogramSamplesInBuckets(metricName, buckets, targetValue, timeout)));
 
       for( const value of results) {
@@ -357,7 +357,7 @@ function parseAssertionLine(assertion: string) {
     if (m[8]) t = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const _timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getSpansByTraceId(traceId, network.tracingCollatorUrl!)));
 
       for(const value of results) {
@@ -376,7 +376,7 @@ function parseAssertionLine(assertion: string) {
     if (m[7]) t = parseInt(m[7], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getMetric(metricName, targetValue, timeout)));
 
       for( const value of results) {
@@ -395,7 +395,7 @@ function parseAssertionLine(assertion: string) {
 
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.findPattern(pattern, isGlob, timeout)));
 
       const found = results.every(Boolean);
@@ -552,7 +552,7 @@ function parseAssertionLine(assertion: string) {
     if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.restart(timeout)));
 
       const restarted = results.every(Boolean);
@@ -564,7 +564,7 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2]) {
     const nodeName = m[2];
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.pause()));
 
       const paused = results.every(Boolean);

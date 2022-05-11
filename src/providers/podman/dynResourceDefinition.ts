@@ -9,7 +9,7 @@ import {
   INTROSPECTOR_POD_NAME,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { Node } from "../../types";
+import { MultiAddressByNode, Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 import { resolve } from "path";
@@ -439,6 +439,25 @@ async function make_main_container(
   };
 
   return containerDef;
+}
+
+export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+  // replace command if needed in containers
+  for( const container of podDef.spec.containers) {
+    if(Array.isArray(container.command)){
+      const finalCommand = container.command.map((item: string) => {
+        return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
+          return multiAddressByNode[nodeName];
+        });
+      });
+      container.command = finalCommand;
+    } else {
+      container.command = container.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
+        return multiAddressByNode[nodeName];
+      });
+    }
+
+  }
 }
 
 export function createTempNodeDef(

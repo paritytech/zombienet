@@ -82,22 +82,11 @@ export interface ParachainConfig {
   genesis_state_generator?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
-  collator?: CollatorConfig;
-  collator_groups?: CollatorGroupConfig[];
-}
-
-export interface CollatorConfig {
-  image?: string;
-  command?: string;
-  commandWithArgs?: string;
-  name?: string;
-  args?: string[];
-  env?: envVars[];
-}
-
-export interface CollatorGroupConfig {
-  collator: CollatorConfig;
-  count: number;
+  // backward compatibility
+  collator?: NodeConfig;
+  collators?: NodeConfig[];
+  collator_groups?: NodeGroupConfig[];
+  genesis?: JSON | ObjectJSON;
 }
 
 export interface HrmpChannelsConfig {
@@ -108,7 +97,6 @@ export interface HrmpChannelsConfig {
 }
 
 // Computed Network
-// T
 export interface ComputedNetwork {
   settings: Settings;
   relaychain: {
@@ -180,6 +168,7 @@ export interface Parachain {
   specPath?: string;
   balance?: number;
   collators: Node[];
+  genesis?: JSON | ObjectJSON
 }
 
 export interface envVars {
@@ -242,4 +231,8 @@ export interface Resources {
       cpu?: string;
     };
   };
+}
+
+export interface MultiAddressByNode {
+  [key: string]: string;
 }

@@ -7,7 +7,7 @@ import {
   DEFAULT_COMMAND,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { Node } from "../../types";
+import { MultiAddressByNode, Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 
@@ -127,6 +127,23 @@ async function getPorts() {
   ];
 
   return ports;
+}
+
+export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+  // replace command if needed
+  if(Array.isArray(podDef.spec.command)) {
+    const finalCommand = podDef.spec.command.map((item: string) => {
+      return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
+        return multiAddressByNode[nodeName];
+      });
+    });
+    podDef.spec.command = finalCommand;
+  } else {
+    // string
+    podDef.spec.command = podDef.spec.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
+        return multiAddressByNode[nodeName];
+      });
+  }
 }
 
 function getPortFlags(ports: any): { [flag: string]: number } {
