@@ -12,10 +12,8 @@ function nameCase(string: string) {
 export async function generateKeyForNode(nodeName?: string): Promise<any> {
   await cryptoWaitReady();
 
-  // const mnemonic = mnemonicGenerate();
   const seed = nodeName ? `//${nameCase(nodeName)}` : u8aToHex(mnemonicToMiniSecret(mnemonicGenerate()));
 
-  console.log(seed);
   const sr_keyring = new Keyring({ type: "sr25519" });
   const sr_account = sr_keyring.createFromUri(`${seed}`);
   const sr_stash = sr_keyring.createFromUri(`${seed}//stash`);
