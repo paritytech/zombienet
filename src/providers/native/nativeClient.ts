@@ -277,7 +277,7 @@ export class NativeClient extends Client {
     let t = this.timeout;
     const args = [
       "-c",
-      `grep -E 'Running JSON-RPC WS server|Listening for new connections'  ${logFile} | wc -l`,
+      `grep -E 'Listening for new connections|Running JSON-RPC'  ${logFile} | wc -l`,
     ];
     do {
       const result = await this.runCommand(args);

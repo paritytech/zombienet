@@ -454,7 +454,7 @@ async function getNodeFromConfig(
       : true;
 
   const nodeName = getUniqueName(node.name);
-  const accountsForNode = await generateKeyForNode();
+  const accountsForNode = await generateKeyForNode(nodeName);
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,
