@@ -88,7 +88,7 @@ export async function genCumulusCollatorCmd(
     collatorPrometheusPort.toString()
   ];
 
-  if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  if(validator) fullCmd.push(...[`--${DEV_ACCOUNTS[colIndex]}`, "--collator", "--force-authoring"]);
   if(jaegerUrl) fullCmd.push(...["--jaeger-agent", jaegerUrl]);
 
   const collatorPorts: any = {
@@ -120,7 +120,7 @@ export async function genCumulusCollatorCmd(
     }
 
     // Arguments for the relay chain node part of the collator binary.
-    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`]);
+    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
 
     if (argsCollator) {
       // Add any additional flags to the CLI
@@ -169,7 +169,7 @@ export async function genCumulusCollatorCmd(
     // no args
 
     // Arguments for the relay chain node part of the collator binary.
-    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`]);
+    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
 
     // ensure ports
     for (const portArg of Object.keys(collatorPorts)) {
