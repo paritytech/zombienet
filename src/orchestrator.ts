@@ -472,7 +472,7 @@ export async function start(
             );
             break;
           case "kubernetes":
-            console.log(`\n\t\t\t kubectl logs -f ${podDef.metadata.name}`);
+            console.log(`\n\t\t\t kubectl logs -f ${podDef.metadata.name} -c ${podDef.metadata.name} -n ${namespace}`);
             break;
           case "native":
             console.log(
