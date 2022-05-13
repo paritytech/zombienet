@@ -10,6 +10,8 @@
 
 This project is still in early stage and very much a work in progress. More features will be added, docs may be missing or outdated and api/config may change.
 
+NOTE: `polkadot-collator` has recently been renamed `polkadot-parachain`.
+
 ---
 
 ## What is Zombienet?
