@@ -22,7 +22,6 @@ Internally zombienet is a `javascript` library, designed to run on NodeJS and su
 
 Zombienet releases are available in `github`. Each one provides an executable for both `linux` and `macos` created with [pkg](https://github.com/vercel/pkg) and allows to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g. k8s, podman).
 
-
 ## Status
 
 At the moment Zombienet *only* works with `local` chains (e.g. rococo-local, polkadot-local, etc).
