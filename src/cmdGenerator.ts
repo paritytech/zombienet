@@ -56,7 +56,7 @@ export async function genCumulusCollatorCmd(
     "--prometheus-port": true
   };
 
-  const colIndex = getCollatorIndex(name);
+  const colIndex = getCollatorIndex(parachainId!);
   let collatorPort;
   let collatorWsPort;
   let collatorPrometheusPort;
@@ -207,8 +207,10 @@ export async function genCmd(
     bootnodes,
     args,
     zombieRole,
-    jaegerUrl
+    jaegerUrl,
+    parachainId
   } = nodeSetup;
+
 
   // fullCommand is NOT decorated by the `zombie` wrapper
   // and is used internally in init containers.
@@ -234,6 +236,8 @@ export async function genCmd(
   if(jaegerUrl && zombieRole === "node") args.push(...["--jaeger-agent", jaegerUrl]);
 
   if (validator && ! args.includes("--validator")) args.push("--validator");
+
+  if(zombieRole === "collator" && parachainId) args.push(`--parachain-id ${parachainId}`);
 
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
@@ -292,9 +296,11 @@ export async function genCmd(
   return resolvedCmd;
 }
 
-// helpers
-function getCollatorIndex(name: string): number {
-  const parts = name.split("-");
-  const index = parseInt(parts[parts.length - 1], 10);
-  return isNaN(index) ? 0 : index;
+// helper
+const parachainCollators: any = {};
+function getCollatorIndex(paraId: number): number {
+  if(parachainCollators[paraId] >= 0) parachainCollators[paraId] = parachainCollators[paraId] + 1;
+  else  parachainCollators[paraId] = 0;
+
+  return parachainCollators[paraId];
 }
