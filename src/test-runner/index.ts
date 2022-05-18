@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "../types";
-import { sleep } from "../utils/misc-utils";
+import { isValidHttpUrl, sleep } from "../utils/misc-utils";
 import { readNetworkConfig } from "../utils/fs-utils";
 import { Network, rebuildNetwork } from "../network";
 import { decorators } from "../utils/colors";
@@ -15,7 +15,8 @@ import { Providers } from "../providers/";
 import zombie from "../";
 const {
   connect,
-  chainUpgrade,
+  chainUpgradeFromUrl,
+  chainUpgradeFromLocalFile,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
   findPatternInSystemEventSubscription,
@@ -594,7 +595,7 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2]) {
     const nodeName = m[2];
     const parachainId = parseInt(m[3], 10);
-    const upgradeFileUrl = m[4];
+    const upgradeFileOrUrl = m[4];
     let timeout: number;
     if (m[6]) timeout = parseInt(m[6], 10);
 
@@ -605,8 +606,15 @@ function parseAssertionLine(assertion: string) {
     ) => {
       let node = network.node(nodeName);
       let api: ApiPromise = await connect(node.wsUri);
+      let hash;
 
-      const hash = await chainUpgrade(api, upgradeFileUrl);
+      if (isValidHttpUrl(upgradeFileOrUrl)) {
+        hash = await chainUpgradeFromUrl(api, upgradeFileOrUrl);
+      } else {
+        const fileTestPath = path.dirname(testFile);
+        const resolvedJsFilePath = path.resolve(fileTestPath, upgradeFileOrUrl);
+        hash = await chainUpgradeFromLocalFile(api, resolvedJsFilePath)
+      }
       // validate in the <node>: of the relay chain
       node = network.node(nodeName);
       api = await connect(node.wsUri);
