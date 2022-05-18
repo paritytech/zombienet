@@ -23,6 +23,17 @@ export function addMinutes(howMany: number, baseDate?: Date): [number, number] {
   return [targetDate.getUTCHours(), targetDate.getUTCMinutes()];
 }
 
+export function isValidHttpUrl(input: string) {
+  let url;
+
+  try {
+    url = new URL(input);
+  } catch (_) {
+    return false;
+  }
+
+  return url.protocol === "http:" || url.protocol === "https:";
+}
 export function filterConsole(excludePatterns: string[], options?: any) {
   options = {
     console,

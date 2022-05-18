@@ -1,12 +1,13 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
 import { readFileSync, promises as fsPromises } from "fs";
+import { resolve } from "path";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 import { compress, decompress } from "napi-maybe-compressed-blob";
 import axios from "axios";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
-export async function chainUpgrade(
+export async function chainUpgradeFromUrl(
   api: ApiPromise,
   wasmFileUrl: string
 ): Promise<string> {
@@ -25,6 +26,24 @@ export async function chainUpgrade(
 
   return hash;
 }
+
+export async function chainUpgradeFromLocalFile(
+  api: ApiPromise,
+  filePath: string
+): Promise<string> {
+  // The filename of the runtime/PVF we want to upgrade to. Usually a file
+  // with `.compact.compressed.wasm` extension.
+  console.log(`upgrading chain with file from path: ${filePath}`);
+
+  const data = await fsPromises.readFile(filePath);
+
+  const buff = Buffer.from(data);
+  const hash = blake2AsHex(buff);
+  await performChainUpgrade(api, buff.toString("hex"));
+
+  return hash;
+}
+
 
 // Add a custom section to the end, re-compress and perform the upgrade of the runtime.
 // It's required by the standard that custom sections cannot have any semantic differences

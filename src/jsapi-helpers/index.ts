@@ -1,6 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import {
-  chainUpgrade,
+  chainUpgradeFromLocalFile,
+  chainUpgradeFromUrl,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
 } from "./chain-upgrade";
@@ -16,7 +17,8 @@ async function connect(apiUrl: string, types: any): Promise<ApiPromise> {
 
 export {
   connect,
-  chainUpgrade,
+  chainUpgradeFromLocalFile,
+  chainUpgradeFromUrl,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
   paraGetBlockHeight,
