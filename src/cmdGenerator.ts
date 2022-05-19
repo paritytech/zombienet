@@ -237,7 +237,11 @@ export async function genCmd(
 
   if (validator && ! args.includes("--validator")) args.push("--validator");
 
-  if(zombieRole === "collator" && parachainId) args.push(`--parachain-id ${parachainId}`);
+  if(zombieRole === "collator" && parachainId) {
+    const parachainIdArgIndex = args.findIndex((arg) => arg.includes("--parachain-id"));
+    args.splice(parachainIdArgIndex, 1);
+    args.push(`--parachain-id ${parachainId}`);
+  }
 
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
