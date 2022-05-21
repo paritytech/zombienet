@@ -441,7 +441,6 @@ function parseAssertionLine(assertion: string) {
       backchannelMap: BackchannelMap,
       testFile: string
     ) => {
-      let limitTimeout;
       const networkInfo = {
         chainSpecPath: network.chainSpecFullPath,
         relay: network.relay.map((node) => {
@@ -472,6 +471,8 @@ function parseAssertionLine(assertion: string) {
         ),
       };
 
+      const nodes = network.getNodes(nodeName);
+      const args = withArgs === "" ? [] : withArgs.split("with ").slice(1)[0].replaceAll('"',"").split(",");
       const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
@@ -482,18 +483,18 @@ function parseAssertionLine(assertion: string) {
       (global as any).window = dom.window;
       (global as any).document = dom.window.document;
       const jsScript = await import(resolvedJsFilePath);
-      const args = withArgs === "" ? [] : withArgs.split("with ").slice(1)[0].replaceAll('"',"").split(",");
-      let value;
+
+      let values;
       try {
-        const resp = await Promise.race([
-          jsScript.run(nodeName, networkInfo, args),
+        const resp: any = await Promise.race([
+          await Promise.all(nodes.map(node => jsScript.run(node.name, networkInfo, args))),
           new Promise((resolve) => setTimeout(() => {
             const err = new Error(`Timeout(${timeout}), "custom-js ${jsFile} within ${timeout} secs" didn't complete on time.`);
             return resolve(err);
           }, timeout * 1000))
         ]);
         if( resp instanceof Error ) throw resp
-        else value = resp;
+        else values = resp;
 
       } catch (err: any) {
         console.log(`\n\t ${decorators.red(`Error running script: ${jsFile}`)}`);
@@ -504,11 +505,13 @@ function parseAssertionLine(assertion: string) {
       // remove shim
       (global as any).window = undefined;
       (global as any).document = undefined;
-      clearTimeout(limitTimeout);
+
       if (targetValue) {
         if (comparatorFn !== "equals")
           targetValue = parseInt(targetValue as string, 10);
-        assert[comparatorFn](value, targetValue);
+        for( const value of values) {
+          assert[comparatorFn](value, targetValue);
+        }
       } else {
         // test don't have matching output
         expect(true).to.be.ok;
@@ -613,11 +616,13 @@ function parseAssertionLine(assertion: string) {
       } else {
         const fileTestPath = path.dirname(testFile);
         const resolvedJsFilePath = path.resolve(fileTestPath, upgradeFileOrUrl);
-        hash = await chainUpgradeFromLocalFile(api, resolvedJsFilePath)
+        hash = await chainUpgradeFromLocalFile(api, resolvedJsFilePath);
       }
-      // validate in the <node>: of the relay chain
-      node = network.node(nodeName);
-      api = await connect(node.wsUri);
+
+      // validate in a node of the relay chain
+      api.disconnect();
+      const {wsUri, userDefinedTypes } = network.relay[0];
+      api = await connect(wsUri, userDefinedTypes);
       const valid = await validateRuntimeCode(api, parachainId, hash, timeout);
       api.disconnect();
 
