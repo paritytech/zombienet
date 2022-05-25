@@ -29,8 +29,7 @@ function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   }
 
   const errorMsg = `⚠ ${keyType} keys not found in runtimeConfig`;
-  console.error(`\n\t\t  ${decorators.red(errorMsg)}`);
-  process.exit(1);
+  console.error(`\n\t\t  ${decorators.yellow(errorMsg)}`);
 }
 
 // Remove all existing keys from `session.keys`
@@ -38,6 +37,8 @@ export function clearAuthorities(specPath: string, keyType: KeyType = "session")
   const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec, keyType);
+  if(! keys) return;
+
   keys.length = 0;
 
   if(keyType === "session") {
@@ -74,6 +75,8 @@ export async function addAuthority(specPath: string, name: string, accounts: any
   const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec);
+  if(! keys) return;
+
   keys.push(key);
 
   // Collators
@@ -96,6 +99,8 @@ export async function addAuraAuthority(specPath: string, name: string, accounts:
   const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec, "aura");
+  if(! keys) return;
+
   keys.push(sr_account.address);
 
   writeChainSpec(specPath, chainSpec);
