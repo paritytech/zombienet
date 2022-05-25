@@ -88,7 +88,8 @@ export async function genCumulusCollatorCmd(
     collatorPrometheusPort.toString()
   ];
 
-  if(validator) fullCmd.push(...[`--${DEV_ACCOUNTS[colIndex]}`, "--collator", "--force-authoring"]);
+  //if(validator) fullCmd.push(...[`--${DEV_ACCOUNTS[colIndex]}`, "--collator", "--force-authoring"]);
+  if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
   if(jaegerUrl) fullCmd.push(...["--jaeger-agent", jaegerUrl]);
 
   const collatorPorts: any = {
