@@ -86,7 +86,7 @@ export async function generateParachainFiles(
     await getChainSpecRaw(
       namespace,
       parachain.collators[0].image,
-      `${chainName}-${parachain.id}`,
+      `${chainName}-${parachain.name}`,
       parachain.collators[0].command!,
       chainSpecFullPath
     );
