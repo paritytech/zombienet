@@ -132,8 +132,6 @@ export async function start(
     } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
-    const endpointPort =
-      client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT;
 
     if(networkSpec.settings.node_spawn_timeout) client.timeout = networkSpec.settings.node_spawn_timeout;
     network = new Network(client, namespace, tmpDir.path);
@@ -407,6 +405,10 @@ export async function start(
           userDefinedTypes
         );
       } else {
+        const endpointPort = (node.zombieRole === "node") ?
+          client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT :
+          RPC_WS_PORT;
+
         const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
         const fwdPort = await client.startPortForwarding(
           endpointPort,
