@@ -136,7 +136,7 @@ async function make_main_container(
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
   if( nodeSetup.zombieRole === "cumulus-collator" ) {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup,);
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
   }
