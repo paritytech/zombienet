@@ -487,7 +487,7 @@ function parseAssertionLine(assertion: string) {
       let values;
       try {
         const resp: any = await Promise.race([
-          await Promise.all(nodes.map(node => jsScript.run(node.name, networkInfo, args))),
+          Promise.all(nodes.map(node => jsScript.run(node.name, networkInfo, args))),
           new Promise((resolve) => setTimeout(() => {
             const err = new Error(`Timeout(${timeout}), "custom-js ${jsFile} within ${timeout} secs" didn't complete on time.`);
             return resolve(err);
