@@ -60,7 +60,7 @@ export async function generateParachainFiles(
       fs.readFileSync(relayChainSpecFullPathPlain).toString()
     );
     plainData.para_id = parachain.id;
-    plainData.relay_chain = relayChainSpec.id;
+    if(plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if( plainData.genesis.runtime.parachainInfo?.parachainId) plainData.genesis.runtime.parachainInfo.parachainId  = parachain.id;
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
