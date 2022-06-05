@@ -8,7 +8,7 @@
 
 
         <!-- Custom HTML head -->
-        
+
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -219,7 +219,7 @@ id = 100
   command = &quot;adder-collator&quot;
 </code></pre>
 <p>Then you can spwan the network by running the following command:</p>
-<pre><code class="language-bash">./zombienet-macos spawn examples/0001-simple-network.toml
+<pre><code class="language-bash">./zombienet-macos spawn examples/0001-small-network.toml
 </code></pre>
 <p>You can follow the output of the <code>steps</code> to spawn the network and once the network is launched a message with the <code>node</code>s information like this one is show</p>
 <pre><code class="language-bash">-----------------------------------------
@@ -288,7 +288,7 @@ addToGenesis = false
 <pre><code class="language-bash">export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
 export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 
-./zombienet-macos spawn examples/0001-simple-network.toml
+./zombienet-macos spawn examples/0001-small-network.toml
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="teardown"><a class="header" href="#teardown">Teardown</a></h1>
 <p>You can teardown the network (and cleanup the used resources) by terminating the process (<code>Ctrl+c</code>).</p>
@@ -302,7 +302,7 @@ Those assertions should be defined in a <em>feature test</em>, and the <code>dsl
 <li>The defined <code>parachain</code> is producing blocks and produced at least 10 within 200 seconds.</li>
 </ul>
 <pre><code class="language-feature">Description: Simple Network Smoke Test
-Network: ./0001-simple-network.toml
+Network: ./0001-small-network.toml
 Creds: config
 
 

@@ -10,7 +10,7 @@ The following is an small example to spawn a network (using the previos `simple 
 
 ```feature
 Description: Simple Network Smoke Test
-Network: ./0001-simple-network.toml
+Network: ./0001-small-network.toml
 Creds: config
 
 

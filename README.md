@@ -139,7 +139,7 @@ id = 100
 Then you can spwan the network by running the following command:
 
 ```bash
-./zombienet-macos spawn examples/0001-simple-network.toml
+./zombienet-macos spawn examples/0001-small-network.toml
 ```
 
 You can follow the output of the `steps` to spawn the network and once the network is launched a message with the `node`s information like this one is shown
@@ -220,7 +220,7 @@ Then you can `export` the needed values before you run the command to spawn the 
 export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
 export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 
-./zombienet-macos spawn examples/0001-simple-network.toml
+./zombienet-macos spawn examples/0001-small-network.toml
 ```
 
 ##### Teardown
@@ -241,7 +241,7 @@ The following is an small example to spawn a network (using the previous `simple
 
 ```feature
 Description: Simple Network Smoke Test
-Network: ./0001-simple-network.toml
+Network: ./0001-small-network.toml
 Creds: config
 
 
