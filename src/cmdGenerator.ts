@@ -3,6 +3,7 @@ import {
   DEFAULT_COMMAND,
   DEV_ACCOUNTS,
   P2P_PORT,
+  PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "./constants";
@@ -44,7 +45,7 @@ export async function genCumulusCollatorCmd(
   useWrapper = true,
   portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
-  const { name, args, chain, parachainId, key, jaegerUrl, validator } = nodeSetup;
+  const { name, args, chain, parachainId, key, validator } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
@@ -58,17 +59,16 @@ export async function genCumulusCollatorCmd(
 
   const colIndex = getCollatorIndex(parachainId!);
   let collatorPort;
+  let collatorRpcPort;
   let collatorWsPort;
   let collatorPrometheusPort;
-  if (portFlags) {
-    collatorPort = portFlags["--port"];
-    collatorWsPort = portFlags["--ws-port"];
-    collatorPrometheusPort = portFlags["--prometheus-port"];
-  } else {
-    collatorPort = await getRandomPort();
-    collatorWsPort = await getRandomPort();
-    collatorPrometheusPort =  await getRandomPort();
+  if(portFlags) {
+    if(portFlags["--port"]) collatorPort = portFlags["--port"];
+    if(portFlags["--ws-port"]) collatorWsPort = portFlags["--ws-port"];
+    if(portFlags["--prometheus-port"]) collatorPrometheusPort = portFlags["--prometheus-port"];
+    if(portFlags["--rpc-port"]) collatorRpcPort = portFlags["--rpc-port"];
   }
+
   let fullCmd: string[] = [
     command,
     "--name",
@@ -80,17 +80,21 @@ export async function genCumulusCollatorCmd(
     "--base-path",
     dataPath,
     "--listen-addr",
-    `/ip4/0.0.0.0/tcp/${collatorPort}/ws`,
+    `/ip4/0.0.0.0/tcp/${collatorPort ? collatorPort : P2P_PORT}/ws`,
+    "--rpc-port",
+    (collatorRpcPort ? collatorRpcPort : RPC_HTTP_PORT).toString(),
     "--ws-port",
-    collatorWsPort.toString(),
+    (collatorWsPort ? collatorWsPort : RPC_WS_PORT).toString(),
     "--prometheus-external",
     "--prometheus-port",
-    collatorPrometheusPort.toString()
+    (collatorPrometheusPort ? collatorPrometheusPort : PROMETHEUS_PORT).toString(),
+    "--rpc-cors all",
+    "--unsafe-rpc-external",
+    "--rpc-methods unsafe",
+    "--unsafe-ws-external"
   ];
 
-  //if(validator) fullCmd.push(...[`--${DEV_ACCOUNTS[colIndex]}`, "--collator", "--force-authoring"]);
   if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
-  if(jaegerUrl) fullCmd.push(...["--jaeger-agent", jaegerUrl]);
 
   const collatorPorts: any = {
     "--port": 0,
@@ -99,7 +103,7 @@ export async function genCumulusCollatorCmd(
   };
 
   if (nodeSetup.args.length > 0) {
-    let argsCollator = null;
+    let argsFullNode = null;
     let argsParachain = null;
     let splitIndex = args ? args.findIndex((value) => value == "--") : -1;
 
@@ -107,7 +111,7 @@ export async function genCumulusCollatorCmd(
       argsParachain = args;
     } else {
       argsParachain = args ? args.slice(0, splitIndex) : null;
-      argsCollator = args ? args.slice(splitIndex + 1) : null;
+      argsFullNode = args ? args.slice(splitIndex + 1) : null;
     }
 
     if (argsParachain) {
@@ -123,13 +127,13 @@ export async function genCumulusCollatorCmd(
     // Arguments for the relay chain node part of the collator binary.
     fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
 
-    if (argsCollator) {
+    if (argsFullNode) {
       // Add any additional flags to the CLI
-      for (const [index, arg] of argsCollator.entries()) {
+      for (const [index, arg] of argsFullNode.entries()) {
         if (collatorPorts[arg] >= 0) {
           // port passed as argument, we need to ensure is not a default one because it will be
           // use by the parachain part.
-          const selectedPort = parseInt(argsCollator[index + 1], 10);
+          const selectedPort = parseInt(argsFullNode[index + 1], 10);
           if ([P2P_PORT, RPC_HTTP_PORT, RPC_WS_PORT].includes(selectedPort)) {
             console.log(
               decorators.yellow(
@@ -138,7 +142,7 @@ export async function genCumulusCollatorCmd(
             );
             const randomPort = await getRandomPort();
             collatorPorts[arg] = randomPort;
-            argsCollator[index + 1] = randomPort.toString();
+            argsFullNode[index + 1] = randomPort.toString();
           }
         }
       }
@@ -147,14 +151,14 @@ export async function genCumulusCollatorCmd(
       for (const portArg of Object.keys(collatorPorts)) {
         if (collatorPorts[portArg] === 0) {
           const randomPort = await getRandomPort();
-          argsCollator.push(portArg);
-          argsCollator.push(randomPort.toString());
+          argsFullNode.push(portArg);
+          argsFullNode.push(randomPort.toString());
           debug(`Added ${portArg} with value ${randomPort}`);
         }
       }
 
-      fullCmd = fullCmd.concat(argsCollator);
-      debug(`Added ${argsCollator} to collator`);
+      fullCmd = fullCmd.concat(argsFullNode);
+      debug(`Added ${argsFullNode} to collator`);
     } else {
       // ensure ports
       for (const portArg of Object.keys(collatorPorts)) {
@@ -183,8 +187,9 @@ export async function genCumulusCollatorCmd(
     }
   }
 
-  if (useWrapper) fullCmd.unshift("/cfg/zombie-wrapper.sh");
-  return [fullCmd.join(" ")];
+  const resolvedCmd = [fullCmd.join(" ")];
+  if (useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
+  return resolvedCmd;
 }
 
 export async function genCmd(

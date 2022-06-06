@@ -316,23 +316,24 @@ export class KubeClient extends Client {
       const result = await this.runCommand(args, undefined, true);
       debug("copyFileToPod", args);
     } else {
-      const hashedName = getSha256(localFilePath);
+      const fileBuffer = await fs.readFile(localFilePath);
+      const fileHash = getSha256(fileBuffer.toString());
       const parts = localFilePath.split("/");
       const fileName = parts[parts.length - 1];
-      if (!fileUploadCache[hashedName]) {
+      if (!fileUploadCache[fileHash]) {
         console.log(
-          "uploading to fileserver: " + localFilePath + " as:" + hashedName
+          "uploading to fileserver: " + localFilePath + " as:" + fileHash
         );
         const args = [
           "cp",
           localFilePath,
-          `fileserver:/usr/share/nginx/html/${hashedName}`,
+          `fileserver:/usr/share/nginx/html/${fileHash}`,
         ];
 
         debug("copyFileToPod", args);
         const result = await this.runCommand(args, undefined, true);
         debug(result);
-        fileUploadCache[hashedName] = fileName;
+        fileUploadCache[fileHash] = fileName;
       }
 
       // download the file in the container
@@ -343,7 +344,7 @@ export class KubeClient extends Client {
         "/usr/bin/wget",
         "-O",
         podFilePath,
-        `http://fileserver/${hashedName}`,
+        `http://fileserver/${fileHash}`,
       ];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
       let result = await this.runCommand(
