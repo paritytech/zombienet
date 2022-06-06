@@ -226,9 +226,16 @@ export class PodmanClient extends Client {
     return podIp;
   }
 
-  async getNodeInfo(podName: string, port?: number): Promise<[string, number]> {
-    const hostPort = await ( port ? this.getPortMapping(port, podName) : this.getPortMapping(P2P_PORT, podName));
-    const hostIp = await getHostIp();
+  async getNodeInfo(podName: string, port?: number, externalView: boolean = false): Promise<[string, number]> {
+    let hostIp, hostPort;
+    if(externalView) {
+      hostPort = await ( port ? this.getPortMapping(port, podName) : this.getPortMapping(P2P_PORT, podName));
+      hostIp = await getHostIp();
+    } else {
+      hostIp = await this.getNodeIP(podName);
+      hostPort = port ? port : P2P_PORT;
+    }
+
     return [hostIp, hostPort];
   }
 
