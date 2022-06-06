@@ -1,6 +1,6 @@
 {
   "name": "zombienet",
-  "version": "1.2.37",
+  "version": "1.2.38",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Javier Viola <javier@parity.io>",
