@@ -168,7 +168,7 @@ export async function generateNetworkSpec(
       let collators = [];
       if(parachain.collator)
         collators.push(
-          getCollatorNodeFromConfig(
+          await getCollatorNodeFromConfig(
             parachain.collator,
             parachain.id,
             chainName,
@@ -178,7 +178,7 @@ export async function generateNetworkSpec(
         );
       for(const collatorConfig of parachain.collators || []) {
         collators.push(
-          getCollatorNodeFromConfig(
+          await getCollatorNodeFromConfig(
             collatorConfig,
             parachain.id,
             chainName,
@@ -203,7 +203,7 @@ export async function generateNetworkSpec(
             collatorGroup.resources || networkSpec.relaychain.defaultResources,
           };
           collators.push(
-            getCollatorNodeFromConfig(
+            await getCollatorNodeFromConfig(
               node,
               parachain.id,
               chainName,
@@ -273,9 +273,11 @@ export async function generateNetworkSpec(
 
       let parachainSetup: Parachain = {
         id: parachain.id,
+        name: getUniqueName(parachain.id.toString()),
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
-          parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
+          parachain.add_to_genesis === undefined ? true : parachain.add_to_genesis, // add by default
+        registerPara: parachain.register_para === undefined ? true : parachain.register_para, // register by default
         collators,
       };
 
@@ -365,13 +367,13 @@ async function getLocalOverridePath(
   return local_real_path;
 }
 
-function getCollatorNodeFromConfig(
+async function getCollatorNodeFromConfig(
   collatorConfig: NodeConfig,
   para_id: number,
   chain: string, // relay-chain
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean
-): Node {
+): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args));
 
@@ -388,9 +390,11 @@ function getCollatorNodeFromConfig(
     : DEFAULT_ADDER_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const accountsForNode = await generateKeyForNode(collatorName);
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
+    accounts: accountsForNode,
     validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,

@@ -251,7 +251,7 @@ const assertSystemEventRegex = new RegExp(
 
 // Custom js-script
 const assertCustomJsRegex = new RegExp(
-  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
+  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,-/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
 );
 
 // Backchannel
@@ -442,6 +442,7 @@ function parseAssertionLine(assertion: string) {
       testFile: string
     ) => {
       const networkInfo = {
+        tmpDir: network.tmpDir,
         chainSpecPath: network.chainSpecFullPath,
         relay: network.relay.map((node) => {
           const { name, wsUri, prometheusUri, userDefinedTypes } = node;
@@ -493,13 +494,13 @@ function parseAssertionLine(assertion: string) {
             return resolve(err);
           }, timeout * 1000))
         ]);
-        if( resp instanceof Error ) throw resp
+        if( resp instanceof Error ) throw new Error(resp as any);
         else values = resp;
 
       } catch (err: any) {
         console.log(`\n\t ${decorators.red(`Error running script: ${jsFile}`)}`);
         console.log(`\t\t ${err.message}\n`);
-        throw err;
+        throw new Error(err);
       }
 
       // remove shim

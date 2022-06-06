@@ -94,7 +94,7 @@ export async function genCumulusCollatorCmd(
     "--unsafe-ws-external"
   ];
 
-  if(validator) fullCmd.push(...[`--${DEV_ACCOUNTS[colIndex]}`, "--collator", "--force-authoring"]);
+  if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
 
   const collatorPorts: any = {
     "--port": 0,

@@ -74,7 +74,8 @@ export interface NodeGroupConfig {
 export interface ParachainConfig {
   id: number;
   chain?: string;
-  addToGenesis?: boolean;
+  add_to_genesis?: boolean;
+  register_para?: boolean;
   balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
@@ -158,8 +159,10 @@ export interface Collator {
 
 export interface Parachain {
   id: number;
+  name: string;
   chain?: string;
   addToGenesis: boolean;
+  registerPara: boolean;
   cumulusBased: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
