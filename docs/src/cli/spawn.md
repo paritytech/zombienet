@@ -30,7 +30,7 @@ id = 100
 Then you can spwan the network by running the following command:
 
 ```bash
-./zombienet-macos spawn examples/0001-simple-network.toml
+./zombienet-macos spawn examples/0001-small-network.toml
 ```
 
 You can follow the output of the `steps` to spawn the network and once the network is launched a message with the `node`s information like this one is show

@@ -9,7 +9,7 @@ import {
   Override,
   NodeConfig,
   envVars,
-  CollatorConfig,
+  NodeGroupConfig,
 } from "./types";
 import { getSha256 } from "./utils/misc-utils";
 import {
@@ -124,7 +124,6 @@ export async function generateNetworkSpec(
       node.name // group of 1
     );
 
-    console.log(nodeSetup);
     networkSpec.relaychain.nodes.push(nodeSetup);
   }
 
@@ -167,9 +166,9 @@ export async function generateNetworkSpec(
       // collator could by defined in groups or
       // just using one collator definiton
       let collators = [];
-      if (parachain.collator)
+      if(parachain.collator)
         collators.push(
-          getCollatorNodeFromConfig(
+          await getCollatorNodeFromConfig(
             parachain.collator,
             parachain.id,
             chainName,
@@ -177,12 +176,35 @@ export async function generateNetworkSpec(
             Boolean(parachain.cumulus_based)
           )
         );
+      for(const collatorConfig of parachain.collators || []) {
+        collators.push(
+          await getCollatorNodeFromConfig(
+            collatorConfig,
+            parachain.id,
+            chainName,
+            bootnodes,
+            Boolean(parachain.cumulus_based)
+          )
+        );
+      }
 
       for (const collatorGroup of parachain.collator_groups || []) {
+
         for (let i = 0; i < collatorGroup.count; i++) {
+          let node: NodeConfig = {
+            name: `${collatorGroup.name}-${i}`,
+            image: collatorGroup.image || networkSpec.relaychain.defaultImage,
+            command: collatorGroup.command,
+            args: sanitizeArgs(collatorGroup.args||[]),
+            validator: true, // groups are always validators
+            env: collatorGroup.env,
+            overrides: collatorGroup.overrides,
+            resources:
+            collatorGroup.resources || networkSpec.relaychain.defaultResources,
+          };
           collators.push(
-            getCollatorNodeFromConfig(
-              collatorGroup.collator,
+            await getCollatorNodeFromConfig(
+              node,
               parachain.id,
               chainName,
               bootnodes,
@@ -251,9 +273,11 @@ export async function generateNetworkSpec(
 
       let parachainSetup: Parachain = {
         id: parachain.id,
+        name: getUniqueName(parachain.id.toString()),
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
-          parachain.addToGenesis === undefined ? true : parachain.addToGenesis, // add by default
+          parachain.add_to_genesis === undefined ? true : parachain.add_to_genesis, // add by default
+        registerPara: parachain.register_para === undefined ? true : parachain.register_para, // register by default
         collators,
       };
 
@@ -270,6 +294,7 @@ export async function generateNetworkSpec(
         ...(computedStateCommand
           ? { genesisStateGenerator: computedStateCommand }
           : {}),
+        ...(parachain.genesis ? { genesis: parachain.genesis} : {}),
       };
 
       networkSpec.parachains.push(parachainSetup);
@@ -342,13 +367,13 @@ async function getLocalOverridePath(
   return local_real_path;
 }
 
-function getCollatorNodeFromConfig(
-  collatorConfig: CollatorConfig,
+async function getCollatorNodeFromConfig(
+  collatorConfig: NodeConfig,
   para_id: number,
   chain: string, // relay-chain
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean
-): Node {
+): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args));
 
@@ -365,10 +390,12 @@ function getCollatorNodeFromConfig(
     : DEFAULT_ADDER_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const accountsForNode = await generateKeyForNode(collatorName);
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
-    validator: false,
+    accounts: accountsForNode,
+    validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.commandWithArgs,
@@ -431,7 +458,7 @@ async function getNodeFromConfig(
       : true;
 
   const nodeName = getUniqueName(node.name);
-  const accountsForNode = await generateKeyForNode();
+  const accountsForNode = await generateKeyForNode(nodeName);
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,

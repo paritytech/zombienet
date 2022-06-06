@@ -182,7 +182,8 @@ export class NativeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string
+    keystore: string,
+    chainSpecId: string
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
@@ -202,7 +203,7 @@ export class NativeClient extends Client {
 
     if (keystore) {
       // initialize keystore
-      const keystoreRemoteDir = `${podDef.spec.dataPath}/chains/${this.chainId}/keystore`;
+      const keystoreRemoteDir = `${podDef.spec.dataPath}/chains/${chainSpecId}/keystore`;
       await fs.promises.mkdir(keystoreRemoteDir, { recursive: true });
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
@@ -277,7 +278,7 @@ export class NativeClient extends Client {
     let t = this.timeout;
     const args = [
       "-c",
-      `grep 'Listening for new connections'  ${logFile} | wc -l`,
+      `grep -E 'Listening for new connections|Running JSON-RPC'  ${logFile} | wc -l`,
     ];
     do {
       const result = await this.runCommand(args);

@@ -9,6 +9,7 @@ import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { fileMap, Node, Parachain } from "./types";
 import fs from "fs";
+import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec";
 const debug = require("debug")("zombie::paras");
 
 export async function generateParachainFiles(
@@ -31,9 +32,9 @@ export async function generateParachainFiles(
   let chainSpecFullPath;
   if (parachain.cumulusBased) {
     // need to create the parachain spec
-    const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.id}-plain.json`;
+    const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.name}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
-    const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${parachain.id}.json`;
+    const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${parachain.name}.json`;
     chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
 
     debug("creating chain spec plain");
@@ -59,17 +60,33 @@ export async function generateParachainFiles(
       fs.readFileSync(relayChainSpecFullPathPlain).toString()
     );
     plainData.para_id = parachain.id;
-    plainData.relay_chain = relayChainSpec.id;
+    if(plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if( plainData.genesis.runtime.parachainInfo?.parachainId) plainData.genesis.runtime.parachainInfo.parachainId  = parachain.id;
     const data = JSON.stringify(plainData, null, 2);
     fs.writeFileSync(chainSpecFullPathPlain, data);
+
+    // Chain spec customization logic
+    if(specHaveSessionsKeys(plainData) ) {
+      clearAuthorities(chainSpecFullPathPlain);
+      for (const node of parachain.collators) {
+        if(node.validator) await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+      }
+    } else {
+      // use `aura` keys
+      clearAuthorities(chainSpecFullPathPlain, "aura");
+      for (const node of parachain.collators) {
+        if(node.validator) await addAuraAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+      }
+    }
+
+    if(parachain.genesis) await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
 
     debug("creating chain spec raw");
     // generate the raw chain spec
     await getChainSpecRaw(
       namespace,
       parachain.collators[0].image,
-      `${chainName}-${parachain.id}`,
+      `${chainName}-${parachain.name}`,
       parachain.collators[0].command!,
       chainSpecFullPath
     );
@@ -83,7 +100,7 @@ export async function generateParachainFiles(
     parachain.specPath = chainSpecFullPath;
   }
 
-  const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${parachain.id}.json`;
+  const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${parachain.name}.json`;
 
   // check if we need to create files
   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {

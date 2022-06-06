@@ -1,5 +1,5 @@
 import { Providers } from "./providers/";
-import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain } from "./types";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain, MultiAddressByNode } from "./types";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
@@ -72,6 +72,7 @@ export async function start(
 
   let network: Network | undefined;
   let cronInterval = undefined;
+  let multiAddressByNode: MultiAddressByNode = {};
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
@@ -127,11 +128,10 @@ export async function start(
       initClient,
       setupChainSpec,
       getChainSpecRaw,
+      replaceMultiAddresReferences,
     } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
-    const endpointPort =
-      client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT;
 
     if(networkSpec.settings.node_spawn_timeout) client.timeout = networkSpec.settings.node_spawn_timeout;
     network = new Network(client, namespace, tmpDir.path);
@@ -205,7 +205,7 @@ export async function start(
       // Chain spec customization logic
       clearAuthorities(chainSpecFullPathPlain);
       for (const node of networkSpec.relaychain.nodes) {
-        await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+        if (node.validator) await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
       }
 
       if (networkSpec.relaychain.genesis) {
@@ -216,7 +216,7 @@ export async function start(
       }
 
       const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
-        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
+        const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
         await fs.promises.mkdir(parachainFilesPath);
         await generateParachainFiles(
           namespace,
@@ -232,7 +232,7 @@ export async function start(
 
       await series(parachainPromiseGenerators, opts.spawnConcurrency);
       for (const parachain of networkSpec.parachains) {
-        const parachainFilesPath = `${tmpDir.path}/${parachain.id}`;
+        const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
         const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
         const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
         if (parachain.addToGenesis)
@@ -325,8 +325,10 @@ export async function start(
       node: Node,
       network: Network,
       paraId?: number,
-      parachainSpecPath?: string
+      parachainSpecPath?: string,
+      parachainName?: string
     ) => {
+      let parachainSpecId;
       // for relay chain we can have more than one bootnode.
       if (node.zombieRole === "node" || node.zombieRole === "collator")
         node.bootnodes = node.bootnodes.concat(bootnodes);
@@ -346,6 +348,8 @@ export async function start(
           localFilePath: parachainSpecPath,
           remoteFilePath: `${client.remoteDir}/${node.chain}-${paraId}.json`,
         });
+        const parachainSpec = require(parachainSpecPath);
+        parachainSpecId = parachainSpec.id;
       }
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
@@ -357,7 +361,10 @@ export async function start(
       let keystoreLocalDir;
       if (node.accounts) {
         // check if the node directory exists if not create (e.g for k8s provider)
-        const nodeFilesPath = `${tmpDir.path}/${node.name}`;
+        let nodeFilesPath = tmpDir.path;
+        if(parachainName) nodeFilesPath += `/${parachainName}`;
+        nodeFilesPath += `/${node.name}`;
+
         if (!fs.existsSync(nodeFilesPath)) {
           await fs.promises.mkdir(nodeFilesPath, { recursive: true });
         }
@@ -369,21 +376,22 @@ export async function start(
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
 
+      // replace all multiaddress references in command
+      replaceMultiAddresReferences(podDef, multiAddressByNode)
+
       await client.spawnFromDef(
         podDef,
         finalFilesToCopyToNode,
-        keystoreLocalDir
+        keystoreLocalDir,
+        parachainSpecId || client.chainId
       );
 
+      const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
+      const nodeMultiAddress = await generateBootnodeString(node.key!, nodeIp, nodePort);
+      multiAddressByNode[podDef.metadata.name] = nodeMultiAddress;
+
       if (node.addToBootnodes) {
-        // add first node as bootnode
-        const [nodeIp, nodePort] = await client.getNodeInfo(
-          podDef.metadata.name
-        );
-        bootnodes.push(
-          await generateBootnodeString(node.key!, nodeIp, nodePort)
-        );
-        // add bootnodes to chain spec
+        bootnodes.push(nodeMultiAddress);
         await addBootNodes(chainSpecFullPath, bootnodes);
         // flush require cache since we change the chain-spec
         delete require.cache[require.resolve(chainSpecFullPath)];
@@ -405,6 +413,10 @@ export async function start(
           userDefinedTypes
         );
       } else {
+        const endpointPort = (node.zombieRole === "node") ?
+          client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT :
+          RPC_WS_PORT;
+
         const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
         const fwdPort = await client.startPortForwarding(
           endpointPort,
@@ -470,7 +482,7 @@ export async function start(
             );
             break;
           case "kubernetes":
-            console.log(`\n\t\t\t kubectl logs -f ${podDef.metadata.name}`);
+            console.log(`\n\t\t\t kubectl logs -f ${podDef.metadata.name} -c ${podDef.metadata.name} -n ${namespace}`);
             break;
           case "native":
             console.log(
@@ -508,12 +520,12 @@ export async function start(
 
     const collatorPromiseGenerators = [];
     for (const parachain of networkSpec.parachains) {
-      if (!parachain.addToGenesis) {
+      if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
         await network.registerParachain(
           parachain.id,
-          `${tmpDir.path}/${parachain.id}/${GENESIS_WASM_FILENAME}`,
-          `${tmpDir.path}/${parachain.id}/${GENESIS_STATE_FILENAME}`
+          `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
+          `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`
         );
       }
 
@@ -596,7 +608,6 @@ export async function start(
             try {
               const tracingPort = await client.startPortForwarding(servicePort, `service/${serviceName}`, serviceNamespace);
               network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
-              console.log(network.tracingCollatorUrl);
             } catch(_) {
               console.log(decorators.yellow(`\n\t Warn: Can not create the forwarding to the tracing collator`));
             }

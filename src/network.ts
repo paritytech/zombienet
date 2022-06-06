@@ -272,9 +272,15 @@ export class Network {
     return node;
   }
 
-  getNodesInGroup(nodeName: string): NetworkNode[] {
-    const nodes = this.groups[nodeName];
-    if (!nodes) throw new Error(`GROUP: ${nodeName} not present`);
+  getNodes(nodeOrGroupName: string): NetworkNode[] {
+    //check if is a node
+    const node = this.nodesByName[nodeOrGroupName];
+    if(node) return [node]
+
+    //check if is a group
+    const nodes = this.groups[nodeOrGroupName];
+
+    if (!nodes) throw new Error(`Noode or Group: ${nodeOrGroupName} not present`);
     return nodes;
   }
 

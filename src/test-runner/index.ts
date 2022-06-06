@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { ApiPromise } from "@polkadot/api";
 import { LaunchConfig } from "../types";
-import { sleep } from "../utils/misc-utils";
+import { isValidHttpUrl, sleep } from "../utils/misc-utils";
 import { readNetworkConfig } from "../utils/fs-utils";
 import { Network, rebuildNetwork } from "../network";
 import { decorators } from "../utils/colors";
@@ -15,7 +15,8 @@ import { Providers } from "../providers/";
 import zombie from "../";
 const {
   connect,
-  chainUpgrade,
+  chainUpgradeFromUrl,
+  chainUpgradeFromLocalFile,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
   findPatternInSystemEventSubscription,
@@ -250,7 +251,7 @@ const assertSystemEventRegex = new RegExp(
 
 // Custom js-script
 const assertCustomJsRegex = new RegExp(
-  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
+  /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,-/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
 );
 
 // Backchannel
@@ -285,7 +286,7 @@ function parseAssertionLine(assertion: string) {
 
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.parachainIsRegistered(parachainId, timeout)));
 
       const parachainIsRegistered = results.every(Boolean);
@@ -304,7 +305,7 @@ function parseAssertionLine(assertion: string) {
 
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
 
       const results = await Promise.all(nodes.map(node => node.parachainBlockHeight(parachainId, targetValue, timeout)));
       for( const value of results) {
@@ -320,7 +321,7 @@ function parseAssertionLine(assertion: string) {
     if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", null, timeout)));
       const AllNodeUps = results.every(Boolean);
       expect(AllNodeUps).to.be.ok;
@@ -338,7 +339,7 @@ function parseAssertionLine(assertion: string) {
     if (m[8]) t = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getHistogramSamplesInBuckets(metricName, buckets, targetValue, timeout)));
 
       for( const value of results) {
@@ -357,7 +358,7 @@ function parseAssertionLine(assertion: string) {
     if (m[8]) t = parseInt(m[8], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const _timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getSpansByTraceId(traceId, network.tracingCollatorUrl!)));
 
       for(const value of results) {
@@ -376,7 +377,7 @@ function parseAssertionLine(assertion: string) {
     if (m[7]) t = parseInt(m[7], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.getMetric(metricName, targetValue, timeout)));
 
       for( const value of results) {
@@ -395,7 +396,7 @@ function parseAssertionLine(assertion: string) {
 
     return async (network: Network) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.findPattern(pattern, isGlob, timeout)));
 
       const found = results.every(Boolean);
@@ -440,8 +441,8 @@ function parseAssertionLine(assertion: string) {
       backchannelMap: BackchannelMap,
       testFile: string
     ) => {
-      let limitTimeout;
       const networkInfo = {
+        tmpDir: network.tmpDir,
         chainSpecPath: network.chainSpecFullPath,
         relay: network.relay.map((node) => {
           const { name, wsUri, prometheusUri, userDefinedTypes } = node;
@@ -471,6 +472,8 @@ function parseAssertionLine(assertion: string) {
         ),
       };
 
+      const nodes = network.getNodes(nodeName);
+      const args = withArgs === "" ? [] : withArgs.split("with ").slice(1)[0].replaceAll('"',"").split(",");
       const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(fileTestPath, jsFile);
 
@@ -481,33 +484,35 @@ function parseAssertionLine(assertion: string) {
       (global as any).window = dom.window;
       (global as any).document = dom.window.document;
       const jsScript = await import(resolvedJsFilePath);
-      const args = withArgs === "" ? [] : withArgs.split("with ").slice(1)[0].replaceAll('"',"").split(",");
-      let value;
+
+      let values;
       try {
-        const resp = await Promise.race([
-          jsScript.run(nodeName, networkInfo, args),
+        const resp: any = await Promise.race([
+          Promise.all(nodes.map(node => jsScript.run(node.name, networkInfo, args))),
           new Promise((resolve) => setTimeout(() => {
             const err = new Error(`Timeout(${timeout}), "custom-js ${jsFile} within ${timeout} secs" didn't complete on time.`);
             return resolve(err);
           }, timeout * 1000))
         ]);
-        if( resp instanceof Error ) throw resp
-        else value = resp;
+        if( resp instanceof Error ) throw new Error(resp as any);
+        else values = resp;
 
       } catch (err: any) {
         console.log(`\n\t ${decorators.red(`Error running script: ${jsFile}`)}`);
         console.log(`\t\t ${err.message}\n`);
-        throw err;
+        throw new Error(err);
       }
 
       // remove shim
       (global as any).window = undefined;
       (global as any).document = undefined;
-      clearTimeout(limitTimeout);
+
       if (targetValue) {
         if (comparatorFn !== "equals")
           targetValue = parseInt(targetValue as string, 10);
-        assert[comparatorFn](value, targetValue);
+        for( const value of values) {
+          assert[comparatorFn](value, targetValue);
+        }
       } else {
         // test don't have matching output
         expect(true).to.be.ok;
@@ -552,7 +557,7 @@ function parseAssertionLine(assertion: string) {
     if (m[4]) t = parseInt(m[4], 10);
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.restart(timeout)));
 
       const restarted = results.every(Boolean);
@@ -564,7 +569,7 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2]) {
     const nodeName = m[2];
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      const nodes = network.getNodesInGroup(nodeName);
+      const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.pause()));
 
       const paused = results.every(Boolean);
@@ -594,7 +599,7 @@ function parseAssertionLine(assertion: string) {
   if (m && m[2]) {
     const nodeName = m[2];
     const parachainId = parseInt(m[3], 10);
-    const upgradeFileUrl = m[4];
+    const upgradeFileOrUrl = m[4];
     let timeout: number;
     if (m[6]) timeout = parseInt(m[6], 10);
 
@@ -605,11 +610,20 @@ function parseAssertionLine(assertion: string) {
     ) => {
       let node = network.node(nodeName);
       let api: ApiPromise = await connect(node.wsUri);
+      let hash;
 
-      const hash = await chainUpgrade(api, upgradeFileUrl);
-      // validate in the <node>: of the relay chain
-      node = network.node(nodeName);
-      api = await connect(node.wsUri);
+      if (isValidHttpUrl(upgradeFileOrUrl)) {
+        hash = await chainUpgradeFromUrl(api, upgradeFileOrUrl);
+      } else {
+        const fileTestPath = path.dirname(testFile);
+        const resolvedJsFilePath = path.resolve(fileTestPath, upgradeFileOrUrl);
+        hash = await chainUpgradeFromLocalFile(api, resolvedJsFilePath);
+      }
+
+      // validate in a node of the relay chain
+      api.disconnect();
+      const {wsUri, userDefinedTypes } = network.relay[0];
+      api = await connect(wsUri, userDefinedTypes);
       const valid = await validateRuntimeCode(api, parachainId, hash, timeout);
       api.disconnect();
 

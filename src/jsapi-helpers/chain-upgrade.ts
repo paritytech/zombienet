@@ -1,12 +1,12 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
-import { readFileSync, promises as fsPromises } from "fs";
+import { promises as fsPromises } from "fs";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 import { compress, decompress } from "napi-maybe-compressed-blob";
 import axios from "axios";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
-export async function chainUpgrade(
+export async function chainUpgradeFromUrl(
   api: ApiPromise,
   wasmFileUrl: string
 ): Promise<string> {
@@ -25,6 +25,24 @@ export async function chainUpgrade(
 
   return hash;
 }
+
+export async function chainUpgradeFromLocalFile(
+  api: ApiPromise,
+  filePath: string
+): Promise<string> {
+  // The filename of the runtime/PVF we want to upgrade to. Usually a file
+  // with `.compact.compressed.wasm` extension.
+  console.log(`upgrading chain with file from path: ${filePath}`);
+
+  const data = await fsPromises.readFile(filePath);
+
+  const buff = Buffer.from(data);
+  const hash = blake2AsHex(buff);
+  await performChainUpgrade(api, buff.toString("hex"));
+
+  return hash;
+}
+
 
 // Add a custom section to the end, re-compress and perform the upgrade of the runtime.
 // It's required by the standard that custom sections cannot have any semantic differences
@@ -62,28 +80,33 @@ export async function validateRuntimeCode(
   hash: string,
   timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
 ): Promise<boolean> {
-  let expired = false;
-  let limitTimeout;
+
   try {
-    limitTimeout = setTimeout(() => {
-      expired = true;
-    }, timeout * 1000);
+    const validate = async (hash: string) => {
+      let done;
+      while (!done) {
+        const currentHash = await api.query.paras.currentCodeHash(paraId);
+        console.log(`parachain ${paraId} current code hash : ${currentHash}`);
+        if(hash === currentHash.toString()) break;
+        // wait 2 secs between checks
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
 
-    let done = false;
-    while (!done) {
-      if (expired) throw new Error(`Timeout(${timeout}s)`);
-      // wait 2 secs between checks
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const currentHash = await api.query.paras.currentCodeHash(paraId);
-      console.log(`parachain ${paraId} current code hash : ${currentHash}`);
-      done = hash === currentHash.toString();
+      return true;
     }
+    const resp:any = await Promise.race([
+      validate(hash),
+      new Promise((resolve) => setTimeout(() => {
+        const err = new Error(`Timeout(${timeout}), "validating the hash of the runtime upgrade`);
+        return resolve(err);
+      }, timeout * 1000))
+    ]);
+    if( resp instanceof Error ) throw resp
 
-    return true;
-  } catch (err) {
-    console.log(err);
-    if (limitTimeout) clearTimeout(limitTimeout);
-    return false;
+    return resp;
+
+  } catch (err: any) {
+    throw err;
   }
 }
 

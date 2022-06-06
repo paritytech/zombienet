@@ -10,7 +10,7 @@ import {
   DEFAULT_COMMAND,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { Node } from "../../types";
+import { MultiAddressByNode, Node } from "../../types";
 import { getSha256 } from "../../utils/misc-utils";
 
 export async function genBootnodeDef(
@@ -136,7 +136,7 @@ async function make_main_container(
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
   if( nodeSetup.zombieRole === "cumulus-collator" ) {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup,);
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
   }
@@ -195,6 +195,25 @@ function jaegerAgentDef() {
         "cpu": "100m"
       }
     }
+  }
+}
+
+export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+  // replace command if needed in containers
+  for( const container of podDef.spec.containers) {
+    if(Array.isArray(container.command)){
+      const finalCommand = container.command.map((item: string) => {
+        return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
+          return multiAddressByNode[nodeName];
+        });
+      });
+      container.command = finalCommand;
+    } else {
+      container.command = container.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
+        return multiAddressByNode[nodeName];
+      });
+    }
+
   }
 }
 

@@ -5,52 +5,55 @@ import { readDataFile } from "./utils/fs-utils";
 const fs = require("fs");
 const debug = require("debug")("zombie::chain-spec");
 
-// Get authority keys from within chainSpec data
-function getAuthorityKeys(chainSpec: ChainSpec) {
+export type KeyType = "session" | "aura";
+
+// Check if the chainSpec have session keys
+export function specHaveSessionsKeys(chainSpec: ChainSpec) {
   // Check runtime_genesis_config key for rococo compatibility.
-  const runtimeConfig =
-    chainSpec.genesis.runtime?.runtime_genesis_config ||
-    chainSpec.genesis.runtime;
-  if (runtimeConfig && runtimeConfig.session) {
-    return runtimeConfig.session.keys;
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+
+  return (runtimeConfig && runtimeConfig.session) || (runtimeConfig && runtimeConfig.palletSession);
+}
+
+// Get authority keys from within chainSpec data
+function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+  if( keyType === "session") {
+    if (runtimeConfig && runtimeConfig.session) {
+      return runtimeConfig.session.keys;
+    }
+  } else {
+    if (runtimeConfig && runtimeConfig.aura) {
+      return runtimeConfig.aura.authorities;
+    }
   }
 
-  // For retro-compatibility with substrate pre Polkadot 0.9.5
-  if (runtimeConfig && runtimeConfig.palletSession) {
-    return runtimeConfig.palletSession.keys;
-  }
-
-  console.error(
-    `\n\t\t  ${decorators.red("⚠ session not found in runtimeConfig")}`
-  );
-  process.exit(1);
+  const errorMsg = `⚠ ${keyType} keys not found in runtimeConfig`;
+  console.error(`\n\t\t  ${decorators.yellow(errorMsg)}`);
 }
 
 // Remove all existing keys from `session.keys`
-export function clearAuthorities(spec: string) {
-  let rawdata = fs.readFileSync(spec);
-  let chainSpec;
-  try {
-    chainSpec = JSON.parse(rawdata);
-  } catch {
-    console.error(
-      `\n\t\t  ${decorators.red("  ⚠ failed to parse the chain spec")}`
-    );
-    process.exit(1);
-  }
+export function clearAuthorities(specPath: string, keyType: KeyType = "session") {
+  const chainSpec = readAndParseChainSpec(specPath);
 
-  let keys = getAuthorityKeys(chainSpec);
+  let keys = getAuthorityKeys(chainSpec, keyType);
+  if(! keys) return;
+
   keys.length = 0;
 
-  let data = JSON.stringify(chainSpec, null, 2);
-  fs.writeFileSync(spec, data);
+  if(keyType === "session") {
+    const runtime = getRuntimeConfig(chainSpec);
+    if(runtime.collatorSelection && runtime.collatorSelection.invulnerables) runtime.collatorSelection.invulnerables.length = 0;
+  }
+
+  writeChainSpec(specPath, chainSpec);
   console.log(
     `\n\t\t🧹 ${decorators.green("Starting with a fresh authority set...")}`
   );
 }
 
 // Add additional authorities to chain spec in `session.keys`
-export async function addAuthority(spec: string, name: string, accounts: any) {
+export async function addAuthority(specPath: string, name: string, accounts: any) {
   const { sr_stash, sr_account, ed_account, ec_account } = accounts;
 
   let key = [
@@ -65,17 +68,23 @@ export async function addAuthority(spec: string, name: string, accounts: any) {
       para_validator: sr_account.address,
       para_assignment: sr_account.address,
       beefy: encodeAddress(ec_account.publicKey),
+      aura: sr_stash.address,
     },
   ];
 
-  let rawdata = fs.readFileSync(spec);
-  let chainSpec = JSON.parse(rawdata);
+  const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec);
+  if(! keys) return;
+
   keys.push(key);
 
-  let data = JSON.stringify(chainSpec, null, 2);
-  fs.writeFileSync(spec, data);
+  // Collators
+  const runtime = getRuntimeConfig(chainSpec);
+  if(runtime.collatorSelection && runtime.collatorSelection.invulnerables) runtime.collatorSelection.invulnerables.push(sr_stash.address);
+
+
+  writeChainSpec(specPath, chainSpec);
   console.log(
     `\t\t\t  👤 Added Genesis Authority ${decorators.green(
       name
@@ -83,21 +92,36 @@ export async function addAuthority(spec: string, name: string, accounts: any) {
   );
 }
 
+
+export async function addAuraAuthority(specPath: string, name: string, accounts: any) {
+  const { sr_account } = accounts;
+
+  const chainSpec = readAndParseChainSpec(specPath);
+
+  let keys = getAuthorityKeys(chainSpec, "aura");
+  if(! keys) return;
+
+  keys.push(sr_account.address);
+
+  writeChainSpec(specPath, chainSpec);
+  console.log(
+    `\t\t\t  👤 Added Genesis Authority (AURA) ${decorators.green(
+      name
+    )} - ${decorators.magenta(sr_account.address)}`
+  );
+}
+
 // Add parachains to the chain spec at genesis.
 export async function addParachainToGenesis(
-  spec_path: string,
+  specPath: string,
   para_id: string,
   head: string,
   wasm: string,
   parachain: boolean = true
 ) {
-  let rawdata = fs.readFileSync(spec_path);
-  let chainSpec = JSON.parse(rawdata);
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  // Check runtime_genesis_config key for rococo compatibility.
-  const runtimeConfig =
-    chainSpec.genesis.runtime?.runtime_genesis_config ||
-    chainSpec.genesis.runtime;
   let paras = undefined;
   if (runtimeConfig.paras) {
     paras = runtimeConfig.paras.paras;
@@ -114,8 +138,7 @@ export async function addParachainToGenesis(
 
     paras.push(new_para);
 
-    let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(spec_path, data);
+    writeChainSpec(specPath, chainSpec);
     console.log(
       `\n\t\t  ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`
     );
@@ -129,31 +152,27 @@ export async function addParachainToGenesis(
 
 // Update the runtime config in the genesis.
 // It will try to match keys which exist within the configuration and update the value.
-export async function changeGenesisConfig(spec_path: string, updates: any) {
-  let rawdata = fs.readFileSync(spec_path);
-  let chainSpec = JSON.parse(rawdata);
-
+export async function changeGenesisConfig(specPath: string, updates: any) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const msg = `⚙ Updating Chain Genesis Configuration (path: ${specPath})`;
   console.log(
-    `\n\t\t ${decorators.green("⚙ Updating Relay Chain Genesis Configuration")}`
+    `\n\t\t ${decorators.green(msg)}`
   );
 
   if (chainSpec.genesis) {
     let config = chainSpec.genesis;
     findAndReplaceConfig(updates, config);
 
-    let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(spec_path, data);
+    writeChainSpec(specPath, chainSpec);
   }
 }
 
-export async function addBootNodes(spec_path: string, addresses: string[]) {
-  let rawdata = fs.readFileSync(spec_path);
-  let chainSpec = JSON.parse(rawdata);
+export async function addBootNodes(specPath: string, addresses: string[]) {
+  const chainSpec = readAndParseChainSpec(specPath);
   // prevent dups bootnodes
   chainSpec.bootNodes = [...new Set(addresses)];
-  let data = JSON.stringify(chainSpec, null, 2);
+  writeChainSpec(specPath, chainSpec);
 
-  fs.writeFileSync(spec_path, data);
   if (addresses.length) {
     console.log(
       `\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`
@@ -164,12 +183,11 @@ export async function addBootNodes(spec_path: string, addresses: string[]) {
 }
 
 export async function addHrmpChannelsToGenesis(
-  spec_path: string,
+  specPath: string,
   hrmpChannels: HrmpChannelsConfig[]
 ) {
   console.log("⛓ Adding Genesis HRMP Channels");
-  let rawdata = fs.readFileSync(spec_path);
-  let chainSpec = JSON.parse(rawdata);
+  const chainSpec = readAndParseChainSpec(specPath);
 
   for (const hrmpChannel of hrmpChannels) {
     let newHrmpChannel = [
@@ -179,10 +197,7 @@ export async function addHrmpChannelsToGenesis(
       hrmpChannel.maxMessageSize,
     ];
 
-    // Check runtime_genesis_config key for rococo compatibility.
-    const runtimeConfig =
-      chainSpec.genesis.runtime.runtime_genesis_config ||
-      chainSpec.genesis.runtime;
+    const runtimeConfig = getRuntimeConfig(chainSpec);
 
     let hrmp = undefined;
 
@@ -205,8 +220,7 @@ export async function addHrmpChannelsToGenesis(
       process.exit(1);
     }
 
-    let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(spec_path, data);
+    writeChainSpec(specPath, chainSpec);
   }
 }
 
@@ -240,4 +254,38 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
       );
     }
   });
+}
+
+function getRuntimeConfig(chainSpec: any) {
+  const runtimeConfig =
+    chainSpec.genesis.runtime?.runtime_genesis_config ||
+    chainSpec.genesis.runtime;
+
+  return runtimeConfig;
+}
+
+function readAndParseChainSpec(specPath: string) {
+  let rawdata = fs.readFileSync(specPath);
+  let chainSpec;
+  try {
+    chainSpec = JSON.parse(rawdata);
+    return chainSpec;
+  } catch {
+    console.error(
+      `\n\t\t  ${decorators.red("  ⚠ failed to parse the chain spec")}`
+    );
+    process.exit(1);
+  }
+}
+
+function writeChainSpec(specPath: string, chainSpec: any) {
+  try {
+    let data = JSON.stringify(chainSpec, null, 2);
+    fs.writeFileSync(specPath, data);
+  } catch {
+    console.error(
+      `\n\t\t  ${decorators.red("  ⚠ failed to write the chain spec with path: ")} ${specPath}`
+    );
+    process.exit(1);
+  }
 }
