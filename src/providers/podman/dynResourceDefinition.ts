@@ -7,6 +7,7 @@ import {
   P2P_PORT,
   DEFAULT_COMMAND,
   INTROSPECTOR_POD_NAME,
+  RPC_WS_PORT,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { MultiAddressByNode, Node } from "../../types";
@@ -415,6 +416,11 @@ async function make_main_container(
     {
       containerPort: RPC_HTTP_PORT,
       name: "rpc",
+      hostPort: await getRandomPort(),
+    },
+    {
+      containerPort: RPC_WS_PORT,
+      name: "rpc-ws",
       hostPort: await getRandomPort(),
     },
     { containerPort: P2P_PORT, name: "p2p", hostPort: await getRandomPort() },

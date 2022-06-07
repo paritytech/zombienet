@@ -413,7 +413,7 @@ export async function start(
           userDefinedTypes
         );
       } else {
-        const endpointPort = (node.zombieRole === "node") ?
+        const endpointPort = (node.zombieRole === "node" || node.zombieRole === "collator") ?
           client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT :
           RPC_WS_PORT;
 
@@ -568,7 +568,7 @@ export async function start(
     // check if polkadot-instrospector is enabled
     if(networkSpec.settings.polkadot_introspector && ["podman", "kubernetes"].includes(networkSpec.settings.provider)) {
       const firstNode = network.relay[0];
-      const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT);
+      const [nodeIp, port] = await client.getNodeInfo(firstNode.name, RPC_HTTP_PORT, true);
       const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace("{{PORT}}",port);
       await client.spawnIntrospector(wsUri);
 

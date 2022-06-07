@@ -310,7 +310,7 @@ export class Network {
   }
 
   // show links for access and debug
-  showNetworkInfo(provider: String) {
+  showNetworkInfo(provider: string) {
     console.log("\n-----------------------------------------\n");
     console.log("\n\t Network launched 🚀🚀");
     console.log(
@@ -341,7 +341,7 @@ export class Network {
     }
   }
 
-  showNodeInfo(node: NetworkNode, provider: String) {
+  showNodeInfo(node: NetworkNode, provider: string) {
     console.log("\n");
     console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
 
@@ -349,7 +349,7 @@ export class Network {
     // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
     let wsUri =
-      provider === "native" ? node.wsUri : encodeURIComponent(node.wsUri);
+      ["native", "podman"].includes(provider) ? node.wsUri : encodeURIComponent(node.wsUri);
     console.log(
       `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer\n`
     );
