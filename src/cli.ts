@@ -48,6 +48,7 @@ process.on("unhandledRejection", async (err) => {
 // Handle ctrl+c to trigger `exit`.
 let alreadyTry = false;
 process.on("SIGINT", async function () {
+  process.env.terminating = "1";
   if (network && !alreadyTry) {
     alreadyTry = true;
     const msg = "Ctrl+c ... removing namespace: " + network.namespace;
@@ -59,6 +60,7 @@ process.on("SIGINT", async function () {
 });
 
 process.on("exit", async function () {
+  process.env.terminating = "1";
   if (network && !alreadyTry) {
     alreadyTry = true;
     debug("removing namespace: " + network.namespace);

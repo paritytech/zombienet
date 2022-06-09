@@ -10,7 +10,7 @@ import {
 import { addMinutes, getSha256 } from "../../utils/misc-utils";
 import { writeLocalJsonFile } from "../../utils/fs-utils";
 const fs = require("fs").promises;
-import { spawn } from "child_process";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
@@ -501,8 +501,9 @@ export class KubeClient extends Client {
   }
 
   async startPortForwarding(port: number, identifier: string, namespace?: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-      const mapping = `:${port}`;
+    let intents = 0;
+    const createTunnel = (remotePort: number, identifier: string, namespace?: string, localPort?: number) => {
+      const mapping = localPort ? `${localPort}:${port}` : `:${port}`;
       const args = [
         "port-forward",
         identifier,
@@ -514,8 +515,14 @@ export class KubeClient extends Client {
       ];
 
       const subprocess = spawn("kubectl", args);
+      return subprocess;
+    }
+
+    return new Promise((resolve, reject) => {
+      let subprocess: null| ChildProcessWithoutNullStreams = createTunnel(port, identifier, namespace);
 
       let resolved = false;
+      let mappedPort: number;
       subprocess.stdout.on("data", function (data) {
         if (resolved) return;
         const stdout = data.toString();
@@ -523,23 +530,26 @@ export class KubeClient extends Client {
         debug("stdout: " + stdout);
         if (m && !resolved) {
           resolved = true;
-          resolve(parseInt(m[1]));
+          mappedPort = parseInt(m[1],10)
+          return resolve(mappedPort);
         }
-
-        reject(new Error(`ERR: port-fw for ${identifier}`));
       });
 
       subprocess.stderr.on("data", function (data) {
         const s = data.toString();
         if (resolved && s.includes("error")) {
-          reject(new Error(`ERR: port-fw for ${identifier} : ${s}`));
           debug("stderr: " + s);
         }
       });
 
       subprocess.on("exit", function () {
         console.log("child process exited");
-        reject(new Error(`ERR: port-fw for ${identifier}`));
+        if(resolved && intents < 5 && process.env.terminating !== "1") {
+          intents++;
+          subprocess = null;
+          console.log(`creating new port-fw for ${identifier}, with map ${mappedPort}:${port}`);
+          createTunnel(port, identifier, namespace, mappedPort);
+        }
       });
     });
   }
