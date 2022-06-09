@@ -19,7 +19,8 @@ export async function genBootnodeDef(
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
-  const ports = await getPorts();
+  const {rpcPort, wsPort, prometheusPort} = nodeSetup;
+  const ports = await getPorts(rpcPort, wsPort, prometheusPort);
   const portFlags = getPortFlags(ports);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
@@ -56,7 +57,8 @@ export async function genNodeDef(
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
-  const ports = await getPorts();
+  const {rpcPort, wsPort, prometheusPort} = nodeSetup;
+  const ports = await getPorts(rpcPort, wsPort, prometheusPort);
   const portFlags = getPortFlags(ports);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
@@ -98,25 +100,25 @@ export async function genNodeDef(
   };
 }
 
-async function getPorts() {
+async function getPorts(rpc?: number, ws?:number, prometheus?:number) {
   const ports = [
     {
       containerPort: PROMETHEUS_PORT,
       name: "prometheus",
       flag: "--prometheus-port",
-      hostPort: await getRandomPort(),
+      hostPort: prometheus || await getRandomPort(),
     },
     {
       containerPort: RPC_HTTP_PORT,
       name: "rpc",
       flag: "--rpc-port",
-      hostPort: await getRandomPort(),
+      hostPort: rpc || await getRandomPort(),
     },
     {
       containerPort: RPC_WS_PORT,
       name: "ws",
       flag: "--ws-port",
-      hostPort: await getRandomPort(),
+      hostPort: ws || await getRandomPort(),
     },
     {
       containerPort: P2P_PORT,

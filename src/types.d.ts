@@ -58,6 +58,9 @@ export interface NodeConfig {
   overrides?: Override[];
   add_to_bootnodes?: boolean;
   resources?: Resources;
+  ws_port?: number;
+  rpc_port?: number;
+  prometheus_port?: number;
 }
 
 export interface NodeGroupConfig {
@@ -143,6 +146,9 @@ export interface Node {
   resources?: Resources;
   parachainId?: number;
   jaegerUrl?: string;
+  wsPort?: number;
+  rpcPort?: number;
+  prometheusPort?: number;
 }
 
 export interface Collator {

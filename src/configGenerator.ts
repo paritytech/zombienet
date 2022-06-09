@@ -409,6 +409,9 @@ async function getCollatorNodeFromConfig(
     parachainId: para_id,
   };
 
+  if(collatorConfig.ws_port) node.wsPort = collatorConfig.ws_port;
+  if(collatorConfig.rpc_port) node.rpcPort = collatorConfig.rpc_port;
+  if(collatorConfig.prometheus_port) node.prometheusPort = collatorConfig.prometheus_port;
   return node;
 }
 
@@ -484,6 +487,9 @@ async function getNodeFromConfig(
   };
 
   if(group) nodeSetup.group = group;
+  if(node.ws_port) nodeSetup.wsPort = node.ws_port;
+  if(node.rpc_port) nodeSetup.rpcPort = node.rpc_port;
+  if(node.prometheus_port) nodeSetup.prometheusPort = node.prometheus_port;
   return nodeSetup;
 }
 
