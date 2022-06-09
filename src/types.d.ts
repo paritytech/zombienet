@@ -170,7 +170,6 @@ export interface Parachain {
   genesisStatePath?: string;
   genesisStateGenerator?: string;
   chainSpecPath?: string;
-  chainSpecCommand?: string;
   specPath?: string;
   balance?: number;
   collators: Node[];
