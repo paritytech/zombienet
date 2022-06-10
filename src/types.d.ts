@@ -81,6 +81,7 @@ export interface ParachainConfig {
   genesis_wasm_generator?: string;
   genesis_state_path?: string;
   genesis_state_generator?: string;
+  chain_spec_path?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
   // backward compatibility
@@ -168,6 +169,7 @@ export interface Parachain {
   genesisWasmGenerator?: string;
   genesisStatePath?: string;
   genesisStateGenerator?: string;
+  chainSpecPath?: string;
   specPath?: string;
   balance?: number;
   collators: Node[];

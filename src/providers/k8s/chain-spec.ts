@@ -13,7 +13,7 @@ import fs from "fs";
 
 export async function setupChainSpec(
   namespace: string,
-  networkSpec: ComputedNetwork,
+  chaninConfig: any,
   chainName: string,
   chainFullPath: string
 ): Promise<any> {
@@ -21,8 +21,8 @@ export async function setupChainSpec(
   // 1: User provide the chainSpecCommand (without the --raw option)
   // 2: User provide the file (we DON'T expect the raw file)
   const client = getClient();
-  if (networkSpec.relaychain.chainSpecCommand) {
-    const { defaultImage, chainSpecCommand } = networkSpec.relaychain;
+  if (chaninConfig.chainSpecCommand) {
+    const { defaultImage, chainSpecCommand } = chaninConfig;
     const plainChainSpecOutputFilePath =
       client.remoteDir +
       "/" +
@@ -50,8 +50,8 @@ export async function setupChainSpec(
 
     await client.putLocalMagicFile(podName, podName);
   } else {
-    if (networkSpec.relaychain.chainSpecPath) {
-      fs.copyFileSync(networkSpec.relaychain.chainSpecPath, chainFullPath);
+    if (chaninConfig.chainSpecPath) {
+      fs.copyFileSync(chaninConfig.chainSpecPath, chainFullPath);
     }
   }
 }
