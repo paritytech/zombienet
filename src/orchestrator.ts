@@ -187,7 +187,7 @@ export async function start(
     // create or copy chain spec
     await setupChainSpec(
       namespace,
-      networkSpec,
+      networkSpec.relaychain,
       chainName,
       chainSpecFullPathPlain
     );

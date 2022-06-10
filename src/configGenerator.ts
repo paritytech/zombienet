@@ -283,6 +283,22 @@ export async function generateNetworkSpec(
 
       if(parachain.chain) parachainSetup.chain = parachain.chain;
 
+      // if we don't have a path to the chain-spec leave undefined to create
+      if (parachain.chain_spec_path) {
+        const chainSpecPath = resolve(
+          process.cwd(),
+          parachain.chain_spec_path
+        );
+        if (!fs.existsSync(chainSpecPath)) {
+          console.error(`Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`);
+          process.exit();
+        } else {
+          parachainSetup.chainSpecPath = chainSpecPath;
+        }
+      }
+
+
+
       parachainSetup = {
         ...parachainSetup,
         ...(parachain.balance ? { balance: parachain.balance } : {}),

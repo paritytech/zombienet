@@ -13,7 +13,7 @@ const fs = require("fs").promises;
 
 export async function setupChainSpec(
   namespace: string,
-  networkSpec: ComputedNetwork | any,
+  chaninConfig: any,
   chainName: string,
   chainFullPath: string
 ): Promise<any> {
@@ -21,8 +21,8 @@ export async function setupChainSpec(
   // 1: User provide the chainSpecCommand (without the --raw option)
   // 2: User provide the file (we DON'T expect the raw file)
   const client = getClient();
-  if (networkSpec.relaychain.chainSpecCommand) {
-    const { defaultImage, chainSpecCommand } = networkSpec.relaychain;
+  if (chaninConfig.chainSpecCommand) {
+    const { defaultImage, chainSpecCommand } = chaninConfig;
     const plainChainSpecOutputFilePath =
       client.remoteDir +
       "/" +
@@ -41,9 +41,9 @@ export async function setupChainSpec(
 
     await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);
   } else {
-    if (networkSpec.relaychain.chainSpecPath) {
+    if (chaninConfig.chainSpecPath) {
       // copy file to temp to use
-      await fs.copyFile(networkSpec.relaychain.chainSpecPath, chainFullPath);
+      await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
     }
   }
 }
