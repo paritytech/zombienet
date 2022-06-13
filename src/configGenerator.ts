@@ -362,6 +362,7 @@ export function getUniqueName(name: string): string {
     uniqueName = `${name}-${mUsedNames[name]}`;
     mUsedNames[name] += 1;
   }
+
   return uniqueName;
 }
 

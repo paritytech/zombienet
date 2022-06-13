@@ -53,22 +53,22 @@ export function clearAuthorities(specPath: string, keyType: KeyType = "session")
 }
 
 // Add additional authorities to chain spec in `session.keys`
-export async function addAuthority(specPath: string, name: string, accounts: any) {
+export async function addAuthority(specPath: string, name: string, accounts: any, useStash: boolean = true) {
   const { sr_stash, sr_account, ed_account, ec_account } = accounts;
 
-  let key = [
-    sr_stash.address,
-    sr_stash.address,
+  const key = [
+    useStash ? sr_stash.address : sr_account.address,
+    useStash ? sr_stash.address : sr_account.address,
     {
-      grandpa: ed_account.address,
-      babe: sr_account.address,
-      im_online: sr_account.address,
-      parachain_validator: sr_account.address,
-      authority_discovery: sr_account.address,
-      para_validator: sr_account.address,
-      para_assignment: sr_account.address,
-      beefy: encodeAddress(ec_account.publicKey),
-      aura: sr_stash.address,
+          grandpa: ed_account.address,
+          babe: sr_account.address,
+          im_online: sr_account.address,
+          parachain_validator: sr_account.address,
+          authority_discovery: sr_account.address,
+          para_validator: sr_account.address,
+          para_assignment: sr_account.address,
+          beefy: encodeAddress(ec_account.publicKey),
+          aura: sr_account.address,
     },
   ];
 
@@ -81,7 +81,7 @@ export async function addAuthority(specPath: string, name: string, accounts: any
 
   // Collators
   const runtime = getRuntimeConfig(chainSpec);
-  if(runtime.collatorSelection && runtime.collatorSelection.invulnerables) runtime.collatorSelection.invulnerables.push(sr_stash.address);
+  if(runtime.collatorSelection && runtime.collatorSelection.invulnerables) runtime.collatorSelection.invulnerables.push(sr_account.address);
 
 
   writeChainSpec(specPath, chainSpec);

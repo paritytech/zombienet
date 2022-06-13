@@ -371,7 +371,7 @@ export async function start(
 
         const keystoreFiles = await generateKeystoreFiles(
           node,
-          `${tmpDir.path}/${node.name}`
+          nodeFilesPath
         );
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
