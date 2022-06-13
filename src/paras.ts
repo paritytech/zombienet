@@ -66,7 +66,7 @@ export async function generateParachainFiles(
     if(specHaveSessionsKeys(plainData) ) {
       clearAuthorities(chainSpecFullPathPlain);
       for (const node of parachain.collators) {
-        if(node.validator) await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+        if(node.validator) await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!, false);
       }
     } else {
       // use `aura` keys

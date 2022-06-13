@@ -45,6 +45,9 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `overrides`: Array of `overrides` definitions.
   - `add_to_bootnodes`: (Boolean, default false) Add this node to the bootnode list.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
+  - `ws_port`: (number), WS port to use.;
+  - `rpc_port`: (number) RPC port to use;
+  - `prometheus_port`: (number) Prometheus port to use;
 - `node_groups`:
   - `*name`: (String) Group name, used for naming the nodes (e.g name-1)
   - `*count` (Number), Number of `nodes` to launch for this group.
