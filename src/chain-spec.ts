@@ -186,7 +186,8 @@ export async function addHrmpChannelsToGenesis(
   specPath: string,
   hrmpChannels: HrmpChannelsConfig[]
 ) {
-  console.log("⛓ Adding Genesis HRMP Channels");
+  console.log(`\n\t\t ⛓  ${decorators.green("Adding Genesis HRMP Channels")}`);
+
   const chainSpec = readAndParseChainSpec(specPath);
 
   for (const hrmpChannel of hrmpChannels) {
@@ -213,7 +214,7 @@ export async function addHrmpChannelsToGenesis(
       hrmp.preopenHrmpChannels.push(newHrmpChannel);
 
       console.log(
-        `  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`
+        decorators.green(`\t\t\t  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`)
       );
     } else {
       console.error("  ⚠ hrmp not found in runtimeConfig");

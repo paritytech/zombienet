@@ -318,6 +318,7 @@ export async function generateNetworkSpec(
   }
 
   networkSpec.types = config.types ? config.types : {};
+  networkSpec.hrmpChannels = config.hrmpChannels ? config.hrmpChannels : {};
 
   return networkSpec as ComputedNetwork;
 }
