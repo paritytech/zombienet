@@ -103,7 +103,7 @@ export async function run(
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {
-      console.log("runningNetworkSpecPath", runningNetworkSpecPath);
+      if(runningNetworkSpecPath) console.log("runningNetworkSpecPath", runningNetworkSpecPath);
       if(! runningNetworkSpecPath) {
         console.log(`\t Launching network... this can take a while.`);
         network = await zombie.start(creds!, config, {
