@@ -26,7 +26,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   try {
     debug(`fetching: ${metricUri}`);
     const response = await axios.get(metricUri, { timeout: 2000 });
-    const metrics = _extractMetrics(response.data);
+    metrics = _extractMetrics(response.data);
   } catch (err) {
     debug(`ERR: ${err}`);
     const errMsg = `Error fetching metrics from: ${metricUri}`;
