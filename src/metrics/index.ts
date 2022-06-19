@@ -1,6 +1,7 @@
 const debug = require("debug")("zombie::metrics");
 import axios from "axios";
 import { parseLine } from "./parse-line";
+import { decorators } from "../utils/colors";
 
 // metrics can have namespace
 export interface Metrics {
@@ -21,14 +22,17 @@ enum metricKeysMapping {
 }
 
 export async function fetchMetrics(metricUri: string): Promise<Metrics> {
+  let metrics = {}; // empty by default
   try {
     debug(`fetching: ${metricUri}`);
     const response = await axios.get(metricUri, { timeout: 2000 });
     const metrics = _extractMetrics(response.data);
-    return metrics;
   } catch (err) {
     debug(`ERR: ${err}`);
-    throw new Error(`Error fetching metrics from: ${metricUri}`);
+    const errMsg = `Error fetching metrics from: ${metricUri}`;
+    console.log(`\n${decorators.red(errMsg)}`);
+  } finally {
+    return metrics;
   }
 }
 

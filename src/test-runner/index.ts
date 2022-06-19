@@ -322,7 +322,7 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network) => {
       const timeout: number|undefined = t;
       const nodes = network.getNodes(nodeName);
-      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", null, timeout)));
+      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", 1, timeout)));
       const AllNodeUps = results.every(Boolean);
       expect(AllNodeUps).to.be.ok;
     };
