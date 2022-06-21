@@ -6,8 +6,8 @@
   "author": "Javier Viola <javier@parity.io>",
   "license": "MIT",
   "scripts": {
-    "_prepare": "tsc",
-    "clean": "rm -rf ./dist/* ",
+    "prepare": "tsc",
+    "clean": "rm -rf ./dist/*",
     "build": "tsc",
     "start": "yarn build && node dist/cli.js",
     "lint": "npx prettier --write ./src",
