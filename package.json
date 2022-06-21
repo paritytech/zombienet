@@ -12,7 +12,6 @@
   },
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "scripts": {
-    "prepare": "tsc",
     "clean": "rm -rf ./dist/*",
     "build": "tsc",
     "start": "yarn build && node dist/cli.js",
