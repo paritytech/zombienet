@@ -1,12 +1,17 @@
 {
-  "name": "zombienet",
+  "name": "@parity/zombienet",
   "version": "1.2.41",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "author": "Javier Viola <javier@parity.io>",
-  "license": "MIT",
+  "author": "Parity Technologies <admin@parity.io>",
+  "maintainers": ["Javier Viola <javier@parity.io>"],
+  "license": "GPL-3.0-or-later",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "scripts": {
-    "prepare": "tsc",
     "clean": "rm -rf ./dist/*",
     "build": "tsc",
     "start": "yarn build && node dist/cli.js",
