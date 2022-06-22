@@ -2,7 +2,8 @@ const chai = require("chai");
 import Mocha from "mocha";
 import fs from "fs";
 import path from "path";
-import { ApiPromise } from "@polkadot/api";
+import { ApiPromise, Keyring } from "@polkadot/api";
+const utilCrypto = require("@polkadot/util-crypto");
 import { LaunchConfig } from "../types";
 import { isValidHttpUrl, sleep } from "../utils/misc-utils";
 import { readNetworkConfig } from "../utils/fs-utils";
@@ -483,6 +484,7 @@ function parseAssertionLine(assertion: string) {
       );
       (global as any).window = dom.window;
       (global as any).document = dom.window.document;
+      (global as any).zombie = { ApiPromise, Keyring, util: utilCrypto, connect };
       const jsScript = await import(resolvedJsFilePath);
 
       let values;
@@ -506,6 +508,7 @@ function parseAssertionLine(assertion: string) {
       // remove shim
       (global as any).window = undefined;
       (global as any).document = undefined;
+      (global as any).zombie = undefined;
 
       if (targetValue) {
         if (comparatorFn !== "equals")
