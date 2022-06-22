@@ -1,10 +1,12 @@
 {
   "name": "@parity/zombienet",
-  "version": "1.2.41",
+  "version": "1.2.42",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Parity Technologies <admin@parity.io>",
-  "maintainers": ["Javier Viola <javier@parity.io>"],
+  "maintainers": [
+    "Javier Viola <javier@parity.io>"
+  ],
   "license": "GPL-3.0-or-later",
   "publishConfig": {
     "access": "public",
