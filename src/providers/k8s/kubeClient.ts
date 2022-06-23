@@ -85,7 +85,8 @@ export class KubeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string
+    keystore: string,
+    chainSpecId: string
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -114,7 +115,7 @@ export class KubeClient extends Client {
           "--",
           "/bin/mkdir",
           "-p",
-          `/data/chains/${this.chainId}/keystore`,
+          `/data/chains/${chainSpecId}/keystore`,
         ],
         undefined,
         true
@@ -124,7 +125,7 @@ export class KubeClient extends Client {
       await this.copyFileToPod(
         name,
         keystore,
-        `/data/chains/${this.chainId}`,
+        `/data/chains/${chainSpecId}`,
         TRANSFER_CONTAINER_NAME,
         true
       );
