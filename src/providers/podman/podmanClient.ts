@@ -271,7 +271,8 @@ export class PodmanClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string
+    keystore: string,
+    chainSpecId: string
   ): Promise<void> {
     const name = podDef.metadata.name;
 
@@ -292,7 +293,7 @@ export class PodmanClient extends Client {
         (vol: any) => vol.name === "tmp-data"
       );
       debug("dataPath", dataPath);
-      const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${this.chainId}/keystore`;
+      const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       debug("keystoreRemoteDir", keystoreRemoteDir);
       await fs.mkdir(keystoreRemoteDir, { recursive: true });
       // inject keys
