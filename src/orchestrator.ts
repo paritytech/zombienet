@@ -398,13 +398,17 @@ export async function start(
       }
 
       let networkNode: NetworkNode;
+      const endpointPort = (node.zombieRole === "node" || node.zombieRole === "collator") ?
+        client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT :
+        RPC_WS_PORT;
+
       if (options?.inCI) {
         const nodeIp = await client.getNodeIP(podDef.metadata.name);
         networkNode = new NetworkNode(
           node.name,
           WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
             "{{PORT}}",
-            RPC_HTTP_PORT.toString()
+            endpointPort.toString()
           ),
           METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
             "{{PORT}}",
@@ -413,10 +417,6 @@ export async function start(
           userDefinedTypes
         );
       } else {
-        const endpointPort = (node.zombieRole === "node" || node.zombieRole === "collator") ?
-          client.providerName === "native" ? RPC_WS_PORT : RPC_HTTP_PORT :
-          RPC_WS_PORT;
-
         const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
         const fwdPort = await client.startPortForwarding(
           endpointPort,
