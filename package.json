@@ -42,7 +42,9 @@
     "yaml": "^2.0.0-9"
   },
   "files": [
-    "dist"
+    "dist",
+    "static-configs",
+    "scripts"
   ],
   "bin": {
     "zombienet": "dist/cli.js"
