@@ -53,7 +53,7 @@ export function clearAuthorities(specPath: string, keyType: KeyType = "session")
 }
 
 // Add additional authorities to chain spec in `session.keys`
-export async function addAuthority(specPath: string, name: string, accounts: any, useStash: boolean = true) {
+export async function addAuthority(specPath: string, name: string, accounts: any, useStash: boolean = true, isStatemint: boolean = false) {
   const { sr_stash, sr_account, ed_account, ec_account } = accounts;
 
   const key = [
@@ -68,7 +68,7 @@ export async function addAuthority(specPath: string, name: string, accounts: any
       para_validator: sr_account.address,
       para_assignment: sr_account.address,
       beefy: encodeAddress(ec_account.publicKey),
-      aura: sr_account.address,
+      aura: isStatemint ? ed_account.address : sr_account.address,
     },
   ];
 

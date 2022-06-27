@@ -65,8 +65,9 @@ export async function generateParachainFiles(
     // Chain spec customization logic
     if(specHaveSessionsKeys(plainData) ) {
       clearAuthorities(chainSpecFullPathPlain);
+      const isStatemint = parachain.chain?.includes("statemint");
       for (const node of parachain.collators) {
-        if(node.validator) await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!, false);
+        if(node.validator) await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!, false, isStatemint);
       }
     } else {
       // use `aura` keys

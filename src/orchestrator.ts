@@ -326,7 +326,7 @@ export async function start(
       network: Network,
       paraId?: number,
       parachainSpecPath?: string,
-      parachainName?: string
+      parachain?: Parachain
     ) => {
       let parachainSpecId;
       // for relay chain we can have more than one bootnode.
@@ -362,16 +362,18 @@ export async function start(
       if (node.accounts) {
         // check if the node directory exists if not create (e.g for k8s provider)
         let nodeFilesPath = tmpDir.path;
-        if(parachainName) nodeFilesPath += `/${parachainName}`;
+        if(parachain && parachain.name) nodeFilesPath += `/${parachain.name}`;
         nodeFilesPath += `/${node.name}`;
 
         if (!fs.existsSync(nodeFilesPath)) {
           await fs.promises.mkdir(nodeFilesPath, { recursive: true });
         }
 
+        const isStatemint = parachain && parachain.chain?.includes("statemint");
         const keystoreFiles = await generateKeystoreFiles(
           node,
-          nodeFilesPath
+          nodeFilesPath,
+          isStatemint
         );
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
@@ -536,7 +538,8 @@ export async function start(
             firstCollatorNode,
             network,
             parachain.id,
-            parachain.specPath
+            parachain.specPath,
+            parachain
           );
           await sleep(2000);
 
@@ -558,7 +561,7 @@ export async function start(
 
       collatorPromiseGenerators.push( ...parachain.collators.map((node: Node) => {
         return () =>
-          spawnNode(node, network!, parachain.id, parachain.specPath);
+          spawnNode(node, network!, parachain.id, parachain.specPath, parachain);
       }));
     }
 
