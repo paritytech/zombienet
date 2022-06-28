@@ -108,6 +108,7 @@ program
   .action(() => {
     const p = require("../package.json");
     console.log(p.version);
+    process.exit(0);
   });
 
 // spawn
