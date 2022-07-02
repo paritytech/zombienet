@@ -185,9 +185,10 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async getMetric(
     rawmetricName: string,
+    comparator: string,
     desiredMetricValue: number | null = null,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
-  ): Promise<number> {
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  ): Promise<number|undefined> {
     let value;
     try {
       if (desiredMetricValue === null || !this.cachedMetrics) {
@@ -198,7 +199,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const metricName = getMetricName(rawmetricName);
       value = this._getMetric(metricName, desiredMetricValue === null);
       if (value !== undefined) {
-        if (desiredMetricValue === null || value >= desiredMetricValue) {
+        if (desiredMetricValue === null || compare(comparator, value, desiredMetricValue)) {
           debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
           return value;
         }
@@ -217,7 +218,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (
             value !== undefined &&
             desiredMetricValue !== null &&
-            desiredMetricValue <= value
+            compare(comparator,value, desiredMetricValue)
           ) {
             done = true;
           } else {
@@ -240,7 +241,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return value || 0;
     } catch(err: any) {
       console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
-      return value || 0;
+      return value;
     }
   }
 
@@ -429,5 +430,22 @@ export class NetworkNode implements NetworkNodeInterface {
       count += buckets[key];
     }
     return count;
+  }
+}
+
+
+function compare(comparator: string, a: any, b: any): boolean {
+  debug(`using comparator ${comparator} for ${a}, ${b}`);
+  switch (comparator.trim()) {
+    case "equal":
+      return a == b;
+    case "isAbove":
+      return a > b
+    case "isAtLeast":
+      return a >= b;
+    case "isBelow":
+      return a < b;
+    default:
+      return a == b;
   }
 }
