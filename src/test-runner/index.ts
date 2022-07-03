@@ -323,7 +323,7 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network) => {
       const timeout: number|undefined = t;
       const nodes = network.getNodes(nodeName);
-      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", 1, timeout)));
+      const results = await Promise.all(nodes.map(node => node.getMetric("process_start_time_seconds", "isAtLeast", 1, timeout)));
       const AllNodeUps = results.every(Boolean);
       expect(AllNodeUps).to.be.ok;
     };
@@ -379,9 +379,9 @@ function parseAssertionLine(assertion: string) {
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const timeout: number|undefined = t;
       const nodes = network.getNodes(nodeName);
-      const results = await Promise.all(nodes.map(node => node.getMetric(metricName, targetValue, timeout)));
+      const results = await Promise.all(nodes.map(node => node.getMetric(metricName, comparatorFn, targetValue, timeout)));
 
-      for( const value of results) {
+      for(const value of results) {
         assert[comparatorFn](value, targetValue);
       }
     };
