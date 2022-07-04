@@ -1,6 +1,6 @@
 {
   "name": "@parity/zombienet",
-  "version": "1.2.47",
+  "version": "1.2.48",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Parity Technologies <admin@parity.io>",
@@ -22,8 +22,8 @@
   },
   "dependencies": {
     "@polkadot/api": "^8.9.1",
-		"@polkadot/keyring": "^9.5.1",
-		"@polkadot/util-crypto": "^9.5.1",
+    "@polkadot/keyring": "^9.5.1",
+    "@polkadot/util-crypto": "^9.5.1",
     "axios": "^0.24.0",
     "chai": "^4.3.4",
     "commander": "^8.2.0",
