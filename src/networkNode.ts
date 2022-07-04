@@ -8,12 +8,12 @@ import {
   getMetricName,
   getHistogramBuckets,
   BucketHash,
-} from "./metrics";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./constants";
-import { getClient } from "./providers/client";
+} from "./metrics/index.ts";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./constants.ts";
+import { getClient } from "./providers/client.ts";
 
-import { paraGetBlockHeight, paraIsRegistered, validateRuntimeCode } from "./jsapi-helpers";
-import { decorators } from "./utils/colors";
+import { paraGetBlockHeight, paraIsRegistered, validateRuntimeCode } from "./jsapi-helpers/index.ts";
+import { decorators } from "./utils/colors.ts";
 
 const debug = require("debug")("zombie::network-node");
 

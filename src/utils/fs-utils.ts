@@ -2,7 +2,7 @@ import fs from "fs";
 import toml from "toml";
 import path from "path";
 import { LaunchConfig } from "../types";
-import { RelativeLoader } from "./nunjucks-relative-loader";
+import { RelativeLoader } from "./nunjucks-relative-loader.ts";
 import { Environment } from "nunjucks";
 
 export function writeLocalJsonFile(

@@ -1,12 +1,12 @@
-import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-import { getClient } from "../client";
+import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition.ts";
+import { getClient } from "../client.ts";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
-} from "../../constants";
-import { ComputedNetwork } from "../../types";
-import { sleep } from "../../utils/misc-utils";
+} from "../../constants.ts";
+import { ComputedNetwork } from "../../types.d.ts";
+import { sleep } from "../../utils/misc-utils.ts";
 const debug = require("debug")("zombie::native::chain-spec");
 
 const fs = require("fs").promises;

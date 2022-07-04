@@ -6,15 +6,15 @@ import {
   DEFAULT_REMOTE_DIR,
   P2P_PORT,
   PROMETHEUS_PORT,
-} from "../../constants";
-import { getHostIp } from "../../utils/net-utils";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
+} from "../../constants.ts";
+import { getHostIp } from "../../utils/net-utils.ts";
+import { writeLocalJsonFile } from "../../utils/fs-utils.ts";
 const fs = require("fs").promises;
-import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../utils/colors";
+import { fileMap } from "../../types.d.ts";
+import { Client, RunCommandResponse, setClient } from "../client.ts";
+import { decorators } from "../../utils/colors.ts";
 import YAML from "yaml";
-import { genGrafanaDef, genPrometheusDef, genTempoDef, getIntrospectorDef } from "./dynResourceDefinition";
+import { genGrafanaDef, genPrometheusDef, genTempoDef, getIntrospectorDef } from "./dynResourceDefinition.ts";
 
 const debug = require("debug")("zombie::podman::client");
 

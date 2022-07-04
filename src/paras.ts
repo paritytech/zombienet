@@ -3,11 +3,11 @@ import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
-} from "./constants";
-import { getUniqueName } from "./configGenerator";
-import { getClient } from "./providers/client";
-import { Providers } from "./providers";
-import { fileMap, Node, Parachain } from "./types";
+} from "./constants.ts";
+import { getUniqueName } from "./configGenerator.ts";
+import { getClient } from "./providers/client.ts";
+import { Providers } from "./providers/index.ts";
+import { fileMap, Node, Parachain } from "./types.ts";
 import fs from "fs";
 import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec";
 const debug = require("debug")("zombie::paras");

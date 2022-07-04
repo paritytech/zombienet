@@ -6,14 +6,14 @@ import {
   FINISH_MAGIC_FILE,
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
-} from "../../constants";
-import { addMinutes, getSha256 } from "../../utils/misc-utils";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
+} from "../../constants.ts";
+import { addMinutes, getSha256 } from "../../utils/misc-utils.ts";
+import { writeLocalJsonFile } from "../../utils/fs-utils.ts";
 const fs = require("fs").promises;
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../utils/colors";
+import { fileMap } from "../../types.d.ts";
+import { Client, RunCommandResponse, setClient } from "../client.ts";
+import { decorators } from "../../utils/colors.ts";
 
 const debug = require("debug")("zombie::kube::client");
 

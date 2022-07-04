@@ -4,16 +4,16 @@ import fs from "fs";
 import path from "path";
 import { ApiPromise, Keyring } from "@polkadot/api";
 const utilCrypto = require("@polkadot/util-crypto");
-import { LaunchConfig } from "../types";
-import { isValidHttpUrl, sleep } from "../utils/misc-utils";
-import { readNetworkConfig } from "../utils/fs-utils";
-import { Network, rebuildNetwork } from "../network";
-import { decorators } from "../utils/colors";
-import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
+import { LaunchConfig } from "../types.d.ts";
+import { isValidHttpUrl, sleep } from "../utils/misc-utils.ts";
+import { readNetworkConfig } from "../utils/fs-utils.ts";
+import { Network, rebuildNetwork } from "../network.ts";
+import { decorators } from "../utils/colors.ts";
+import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants.ts";
 import minimatch from "minimatch";
-import { Providers } from "../providers/";
+import { Providers } from "../providers/index.ts";
 
-import zombie from "../";
+import zombie from "../index.ts";
 const {
   connect,
   chainUpgradeFromUrl,

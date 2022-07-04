@@ -1,4 +1,4 @@
-import BaseError from "./baseError";
+import BaseError from "./baseError.ts";
 
 export function serialize( err: Error | BaseError ) {
     const serializedObject: any = {

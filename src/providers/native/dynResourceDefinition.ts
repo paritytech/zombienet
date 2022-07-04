@@ -1,15 +1,15 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator.ts";
 import {
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   P2P_PORT,
   RPC_WS_PORT,
   DEFAULT_COMMAND,
-} from "../../constants";
-import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
-import { getRandomPort } from "../../utils/net-utils";
-import { getClient } from "../client";
+} from "../../constants.ts";
+import { getUniqueName } from "../../configGenerator.ts";
+import { MultiAddressByNode, Node } from "../../types.d.ts";
+import { getRandomPort } from "../../utils/net-utils.ts";
+import { getClient } from "../client.ts";
 
 const fs = require("fs").promises;
 

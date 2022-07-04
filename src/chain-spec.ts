@@ -1,7 +1,7 @@
 import { encodeAddress } from "@polkadot/util-crypto";
-import { decorators } from "./utils/colors";
-import { ChainSpec, HrmpChannelsConfig } from "./types";
-import { readDataFile } from "./utils/fs-utils";
+import { decorators } from "./utils/colors.ts";
+import { ChainSpec, HrmpChannelsConfig } from "./types.d.ts";
+import { readDataFile } from "./utils/fs-utils.ts";
 const fs = require("fs");
 const debug = require("debug")("zombie::chain-spec");
 

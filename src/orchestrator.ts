@@ -1,10 +1,10 @@
-import { Providers } from "./providers/";
-import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain, MultiAddressByNode } from "./types";
+import { Providers } from "./providers/index.ts";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain, MultiAddressByNode } from "./types.d.ts";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
-} from "./configGenerator";
+} from "./configGenerator.ts";
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -23,9 +23,9 @@ import {
   TRACING_COLLATOR_SERVICE,
   TRACING_COLLATOR_NAMESPACE,
   TRACING_COLLATOR_PODNAME,
-} from "./constants";
-import { Network, Scope } from "./network";
-import { NetworkNode } from "./networkNode";
+} from "./constants.ts";
+import { Network, Scope } from "./network.ts";
+import { NetworkNode } from "./networkNode.ts";
 import {
   clearAuthorities,
   addAuthority,
@@ -33,16 +33,16 @@ import {
   addParachainToGenesis,
   addHrmpChannelsToGenesis,
   addBootNodes,
-} from "./chain-spec";
-import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils";
-import { series } from "./utils/promise-series";
-import { loadTypeDef } from "./utils/fs-utils";
+} from "./chain-spec.ts";
+import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils.ts";
+import { series } from "./utils/promise-series.ts";
+import { loadTypeDef } from "./utils/fs-utils.ts";
 import tmp from "tmp-promise";
 import fs from "fs";
-import { generateParachainFiles } from "./paras";
-import { decorators } from "./utils/colors";
-import { generateBootnodeString } from "./bootnode";
-import { generateKeystoreFiles } from "./keys";
+import { generateParachainFiles } from "./paras.ts";
+import { decorators } from "./utils/colors.ts";
+import { generateBootnodeString } from "./bootnode.ts";
+import { generateKeystoreFiles } from "./keys.ts";
 import path from "path";
 
 const debug = require("debug")("zombie");

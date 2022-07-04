@@ -1,4 +1,4 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator.ts";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
@@ -8,11 +8,11 @@ import {
   DEFAULT_COMMAND,
   INTROSPECTOR_POD_NAME,
   RPC_WS_PORT,
-} from "../../constants";
-import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
-import { getRandomPort } from "../../utils/net-utils";
-import { getClient } from "../client";
+} from "../../constants.ts";
+import { getUniqueName } from "../../configGenerator.ts";
+import { MultiAddressByNode, Node } from "../../types.d.ts";
+import { getRandomPort } from "../../utils/net-utils.ts";
+import { getClient } from "../client.ts";
 import { resolve } from "path";
 
 const fs = require("fs").promises;

@@ -3,7 +3,7 @@ import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
 import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto";
-import { Node } from "./types";
+import { Node } from "./types.d.ts";
 
 function nameCase(string: string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);

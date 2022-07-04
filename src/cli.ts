@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { start } from "./orchestrator";
+import { start } from "./orchestrator.ts";
 import { resolve } from "path";
 import fs from "fs";
-import { Network } from "./network";
-import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils";
-import { LaunchConfig } from "./types";
-import { run } from "./test-runner";
+import { Network } from "./network.ts";
+import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils.ts";
+import { LaunchConfig } from "./types.d.ts";
+import { run } from "./test-runner/index.ts";
 import { Command, Option } from "commander";
-import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants";
-import { decorators } from "./utils/colors";
+import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants.ts";
+import { decorators } from "./utils/colors.ts";
 
 const debug = require("debug")("zombie-cli");
 

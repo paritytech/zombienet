@@ -4,9 +4,9 @@ import {
   chainUpgradeFromUrl,
   chainCustomSectionUpgrade,
   validateRuntimeCode,
-} from "./chain-upgrade";
-import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
-import { findPatternInSystemEventSubscription } from "./events";
+} from "./chain-upgrade.ts";
+import { paraGetBlockHeight, paraIsRegistered } from "./parachain.ts";
+import { findPatternInSystemEventSubscription } from "./events.ts";
 
 async function connect(apiUrl: string, types: any): Promise<ApiPromise> {
   const provider = new WsProvider(apiUrl);

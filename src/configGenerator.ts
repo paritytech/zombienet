@@ -10,8 +10,8 @@ import {
   NodeConfig,
   envVars,
   NodeGroupConfig,
-} from "./types";
-import { getSha256 } from "./utils/misc-utils";
+} from "./types.d.ts";
+import { getSha256 } from "./utils/misc-utils.ts";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -27,8 +27,8 @@ import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   ZOMBIE_WRAPPER,
-} from "./constants";
-import { generateKeyForNode } from "./keys";
+} from "./constants.ts";
+import { generateKeyForNode } from "./keys.ts";
 
 const debug = require("debug")("zombie::config-manager");
 

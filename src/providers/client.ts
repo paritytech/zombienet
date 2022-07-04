@@ -1,4 +1,4 @@
-import { fileMap } from "../types";
+import { fileMap } from "../types.d.ts";
 
 export interface RunCommandResponse {
   exitCode: number;
