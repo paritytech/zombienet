@@ -1,5 +1,5 @@
 import path, { resolve } from "path";
-import fs from "fs";
+import * as fs from "../_deps/fs.ts";
 
 import {
   LaunchConfig,

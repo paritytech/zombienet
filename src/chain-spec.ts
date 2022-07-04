@@ -2,7 +2,6 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors.ts";
 import { ChainSpec, HrmpChannelsConfig } from "./types.d.ts";
 import { readDataFile } from "./utils/fs-utils.ts";
-const fs = require("fs");
 const debug = require("debug")("zombie::chain-spec");
 
 export type KeyType = "session" | "aura";
@@ -266,7 +265,7 @@ function getRuntimeConfig(chainSpec: any) {
 }
 
 function readAndParseChainSpec(specPath: string) {
-  let rawdata = fs.readFileSync(specPath);
+  let rawdata = Deno.readTextFileSync(specPath);
   let chainSpec;
   try {
     chainSpec = JSON.parse(rawdata);
@@ -275,18 +274,18 @@ function readAndParseChainSpec(specPath: string) {
     console.error(
       `\n\t\t  ${decorators.red("  ⚠ failed to parse the chain spec")}`
     );
-    process.exit(1);
+    Deno.exit(1);
   }
 }
 
 function writeChainSpec(specPath: string, chainSpec: any) {
   try {
     let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(specPath, data);
+    Deno.writeTextFileSync(specPath, data);
   } catch {
     console.error(
       `\n\t\t  ${decorators.red("  ⚠ failed to write the chain spec with path: ")} ${specPath}`
     );
-    process.exit(1);
+    Deno.exit(1);
   }
 }

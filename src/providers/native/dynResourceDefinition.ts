@@ -11,8 +11,6 @@ import { MultiAddressByNode, Node } from "../../types.d.ts";
 import { getRandomPort } from "../../utils/net-utils.ts";
 import { getClient } from "../client.ts";
 
-const fs = require("fs").promises;
-
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node
@@ -24,10 +22,10 @@ export async function genBootnodeDef(
   const portFlags = getPortFlags(ports);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
 
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
 
@@ -62,10 +60,10 @@ export async function genNodeDef(
   const portFlags = getPortFlags(ports);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
 
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;

@@ -1,4 +1,3 @@
-import fs from "fs";
 import { Keyring } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
@@ -51,7 +50,7 @@ export async function generateKeystoreFiles(
   isStatemint: boolean = false
 ): Promise<string[]> {
   const keystoreDir = `${path}/keystore`;
-  await fs.promises.mkdir(keystoreDir);
+  await Deno.mkdir(keystoreDir);
 
   const paths: string[] = [];
   const keysHash = {
@@ -68,7 +67,7 @@ export async function generateKeystoreFiles(
     const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");
     const keystoreFilePath = `${keystoreDir}/${filename}`;
     paths.push(keystoreFilePath);
-    await fs.promises.writeFile(keystoreFilePath, `"${node.accounts.seed}"`);
+    await Deno.writeTextFile(keystoreFilePath, `"${node.accounts.seed}"`);
   }
 
   return paths;

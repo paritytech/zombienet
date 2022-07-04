@@ -1,6 +1,5 @@
 const chai = require("chai");
 import Mocha from "mocha";
-import fs from "fs";
 import path from "path";
 import { ApiPromise, Keyring } from "@polkadot/api";
 const utilCrypto = require("@polkadot/util-crypto");
@@ -12,6 +11,7 @@ import { decorators } from "../utils/colors.ts";
 import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants.ts";
 import minimatch from "minimatch";
 import { Providers } from "../providers/index.ts";
+import * as fs from "../../_deps/fs.ts"
 
 import zombie from "../index.ts";
 const {
@@ -31,7 +31,7 @@ const mocha = new Mocha();
 
 import { JSDOM } from "jsdom";
 import { Environment } from "nunjucks";
-import { RelativeLoader } from "../utils/nunjucks-relative-loader";
+import { RelativeLoader } from "../utils/nunjucks-relative-loader.ts";
 
 interface TestDefinition {
   networkConfig: string;
@@ -714,7 +714,7 @@ function parseTestFile(testFile: string): TestDefinition {
 
   const configBasePath = path.dirname(testFile);
   const env = new Environment(new RelativeLoader([configBasePath]));
-  const temmplateContent = fs.readFileSync(testFile).toString();
+  const temmplateContent = Deno.readTextFileSync(testFile);
   const content = env.renderString(temmplateContent, process.env);
 
   let networkConfig: string = "";

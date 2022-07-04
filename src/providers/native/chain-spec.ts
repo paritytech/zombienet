@@ -9,8 +9,6 @@ import { ComputedNetwork } from "../../types.d.ts";
 import { sleep } from "../../utils/misc-utils.ts";
 const debug = require("debug")("zombie::native::chain-spec");
 
-const fs = require("fs").promises;
-
 export async function setupChainSpec(
   namespace: string,
   chaninConfig: any,
@@ -39,11 +37,11 @@ export async function setupChainSpec(
     const podDef = await genNodeDef(namespace, node);
     await client.spawnFromDef(podDef);
 
-    await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);
+    await Deno.copyFile(plainChainSpecOutputFilePath, chainFullPath);
   } else {
     if (chaninConfig.chainSpecPath) {
       // copy file to temp to use
-      await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
+      await Deno.copyFile(chaninConfig.chainSpecPath, chainFullPath);
     }
   }
 }

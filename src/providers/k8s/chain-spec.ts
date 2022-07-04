@@ -5,11 +5,8 @@ import {
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
 } from "../../constants.ts";
-import { ComputedNetwork } from "../../types.d.ts";
 import { sleep } from "../../utils/misc-utils.ts";
 const debug = require("debug")("zombie::kube::chain-spec");
-
-import fs from "fs";
 
 export async function setupChainSpec(
   namespace: string,
@@ -51,7 +48,7 @@ export async function setupChainSpec(
     await client.putLocalMagicFile(podName, podName);
   } else {
     if (chaninConfig.chainSpecPath) {
-      fs.copyFileSync(chaninConfig.chainSpecPath, chainFullPath);
+      Deno.copyFileSync(chaninConfig.chainSpecPath, chainFullPath);
     }
   }
 }
@@ -123,7 +120,7 @@ export async function getChainSpecRaw(
       if (result.exitCode === 0 && result.stdout.length > 0) {
         // TODO: remove this debug when we get this fixed.
         debug(result.stdout);
-        fs.writeFileSync(chainFullPath, result.stdout);
+        Deno.writeTextFileSync(chainFullPath, result.stdout);
         isValid = true;
       }
     } catch (_) {}

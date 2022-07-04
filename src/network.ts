@@ -1,5 +1,5 @@
 import { Client } from "./providers/client.ts";
-import { cryptoWaitReady, sortAddresses } from "@polkadot/util-crypto";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
 import { readDataFile } from "./utils/fs-utils.ts";
@@ -11,7 +11,6 @@ import {
 } from "./constants.ts";
 import { Metrics } from "./metrics/index.ts";
 import { NetworkNode } from "./networkNode.ts";
-import fs from "fs";
 import axios from "axios";
 import { decorators } from "./utils/colors.ts";
 const debug = require("debug")("zombie::network");
@@ -125,7 +124,7 @@ export class Network {
 
   async dumpLogs() {
     // create dump directory in local temp
-    fs.mkdirSync(`${this.tmpDir}/logs`);
+    Deno.mkdirSync(`${this.tmpDir}/logs`);
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
       (memo: NetworkNode[], key) => {
         const paraId = parseInt(key, 10);

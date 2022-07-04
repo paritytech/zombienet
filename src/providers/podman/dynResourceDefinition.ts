@@ -15,8 +15,6 @@ import { getRandomPort } from "../../utils/net-utils.ts";
 import { getClient } from "../client.ts";
 import { resolve } from "path";
 
-const fs = require("fs").promises;
-
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node
@@ -56,8 +54,8 @@ export async function genPrometheusDef(namespace: string): Promise<any> {
   ];
   const cfgPath = `${client.tmpDir}/prometheus/etc`;
   const dataPath = `${client.tmpDir}/prometheus/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
@@ -82,7 +80,7 @@ scrape_configs:
     refresh_interval: 5s
 `;
 
-  await fs.writeFile(`${cfgPath}/prometheus.yml`, config);
+  await Deno.writeTextFile(`${cfgPath}/prometheus.yml`, config);
 
   const ports = [
     {
@@ -137,7 +135,7 @@ export async function genGrafanaDef(
     },
   ];
   const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
-  await fs.mkdir(datasourcesPath, { recursive: true });
+  await Deno.mkdir(datasourcesPath, { recursive: true });
 
   const devices = [
     {
@@ -166,7 +164,7 @@ datasources:
     editable: true
 `;
 
-  await fs.writeFile(`${datasourcesPath}/prometheus.yml`, datasource);
+  await Deno.writeTextFile(`${datasourcesPath}/prometheus.yml`, datasource);
 
   const ports = [
     {
@@ -262,8 +260,8 @@ export async function genTempoDef(
   ];
   const cfgPath = `${client.tmpDir}/tempo/etc`;
   const dataPath = `${client.tmpDir}/tempo/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "tempo-cfg", hostPath: { type: "Directory", path: cfgPath } },
@@ -271,7 +269,7 @@ export async function genTempoDef(
   ];
 
   const tempoConfigPath = resolve(__dirname, `../../../static-configs/tempo.yaml`);
-  await fs.copyFile(tempoConfigPath,`${cfgPath}/tempo.yaml`);
+  await Deno.copyFile(tempoConfigPath,`${cfgPath}/tempo.yaml`);
 
   const ports = [
     {
@@ -391,9 +389,9 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const client = getClient();
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
 
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },

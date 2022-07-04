@@ -7,8 +7,7 @@ import {
 import { getUniqueName } from "./configGenerator.ts";
 import { getClient } from "./providers/client.ts";
 import { Providers } from "./providers/index.ts";
-import { fileMap, Node, Parachain } from "./types.ts";
-import fs from "fs";
+import { fileMap, Node, Parachain } from "./types.d.ts";
 import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec";
 const debug = require("debug")("zombie::paras");
 
@@ -49,18 +48,14 @@ export async function generateParachainFiles(
       chainSpecFullPathPlain
     );
 
-    const plainData = JSON.parse(
-      fs.readFileSync(chainSpecFullPathPlain).toString()
-    );
+    const plainData = JSON.parse(Deno.readTextFileSync(chainSpecFullPathPlain));
 
-    const relayChainSpec = JSON.parse(
-      fs.readFileSync(relayChainSpecFullPathPlain).toString()
-    );
+    const relayChainSpec = JSON.parse(Deno.readTextFileSync(relayChainSpecFullPathPlain));
     plainData.para_id = parachain.id;
     if(plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if( plainData.genesis.runtime.parachainInfo?.parachainId) plainData.genesis.runtime.parachainInfo.parachainId  = parachain.id;
     const data = JSON.stringify(plainData, null, 2);
-    fs.writeFileSync(chainSpecFullPathPlain, data);
+    Deno.writeTextFileSync(chainSpecFullPathPlain, data);
 
     // Chain spec customization logic
     if(specHaveSessionsKeys(plainData) ) {
@@ -186,11 +181,11 @@ export async function generateParachainFiles(
   }
 
   if (parachain.genesisStatePath) {
-    fs.copyFileSync(parachain.genesisStatePath, stateLocalFilePath);
+    Deno.copyFileSync(parachain.genesisStatePath, stateLocalFilePath);
   }
 
   if (parachain.genesisWasmPath) {
-    fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
+    Deno.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
 
   return;

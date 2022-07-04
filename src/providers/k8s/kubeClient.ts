@@ -9,7 +9,6 @@ import {
 } from "../../constants.ts";
 import { addMinutes, getSha256 } from "../../utils/misc-utils.ts";
 import { writeLocalJsonFile } from "../../utils/fs-utils.ts";
-const fs = require("fs").promises;
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types.d.ts";
 import { Client, RunCommandResponse, setClient } from "../client.ts";
@@ -243,7 +242,7 @@ export class KubeClient extends Client {
     replacements?: {[properyName: string]: string}
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
@@ -271,7 +270,7 @@ export class KubeClient extends Client {
       return;
     }
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const fileContent = await Deno.readTextFile(filePath);
     const resourceDef = fileContent
       .toString("utf-8")
       .replace(/{{namespace}}/gi, this.namespace)
@@ -289,7 +288,7 @@ export class KubeClient extends Client {
     replacements: ReplaceMapping = {}
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
@@ -317,7 +316,7 @@ export class KubeClient extends Client {
       const result = await this.runCommand(args, undefined, true);
       debug("copyFileToPod", args);
     } else {
-      const fileBuffer = await fs.readFile(localFilePath);
+      const fileBuffer = await Deno.readTextFile(localFilePath);
       const fileHash = getSha256(fileBuffer.toString());
       const parts = localFilePath.split("/");
       const fileName = parts[parts.length - 1];
@@ -572,7 +571,7 @@ export class KubeClient extends Client {
   async dumpLogs(path: string, podName: string) {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
-    await fs.writeFile(dstFileName, logs);
+    await Deno.writeTextFile(dstFileName, logs);
   }
 
   // run kubectl

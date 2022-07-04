@@ -9,7 +9,6 @@ import {
 } from "../../constants.ts";
 import { getHostIp } from "../../utils/net-utils.ts";
 import { writeLocalJsonFile } from "../../utils/fs-utils.ts";
-const fs = require("fs").promises;
 import { fileMap } from "../../types.d.ts";
 import { Client, RunCommandResponse, setClient } from "../client.ts";
 import { decorators } from "../../utils/colors.ts";
@@ -113,7 +112,7 @@ export class PodmanClient extends Client {
 
   async createStaticResource(filename: string, replacements?: {[properyName: string]: string}): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
@@ -129,7 +128,7 @@ export class PodmanClient extends Client {
     const docInYaml = doc.toString();
 
     const localFilePath = `${this.tmpDir}/${filename}`;
-    await fs.writeFile(localFilePath, docInYaml);
+    await Deno.writeTextFile(localFilePath, docInYaml);
 
     await this.runCommand([
       "play",
@@ -174,7 +173,7 @@ export class PodmanClient extends Client {
   async addNodeToPrometheus(podName: string) {
     const podIp = await this.getNodeIP(podName);
     const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
-    await fs.writeFile(
+    await Deno.writeTextFile(
       `${this.tmpDir}/prometheus/data/sd_config_${podName}.json`,
       content
     );
@@ -195,7 +194,7 @@ export class PodmanClient extends Client {
   async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
-    await fs.writeFile(dstFileName, logs);
+    await Deno.writeTextFile(dstFileName, logs);
   }
 
   upsertCronJob(minutes: number): Promise<void> {
@@ -295,7 +294,7 @@ export class PodmanClient extends Client {
       debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       debug("keystoreRemoteDir", keystoreRemoteDir);
-      await fs.mkdir(keystoreRemoteDir, { recursive: true });
+      await Deno.mkdir(keystoreRemoteDir, { recursive: true });
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
       debug("keys injected");
@@ -304,7 +303,7 @@ export class PodmanClient extends Client {
     // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
-      await fs.copyFile(
+      await Deno.copyFile(
         localFilePath,
         `${this.tmpDir}/${name}${remoteFilePath}`
       );
@@ -323,7 +322,7 @@ export class PodmanClient extends Client {
     container?: string
   ): Promise<void> {
     debug(`cp ${this.tmpDir}/${identifier}${podFilePath}  ${localFilePath}`);
-    await fs.copyFile(
+    await Deno.copyFile(
       `${this.tmpDir}/${identifier}${podFilePath}`,
       localFilePath
     );
@@ -343,7 +342,7 @@ export class PodmanClient extends Client {
     const doc = new YAML.Document(resourseDef);
     const docInYaml = doc.toString();
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
-    await fs.writeFile(localFilePath, docInYaml);
+    await Deno.writeTextFile(localFilePath, docInYaml);
 
     await this.runCommand(
       ["play", "kube", "--network", this.namespace, localFilePath],

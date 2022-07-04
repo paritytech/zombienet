@@ -2,7 +2,7 @@
 
 import { start } from "./orchestrator.ts";
 import { resolve } from "path";
-import fs from "fs";
+import * as fs from "../_deps/fs.ts"
 import { Network } from "./network.ts";
 import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils.ts";
 import { LaunchConfig } from "./types.d.ts";

@@ -1,27 +1,27 @@
-import fs from "fs";
 import toml from "toml";
 import path from "path";
 import { LaunchConfig } from "../types";
 import { RelativeLoader } from "./nunjucks-relative-loader.ts";
 import { Environment } from "nunjucks";
+import * as fs from "../../_deps/fs.ts";
 
 export function writeLocalJsonFile(
   path: string,
   fileName: string,
   content: any
 ) {
-  fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
+  Deno.writeTextFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
 
 export function loadTypeDef(types: string | object): object {
   if (typeof types === "string") {
     // Treat types as a json file path
     try {
-      const rawdata = fs.readFileSync(types, { encoding: "utf-8" });
+      const rawdata = Deno.readTextFileSync(types);
       return JSON.parse(rawdata);
     } catch {
       console.error("failed to load parachain typedef file");
-      process.exit(1);
+      Deno.exit(1);
     }
   } else {
     return types;
@@ -58,8 +58,8 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
     return `{{ZOMBIE:${nodeName}}}`;
   });
 
-  const temmplateContent = fs.readFileSync(filepath).toString();
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = Deno.readTextFileSync(filepath).toString();
+  const content = env.renderString(templateContent, process.env);
 
   //  check if we have missing replacements
   let replacements = getReplacementInText(content);
@@ -80,7 +80,7 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
 
 export function readDataFile(filepath: string): string {
   try {
-    const fileData = fs.readFileSync(filepath, "utf8");
+    const fileData = Deno.readTextFileSync(filepath);
     return fileData.trim();
   } catch (err) {
     throw Error(`Cannot read ${filepath}: ` + err);
