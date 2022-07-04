@@ -168,7 +168,7 @@ export class Network {
       }
 
       let nonce = (
-        await api.query.system.account(alice.address)
+        await api.query.system.account(alice.address) as any
       ).nonce.toNumber();
       const wasm_data = readDataFile(wasmPath);
       const genesis_state = readDataFile(statePath);
