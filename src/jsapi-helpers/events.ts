@@ -13,9 +13,9 @@ export async function findPatternInSystemEventSubscription(
       resolve(false);
     }, timeout * 1000);
 
-    api.query.system.events((events) => {
+    api.query.system.events((events: any) => {
       let eventString: string = "";
-      let matchedEvent = events.find((record) => {
+      let matchedEvent = events.find((record: any) => {
         eventString = "";
         // extract the phase, event and the event types
         const { event, phase } = record;
@@ -25,7 +25,7 @@ export async function findPatternInSystemEventSubscription(
         } :: phase=${phase.toString()}\n`;
         eventString += event.meta.docs.toString();
         // loop through each of the parameters, displaying the type and data
-        event.data.forEach((data, index) => {
+        event.data.forEach((data: any, index: any) => {
           eventString += `${types[index].type};${data.toString()}`;
         });
 
