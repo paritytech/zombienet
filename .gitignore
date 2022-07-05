@@ -2,3 +2,6 @@ node_modules
 dist
 log.md
 .env
+
+# Cargo compiled files and executables
+**/target/
