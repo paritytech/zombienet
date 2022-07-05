@@ -29,7 +29,7 @@ cumulus_based = true
     count = 2
     [parachains.collator_groups.collator]
     name = "collator"
-    command = "polkadot-collator"
+    command = "polkadot-parachain"
     args = ["-lparachain=debug"]
 
 [types.Header]

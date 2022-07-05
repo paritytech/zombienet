@@ -10,6 +10,8 @@
 
 This project is still in early stage and very much a work in progress. More features will be added, docs may be missing or outdated and api/config may change.
 
+NOTE: `polkadot-collator` has recently been renamed `polkadot-parachain`.
+
 ---
 
 ## What is Zombienet?
@@ -21,7 +23,6 @@ Internally zombienet is a `javascript` library, designed to run on NodeJS and su
 ## Usage
 
 Zombienet releases are available in `github`. Each one provides an executable for both `linux` and `macos` created with [pkg](https://github.com/vercel/pkg) and allows to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g. k8s, podman).
-
 
 ## Status
 

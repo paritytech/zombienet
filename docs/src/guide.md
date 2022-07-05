@@ -214,8 +214,8 @@ cumulus_based = true
 
   [parachains.collator]
   name = "collator01"
-  image = "docker.io/parity/polkadot-collator:latest"
-  command = "polkadot-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
 ```
 
 And again, we just *launch* the network using the following command:
@@ -367,12 +367,3 @@ DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-networ
 ![podman infra](./imgs/podman-infra.png)
 
 The `grafana` pod is running under the default user configuration and have `prometheus` and `tempo` already configured as datasources.
-
-
-
-
-
-
-
-
-
