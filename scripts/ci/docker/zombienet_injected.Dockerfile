@@ -39,6 +39,7 @@ RUN groupadd --gid 10001 nonroot && \
 
 WORKDIR /home/nonroot/zombie-net
 COPY ./artifacts/dist ./dist
+COPY ./artifacts/stps-utils ./
 COPY static-configs ./static-configs
 COPY scripts ./scripts
 COPY tests ./tests
@@ -49,6 +50,7 @@ RUN chown -R nonroot. /home/nonroot
 # Change `cli` permissions and link to easy call
 RUN chmod +x ./dist/cli.js
 RUN ln -s /home/nonroot/zombie-net/dist/cli.js /usr/local/bin/zombie
+RUN ln -s /home/nonroot/zombie-net/stps-utils /usr/local/bin/stps-utils
 
 # Dependency for run test script when run inside container
 RUN mkdir -p /var/log/zombie-net
