@@ -21,6 +21,10 @@ RUN curl -sSL https://sdk.cloud.google.com | bash
 ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
 RUN gcloud components install kubectl
 
+# Make rust available
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
 # Non-root user for security purposes.
 #
 # UIDs below 10,000 are a security risk, as a container breakout could result
