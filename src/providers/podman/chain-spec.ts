@@ -5,7 +5,6 @@ import {
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
 } from "../../constants.ts";
-import { ComputedNetwork } from "../../types.d.ts";
 import { sleep } from "../../utils/misc-utils.ts";
 const debug = require("debug")("zombie::podman::chain-spec");
 

@@ -1,4 +1,4 @@
-import { ApiPromise, WsProvider } from "@polkadot/api";
+import { ApiPromise, WsProvider } from "../../_deps/polkadot/api.ts";
 import {
   chainUpgradeFromLocalFile,
   chainUpgradeFromUrl,

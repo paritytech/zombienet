@@ -1,5 +1,5 @@
 import { keys as libp2pKeys } from "libp2p-crypto";
-import { hexAddPrefix, hexToU8a } from "@polkadot/util";
+import { hexAddPrefix, hexToU8a } from "../_deps/polkadot/util.ts";
 import PeerId from "peer-id";
 
 export async function generateBootnodeString(

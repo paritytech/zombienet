@@ -1,4 +1,4 @@
-import { encodeAddress } from "@polkadot/util-crypto";
+import { encodeAddress } from "../_deps/polkadot/util_crypto.ts";
 import { decorators } from "./utils/colors.ts";
 import { ChainSpec, HrmpChannelsConfig } from "./types.d.ts";
 import { readDataFile } from "./utils/fs-utils.ts";

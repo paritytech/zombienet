@@ -1,7 +1,6 @@
 import { Client } from "./providers/client.ts";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { Keyring } from "@polkadot/keyring";
-import { ApiPromise } from "@polkadot/api";
+import { cryptoWaitReady } from "../_deps/polkadot/util_crypto.ts";
+import { Keyring, ApiPromise } from "../_deps/polkadot/api.ts";
 import { readDataFile } from "./utils/fs-utils.ts";
 import {
   BAKCCHANNEL_POD_NAME,

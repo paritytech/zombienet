@@ -1,6 +1,5 @@
-import { ApiPromise } from "@polkadot/api";
-import type { HeadData, ParaId } from "@polkadot/types/interfaces";
-import type { Option, Vec } from "@polkadot/types";
+import { ApiPromise } from "../../_deps/polkadot/api.ts";
+import type { HeadData, ParaId, Option, Vec } from "../../_deps/polkadot/types.ts";
 
 const debug = require("debug")("zombie::js-helpers::parachain");
 

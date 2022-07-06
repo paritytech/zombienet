@@ -8,7 +8,7 @@ import { getUniqueName } from "./configGenerator.ts";
 import { getClient } from "./providers/client.ts";
 import { Providers } from "./providers/index.ts";
 import { fileMap, Node, Parachain } from "./types.d.ts";
-import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec";
+import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec.ts";
 const debug = require("debug")("zombie::paras");
 
 export async function generateParachainFiles(

@@ -1,7 +1,6 @@
-import { Keyring } from "@polkadot/api";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { u8aToHex } from "@polkadot/util";
-import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto";
+import { Keyring } from "../_deps/polkadot/api.ts";
+import { cryptoWaitReady, mnemonicGenerate, mnemonicToMiniSecret } from "../_deps/polkadot/util_crypto.ts";
+import { u8aToHex } from "../_deps/polkadot/util.ts";
 import { Node } from "./types.d.ts";
 
 function nameCase(string: string) {

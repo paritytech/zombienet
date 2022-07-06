@@ -1,5 +1,5 @@
-import { ApiPromise, Keyring } from "@polkadot/api";
-import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
+import { ApiPromise, Keyring  } from "../../_deps/polkadot/api.ts"
+import { cryptoWaitReady, blake2AsHex } from "../../_deps/polkadot/util_crypto.ts";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants.ts";
 import { compress, decompress } from "napi-maybe-compressed-blob";
 import axios from "axios";
