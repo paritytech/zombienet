@@ -42,7 +42,7 @@ import { generateParachainFiles } from "./paras.ts";
 import { decorators } from "./utils/colors.ts";
 import { generateBootnodeString } from "./bootnode.ts";
 import { generateKeystoreFiles } from "./keys.ts";
-import path from "path";
+import * as path from "../_deps/path.ts";
 import * as fs from "../_deps/fs.ts"
 
 const debug = require("debug")("zombie");

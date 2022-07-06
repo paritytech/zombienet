@@ -1,6 +1,6 @@
 const chai = require("chai");
 import Mocha from "mocha";
-import path from "path";
+import * as path from "../../_deps/path.ts";
 import { ApiPromise, Keyring } from "../../_deps/polkadot/api.ts";
 import * as utilCrypto from "../../_deps/polkadot/util_crypto.ts";
 import { LaunchConfig } from "../types.d.ts";

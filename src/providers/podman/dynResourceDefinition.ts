@@ -13,7 +13,7 @@ import { getUniqueName } from "../../configGenerator.ts";
 import { MultiAddressByNode, Node } from "../../types.d.ts";
 import { getRandomPort } from "../../utils/net-utils.ts";
 import { getClient } from "../client.ts";
-import { resolve } from "path";
+import { resolve } from "../../../_deps/path.ts";
 
 export async function genBootnodeDef(
   namespace: string,

@@ -1,5 +1,5 @@
 import execa from "execa";
-import { resolve } from "path";
+import { resolve } from "../../../_deps/path.ts";
 import { copy as fseCopy } from "fs-extra";
 import {
   DEFAULT_DATA_DIR,

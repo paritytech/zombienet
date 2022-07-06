@@ -1,6 +1,6 @@
 import toml from "toml";
-import path from "path";
-import { LaunchConfig } from "../types";
+import * as path from "../../_deps/path.ts";
+import { LaunchConfig } from "../types.d.ts";
 import { RelativeLoader } from "./nunjucks-relative-loader.ts";
 import { Environment } from "nunjucks";
 import * as fs from "../../_deps/fs.ts";

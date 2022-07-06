@@ -1,5 +1,5 @@
 import execa from "execa";
-import { resolve } from "path";
+import * as path from "../../../_deps/path.ts";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
@@ -241,7 +241,7 @@ export class KubeClient extends Client {
     scopeNamespace?: string,
     replacements?: {[properyName: string]: string}
   ): Promise<void> {
-    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
+    const filePath = path.resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
@@ -287,7 +287,7 @@ export class KubeClient extends Client {
     filename: string,
     replacements: ReplaceMapping = {}
   ): Promise<void> {
-    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
+    const filePath = path.resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")

@@ -1,4 +1,4 @@
-import path, { resolve } from "path";
+import * as path from "../_deps/path.ts";
 import * as fs from "../_deps/fs.ts";
 
 import {
@@ -33,7 +33,7 @@ import { generateKeyForNode } from "./keys.ts";
 const debug = require("debug")("zombie::config-manager");
 
 // get the path of the zombie wrapper
-export const zombieWrapperPath = resolve(
+export const zombieWrapperPath = path.resolve(
   __dirname,
   `../scripts/${ZOMBIE_WRAPPER}`
 );
@@ -93,13 +93,13 @@ export async function generateNetworkSpec(
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {
-    const chainSpecPath = resolve(
-      process.cwd(),
+    const chainSpecPath = path.resolve(
+      Deno.cwd(),
       config.relaychain.chain_spec_path
     );
     if (!fs.existsSync(chainSpecPath)) {
       console.error("Chain spec provided does not exist: ", chainSpecPath);
-      process.exit();
+      Deno.exit();
     } else {
       networkSpec.relaychain.chainSpecPath = chainSpecPath;
     }
@@ -228,8 +228,8 @@ export async function generateNetworkSpec(
         : DEFAULT_ADDER_COLLATOR_BIN;
 
       if (parachain.genesis_state_path) {
-        const genesisStatePath = resolve(
-          process.cwd(),
+        const genesisStatePath = path.resolve(
+          Deno.cwd(),
           parachain.genesis_state_path
         );
         if (!fs.existsSync(genesisStatePath)) {
@@ -237,7 +237,7 @@ export async function generateNetworkSpec(
             "Genesis spec provided does not exist: ",
             genesisStatePath
           );
-          process.exit();
+          Deno.exit();
         } else {
           computedStatePath = genesisStatePath;
         }
@@ -250,8 +250,8 @@ export async function generateNetworkSpec(
       }
 
       if (parachain.genesis_wasm_path) {
-        const genesisWasmPath = resolve(
-          process.cwd(),
+        const genesisWasmPath = path.resolve(
+          Deno.cwd(),
           parachain.genesis_wasm_path
         );
         if (!fs.existsSync(genesisWasmPath)) {
@@ -259,7 +259,7 @@ export async function generateNetworkSpec(
             "Genesis spec provided does not exist: ",
             genesisWasmPath
           );
-          process.exit();
+          Deno.exit();
         } else {
           computedWasmPath = genesisWasmPath;
         }
@@ -285,13 +285,13 @@ export async function generateNetworkSpec(
 
       // if we don't have a path to the chain-spec leave undefined to create
       if (parachain.chain_spec_path) {
-        const chainSpecPath = resolve(
-          process.cwd(),
+        const chainSpecPath = path.resolve(
+          Deno.cwd(),
           parachain.chain_spec_path
         );
         if (!fs.existsSync(chainSpecPath)) {
           console.error(`Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`);
-          process.exit();
+          Deno.exit();
         } else {
           parachainSetup.chainSpecPath = chainSpecPath;
         }
