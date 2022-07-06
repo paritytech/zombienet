@@ -29,15 +29,8 @@
   "tasks": {
     "run": "deno run -A --no-check=remote",
     "debug": "deno task run --inspect-brk",
-    "download:frame_metadata": "deno task run _tasks/download_frame_metadata.ts",
-    "build:wasm": "deno task run _tasks/build_wasm.ts",
-    "build:known": "deno task run _tasks/build_known.ts",
     "udd": "deno task star && deno task run https://deno.land/x/udd@0.5.0/main.ts _star.ts",
-    "dnt": "deno task run _tasks/dnt.ts",
-    "star": "deno task run _tasks/star.ts && deno cache --no-check=remote _star.ts",
-    "lock": "deno task star --lock=lock.json --lock-write",
-    "test": "deno test -A --no-check=remote -L=info --ignore=target",
-    "test:update": "deno task test -- -- --update",
-    "mdbook:watch": "mdbook watch -o"
+    "TODO:dnt": "deno task run _tasks/dnt.ts",
+    "test": "deno test -A --no-check=remote -L=info --ignore=target"
   }
 }
