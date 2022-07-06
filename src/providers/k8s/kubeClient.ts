@@ -10,6 +10,7 @@ import {
 import { addMinutes, getSha256 } from "../../utils/misc-utils.ts";
 import { writeLocalJsonFile } from "../../utils/fs-utils.ts";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { getEnvSafe } from "../../utils/getEnvSafe.ts"
 import { fileMap } from "../../types.d.ts";
 import { Client, RunCommandResponse, setClient } from "../client.ts";
 import { decorators } from "../../utils/colors.ts";
@@ -544,7 +545,7 @@ export class KubeClient extends Client {
 
       subprocess.on("exit", function () {
         console.log("child process exited");
-        if(resolved && intents < 5 && process.env.terminating !== "1") {
+        if(resolved && intents < 5 && getEnvSafe("terminating") !== "1") {
           intents++;
           subprocess = null;
           console.log(`creating new port-fw for ${identifier}, with map ${mappedPort}:${port}`);

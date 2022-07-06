@@ -5,6 +5,7 @@ import { resolve } from "../_deps/path.ts";
 import * as fs from "../_deps/fs.ts"
 import { Network } from "./network.ts";
 import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils.ts";
+import { getEnvSafe } from "./utils/getEnvSafe.ts"
 import { LaunchConfig } from "./types.d.ts";
 import { run } from "./test-runner/index.ts";
 import { Command, Option } from "commander";
@@ -28,7 +29,7 @@ process.on("uncaughtException", async (err) => {
   console.log(`uncaughtException`);
   console.log(err);
   debug(err);
-  process.exit(100);
+  Deno.exit(100);
 });
 
 // Ensure that we know about any exception thrown in a promise that we
@@ -42,13 +43,13 @@ process.on("unhandledRejection", async (err) => {
   debug(err);
   console.log(`unhandledRejection`);
   console.log(err);
-  process.exit(1001);
+  Deno.exit(1001);
 });
 
 // Handle ctrl+c to trigger `exit`.
 let alreadyTry = false;
 process.on("SIGINT", async function () {
-  process.env.terminating = "1";
+  Deno.env.set("terminating", "1");
   if (network && !alreadyTry) {
     alreadyTry = true;
     const msg = "Ctrl+c ... removing namespace: " + network.namespace;
@@ -56,11 +57,11 @@ process.on("SIGINT", async function () {
     debug(msg);
     await network.stop();
   }
-  process.exit(2);
+  Deno.exit(2);
 });
 
 process.on("exit", async function () {
-  process.env.terminating = "1";
+  Deno.env.set("terminating", "1")
   if (network && !alreadyTry) {
     alreadyTry = true;
     debug("removing namespace: " + network.namespace);
@@ -69,7 +70,7 @@ process.on("exit", async function () {
   }
   const exitCode = process.exitCode !== undefined ? process.exitCode : 2;
   // use exitCode set by mocha or 2 as default.
-  process.exit(exitCode);
+  Deno.exit(exitCode);
 });
 
 program
@@ -108,7 +109,7 @@ program
   .action(() => {
     const p = require("../package.json");
     console.log(p.version);
-    process.exit(0);
+    Deno.exit(0);
   });
 
 // spawn
@@ -120,10 +121,10 @@ async function spawn(
   const opts = program.opts();
   const monitor = opts.monitor || false;
   const spawnConcurrency = opts.spawnConcurrency || 1;
-  const configPath = resolve(process.cwd(), configFile);
+  const configPath = resolve(Deno.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error("  ⚠ Config file does not exist: ", configPath);
-    process.exit();
+    Deno.exit();
   }
 
   const filePath = resolve(configFile);
@@ -146,7 +147,7 @@ async function spawn(
     creds = getCredsFilePath(credsFile || "config") || "";
     if (!creds) {
       console.error("  ⚠ I can't find the Creds file: ", credsFile);
-      process.exit();
+      Deno.exit();
     }
   }
 
@@ -158,8 +159,8 @@ async function spawn(
 // test
 async function test(testFile: string, runningNetworkSpec: string|undefined, _opts: any) {
   const opts = program.opts();
-  process.env.DEBUG = "zombie";
-  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  Deno.env.set("DEBUG", "zombie");
+  const inCI = getEnvSafe("RUN_IN_CONTAINER") === "1";
   // use `k8s` as default
   const providerToUse =
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
@@ -168,4 +169,4 @@ async function test(testFile: string, runningNetworkSpec: string|undefined, _opt
   await run(testFile, providerToUse, inCI, opts.spawnConcurrency, runningNetworkSpec);
 }
 
-program.parse(process.argv);
+program.parse(Deno.args);

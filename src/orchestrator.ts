@@ -37,6 +37,7 @@ import {
 import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils.ts";
 import { series } from "./utils/promise-series.ts";
 import { loadTypeDef } from "./utils/fs-utils.ts";
+import { getEnvSafe } from "./utils/getEnvSafe.ts"
 import tmp from "tmp-promise";
 import { generateParachainFiles } from "./paras.ts";
 import { decorators } from "./utils/colors.ts";
@@ -318,7 +319,8 @@ export async function start(
       // try to get the jaegerUrl from config or process env
       if(networkSpec.settings.jaeger_agent) jaegerUrl = networkSpec.settings.jaeger_agent;
       // override with env
-      if(process.env.ZOMBIE_JAEGER_URL) jaegerUrl = process.env.ZOMBIE_JAEGER_URL;
+      const retrieved = getEnvSafe("ZOMBIE_JAEGER_URL")
+      if(retrieved) jaegerUrl = retrieved;
     }
 
     const spawnNode = async (

@@ -4,6 +4,7 @@ import { LaunchConfig } from "../types.d.ts";
 import { RelativeLoader } from "./nunjucks-relative-loader.ts";
 import { Environment } from "nunjucks";
 import * as fs from "../../_deps/fs.ts";
+import { getEnvSafe } from "./getEnvSafe.ts"
 
 export function writeLocalJsonFile(
   path: string,
@@ -31,7 +32,7 @@ export function loadTypeDef(types: string | object): object {
 export function getCredsFilePath(credsFile: string): string | undefined {
   if (fs.existsSync(credsFile)) return credsFile;
 
-  const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
+  const possiblePaths = [".", "..", `${getEnvSafe("HOME")}/.kube`];
   let credsFileExistInPath: string | undefined = possiblePaths.find((path) => {
     const t = `${path}/${credsFile}`;
     return fs.existsSync(t);

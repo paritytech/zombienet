@@ -5,6 +5,7 @@ import { ApiPromise, Keyring } from "../../_deps/polkadot/api.ts";
 import * as utilCrypto from "../../_deps/polkadot/util_crypto.ts";
 import { LaunchConfig } from "../types.d.ts";
 import { isValidHttpUrl, sleep } from "../utils/misc-utils.ts";
+import { getEnvSafe } from "../utils/getEnvSafe.ts";
 import { readNetworkConfig } from "../utils/fs-utils.ts";
 import { Network, rebuildNetwork } from "../network.ts";
 import { decorators } from "../utils/colors.ts";
@@ -82,7 +83,7 @@ export async function run(
     const possiblePaths = [
       ".",
       "..",
-      `${process.env.HOME}/.kube`,
+      `${getEnvSafe("HOME")}/.kube`,
       "/etc/zombie-net",
     ];
     let credsFileExistInPath: string | undefined = possiblePaths.find(
@@ -714,8 +715,8 @@ function parseTestFile(testFile: string): TestDefinition {
 
   const configBasePath = path.dirname(testFile);
   const env = new Environment(new RelativeLoader([configBasePath]));
-  const temmplateContent = Deno.readTextFileSync(testFile);
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = Deno.readTextFileSync(testFile);
+  const content = env.renderString(templateContent, process.env);
 
   let networkConfig: string = "";
   let description: string = "";
