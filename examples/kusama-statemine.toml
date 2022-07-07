@@ -27,10 +27,10 @@ cumulus_based = true
 
   [[parachains.collators]]
   name = "collator1"
-  image = "docker.io/paritypr/colander:master"
-  command = "polkadot-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
 
   [[parachains.collators]]
   name = "collator2"
-  image = "docker.io/paritypr/colander:master"
-  command = "polkadot-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"

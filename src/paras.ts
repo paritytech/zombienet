@@ -35,7 +35,6 @@ export async function generateParachainFiles(
     const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.name}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
     const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${parachain.name}.json`;
-    chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
 
     debug("creating chain spec plain");
     // create or copy chain spec
@@ -80,6 +79,10 @@ export async function generateParachainFiles(
     if(parachain.genesis) await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
 
     debug("creating chain spec raw");
+    // ensure needed file
+    if(parachain.chain) fs.copyFileSync(chainSpecFullPathPlain, `${tmpDir}/${parachain.chain}-${parachain.name}-plain.json`);
+    chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
+
     // generate the raw chain spec
     await getChainSpecRaw(
       namespace,
