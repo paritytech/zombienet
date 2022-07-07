@@ -1,19 +1,19 @@
 import execa from "execa";
-import { resolve } from "path";
+import * as path from "../../../_deps/path.ts";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
   FINISH_MAGIC_FILE,
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
-} from "../../constants";
-import { addMinutes, getSha256 } from "../../utils/misc-utils";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
-const fs = require("fs").promises;
+} from "../../constants.ts";
+import { addMinutes, getSha256 } from "../../utils/misc-utils.ts";
+import { writeLocalJsonFile } from "../../utils/fs-utils.ts";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
-import { decorators } from "../../utils/colors";
+import { getEnvSafe } from "../../utils/getEnvSafe.ts"
+import { fileMap } from "../../types.d.ts";
+import { Client, RunCommandResponse, setClient } from "../client.ts";
+import { decorators } from "../../utils/colors.ts";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -242,8 +242,8 @@ export class KubeClient extends Client {
     scopeNamespace?: string,
     replacements?: {[properyName: string]: string}
   ): Promise<void> {
-    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const filePath = path.resolve(__dirname, `../../../static-configs/${filename}`);
+    const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
@@ -271,7 +271,7 @@ export class KubeClient extends Client {
       return;
     }
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const fileContent = await Deno.readTextFile(filePath);
     const resourceDef = fileContent
       .toString("utf-8")
       .replace(/{{namespace}}/gi, this.namespace)
@@ -288,8 +288,8 @@ export class KubeClient extends Client {
     filename: string,
     replacements: ReplaceMapping = {}
   ): Promise<void> {
-    const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
-    const fileContent = await fs.readFile(filePath);
+    const filePath = path.resolve(__dirname, `../../../static-configs/${filename}`);
+    const fileContent = await Deno.readTextFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
@@ -317,7 +317,7 @@ export class KubeClient extends Client {
       const result = await this.runCommand(args, undefined, true);
       debug("copyFileToPod", args);
     } else {
-      const fileBuffer = await fs.readFile(localFilePath);
+      const fileBuffer = await Deno.readTextFile(localFilePath);
       const fileHash = getSha256(fileBuffer.toString());
       const parts = localFilePath.split("/");
       const fileName = parts[parts.length - 1];
@@ -545,7 +545,7 @@ export class KubeClient extends Client {
 
       subprocess.on("exit", function () {
         console.log("child process exited");
-        if(resolved && intents < 5 && process.env.terminating !== "1") {
+        if(resolved && intents < 5 && getEnvSafe("terminating") !== "1") {
           intents++;
           subprocess = null;
           console.log(`creating new port-fw for ${identifier}, with map ${mappedPort}:${port}`);
@@ -572,7 +572,7 @@ export class KubeClient extends Client {
   async dumpLogs(path: string, podName: string) {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
-    await fs.writeFile(dstFileName, logs);
+    await Deno.writeTextFile(dstFileName, logs);
   }
 
   // run kubectl

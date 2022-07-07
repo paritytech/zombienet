@@ -1,15 +1,12 @@
-import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-import { getClient } from "../client";
+import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition.ts";
+import { getClient } from "../client.ts";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
-} from "../../constants";
-import { ComputedNetwork } from "../../types";
-import { sleep } from "../../utils/misc-utils";
+} from "../../constants.ts";
+import { sleep } from "../../utils/misc-utils.ts";
 const debug = require("debug")("zombie::podman::chain-spec");
-
-const fs = require("fs").promises;
 
 export async function setupChainSpec(
   namespace: string,
@@ -43,11 +40,11 @@ export async function setupChainSpec(
     debug("copy file from pod");
 
     const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
-    await fs.copyFile(podChainPath, chainFullPath);
+    await Deno.copyFile(podChainPath, chainFullPath);
   } else {
     if (chaninConfig.chainSpecPath) {
       // copy file to temp to use
-      await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
+      await Deno.copyFile(chaninConfig.chainSpecPath, chainFullPath);
     }
   }
 }
@@ -118,7 +115,7 @@ export async function getChainSpecRaw(
       if (result.exitCode === 0 && result.stdout.length > 0) {
         // TODO: remove this debug when we get this fixed.
         debug(result.stdout);
-        fs.writeFileSync(chainFullPath, result.stdout);
+        Deno.writeTextFileSync(chainFullPath, result.stdout);
         isValid = true;
       }
     } catch (_) {}

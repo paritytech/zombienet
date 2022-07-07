@@ -1,4 +1,4 @@
-import { ApiPromise } from "@polkadot/api";
+import { ApiPromise } from "../../_deps/polkadot/api.ts";
 const debug = require("debug")("zombie::js-helpers::events");
 
 export async function findPatternInSystemEventSubscription(

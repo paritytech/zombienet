@@ -1,9 +1,7 @@
-import fs from "fs";
-import { Keyring } from "@polkadot/api";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { u8aToHex } from "@polkadot/util";
-import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto";
-import { Node } from "./types";
+import { Keyring } from "../_deps/polkadot/api.ts";
+import { cryptoWaitReady, mnemonicGenerate, mnemonicToMiniSecret } from "../_deps/polkadot/util_crypto.ts";
+import { u8aToHex } from "../_deps/polkadot/util.ts";
+import { Node } from "./types.d.ts";
 
 function nameCase(string: string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
@@ -51,7 +49,7 @@ export async function generateKeystoreFiles(
   isStatemint: boolean = false
 ): Promise<string[]> {
   const keystoreDir = `${path}/keystore`;
-  await fs.promises.mkdir(keystoreDir);
+  await Deno.mkdir(keystoreDir);
 
   const paths: string[] = [];
   const keysHash = {
@@ -68,7 +66,7 @@ export async function generateKeystoreFiles(
     const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");
     const keystoreFilePath = `${keystoreDir}/${filename}`;
     paths.push(keystoreFilePath);
-    await fs.promises.writeFile(keystoreFilePath, `"${node.accounts.seed}"`);
+    await Deno.writeTextFile(keystoreFilePath, `"${node.accounts.seed}"`);
   }
 
   return paths;

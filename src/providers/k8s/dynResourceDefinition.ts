@@ -1,4 +1,4 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator.ts";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
@@ -8,10 +8,10 @@ import {
   RPC_WS_PORT,
   P2P_PORT,
   DEFAULT_COMMAND,
-} from "../../constants";
-import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
-import { getSha256 } from "../../utils/misc-utils";
+} from "../../constants.ts";
+import { getUniqueName } from "../../configGenerator.ts";
+import { MultiAddressByNode, Node } from "../../types.d.ts";
+import { getSha256 } from "../../utils/misc-utils.ts";
 
 export async function genBootnodeDef(
   namespace: string,

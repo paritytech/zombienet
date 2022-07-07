@@ -1,19 +1,20 @@
 const chai = require("chai");
 import Mocha from "mocha";
-import fs from "fs";
-import path from "path";
-import { ApiPromise, Keyring } from "@polkadot/api";
-const utilCrypto = require("@polkadot/util-crypto");
-import { LaunchConfig } from "../types";
-import { isValidHttpUrl, sleep } from "../utils/misc-utils";
-import { readNetworkConfig } from "../utils/fs-utils";
-import { Network, rebuildNetwork } from "../network";
-import { decorators } from "../utils/colors";
-import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
+import * as path from "../../_deps/path.ts";
+import { ApiPromise, Keyring } from "../../_deps/polkadot/api.ts";
+import * as utilCrypto from "../../_deps/polkadot/util_crypto.ts";
+import { LaunchConfig } from "../types.d.ts";
+import { isValidHttpUrl, sleep } from "../utils/misc-utils.ts";
+import { getEnvSafe } from "../utils/getEnvSafe.ts";
+import { readNetworkConfig } from "../utils/fs-utils.ts";
+import { Network, rebuildNetwork } from "../network.ts";
+import { decorators } from "../utils/colors.ts";
+import { DEFAULT_GLOBAL_TIMEOUT, DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants.ts";
 import minimatch from "minimatch";
-import { Providers } from "../providers/";
+import { Providers } from "../providers/index.ts";
+import * as fs from "../../_deps/fs.ts"
 
-import zombie from "../";
+import zombie from "../index.ts";
 const {
   connect,
   chainUpgradeFromUrl,
@@ -31,7 +32,7 @@ const mocha = new Mocha();
 
 import { JSDOM } from "jsdom";
 import { Environment } from "nunjucks";
-import { RelativeLoader } from "../utils/nunjucks-relative-loader";
+import { RelativeLoader } from "../utils/nunjucks-relative-loader.ts";
 
 interface TestDefinition {
   networkConfig: string;
@@ -82,7 +83,7 @@ export async function run(
     const possiblePaths = [
       ".",
       "..",
-      `${process.env.HOME}/.kube`,
+      `${getEnvSafe("HOME")}/.kube`,
       "/etc/zombie-net",
     ];
     let credsFileExistInPath: string | undefined = possiblePaths.find(
@@ -714,8 +715,8 @@ function parseTestFile(testFile: string): TestDefinition {
 
   const configBasePath = path.dirname(testFile);
   const env = new Environment(new RelativeLoader([configBasePath]));
-  const temmplateContent = fs.readFileSync(testFile).toString();
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = Deno.readTextFileSync(testFile);
+  const content = env.renderString(templateContent, process.env);
 
   let networkConfig: string = "";
   let description: string = "";

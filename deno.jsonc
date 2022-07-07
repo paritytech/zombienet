@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "checkJs": false,
+    "experimentalDecorators": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true
+  },
+  "lint": {
+    "files": {
+      "exclude": ["dist"],
+      "include": ["."]
+    },
+    "rules": {
+      "exclude": [
+        "ban-types",
+        "no-empty",
+        "no-empty-interface",
+        "no-explicit-any",
+        "no-namespace",
+        "require-await"
+      ],
+      "tags": ["recommended"]
+    }
+  },
+  "include": ["."],
+  "tasks": {
+    "run": "deno run -A --no-check=remote",
+    "debug": "deno task run --inspect-brk",
+    "udd": "deno task star && deno task run https://deno.land/x/udd@0.5.0/main.ts _star.ts",
+    "TODO:dnt": "deno task run _tasks/dnt.ts",
+    "test": "deno test -A --no-check=remote -L=info --ignore=target"
+  }
+}

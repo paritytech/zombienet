@@ -1,7 +1,6 @@
-import { ApiPromise, Keyring } from "@polkadot/api";
-import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
-import { promises as fsPromises } from "fs";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
+import { ApiPromise, Keyring  } from "../../_deps/polkadot/api.ts"
+import { cryptoWaitReady, blake2AsHex } from "../../_deps/polkadot/util_crypto.ts";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants.ts";
 import { compress, decompress } from "napi-maybe-compressed-blob";
 import axios from "axios";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");
@@ -34,7 +33,7 @@ export async function chainUpgradeFromLocalFile(
   // with `.compact.compressed.wasm` extension.
   console.log(`upgrading chain with file from path: ${filePath}`);
 
-  const data = await fsPromises.readFile(filePath);
+  const data = await Deno.readTextFile(filePath);
 
   const buff = Buffer.from(data);
   const hash = blake2AsHex(buff);

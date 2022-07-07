@@ -1,0 +1,8 @@
+{
+  "deno.codeLens.testArgs": ["--no-check=remote", "-A", "-L=info"],
+  "deno.config": "./deno.jsonc",
+  "deno.enable": true,
+  "deno.lint": true,
+  "rust-analyzer.diagnostics.disabled": ["incorrect-ident-case"],
+  "rust-analyzer.cargo.features": ["all"]
+}

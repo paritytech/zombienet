@@ -1,4 +1,3 @@
-import { readFileSync } from "fs";
 import { ILoader } from "nunjucks";
 
 export class RelativeLoader implements ILoader {
@@ -9,7 +8,7 @@ export class RelativeLoader implements ILoader {
     });
 
     return {
-      src: readFileSync(fullPath, "utf-8"),
+      src: Deno.readTextFileSync(fullPath),
       path: fullPath,
       noCache: true,
     };

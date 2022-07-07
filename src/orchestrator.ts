@@ -1,10 +1,10 @@
-import { Providers } from "./providers/";
-import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain, MultiAddressByNode } from "./types";
+import { Providers } from "./providers/index.ts";
+import { LaunchConfig, ComputedNetwork, Node, fileMap, Parachain, MultiAddressByNode } from "./types.d.ts";
 import {
   generateNetworkSpec,
   generateBootnodeSpec,
   zombieWrapperPath,
-} from "./configGenerator";
+} from "./configGenerator.ts";
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -23,9 +23,9 @@ import {
   TRACING_COLLATOR_SERVICE,
   TRACING_COLLATOR_NAMESPACE,
   TRACING_COLLATOR_PODNAME,
-} from "./constants";
-import { Network, Scope } from "./network";
-import { NetworkNode } from "./networkNode";
+} from "./constants.ts";
+import { Network, Scope } from "./network.ts";
+import { NetworkNode } from "./networkNode.ts";
 import {
   clearAuthorities,
   addAuthority,
@@ -33,17 +33,18 @@ import {
   addParachainToGenesis,
   addHrmpChannelsToGenesis,
   addBootNodes,
-} from "./chain-spec";
-import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils";
-import { series } from "./utils/promise-series";
-import { loadTypeDef } from "./utils/fs-utils";
+} from "./chain-spec.ts";
+import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils.ts";
+import { series } from "./utils/promise-series.ts";
+import { loadTypeDef } from "./utils/fs-utils.ts";
+import { getEnvSafe } from "./utils/getEnvSafe.ts"
 import tmp from "tmp-promise";
-import fs from "fs";
-import { generateParachainFiles } from "./paras";
-import { decorators } from "./utils/colors";
-import { generateBootnodeString } from "./bootnode";
-import { generateKeystoreFiles } from "./keys";
-import path from "path";
+import { generateParachainFiles } from "./paras.ts";
+import { decorators } from "./utils/colors.ts";
+import { generateBootnodeString } from "./bootnode.ts";
+import { generateKeystoreFiles } from "./keys.ts";
+import * as path from "../_deps/path.ts";
+import * as fs from "../_deps/fs.ts"
 
 const debug = require("debug")("zombie");
 
@@ -152,15 +153,15 @@ export async function start(
           networkSpec.settings.provider
         )}, please check your config.`
       );
-      process.exit(1);
+      Deno.exit(1);
     }
 
     // Create MAGIC file to stop temp/init containers
-    fs.openSync(localMagicFilepath, "w");
+    Deno.openSync(localMagicFilepath, { write: true });
 
     const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
-    const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
-    await fs.promises.writeFile(
+    const zombieWrapperContent = await Deno.readTextFile(zombieWrapperPath);
+    await Deno.writeTextFile(
       zombieWrapperLocalPath,
       zombieWrapperContent
         .toString()
@@ -217,7 +218,7 @@ export async function start(
 
       const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
         const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        await fs.promises.mkdir(parachainFilesPath);
+        await Deno.mkdir(parachainFilesPath);
         await generateParachainFiles(
           namespace,
           tmpDir.path,
@@ -266,7 +267,7 @@ export async function start(
           "Chain Spec was set to a file in raw format, can't customize."
         )} 🚧`
       );
-      await fs.promises.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
+      await Deno.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
     }
 
     // ensure chain raw is ok
@@ -318,7 +319,8 @@ export async function start(
       // try to get the jaegerUrl from config or process env
       if(networkSpec.settings.jaeger_agent) jaegerUrl = networkSpec.settings.jaeger_agent;
       // override with env
-      if(process.env.ZOMBIE_JAEGER_URL) jaegerUrl = process.env.ZOMBIE_JAEGER_URL;
+      const retrieved = getEnvSafe("ZOMBIE_JAEGER_URL")
+      if(retrieved) jaegerUrl = retrieved;
     }
 
     const spawnNode = async (
@@ -366,7 +368,7 @@ export async function start(
         nodeFilesPath += `/${node.name}`;
 
         if (!fs.existsSync(nodeFilesPath)) {
-          await fs.promises.mkdir(nodeFilesPath, { recursive: true });
+          await Deno.mkdir(nodeFilesPath, { recursive: true });
         }
 
         const isStatemint = parachain && parachain.chain?.includes("statemint");
@@ -630,7 +632,7 @@ export async function start(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`
     );
 
-    await fs.promises.writeFile(`${tmpDir.path}/zombie.json`, JSON.stringify(network));
+    await Deno.writeTextFile(`${tmpDir.path}/zombie.json`, JSON.stringify(network));
 
     return network;
   } catch (error) {
@@ -640,7 +642,7 @@ export async function start(
       await network.stop();
     }
     if (cronInterval) clearInterval(cronInterval);
-    process.exit(1);
+    Deno.exit(1);
   }
 }
 

@@ -1,17 +1,15 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator.ts";
 import {
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   P2P_PORT,
   RPC_WS_PORT,
   DEFAULT_COMMAND,
-} from "../../constants";
-import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
-import { getRandomPort } from "../../utils/net-utils";
-import { getClient } from "../client";
-
-const fs = require("fs").promises;
+} from "../../constants.ts";
+import { getUniqueName } from "../../configGenerator.ts";
+import { MultiAddressByNode, Node } from "../../types.d.ts";
+import { getRandomPort } from "../../utils/net-utils.ts";
+import { getClient } from "../client.ts";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -24,10 +22,10 @@ export async function genBootnodeDef(
   const portFlags = getPortFlags(ports);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
 
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
 
@@ -62,10 +60,10 @@ export async function genNodeDef(
   const portFlags = getPortFlags(ports);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await Deno.mkdir(cfgPath, { recursive: true });
 
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(dataPath, { recursive: true });
+  await Deno.mkdir(dataPath, { recursive: true });
 
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;

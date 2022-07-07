@@ -1,19 +1,17 @@
-import { Client } from "./providers/client";
-import { cryptoWaitReady, sortAddresses } from "@polkadot/util-crypto";
-import { Keyring } from "@polkadot/keyring";
-import { ApiPromise } from "@polkadot/api";
-import { readDataFile } from "./utils/fs-utils";
+import { Client } from "./providers/client.ts";
+import { cryptoWaitReady } from "../_deps/polkadot/util_crypto.ts";
+import { Keyring, ApiPromise } from "../_deps/polkadot/api.ts";
+import { readDataFile } from "./utils/fs-utils.ts";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
   BAKCCHANNEL_URI_PATTERN,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT
-} from "./constants";
-import { Metrics } from "./metrics";
-import { NetworkNode } from "./networkNode";
-import fs from "fs";
+} from "./constants.ts";
+import { Metrics } from "./metrics/index.ts";
+import { NetworkNode } from "./networkNode.ts";
 import axios from "axios";
-import { decorators } from "./utils/colors";
+import { decorators } from "./utils/colors.ts";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -125,7 +123,7 @@ export class Network {
 
   async dumpLogs() {
     // create dump directory in local temp
-    fs.mkdirSync(`${this.tmpDir}/logs`);
+    Deno.mkdirSync(`${this.tmpDir}/logs`);
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
       (memo: NetworkNode[], key) => {
         const paraId = parseInt(key, 10);

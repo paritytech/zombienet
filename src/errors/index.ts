@@ -1,8 +1,8 @@
 
-import BaseError from "./baseError";
-import { serialize } from "./serializer";
+import BaseError from "./baseError.ts";
+import { serialize } from "./serializer.ts";
 
-class orchestratorError extends BaseError {};
+class orchestratorError extends BaseError {}
 
 const errors = {
     orchestratorError

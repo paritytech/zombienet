@@ -1,27 +1,28 @@
-import fs from "fs";
 import toml from "toml";
-import path from "path";
-import { LaunchConfig } from "../types";
-import { RelativeLoader } from "./nunjucks-relative-loader";
+import * as path from "../../_deps/path.ts";
+import { LaunchConfig } from "../types.d.ts";
+import { RelativeLoader } from "./nunjucks-relative-loader.ts";
 import { Environment } from "nunjucks";
+import * as fs from "../../_deps/fs.ts";
+import { getEnvSafe } from "./getEnvSafe.ts"
 
 export function writeLocalJsonFile(
   path: string,
   fileName: string,
   content: any
 ) {
-  fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
+  Deno.writeTextFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
 
 export function loadTypeDef(types: string | object): object {
   if (typeof types === "string") {
     // Treat types as a json file path
     try {
-      const rawdata = fs.readFileSync(types, { encoding: "utf-8" });
+      const rawdata = Deno.readTextFileSync(types);
       return JSON.parse(rawdata);
     } catch {
       console.error("failed to load parachain typedef file");
-      process.exit(1);
+      Deno.exit(1);
     }
   } else {
     return types;
@@ -31,7 +32,7 @@ export function loadTypeDef(types: string | object): object {
 export function getCredsFilePath(credsFile: string): string | undefined {
   if (fs.existsSync(credsFile)) return credsFile;
 
-  const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
+  const possiblePaths = [".", "..", `${getEnvSafe("HOME")}/.kube`];
   let credsFileExistInPath: string | undefined = possiblePaths.find((path) => {
     const t = `${path}/${credsFile}`;
     return fs.existsSync(t);
@@ -58,8 +59,8 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
     return `{{ZOMBIE:${nodeName}}}`;
   });
 
-  const temmplateContent = fs.readFileSync(filepath).toString();
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = Deno.readTextFileSync(filepath).toString();
+  const content = env.renderString(templateContent, process.env);
 
   //  check if we have missing replacements
   let replacements = getReplacementInText(content);
@@ -80,7 +81,7 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
 
 export function readDataFile(filepath: string): string {
   try {
-    const fileData = fs.readFileSync(filepath, "utf8");
+    const fileData = Deno.readTextFileSync(filepath);
     return fileData.trim();
   } catch (err) {
     throw Error(`Cannot read ${filepath}: ` + err);

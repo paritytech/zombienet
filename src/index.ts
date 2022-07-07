@@ -1,4 +1,4 @@
-import { start, test } from "./orchestrator";
+import { start, test } from "./orchestrator.ts";
 
 export default {
     start,
