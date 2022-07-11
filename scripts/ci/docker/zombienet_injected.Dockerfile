@@ -9,7 +9,7 @@ LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.created="${BUILD_DATE}"
 
 RUN apt-get update && \
-    apt-get install -y curl gnupg lsb-release jq tini && \
+    apt-get install -y curl gnupg lsb-release jq tini vim && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
