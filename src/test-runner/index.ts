@@ -255,6 +255,11 @@ const assertCustomJsRegex = new RegExp(
   /^([\w-]+): js-script (\.{0,2}\/.*\.[\w]+)( with \"[\w ,-/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
 );
 
+// Run command in the node
+const assertCustomShInNode = new RegExp(
+  /^([\w-]+): run (\.{0,2}\/.*\.[\w]+)( with \"[\w \,\-/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i
+);
+
 // Backchannel
 // alice: wait for name and use as X within 30s
 const backchannelWait = new RegExp(
@@ -521,6 +526,45 @@ function parseAssertionLine(assertion: string) {
         expect(true).to.be.ok;
       }
     };
+  }
+
+  m = assertCustomShInNode.exec(assertion);
+  if (m && m[1] && m[2]) {
+    const nodeName = m[1];
+    const shFile = m[2];
+    const withArgs = m[3] ? m[3] : "";
+    const comparatorFn = getComparatorFn(m[5] || "");
+    let targetValue: string | number | undefined = m[6];
+    const t = m[8] ? parseInt(m[8], 10) : DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
+
+    return async (
+      network: Network,
+      backchannelMap: BackchannelMap,
+      testFile: string
+    ) => {
+      try {
+        const timeout: number|undefined = t;
+        const fileTestPath = path.dirname(testFile);
+        const resolvedShFilePath = path.resolve(fileTestPath, shFile);
+
+        const nodes = network.getNodes(nodeName);
+        const args = withArgs === "" ? [] : withArgs.split("with ").slice(1)[0].replaceAll('"',"").split(",");
+        const results = await Promise.all(nodes.map(node => node.run(resolvedShFilePath, args, timeout)));
+
+        if( comparatorFn && targetValue !== undefined) {
+          for(const value of results) {
+            assert[comparatorFn](value, targetValue);
+          }
+        }
+
+        // all the commands run successfully
+        expect(true).to.be.ok;
+      } catch(err: any) {
+        console.log(`\n\t ${decorators.red(`Error running script: ${shFile}`)}`);
+        console.log(`\t\t ${err.message}\n`);
+        throw new Error(err);
+      }
+    }
   }
 
   m = backchannelWait.exec(assertion);

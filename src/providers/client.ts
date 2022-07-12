@@ -53,6 +53,7 @@ export abstract class Client {
     resourceDef?: string,
     scoped?: boolean
   ): Promise<RunCommandResponse>;
+  abstract runScript(identifier: string, scriptPath: string, args: string[]): Promise<RunCommandResponse>;
   abstract spawnFromDef(
     podDef: any,
     filesToCopy?: fileMap[],

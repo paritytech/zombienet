@@ -1,5 +1,5 @@
 import execa from "execa";
-import { resolve } from "path";
+import path, { resolve } from "path";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
@@ -589,6 +589,34 @@ export class KubeClient extends Client {
       const result = await execa("kubectl", finalArgs, {
         input: resourceDef,
       });
+
+      return {
+        exitCode: result.exitCode,
+        stdout: result.stdout,
+      };
+    } catch (error) {
+      debug(error);
+      throw error;
+    }
+  }
+
+  async runScript(identifier: string, scriptPath: string, args: string[] = []): Promise<RunCommandResponse> {
+    try {
+      const scriptFileName = path.basename(scriptPath);
+      const scriptPathInPod = `/tmp/${scriptFileName}`;
+      // upload the script
+      await this.copyFileToPod(identifier, scriptPath, scriptPathInPod, undefined, true);
+
+      // set as executable
+      const baseArgs = ["exec", `Pod/${identifier}`, "--"];
+      await this.runCommand([
+        ...baseArgs,
+        "/bin/chmod",
+        "+x",
+        scriptPathInPod], undefined, true);
+
+      // exec
+      const result = await this.runCommand([...baseArgs, "bash", "-c", scriptPathInPod, ...args], undefined, true);
 
       return {
         exitCode: result.exitCode,
