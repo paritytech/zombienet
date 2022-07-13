@@ -90,6 +90,17 @@ build:
     - cp -r dist/ artifacts/
     - cp package* artifacts/
 
+build-stps-utils:
+  stage:                           build
+  <<:                              *kubernetes-env
+  <<:                              *common-refs
+  <<:                              *collect-artifacts
+  image:                           paritytech/ci-linux:production
+  script:
+    - mkdir -p artifacts
+    - cargo build --release --manifest-path stps-utils/Cargo.toml
+    - cp -r stps-utils/target/release/stps-utils artifacts/
+
 package:
   stage:                           package
   <<:                              *kubernetes-env
