@@ -297,7 +297,7 @@ zombienet-system-event-assertion:
   tags:
     - zombienet-polkadot-integration-test
 
-zombienet-custom-js-assertion:
+zombienet-custom-scripts-assertion:
   stage:                           deploy
   <<:                              *kubernetes-env
   image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
@@ -307,7 +307,7 @@ zombienet-custom-js-assertion:
     GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests'
 
   before_script:
-    - echo "Zombienet Tests Custom JS"
+    - echo "Zombienet Tests Custom Scripts (js, sh)"
     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
     - echo "${GH_DIR}"
     - export DEBUG=zombie*
@@ -316,7 +316,7 @@ zombienet-custom-js-assertion:
 
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
-        --test="0008-custom-js.feature"
+        --test="0008-custom-scripts.feature"
   allow_failure:                   true
   retry: 2
   tags:

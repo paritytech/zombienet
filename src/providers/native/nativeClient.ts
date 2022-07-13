@@ -12,6 +12,7 @@ import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
 import YAML from "yaml";
 import { spawn } from "child_process";
+import path from "path";
 
 const debug = require("debug")("zombie::native::client");
 
@@ -179,6 +180,35 @@ export class NativeClient extends Client {
       throw error;
     }
   }
+
+  async runScript(identifier: string, scriptPath: string, args: string[] = []): Promise<RunCommandResponse> {
+    try {
+      const scriptFileName = path.basename(scriptPath);
+      const scriptPathInPod = `${this.tmpDir}/${identifier}/${scriptFileName}`;
+      // upload the script
+      await fs.promises.cp(scriptPath, scriptPathInPod);
+
+      // set as executable
+      await execa(this.command, ["-c", ["chmod", "+x", scriptPathInPod].join(" ")]);
+
+      // exec
+      const result = await execa(this.command,[
+        "-c",
+        [`cd ${this.tmpDir}/${identifier}`,
+        "&&",
+        scriptPathInPod,
+        ...args].join(" ")]);
+
+      return {
+        exitCode: result.exitCode,
+        stdout: result.stdout,
+      };
+    } catch (error) {
+      debug(error);
+      throw error;
+    }
+  }
+
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],

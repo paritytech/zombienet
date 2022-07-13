@@ -14,6 +14,7 @@ import { getClient } from "./providers/client";
 
 import { paraGetBlockHeight, paraIsRegistered, validateRuntimeCode } from "./jsapi-helpers";
 import { decorators } from "./utils/colors";
+import { resolve } from "path";
 
 const debug = require("debug")("zombie::network-node");
 
@@ -356,6 +357,28 @@ export class NetworkNode implements NetworkNodeInterface {
       console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
       return false;
     }
+  }
+
+  async run(
+    scriptPath: string,
+    args: string[],
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT) {
+      const client = getClient();
+      const runScript = async (scriptPath: string, args: string[]) => {
+        const r = await client.runScript(this.name, scriptPath, args);
+        if( r.exitCode !== 0 ) throw new Error(`Error running cmd: ${scriptPath} with args ${args}`);
+        debug(r.stdout);
+        return r.stdout;
+      };
+
+      const resp = await Promise.race([
+        runScript(scriptPath, args),
+        new Promise((resolve) => setTimeout(() => {
+          const err = new Error(`Timeout(${timeout}), "running cmd: ${scriptPath} with args ${args} within ${timeout} secs".`);
+          return resolve(err);
+        }, timeout * 1000))
+      ]);
+      if( resp instanceof Error ) throw resp;
   }
 
   async getSpansByTraceId(traceId: string, collatorUrl: string): Promise<string[]> {

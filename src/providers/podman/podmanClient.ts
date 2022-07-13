@@ -1,5 +1,5 @@
 import execa from "execa";
-import { resolve } from "path";
+import path, { resolve } from "path";
 import { copy as fseCopy } from "fs-extra";
 import {
   DEFAULT_DATA_DIR,
@@ -265,6 +265,36 @@ export class PodmanClient extends Client {
       };
     } catch (error) {
       console.log(error);
+      throw error;
+    }
+  }
+
+  async runScript(podName: string, scriptPath: string, args: string[] = []): Promise<RunCommandResponse> {
+    try {
+      const scriptFileName = path.basename(scriptPath);
+      const scriptPathInPod = `/tmp/${scriptFileName}`;
+      const identifier = `${podName}_pod-${podName}`;
+
+      // upload the script
+      await this.runCommand(["cp", scriptPath, `${identifier}:${scriptPathInPod}`]);
+
+      // set as executable
+      const baseArgs = ["exec", identifier];
+      await this.runCommand([
+        ...baseArgs,
+        "/bin/chmod",
+        "+x",
+        scriptPathInPod], undefined, true);
+
+      // exec
+      const result = await this.runCommand([...baseArgs, "bash", "-c", scriptPathInPod, ...args], undefined, true);
+
+      return {
+        exitCode: result.exitCode,
+        stdout: result.stdout,
+      };
+    } catch (error) {
+      debug(error);
       throw error;
     }
   }
