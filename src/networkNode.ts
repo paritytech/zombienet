@@ -70,6 +70,7 @@ export class NetworkNode implements NetworkNodeInterface {
     args.push(cmd);
 
     await client.runCommand(args, undefined, true);
+    return true;
   }
 
   async pause() {

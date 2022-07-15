@@ -1,0 +1,14 @@
+[settings]
+timeout = 1000
+bootnode = true
+
+[relaychain]
+default_image = "docker.io/parity/polkadot:v0.9.25"
+chain = "rococo-local"
+default_command = "polkadot"
+
+
+  [[relaychain.node_groups]]
+  name = "validator"
+  count = 2
+  args = ["-lparachain=debug", "--db=paritydb"]
