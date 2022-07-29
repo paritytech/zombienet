@@ -40,7 +40,7 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
       publicKey: u8aToHex(ed_account.publicKey),
     },
     ec_account: {
-      publicKey: ec_account.publicKey,
+      publicKey: u8aToHex(ec_account.publicKey),
     },
   };
 }
@@ -62,6 +62,7 @@ export async function generateKeystoreFiles(
     audi: node.accounts.sr_account.publicKey,
     asgn: node.accounts.sr_account.publicKey,
     para: node.accounts.sr_account.publicKey,
+    beef: node.accounts.ec_account.publicKey,
   };
 
   for (const [k, v] of Object.entries(keysHash)) {
