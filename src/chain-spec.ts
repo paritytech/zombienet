@@ -2,6 +2,7 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig } from "./types";
 import { readDataFile } from "./utils/fs-utils";
+import { convertExponentials } from "./utils/misc-utils";
 const fs = require("fs");
 const debug = require("debug")("zombie::chain-spec");
 
@@ -282,7 +283,7 @@ function readAndParseChainSpec(specPath: string) {
 function writeChainSpec(specPath: string, chainSpec: any) {
   try {
     let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(specPath, data);
+    fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(
       `\n\t\t  ${decorators.red("  ⚠ failed to write the chain spec with path: ")} ${specPath}`
