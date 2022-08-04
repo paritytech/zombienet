@@ -191,6 +191,7 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number|undefined> {
     let value;
+    let timedout = false;
     try {
       if (desiredMetricValue === null || !this.cachedMetrics) {
         debug("reloading cache");
@@ -233,11 +234,16 @@ export class NetworkNode implements NetworkNodeInterface {
       const resp = await Promise.race([
         getValue(),
         new Promise((resolve) => setTimeout(() => {
+          timedout = true;
           const err = new Error(`Timeout(${timeout}), "getting desired metric value ${desiredMetricValue} within ${timeout} secs".`);
           return resolve(err);
         }, timeout * 1000))
       ]);
-      if( resp instanceof Error ) throw resp;
+      if( resp instanceof Error ) {
+        // use `undefined` metrics values in `equal` comparations as `0`
+        if(timedout && comparator === "equal" && desiredMetricValue === 0) value = 0;
+        else throw resp;
+      }
 
       return value || 0;
     } catch(err: any) {
