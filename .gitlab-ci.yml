@@ -247,6 +247,31 @@ zombienet-tests-integration:
 #   tags:
 #     - zombienet-polkadot-integration-test
 
+zombienet-restart-pause-resume:
+  stage:                           deploy
+  <<:                              *kubernetes-env
+  image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+  <<:                              *common-refs
+
+  variables:
+    GH_DIR:                        'https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests'
+
+  before_script:
+    - echo "Zombienet Tests Logs"
+    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+    - echo "${GH_DIR}"
+    - export DEBUG=zombie*
+    - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
+    - export COL_IMAGE="docker.io/paritypr/colander:4519"
+
+  script:
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
+        --test="0002-restart-pause-resume-node.feature"
+  allow_failure:                   true
+  retry: 2
+  tags:
+    - zombienet-polkadot-integration-test
+
 zombienet-logs-assertion:
   stage:                           deploy
   <<:                              *kubernetes-env
