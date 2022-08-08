@@ -69,7 +69,8 @@ export class NetworkNode implements NetworkNodeInterface {
       : `echo restart > /tmp/zombiepipe`;
     args.push(cmd);
 
-    await client.runCommand(args, undefined, true);
+    const result = await client.runCommand(args, undefined, true);
+    return result.exitCode === 0;
   }
 
   async pause() {
@@ -82,7 +83,8 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    await client.runCommand(args, undefined, true);
+    const result = await client.runCommand(args, undefined, true);
+    return result.exitCode === 0;
   }
 
   async resume() {
@@ -95,7 +97,8 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    await client.runCommand(args, undefined, true);
+    const result = await client.runCommand(args, undefined, true);
+    return result.exitCode === 0;
   }
 
   async isUp(timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT): Promise<boolean> {

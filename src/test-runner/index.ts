@@ -607,29 +607,35 @@ function parseAssertionLine(assertion: string) {
       const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.restart(timeout)));
 
-      const restarted = results.every(Boolean);
-      expect(restarted).to.be.ok;
+      for(const value of results) {
+        expect(value).to.be.ok;
+      }
     };
   }
 
   m = pauseRegex.exec(assertion);
-  if (m && m[2]) {
-    const nodeName = m[2];
+  if (m && m[1]) {
+    const nodeName = m[1];
     return async (network: Network, backchannelMap: BackchannelMap) => {
       const nodes = network.getNodes(nodeName);
       const results = await Promise.all(nodes.map(node => node.pause()));
 
-      const paused = results.every(Boolean);
-      expect(paused).to.be.ok;
+      for(const value of results) {
+        expect(value).to.be.ok;
+      }
     };
   }
 
   m = resumeRegex.exec(assertion);
-  if (m && m[2]) {
-    const nodeName = m[2];
+  if (m && m[1]) {
+    const nodeName = m[1];
     return async (network: Network, backchannelMap: BackchannelMap) => {
-      await network.node(nodeName).resume();
-      expect(true).to.be.ok;
+      const nodes = network.getNodes(nodeName);
+      const results = await Promise.all(nodes.map(node => node.resume()));
+
+      for(const value of results) {
+        expect(value).to.be.ok;
+      }
     };
   }
 
