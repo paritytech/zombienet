@@ -356,4 +356,11 @@ export class Network {
     console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
     console.log("---\n");
   }
+
+  replaceWithNetworInfo(placeholder: string): string {
+    return placeholder.replace(/{{ZOMBIE:(.*?):(.*?)}}/ig, (_substring, nodeName, key: keyof NetworkNode) => {
+      const node = this.getNodeByName(nodeName);
+      return node[key];
+    });
+  }
 }

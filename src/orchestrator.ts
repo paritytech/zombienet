@@ -128,7 +128,7 @@ export async function start(
       initClient,
       setupChainSpec,
       getChainSpecRaw,
-      replaceMultiAddresReferences,
+      replaceNetworkRef,
     } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
@@ -378,8 +378,8 @@ export async function start(
         keystoreLocalDir = path.dirname(keystoreFiles[0]);
       }
 
-      // replace all multiaddress references in command
-      replaceMultiAddresReferences(podDef, multiAddressByNode)
+      // replace all network references in command
+      replaceNetworkRef(podDef, network);
 
       await client.spawnFromDef(
         podDef,
@@ -439,6 +439,7 @@ export async function start(
             "{{PORT}}",
             nodePrometheusPort.toString()
           ),
+          nodeMultiAddress,
           userDefinedTypes
         );
       }
@@ -578,11 +579,13 @@ export async function start(
       const IP = (options?.inCI) ? await client.getNodeIP(INTROSPECTOR_POD_NAME) : LOCALHOST;
       const PORT = (options?.inCI) ? INTROSPECTOR_PORT :  await client.startPortForwarding(INTROSPECTOR_PORT, INTROSPECTOR_POD_NAME);
 
+      // TODO: create a new kind `companion`
       const introspectorNetworkNode = new NetworkNode(
         INTROSPECTOR_POD_NAME,
         "",
         METRICS_URI_PATTERN.replace("{{IP}}", IP).replace(
-          "{{PORT}}",PORT.toString())
+          "{{PORT}}",PORT.toString()),
+        ""
       );
 
       network.addNode(introspectorNetworkNode, Scope.COMPANION);

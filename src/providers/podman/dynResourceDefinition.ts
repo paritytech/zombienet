@@ -14,6 +14,7 @@ import { MultiAddressByNode, Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 import { resolve } from "path";
+import { Network } from "../../network";
 
 const fs = require("fs").promises;
 
@@ -447,22 +448,15 @@ async function make_main_container(
   return containerDef;
 }
 
-export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed in containers
   for( const container of podDef.spec.containers) {
     if(Array.isArray(container.command)){
-      const finalCommand = container.command.map((item: string) => {
-        return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
-          return multiAddressByNode[nodeName];
-        });
-      });
+      const finalCommand = container.command.map((item: string) => network.replaceWithNetworInfo(item))
       container.command = finalCommand;
     } else {
-      container.command = container.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
-        return multiAddressByNode[nodeName];
-      });
+      container.command =  network.replaceWithNetworInfo(container.command);
     }
-
   }
 }
 
