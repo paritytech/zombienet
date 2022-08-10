@@ -416,6 +416,7 @@ export async function start(
             "{{PORT}}",
             PROMETHEUS_PORT.toString()
           ),
+          nodeMultiAddress,
           userDefinedTypes
         );
       } else {
