@@ -98,7 +98,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "--",
       "/bin/bash",
       "-c",
-      "echo pause > /tmp/zombiepipe",
+      "echo resume > /tmp/zombiepipe",
     ];
     const result = await client.runCommand(args, undefined, true);
     return result.exitCode === 0;
