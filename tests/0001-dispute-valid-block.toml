@@ -11,25 +11,25 @@ command = "polkadot"
   name = "alice"
   validator = true
   command = "polkadot"
-  extra_args = [ "--alice", "-lparachain=debug" ]
+  extra_args = [ "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "bob"
   validator = true
   command = "polkadot"
-  extra_args = [ "--bob", "-lparachain=debug" ]
+  extra_args = [ "-lparachain=debug" ]
 
   [[relaychain.nodes]]
   name = "charlie"
   validator = true
   command = "polkadot"
-  extra_args = [ "--charlie", "-lparachain=debug" ]
+  extra_args = [ "-lparachain=debug" ]
 
   [[relaychain.nodes]]
-  name = "david"
+  name = "dave"
   validator = true
   command = "malus dispute-ancestor"
-  extra_args = ["--dave", "-lparachain=debug"]
+  extra_args = ["-lparachain=debug"]
   image = "{{MALUS_IMAGE}}"
 
 

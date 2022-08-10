@@ -12,6 +12,7 @@ import {
 import { getUniqueName } from "../../configGenerator";
 import { MultiAddressByNode, Node } from "../../types";
 import { getSha256 } from "../../utils/misc-utils";
+import { Network } from "../../network";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -198,22 +199,15 @@ function jaegerAgentDef() {
   }
 }
 
-export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed in containers
   for( const container of podDef.spec.containers) {
     if(Array.isArray(container.command)){
-      const finalCommand = container.command.map((item: string) => {
-        return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
-          return multiAddressByNode[nodeName];
-        });
-      });
+      const finalCommand = container.command.map((item: string) => network.replaceWithNetworInfo(item));
       container.command = finalCommand;
     } else {
-      container.command = container.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
-        return multiAddressByNode[nodeName];
-      });
+      container.command = network.replaceWithNetworInfo(container.command);
     }
-
   }
 }
 

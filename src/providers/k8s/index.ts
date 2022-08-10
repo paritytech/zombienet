@@ -1,5 +1,5 @@
 import { KubeClient, initClient } from "./kubeClient";
-import { genBootnodeDef, genNodeDef, replaceMultiAddresReferences } from "./dynResourceDefinition";
+import { genBootnodeDef, genNodeDef, replaceNetworkRef } from "./dynResourceDefinition";
 import { setupChainSpec, getChainSpecRaw } from "./chain-spec";
 
 export const provider = {
@@ -9,5 +9,5 @@ export const provider = {
   initClient,
   setupChainSpec,
   getChainSpecRaw,
-  replaceMultiAddresReferences,
+  replaceNetworkRef,
 };

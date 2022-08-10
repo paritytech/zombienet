@@ -29,6 +29,7 @@ export class NetworkNode implements NetworkNodeInterface {
   name: string;
   wsUri: string;
   prometheusUri: string;
+  multiAddress: string;
   apiInstance?: ApiPromise;
   spec?: object | undefined;
   cachedMetrics?: Metrics;
@@ -42,11 +43,13 @@ export class NetworkNode implements NetworkNodeInterface {
     name: string,
     wsUri: string,
     prometheusUri: string,
-    userDefinedTypes: any = null
+    multiAddress: string,
+    userDefinedTypes: any = null,
   ) {
     this.name = name;
     this.wsUri = wsUri;
     this.prometheusUri = prometheusUri;
+    this.multiAddress = multiAddress;
 
     if (userDefinedTypes) this.userDefinedTypes = userDefinedTypes;
   }

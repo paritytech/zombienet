@@ -124,49 +124,51 @@ export async function genCumulusCollatorCmd(
       }
     }
 
-    // Arguments for the relay chain node part of the collator binary.
-    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
+    if(fullCmd.findIndex(thisArg => thisArg.includes("relay-chain-rpc-url")) === -1 ) {
+      // Arguments for the relay chain node part of the collator binary.
+      fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
 
-    if (argsFullNode) {
-      // Add any additional flags to the CLI
-      for (const [index, arg] of argsFullNode.entries()) {
-        if (collatorPorts[arg] >= 0) {
-          // port passed as argument, we need to ensure is not a default one because it will be
-          // use by the parachain part.
-          const selectedPort = parseInt(argsFullNode[index + 1], 10);
-          if ([P2P_PORT, RPC_HTTP_PORT, RPC_WS_PORT].includes(selectedPort)) {
-            console.log(
-              decorators.yellow(
-                `WARN: default port configured, changing to use a random free port`
-              )
-            );
-            const randomPort = await getRandomPort();
-            collatorPorts[arg] = randomPort;
-            argsFullNode[index + 1] = randomPort.toString();
+      if (argsFullNode) {
+        // Add any additional flags to the CLI
+        for (const [index, arg] of argsFullNode.entries()) {
+          if (collatorPorts[arg] >= 0) {
+            // port passed as argument, we need to ensure is not a default one because it will be
+            // use by the parachain part.
+            const selectedPort = parseInt(argsFullNode[index + 1], 10);
+            if ([P2P_PORT, RPC_HTTP_PORT, RPC_WS_PORT].includes(selectedPort)) {
+              console.log(
+                decorators.yellow(
+                  `WARN: default port configured, changing to use a random free port`
+                )
+              );
+              const randomPort = await getRandomPort();
+              collatorPorts[arg] = randomPort;
+              argsFullNode[index + 1] = randomPort.toString();
+            }
           }
         }
-      }
 
-      // check ports
-      for (const portArg of Object.keys(collatorPorts)) {
-        if (collatorPorts[portArg] === 0) {
-          const randomPort = await getRandomPort();
-          argsFullNode.push(portArg);
-          argsFullNode.push(randomPort.toString());
-          debug(`Added ${portArg} with value ${randomPort}`);
+        // check ports
+        for (const portArg of Object.keys(collatorPorts)) {
+          if (collatorPorts[portArg] === 0) {
+            const randomPort = await getRandomPort();
+            argsFullNode.push(portArg);
+            argsFullNode.push(randomPort.toString());
+            debug(`Added ${portArg} with value ${randomPort}`);
+          }
         }
-      }
 
-      fullCmd = fullCmd.concat(argsFullNode);
-      debug(`Added ${argsFullNode} to collator`);
-    } else {
-      // ensure ports
-      for (const portArg of Object.keys(collatorPorts)) {
-        if (collatorPorts[portArg] === 0) {
-          const randomPort = await getRandomPort();
-          fullCmd.push(portArg);
-          fullCmd.push(randomPort.toString());
-          debug(`Added ${portArg} with value ${randomPort}`);
+        fullCmd = fullCmd.concat(argsFullNode);
+        debug(`Added ${argsFullNode} to collator`);
+      } else {
+        // ensure ports
+        for (const portArg of Object.keys(collatorPorts)) {
+          if (collatorPorts[portArg] === 0) {
+            const randomPort = await getRandomPort();
+            fullCmd.push(portArg);
+            fullCmd.push(randomPort.toString());
+            debug(`Added ${portArg} with value ${randomPort}`);
+          }
         }
       }
     }

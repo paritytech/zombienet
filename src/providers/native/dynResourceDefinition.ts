@@ -10,6 +10,7 @@ import { getUniqueName } from "../../configGenerator";
 import { MultiAddressByNode, Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
+import { Network } from "../../network";
 
 const fs = require("fs").promises;
 
@@ -131,20 +132,14 @@ async function getPorts(rpc?: number, ws?:number, prometheus?:number) {
   return ports;
 }
 
-export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed
   if(Array.isArray(podDef.spec.command)) {
-    const finalCommand = podDef.spec.command.map((item: string) => {
-      return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
-        return multiAddressByNode[nodeName];
-      });
-    });
+    const finalCommand = podDef.spec.command.map((item: string) => network.replaceWithNetworInfo(item));
     podDef.spec.command = finalCommand;
   } else {
     // string
-    podDef.spec.command = podDef.spec.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
-        return multiAddressByNode[nodeName];
-      });
+    podDef.spec.command = network.replaceWithNetworInfo(podDef.spec.command);
   }
 }
 

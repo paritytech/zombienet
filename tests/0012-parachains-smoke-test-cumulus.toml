@@ -13,11 +13,9 @@ chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "alice"
-  extra_args = [ "--alice" ]
 
   [[relaychain.nodes]]
   name = "bob"
-  extra_args = [ "--bob" ]
 
 
 [[parachains]]
