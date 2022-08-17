@@ -8,7 +8,11 @@ import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
-import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants";
+import {
+  AVAILABLE_PROVIDERS,
+  DEFAULT_GLOBAL_TIMEOUT,
+  DEFAULT_PROVIDER,
+} from "./constants";
 import { decorators } from "./utils/colors";
 
 const debug = require("debug")("zombie-cli");
@@ -82,7 +86,6 @@ program
   .addOption(
     new Option("-p, --provider <provider>", "Override provider to use")
       .choices(["podman", "kubernetes", "native"])
-      .default("kubernetes", "kubernetes")
   )
   .addOption(
     new Option("-m, --monitor", "Start as monitor, do not auto cleanup network")
@@ -131,14 +134,14 @@ async function spawn(
 
   // if a provider is passed, let just use it.
   if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
-    if (!config.settings) {
-      config.settings = {
-        provider: opts.provider,
-        timeout: DEFAULT_GLOBAL_TIMEOUT,
-      };
-    } else {
-      config.settings.provider = opts.provider;
-    }
+    config.settings.provider = opts.provider;
+  }
+  // set default provider and timeout if not provided
+  if (!config.settings.provider) {
+    config.settings.provider = DEFAULT_PROVIDER;
+  }
+  if (!config.settings.timeout) {
+    config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
   }
 
   let creds = "";
