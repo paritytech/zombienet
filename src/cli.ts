@@ -132,16 +132,20 @@ async function spawn(
   const filePath = resolve(configFile);
   const config: LaunchConfig = readNetworkConfig(filePath);
 
+  // set default provider and timeout if not provided
+  if(!config.settings) {
+    config.settings = {
+      provider: DEFAULT_PROVIDER,
+      timeout: DEFAULT_GLOBAL_TIMEOUT
+    }
+  } else {
+    if (!config.settings.provider) config.settings.provider = DEFAULT_PROVIDER;
+    if (!config.settings.timeout) config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
+  }
+
   // if a provider is passed, let just use it.
   if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
     config.settings.provider = opts.provider;
-  }
-  // set default provider and timeout if not provided
-  if (!config.settings.provider) {
-    config.settings.provider = DEFAULT_PROVIDER;
-  }
-  if (!config.settings.timeout) {
-    config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
   }
 
   let creds = "";

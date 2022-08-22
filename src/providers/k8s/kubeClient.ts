@@ -440,6 +440,9 @@ export class KubeClient extends Client {
         if(file) await this.createStaticResource(file);
       }
     }
+
+    // ensure baseline resources if we are running in CI
+    if(process.env.RUN_IN_CONTAINER === "1") await this.createStaticResource("baseline-resources.yaml");
   }
 
   async spawnBackchannel() {
