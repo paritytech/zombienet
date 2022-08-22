@@ -1,4 +1,4 @@
-const reset = "\x1b[0m"
+const reset = "\x1b[0m";
 
 const colorMap = {
   red: "\x1b[31m",
@@ -7,14 +7,14 @@ const colorMap = {
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
-}
+};
 
-const colorFns: any = {}
+const colorFns: any = {};
 for (const [color, code] of Object.entries(colorMap)) {
   colorFns[color] = function (input: string): string {
-    let ret = `${code}${input}${reset}`
-    return ret
-  }
+    let ret = `${code}${input}${reset}`;
+    return ret;
+  };
 }
 
-export const decorators = colorFns
+export const decorators = colorFns;

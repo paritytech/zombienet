@@ -2,40 +2,40 @@ export async function series(
   functionsThatGeneratePromisesThatRunInSeries: any[],
   concurrency = 1,
 ) {
-  let results: any = null
+  let results: any = null;
 
-  functionsThatGeneratePromisesThatRunInSeries = functionsThatGeneratePromisesThatRunInSeries.slice()
+  functionsThatGeneratePromisesThatRunInSeries = functionsThatGeneratePromisesThatRunInSeries.slice();
 
   return new Promise((resolve, reject) => {
     const next = (result?: any) => {
-      const concurrentPromises = []
-      results = !results ? [] : [...results, ...result]
+      const concurrentPromises = [];
+      results = !results ? [] : [...results, ...result];
 
       if (functionsThatGeneratePromisesThatRunInSeries.length) {
         while (
           concurrentPromises.length < concurrency &&
           functionsThatGeneratePromisesThatRunInSeries.length
         ) {
-          let promise = functionsThatGeneratePromisesThatRunInSeries.shift()
+          let promise = functionsThatGeneratePromisesThatRunInSeries.shift();
           if (typeof promise === "function") {
-            promise = promise()
+            promise = promise();
           } else {
-            return reject(new Error("Invalid argument")) // see comment above. we need functions
+            return reject(new Error("Invalid argument")); // see comment above. we need functions
           }
 
           if (!promise || typeof promise.then !== "function") {
-            promise = Promise.resolve(promise) // create a promise and resolve with the `promise` value.
+            promise = Promise.resolve(promise); // create a promise and resolve with the `promise` value.
           }
 
-          concurrentPromises.push(promise)
+          concurrentPromises.push(promise);
         }
 
-        Promise.all(concurrentPromises).then(next).catch(reject)
+        Promise.all(concurrentPromises).then(next).catch(reject);
       } else {
-        return resolve(results)
+        return resolve(results);
       }
-    }
+    };
 
-    next()
-  })
+    next();
+  });
 }

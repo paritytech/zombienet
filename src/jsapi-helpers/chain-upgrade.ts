@@ -1,10 +1,10 @@
-import { ApiPromise, Keyring } from "@polkadot/api"
-import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto"
-import { promises as fsPromises } from "fs"
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants"
-import { compress, decompress } from "napi-maybe-compressed-blob"
-import axios from "axios"
-const debug = require("debug")("zombie::js-helpers::chain-upgrade")
+import { ApiPromise, Keyring } from "@polkadot/api";
+import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
+import { promises as fsPromises } from "fs";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
+import { compress, decompress } from "napi-maybe-compressed-blob";
+import axios from "axios";
+const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
 export async function chainUpgradeFromUrl(
   api: ApiPromise,
@@ -12,18 +12,18 @@ export async function chainUpgradeFromUrl(
 ): Promise<string> {
   // The filename of the runtime/PVF we want to upgrade to. Usually a file
   // with `.compact.compressed.wasm` extension.
-  console.log(`upgrading chain with file from url: ${wasmFileUrl}`)
+  console.log(`upgrading chain with file from url: ${wasmFileUrl}`);
 
   const file = await axios({
     url: wasmFileUrl,
     responseType: "arraybuffer",
-  })
+  });
 
-  const buff = Buffer.from(file.data)
-  const hash = blake2AsHex(buff)
-  await performChainUpgrade(api, buff.toString("hex"))
+  const buff = Buffer.from(file.data);
+  const hash = blake2AsHex(buff);
+  await performChainUpgrade(api, buff.toString("hex"));
 
-  return hash
+  return hash;
 }
 
 export async function chainUpgradeFromLocalFile(
@@ -32,15 +32,15 @@ export async function chainUpgradeFromLocalFile(
 ): Promise<string> {
   // The filename of the runtime/PVF we want to upgrade to. Usually a file
   // with `.compact.compressed.wasm` extension.
-  console.log(`upgrading chain with file from path: ${filePath}`)
+  console.log(`upgrading chain with file from path: ${filePath}`);
 
-  const data = await fsPromises.readFile(filePath)
+  const data = await fsPromises.readFile(filePath);
 
-  const buff = Buffer.from(data)
-  const hash = blake2AsHex(buff)
-  await performChainUpgrade(api, buff.toString("hex"))
+  const buff = Buffer.from(data);
+  const hash = blake2AsHex(buff);
+  await performChainUpgrade(api, buff.toString("hex"));
 
-  return hash
+  return hash;
 }
 
 // Add a custom section to the end, re-compress and perform the upgrade of the runtime.
@@ -50,27 +50,27 @@ export async function chainUpgradeFromLocalFile(
 export async function chainCustomSectionUpgrade(
   api: ApiPromise,
 ): Promise<string> {
-  const code: any = await api.rpc.state.getStorage(":code")
-  const codeHex = code.toString().slice(2)
-  const codeBuf = Buffer.from(hexToBytes(codeHex))
-  const decompressed = decompress(codeBuf)
+  const code: any = await api.rpc.state.getStorage(":code");
+  const codeHex = code.toString().slice(2);
+  const codeBuf = Buffer.from(hexToBytes(codeHex));
+  const decompressed = decompress(codeBuf);
 
   // add a custom section
   // Same as echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A" >> file.wasm
-  const customSection = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a]
+  const customSection = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a];
   const withCustomSectionCode = Buffer.concat([
     decompressed,
     Buffer.from(customSection),
-  ])
+  ]);
 
   // compress again
-  const compressed = compress(withCustomSectionCode)
-  const hash = blake2AsHex(compressed)
-  debug(`New compressed hash : ${hash}`)
+  const compressed = compress(withCustomSectionCode);
+  const hash = blake2AsHex(compressed);
+  debug(`New compressed hash : ${hash}`);
 
-  await performChainUpgrade(api, compressed.toString("hex"))
+  await performChainUpgrade(api, compressed.toString("hex"));
 
-  return hash
+  return hash;
 }
 
 export async function validateRuntimeCode(
@@ -81,69 +81,69 @@ export async function validateRuntimeCode(
 ): Promise<boolean> {
   try {
     const validate = async (hash: string) => {
-      let done
+      let done;
       while (!done) {
-        const currentHash = await api.query.paras.currentCodeHash(paraId)
-        console.log(`parachain ${paraId} current code hash : ${currentHash}`)
-        if (hash === currentHash.toString()) break
+        const currentHash = await api.query.paras.currentCodeHash(paraId);
+        console.log(`parachain ${paraId} current code hash : ${currentHash}`);
+        if (hash === currentHash.toString()) break;
         // wait 2 secs between checks
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
-      return true
-    }
+      return true;
+    };
     const resp: any = await Promise.race([
       validate(hash),
       new Promise((resolve) =>
         setTimeout(() => {
           const err = new Error(
             `Timeout(${timeout}), "validating the hash of the runtime upgrade`,
-          )
-          return resolve(err)
+          );
+          return resolve(err);
         }, timeout * 1000),
       ),
-    ])
-    if (resp instanceof Error) throw resp
+    ]);
+    if (resp instanceof Error) throw resp;
 
-    return resp
+    return resp;
   } catch (err: any) {
-    throw err
+    throw err;
   }
 }
 
 async function performChainUpgrade(api: ApiPromise, code: string) {
-  await cryptoWaitReady()
+  await cryptoWaitReady();
 
-  const keyring = new Keyring({ type: "sr25519" })
-  const alice = keyring.addFromUri("//Alice")
+  const keyring = new Keyring({ type: "sr25519" });
+  const alice = keyring.addFromUri("//Alice");
 
   await new Promise<void>(async (resolve, reject) => {
     const unsub = await api.tx.sudo
       .sudoUncheckedWeight(api.tx.system.setCodeWithoutChecks(`0x${code}`), 1)
       .signAndSend(alice, (result) => {
-        console.log(`Current status is ${result.status}`)
+        console.log(`Current status is ${result.status}`);
         if (result.status.isInBlock) {
           console.log(
             `Transaction included at blockHash ${result.status.asInBlock}`,
-          )
+          );
         } else if (result.status.isFinalized) {
           console.log(
             `Transaction finalized at blockHash ${result.status.asFinalized}`,
-          )
-          unsub()
-          return resolve()
+          );
+          unsub();
+          return resolve();
         } else if (result.isError) {
-          console.log(`Transaction Error`)
-          unsub()
-          return reject()
+          console.log(`Transaction Error`);
+          unsub();
+          return reject();
         }
-      })
-  })
+      });
+  });
 }
 
 /// Internal
 function hexToBytes(hex: any) {
   for (var bytes = [], c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16))
-  return bytes
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+  return bytes;
 }

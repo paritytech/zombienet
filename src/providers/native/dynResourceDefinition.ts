@@ -1,36 +1,36 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator"
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   P2P_PORT,
   RPC_WS_PORT,
   DEFAULT_COMMAND,
-} from "../../constants"
-import { getUniqueName } from "../../configGenerator"
-import { MultiAddressByNode, Node } from "../../types"
-import { getRandomPort } from "../../utils/net-utils"
-import { getClient } from "../client"
-import { Network } from "../../network"
+} from "../../constants";
+import { getUniqueName } from "../../configGenerator";
+import { MultiAddressByNode, Node } from "../../types";
+import { getRandomPort } from "../../utils/net-utils";
+import { getClient } from "../client";
+import { Network } from "../../network";
 
-const fs = require("fs").promises
+const fs = require("fs").promises;
 
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const client = getClient()
-  const name = nodeSetup.name
-  const { rpcPort, wsPort, prometheusPort } = nodeSetup
-  const ports = await getPorts(rpcPort, wsPort, prometheusPort)
-  const portFlags = getPortFlags(ports)
+  const client = getClient();
+  const name = nodeSetup.name;
+  const { rpcPort, wsPort, prometheusPort } = nodeSetup;
+  const ports = await getPorts(rpcPort, wsPort, prometheusPort);
+  const portFlags = getPortFlags(ports);
 
-  const cfgPath = `${client.tmpDir}/${name}/cfg`
-  await fs.mkdir(cfgPath, { recursive: true })
+  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  await fs.mkdir(cfgPath, { recursive: true });
 
-  const dataPath = `${client.tmpDir}/${name}/data`
-  await fs.mkdir(dataPath, { recursive: true })
+  const dataPath = `${client.tmpDir}/${name}/data`;
+  await fs.mkdir(dataPath, { recursive: true });
 
-  const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags)
+  const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
 
   return {
     metadata: {
@@ -49,27 +49,27 @@ export async function genBootnodeDef(
       ports,
       command,
     },
-  }
+  };
 }
 
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const client = getClient()
-  const name = nodeSetup.name
-  const { rpcPort, wsPort, prometheusPort } = nodeSetup
-  const ports = await getPorts(rpcPort, wsPort, prometheusPort)
-  const portFlags = getPortFlags(ports)
+  const client = getClient();
+  const name = nodeSetup.name;
+  const { rpcPort, wsPort, prometheusPort } = nodeSetup;
+  const ports = await getPorts(rpcPort, wsPort, prometheusPort);
+  const portFlags = getPortFlags(ports);
 
-  const cfgPath = `${client.tmpDir}/${name}/cfg`
-  await fs.mkdir(cfgPath, { recursive: true })
+  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  await fs.mkdir(cfgPath, { recursive: true });
 
-  const dataPath = `${client.tmpDir}/${name}/data`
-  await fs.mkdir(dataPath, { recursive: true })
+  const dataPath = `${client.tmpDir}/${name}/data`;
+  await fs.mkdir(dataPath, { recursive: true });
 
-  let computedCommand
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
   if (nodeSetup.zombieRole === "cumulus-collator") {
     computedCommand = await genCumulusCollatorCmd(
       launchCommand,
@@ -78,7 +78,7 @@ export async function genNodeDef(
       dataPath,
       false,
       portFlags,
-    )
+    );
   } else {
     computedCommand = await genCmd(
       nodeSetup,
@@ -86,7 +86,7 @@ export async function genNodeDef(
       dataPath,
       false,
       portFlags,
-    )
+    );
   }
 
   return {
@@ -111,7 +111,7 @@ export async function genNodeDef(
       ports,
       command: computedCommand,
     },
-  }
+  };
 }
 
 async function getPorts(rpc?: number, ws?: number, prometheus?: number) {
@@ -140,9 +140,9 @@ async function getPorts(rpc?: number, ws?: number, prometheus?: number) {
       flag: "--port",
       hostPort: await getRandomPort(),
     },
-  ]
+  ];
 
-  return ports
+  return ports;
 }
 
 export function replaceNetworkRef(podDef: any, network: Network) {
@@ -150,20 +150,20 @@ export function replaceNetworkRef(podDef: any, network: Network) {
   if (Array.isArray(podDef.spec.command)) {
     const finalCommand = podDef.spec.command.map((item: string) =>
       network.replaceWithNetworInfo(item),
-    )
-    podDef.spec.command = finalCommand
+    );
+    podDef.spec.command = finalCommand;
   } else {
     // string
-    podDef.spec.command = network.replaceWithNetworInfo(podDef.spec.command)
+    podDef.spec.command = network.replaceWithNetworInfo(podDef.spec.command);
   }
 }
 
 function getPortFlags(ports: any): { [flag: string]: number } {
   const portFlags = ports.reduce((memo: any, portItem: any) => {
-    memo[portItem.flag] = portItem.hostPort
-    return memo
-  }, {})
-  return portFlags
+    memo[portItem.flag] = portItem.hostPort;
+    return memo;
+  }, {});
+  return portFlags;
 }
 
 export function createTempNodeDef(
@@ -184,7 +184,7 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
-  }
+  };
 
-  return node
+  return node;
 }

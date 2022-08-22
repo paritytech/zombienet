@@ -1,4 +1,4 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator"
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
@@ -8,19 +8,19 @@ import {
   RPC_WS_PORT,
   P2P_PORT,
   DEFAULT_COMMAND,
-} from "../../constants"
-import { getUniqueName } from "../../configGenerator"
-import { MultiAddressByNode, Node } from "../../types"
-import { getSha256 } from "../../utils/misc-utils"
-import { Network } from "../../network"
+} from "../../constants";
+import { getUniqueName } from "../../configGenerator";
+import { MultiAddressByNode, Node } from "../../types";
+import { getSha256 } from "../../utils/misc-utils";
+import { Network } from "../../network";
 
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = make_volume_mounts()
-  const container = await make_main_container(nodeSetup, volume_mounts)
-  const transferContainter = make_transfer_containter()
+  const [volume_mounts, devices] = make_volume_mounts();
+  const container = await make_main_container(nodeSetup, volume_mounts);
+  const transferContainter = make_transfer_containter();
   return {
     apiVersion: "v1",
     kind: "Pod",
@@ -45,18 +45,18 @@ export async function genBootnodeDef(
         runAsGroup: 1000,
       },
     },
-  }
+  };
 }
 
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = make_volume_mounts()
-  const container = await make_main_container(nodeSetup, volume_mounts)
-  const transferContainter = make_transfer_containter()
+  const [volume_mounts, devices] = make_volume_mounts();
+  const container = await make_main_container(nodeSetup, volume_mounts);
+  const transferContainter = make_transfer_containter();
 
-  const containersToRun = [container]
+  const containersToRun = [container];
   if (
     (nodeSetup.zombieRole === "node" ||
       nodeSetup.zombieRole === "cumulus-collator") &&
@@ -64,7 +64,7 @@ export async function genNodeDef(
     nodeSetup.jaegerUrl === "localhost:6831"
   ) {
     // add sidecar
-    containersToRun.push(jaegerAgentDef())
+    containersToRun.push(jaegerAgentDef());
   }
 
   return {
@@ -95,7 +95,7 @@ export async function genNodeDef(
         runAsGroup: 1000,
       },
     },
-  }
+  };
 }
 
 function make_transfer_containter(): any {
@@ -112,18 +112,18 @@ function make_transfer_containter(): any {
       "-c",
       `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
     ],
-  }
+  };
 }
 
 function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
     { name: "tmp-data", mountPath: "/data", readOnly: false },
-  ]
+  ];
 
-  const devices = [{ name: "tmp-cfg" }, { name: "tmp-data" }]
+  const devices = [{ name: "tmp-cfg" }, { name: "tmp-data" }];
 
-  return [volume_mounts, devices]
+  return [volume_mounts, devices];
 }
 
 async function make_main_container(
@@ -135,14 +135,14 @@ async function make_main_container(
     { containerPort: RPC_HTTP_PORT, name: "rpc-http" },
     { containerPort: RPC_WS_PORT, name: "rpc-ws" },
     { containerPort: P2P_PORT, name: "p2p" },
-  ]
+  ];
 
-  let computedCommand
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
   if (nodeSetup.zombieRole === "cumulus-collator") {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup)
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
   } else {
-    computedCommand = await genCmd(nodeSetup)
+    computedCommand = await genCmd(nodeSetup);
   }
 
   const containerDef: any = {
@@ -153,11 +153,11 @@ async function make_main_container(
     env: nodeSetup.env,
     volumeMounts: volume_mounts,
     command: computedCommand,
-  }
+  };
 
-  if (nodeSetup.resources) containerDef.resources = nodeSetup.resources
+  if (nodeSetup.resources) containerDef.resources = nodeSetup.resources;
 
-  return containerDef
+  return containerDef;
 }
 
 function jaegerAgentDef() {
@@ -197,7 +197,7 @@ function jaegerAgentDef() {
         cpu: "100m",
       },
     },
-  }
+  };
 }
 
 export function replaceNetworkRef(podDef: any, network: Network) {
@@ -206,10 +206,10 @@ export function replaceNetworkRef(podDef: any, network: Network) {
     if (Array.isArray(container.command)) {
       const finalCommand = container.command.map((item: string) =>
         network.replaceWithNetworInfo(item),
-      )
-      container.command = finalCommand
+      );
+      container.command = finalCommand;
     } else {
-      container.command = network.replaceWithNetworInfo(container.command)
+      container.command = network.replaceWithNetworInfo(container.command);
     }
   }
 }
@@ -220,7 +220,7 @@ export function createTempNodeDef(
   chain: string,
   fullCommand: string,
 ) {
-  const nodeName = getUniqueName("temp")
+  const nodeName = getUniqueName("temp");
   let node: Node = {
     name: nodeName,
     key: getSha256(nodeName),
@@ -234,7 +234,7 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
-  }
+  };
 
-  return node
+  return node;
 }

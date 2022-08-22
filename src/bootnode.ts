@@ -1,6 +1,6 @@
-import { keys as libp2pKeys } from "libp2p-crypto"
-import { hexAddPrefix, hexToU8a } from "@polkadot/util"
-import PeerId from "peer-id"
+import { keys as libp2pKeys } from "libp2p-crypto";
+import { hexAddPrefix, hexToU8a } from "@polkadot/util";
+import PeerId from "peer-id";
 
 export async function generateBootnodeString(
   key: string,
@@ -12,10 +12,10 @@ export async function generateBootnodeString(
     "Ed25519",
     hexToU8a(hexAddPrefix(key)),
     1024,
-  )
-  let peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes)
+  );
+  let peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes);
   const multiaddress = `/ip4/${ip}/tcp/${port}/${
     useWs ? "ws/" : "/"
-  }p2p/${peerId.toB58String()}`
-  return multiaddress
+  }p2p/${peerId.toB58String()}`;
+  return multiaddress;
 }

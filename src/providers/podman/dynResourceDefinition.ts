@@ -1,4 +1,4 @@
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator"
+import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import {
   PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
@@ -8,23 +8,23 @@ import {
   DEFAULT_COMMAND,
   INTROSPECTOR_POD_NAME,
   RPC_WS_PORT,
-} from "../../constants"
-import { getUniqueName } from "../../configGenerator"
-import { MultiAddressByNode, Node } from "../../types"
-import { getRandomPort } from "../../utils/net-utils"
-import { getClient } from "../client"
-import { resolve } from "path"
-import { Network } from "../../network"
+} from "../../constants";
+import { getUniqueName } from "../../configGenerator";
+import { MultiAddressByNode, Node } from "../../types";
+import { getRandomPort } from "../../utils/net-utils";
+import { getClient } from "../client";
+import { resolve } from "path";
+import { Network } from "../../network";
 
-const fs = require("fs").promises
+const fs = require("fs").promises;
 
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name)
-  const container = await make_main_container(nodeSetup, volume_mounts)
-  const transferContainter = make_transfer_containter()
+  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
+  const container = await make_main_container(nodeSetup, volume_mounts);
+  const transferContainter = make_transfer_containter();
   return {
     apiVersion: "v1",
     kind: "Pod",
@@ -46,24 +46,24 @@ export async function genBootnodeDef(
       restartPolicy: "OnFailure",
       volumes: devices,
     },
-  }
+  };
 }
 
 export async function genPrometheusDef(namespace: string): Promise<any> {
-  const client = getClient()
+  const client = getClient();
   const volume_mounts = [
     { name: "prom-cfg", mountPath: "/etc/prometheus", readOnly: false },
     { name: "prom-data", mountPath: "/data", readOnly: false },
-  ]
-  const cfgPath = `${client.tmpDir}/prometheus/etc`
-  const dataPath = `${client.tmpDir}/prometheus/data`
-  await fs.mkdir(cfgPath, { recursive: true })
-  await fs.mkdir(dataPath, { recursive: true })
+  ];
+  const cfgPath = `${client.tmpDir}/prometheus/etc`;
+  const dataPath = `${client.tmpDir}/prometheus/data`;
+  await fs.mkdir(cfgPath, { recursive: true });
+  await fs.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "prom-data", hostPath: { type: "Directory", path: dataPath } },
-  ]
+  ];
 
   const config = `# config
 global:
@@ -81,9 +81,9 @@ scrape_configs:
     - /data/sd_config*.yaml
     - /data/sd_config*.json
     refresh_interval: 5s
-`
+`;
 
-  await fs.writeFile(`${cfgPath}/prometheus.yml`, config)
+  await fs.writeFile(`${cfgPath}/prometheus.yml`, config);
 
   const ports = [
     {
@@ -91,7 +91,7 @@ scrape_configs:
       name: "prometheus_endpoint",
       hostPort: await getRandomPort(),
     },
-  ]
+  ];
 
   const containerDef = {
     image: "prom/prometheus",
@@ -99,7 +99,7 @@ scrape_configs:
     imagePullPolicy: "Always",
     ports,
     volumeMounts: volume_mounts,
-  }
+  };
 
   return {
     apiVersion: "v1",
@@ -121,7 +121,7 @@ scrape_configs:
       restartPolicy: "OnFailure",
       volumes: devices,
     },
-  }
+  };
 }
 
 export async function genGrafanaDef(
@@ -129,23 +129,23 @@ export async function genGrafanaDef(
   prometheusIp: string,
   tempoIp: string,
 ): Promise<any> {
-  const client = getClient()
+  const client = getClient();
   const volume_mounts = [
     {
       name: "datasources-cfg",
       mountPath: "/etc/grafana/provisioning/datasources",
       readOnly: false,
     },
-  ]
-  const datasourcesPath = `${client.tmpDir}/grafana/datasources`
-  await fs.mkdir(datasourcesPath, { recursive: true })
+  ];
+  const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
+  await fs.mkdir(datasourcesPath, { recursive: true });
 
   const devices = [
     {
       name: "datasources-cfg",
       hostPath: { type: "Directory", path: datasourcesPath },
     },
-  ]
+  ];
 
   const datasource = `
 # config file version
@@ -165,9 +165,9 @@ datasources:
     url: http://${tempoIp}:3200
     version: 1
     editable: true
-`
+`;
 
-  await fs.writeFile(`${datasourcesPath}/prometheus.yml`, datasource)
+  await fs.writeFile(`${datasourcesPath}/prometheus.yml`, datasource);
 
   const ports = [
     {
@@ -175,7 +175,7 @@ datasources:
       name: "grafana_web",
       hostPort: await getRandomPort(),
     },
-  ]
+  ];
 
   const containerDef = {
     image: "grafana/grafana",
@@ -183,7 +183,7 @@ datasources:
     imagePullPolicy: "Always",
     ports,
     volumeMounts: volume_mounts,
-  }
+  };
 
   return {
     apiVersion: "v1",
@@ -205,7 +205,7 @@ datasources:
       restartPolicy: "OnFailure",
       volumes: devices,
     },
-  }
+  };
 }
 
 export async function getIntrospectorDef(
@@ -218,7 +218,7 @@ export async function getIntrospectorDef(
       name: "prometheus",
       hostPort: await getRandomPort(),
     },
-  ]
+  ];
 
   const containerDef = {
     image: "paritytech/polkadot-introspector:latest",
@@ -227,7 +227,7 @@ export async function getIntrospectorDef(
     imagePullPolicy: "Always",
     ports,
     volumeMounts: [],
-  }
+  };
 
   return {
     apiVersion: "v1",
@@ -248,31 +248,31 @@ export async function getIntrospectorDef(
       containers: [containerDef],
       restartPolicy: "OnFailure",
     },
-  }
+  };
 }
 
 export async function genTempoDef(namespace: string): Promise<any> {
-  const client = getClient()
+  const client = getClient();
 
   const volume_mounts = [
     { name: "tempo-cfg", mountPath: "/etc/tempo", readOnly: false },
     { name: "tempo-data", mountPath: "/data", readOnly: false },
-  ]
-  const cfgPath = `${client.tmpDir}/tempo/etc`
-  const dataPath = `${client.tmpDir}/tempo/data`
-  await fs.mkdir(cfgPath, { recursive: true })
-  await fs.mkdir(dataPath, { recursive: true })
+  ];
+  const cfgPath = `${client.tmpDir}/tempo/etc`;
+  const dataPath = `${client.tmpDir}/tempo/data`;
+  await fs.mkdir(cfgPath, { recursive: true });
+  await fs.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "tempo-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "tempo-data", hostPath: { type: "Directory", path: dataPath } },
-  ]
+  ];
 
   const tempoConfigPath = resolve(
     __dirname,
     `../../../static-configs/tempo.yaml`,
-  )
-  await fs.copyFile(tempoConfigPath, `${cfgPath}/tempo.yaml`)
+  );
+  await fs.copyFile(tempoConfigPath, `${cfgPath}/tempo.yaml`);
 
   const ports = [
     {
@@ -300,7 +300,7 @@ export async function genTempoDef(namespace: string): Promise<any> {
       name: "zipkin",
       hostPort: await getRandomPort(),
     },
-  ]
+  ];
 
   const containerDef = {
     image: "grafana/tempo:latest",
@@ -309,7 +309,7 @@ export async function genTempoDef(namespace: string): Promise<any> {
     imagePullPolicy: "Always",
     ports,
     volumeMounts: volume_mounts,
-  }
+  };
 
   return {
     apiVersion: "v1",
@@ -331,16 +331,16 @@ export async function genTempoDef(namespace: string): Promise<any> {
       restartPolicy: "OnFailure",
       volumes: devices,
     },
-  }
+  };
 }
 
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name)
-  const container = await make_main_container(nodeSetup, volume_mounts)
-  const transferContainter = make_transfer_containter()
+  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
+  const container = await make_main_container(nodeSetup, volume_mounts);
+  const transferContainter = make_transfer_containter();
 
   return {
     apiVersion: "v1",
@@ -367,7 +367,7 @@ export async function genNodeDef(
       restartPolicy: "OnFailure",
       volumes: devices,
     },
-  }
+  };
 }
 
 function make_transfer_containter(): any {
@@ -381,27 +381,27 @@ function make_transfer_containter(): any {
       "-c",
       `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
     ],
-  }
+  };
 }
 async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
     { name: "tmp-data", mountPath: "/data", readOnly: false },
-  ]
+  ];
 
-  const client = getClient()
-  const cfgPath = `${client.tmpDir}/${name}/cfg`
-  const dataPath = `${client.tmpDir}/${name}/data`
-  await fs.mkdir(cfgPath, { recursive: true })
+  const client = getClient();
+  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  const dataPath = `${client.tmpDir}/${name}/data`;
+  await fs.mkdir(cfgPath, { recursive: true });
 
-  await fs.mkdir(dataPath, { recursive: true })
+  await fs.mkdir(dataPath, { recursive: true });
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "tmp-data", hostPath: { type: "Directory", path: dataPath } },
-  ]
+  ];
 
-  return [volume_mounts, devices]
+  return [volume_mounts, devices];
 }
 
 async function make_main_container(
@@ -425,14 +425,14 @@ async function make_main_container(
       hostPort: await getRandomPort(),
     },
     { containerPort: P2P_PORT, name: "p2p", hostPort: await getRandomPort() },
-  ]
+  ];
 
-  let computedCommand
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND
+  let computedCommand;
+  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
   if (nodeSetup.zombieRole === "cumulus-collator") {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup)
+    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
   } else {
-    computedCommand = await genCmd(nodeSetup)
+    computedCommand = await genCmd(nodeSetup);
   }
 
   let containerDef = {
@@ -443,9 +443,9 @@ async function make_main_container(
     env: nodeSetup.env,
     volumeMounts: volume_mounts,
     command: computedCommand,
-  }
+  };
 
-  return containerDef
+  return containerDef;
 }
 
 export function replaceNetworkRef(podDef: any, network: Network) {
@@ -454,10 +454,10 @@ export function replaceNetworkRef(podDef: any, network: Network) {
     if (Array.isArray(container.command)) {
       const finalCommand = container.command.map((item: string) =>
         network.replaceWithNetworInfo(item),
-      )
-      container.command = finalCommand
+      );
+      container.command = finalCommand;
     } else {
-      container.command = network.replaceWithNetworInfo(container.command)
+      container.command = network.replaceWithNetworInfo(container.command);
     }
   }
 }
@@ -480,7 +480,7 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
-  }
+  };
 
-  return node
+  return node;
 }
