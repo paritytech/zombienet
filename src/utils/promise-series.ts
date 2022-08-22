@@ -1,6 +1,6 @@
 export async function series(
   functionsThatGeneratePromisesThatRunInSeries: any[],
-  concurrency = 1
+  concurrency = 1,
 ) {
   let results: any = null;
 

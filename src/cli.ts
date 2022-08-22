@@ -80,15 +80,20 @@ program
   .addOption(
     new Option(
       "-c, --spawn-concurrency <concurrency>",
-      "Number of concurrent spawning process to launch, default is 1"
-    )
+      "Number of concurrent spawning process to launch, default is 1",
+    ),
   )
   .addOption(
-    new Option("-p, --provider <provider>", "Override provider to use")
-      .choices(["podman", "kubernetes", "native"])
+    new Option(
+      "-p, --provider <provider>",
+      "Override provider to use",
+    ).choices(["podman", "kubernetes", "native"]),
   )
   .addOption(
-    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network")
+    new Option(
+      "-m, --monitor",
+      "Start as monitor, do not auto cleanup network",
+    ),
   );
 
 program
@@ -102,7 +107,10 @@ program
   .command("test")
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")
-  .argument("[runningNetworkSpec]", "Path to the network spec json, for using a running network for running the test")
+  .argument(
+    "[runningNetworkSpec]",
+    "Path to the network spec json, for using a running network for running the test",
+  )
   .action(test);
 
 program
@@ -118,7 +126,7 @@ program
 async function spawn(
   configFile: string,
   credsFile: string | undefined,
-  _opts: any
+  _opts: any,
 ) {
   const opts = program.opts();
   const monitor = opts.monitor || false;
@@ -133,14 +141,15 @@ async function spawn(
   const config: LaunchConfig = readNetworkConfig(filePath);
 
   // set default provider and timeout if not provided
-  if(!config.settings) {
+  if (!config.settings) {
     config.settings = {
       provider: DEFAULT_PROVIDER,
-      timeout: DEFAULT_GLOBAL_TIMEOUT
-    }
+      timeout: DEFAULT_GLOBAL_TIMEOUT,
+    };
   } else {
     if (!config.settings.provider) config.settings.provider = DEFAULT_PROVIDER;
-    if (!config.settings.timeout) config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
+    if (!config.settings.timeout)
+      config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
   }
 
   // if a provider is passed, let just use it.
@@ -163,7 +172,11 @@ async function spawn(
 }
 
 // test
-async function test(testFile: string, runningNetworkSpec: string|undefined, _opts: any) {
+async function test(
+  testFile: string,
+  runningNetworkSpec: string | undefined,
+  _opts: any,
+) {
   const opts = program.opts();
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
@@ -172,7 +185,13 @@ async function test(testFile: string, runningNetworkSpec: string|undefined, _opt
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
-  await run(testFile, providerToUse, inCI, opts.spawnConcurrency, runningNetworkSpec);
+  await run(
+    testFile,
+    providerToUse,
+    inCI,
+    opts.spawnConcurrency,
+    runningNetworkSpec,
+  );
 }
 
 program.parse(process.argv);

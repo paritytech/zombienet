@@ -19,7 +19,7 @@ const debug = require("debug")("zombie::native::client");
 export function initClient(
   configPath: string,
   namespace: string,
-  tmpDir: string
+  tmpDir: string,
 ): NativeClient {
   const client = new NativeClient(configPath, namespace, tmpDir);
   setClient(client);
@@ -126,7 +126,7 @@ export class NativeClient extends Client {
 
   async getNodeLogs(
     name: string,
-    since: number | undefined = undefined
+    since: number | undefined = undefined,
   ): Promise<string> {
     // For now in native let's just return all the logs
     const lines = await fs.promises.readFile(`${this.tmpDir}/${name}.log`);
@@ -181,7 +181,11 @@ export class NativeClient extends Client {
     }
   }
 
-  async runScript(identifier: string, scriptPath: string, args: string[] = []): Promise<RunCommandResponse> {
+  async runScript(
+    identifier: string,
+    scriptPath: string,
+    args: string[] = [],
+  ): Promise<RunCommandResponse> {
     try {
       const scriptFileName = path.basename(scriptPath);
       const scriptPathInPod = `${this.tmpDir}/${identifier}/${scriptFileName}`;
@@ -189,15 +193,21 @@ export class NativeClient extends Client {
       await fs.promises.cp(scriptPath, scriptPathInPod);
 
       // set as executable
-      await execa(this.command, ["-c", ["chmod", "+x", scriptPathInPod].join(" ")]);
+      await execa(this.command, [
+        "-c",
+        ["chmod", "+x", scriptPathInPod].join(" "),
+      ]);
 
       // exec
-      const result = await execa(this.command,[
+      const result = await execa(this.command, [
         "-c",
-        [`cd ${this.tmpDir}/${identifier}`,
-        "&&",
-        scriptPathInPod,
-        ...args].join(" ")]);
+        [
+          `cd ${this.tmpDir}/${identifier}`,
+          "&&",
+          scriptPathInPod,
+          ...args,
+        ].join(" "),
+      ]);
 
       return {
         exitCode: result.exitCode,
@@ -213,7 +223,7 @@ export class NativeClient extends Client {
     podDef: any,
     filesToCopy: fileMap[] = [],
     keystore: string,
-    chainSpecId: string
+    chainSpecId: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
@@ -228,7 +238,7 @@ export class NativeClient extends Client {
 
     console.log(`\n\tlaunching ${decorators.green(name)}`);
     console.log(
-      `\t\t with command: ${decorators.magenta(podDef.spec.command.join(" "))}`
+      `\t\t with command: ${decorators.magenta(podDef.spec.command.join(" "))}`,
     );
 
     if (keystore) {
@@ -262,7 +272,7 @@ export class NativeClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string
+    container?: string,
   ): Promise<void> {
     debug(`cp ${podFilePath}  ${localFilePath}`);
     await fs.promises.copyFile(podFilePath, localFilePath);

@@ -6,12 +6,12 @@ export async function generateBootnodeString(
   key: string,
   ip: string,
   port: number,
-  useWs: boolean = true
+  useWs: boolean = true,
 ): Promise<string> {
   let pair = await libp2pKeys.generateKeyPairFromSeed(
     "Ed25519",
     hexToU8a(hexAddPrefix(key)),
-    1024
+    1024,
   );
   let peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes);
   const multiaddress = `/ip4/${ip}/tcp/${port}/${

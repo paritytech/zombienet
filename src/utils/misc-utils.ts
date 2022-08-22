@@ -73,8 +73,8 @@ export function filterConsole(excludePatterns: string[], options?: any) {
 
 // convert 1e+X (e.g 1e+21) to literal
 export function convertExponentials(data: string): string {
-  const converted = data.replace(/e\+[0-9]+/ig, function(exp) {
-    const e = parseInt(exp.split("+")[1],10);
+  const converted = data.replace(/e\+[0-9]+/gi, function (exp) {
+    const e = parseInt(exp.split("+")[1], 10);
     return "0".repeat(e);
   });
   return converted;
