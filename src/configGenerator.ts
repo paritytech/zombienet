@@ -35,7 +35,7 @@ const debug = require("debug")("zombie::config-manager");
 // get the path of the zombie wrapper
 export const zombieWrapperPath = resolve(
   __dirname,
-  `../scripts/${ZOMBIE_WRAPPER}`
+  `../scripts/${ZOMBIE_WRAPPER}`,
 );
 
 const DEFAULT_ENV: envVars[] = [
@@ -44,7 +44,7 @@ const DEFAULT_ENV: envVars[] = [
 ];
 
 export async function generateNetworkSpec(
-  config: LaunchConfig
+  config: LaunchConfig,
 ): Promise<ComputedNetwork> {
   let globalOverrides: Override[] = [];
   if (config.relaychain.default_overrides) {
@@ -52,13 +52,13 @@ export async function generateNetworkSpec(
       config.relaychain.default_overrides.map(async (override) => {
         const valid_local_path = await getLocalOverridePath(
           config.configBasePath,
-          override.local_path
+          override.local_path,
         );
         return {
           local_path: valid_local_path,
           remote_name: override.remote_name,
         };
-      })
+      }),
     );
   }
 
@@ -95,7 +95,7 @@ export async function generateNetworkSpec(
   if (config.relaychain.chain_spec_path) {
     const chainSpecPath = resolve(
       process.cwd(),
-      config.relaychain.chain_spec_path
+      config.relaychain.chain_spec_path,
     );
     if (!fs.existsSync(chainSpecPath)) {
       console.error("Chain spec provided does not exist: ", chainSpecPath);
@@ -110,7 +110,7 @@ export async function generateNetworkSpec(
       ? config.relaychain.chain_spec_command
       : DEFAULT_CHAIN_SPEC_COMMAND.replace(
           "{{chainName}}",
-          networkSpec.relaychain.chain
+          networkSpec.relaychain.chain,
         ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
   }
 
@@ -121,7 +121,7 @@ export async function generateNetworkSpec(
       node,
       relayChainBootnodes,
       globalOverrides,
-      node.name // group of 1
+      node.name, // group of 1
     );
 
     networkSpec.relaychain.nodes.push(nodeSetup);
@@ -133,7 +133,7 @@ export async function generateNetworkSpec(
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
-        args: sanitizeArgs(nodeGroup.args||[]),
+        args: sanitizeArgs(nodeGroup.args || []),
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
@@ -145,7 +145,7 @@ export async function generateNetworkSpec(
         node,
         relayChainBootnodes,
         globalOverrides,
-        nodeGroup.name
+        nodeGroup.name,
       );
       networkSpec.relaychain.nodes.push(nodeSetup);
     }
@@ -166,41 +166,41 @@ export async function generateNetworkSpec(
       // collator could by defined in groups or
       // just using one collator definiton
       let collators = [];
-      if(parachain.collator)
+      if (parachain.collator)
         collators.push(
           await getCollatorNodeFromConfig(
             parachain.collator,
             parachain.id,
             chainName,
             bootnodes,
-            Boolean(parachain.cumulus_based)
-          )
+            Boolean(parachain.cumulus_based),
+          ),
         );
-      for(const collatorConfig of parachain.collators || []) {
+      for (const collatorConfig of parachain.collators || []) {
         collators.push(
           await getCollatorNodeFromConfig(
             collatorConfig,
             parachain.id,
             chainName,
             bootnodes,
-            Boolean(parachain.cumulus_based)
-          )
+            Boolean(parachain.cumulus_based),
+          ),
         );
       }
 
       for (const collatorGroup of parachain.collator_groups || []) {
-
         for (let i = 0; i < collatorGroup.count; i++) {
           let node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
             image: collatorGroup.image || networkSpec.relaychain.defaultImage,
             command: collatorGroup.command,
-            args: sanitizeArgs(collatorGroup.args||[]),
+            args: sanitizeArgs(collatorGroup.args || []),
             validator: true, // groups are always validators
             env: collatorGroup.env,
             overrides: collatorGroup.overrides,
             resources:
-            collatorGroup.resources || networkSpec.relaychain.defaultResources,
+              collatorGroup.resources ||
+              networkSpec.relaychain.defaultResources,
           };
           collators.push(
             await getCollatorNodeFromConfig(
@@ -208,8 +208,8 @@ export async function generateNetworkSpec(
               parachain.id,
               chainName,
               bootnodes,
-              Boolean(parachain.cumulus_based)
-            )
+              Boolean(parachain.cumulus_based),
+            ),
           );
         }
       }
@@ -218,7 +218,7 @@ export async function generateNetworkSpec(
       const firstCollator = collators[0];
       if (!firstCollator)
         throw new Error(
-          `No Collator defined for parachain ${parachain.id}, please review.`
+          `No Collator defined for parachain ${parachain.id}, please review.`,
         );
 
       const collatorBinary = firstCollator.commandWithArgs
@@ -230,12 +230,12 @@ export async function generateNetworkSpec(
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
           process.cwd(),
-          parachain.genesis_state_path
+          parachain.genesis_state_path,
         );
         if (!fs.existsSync(genesisStatePath)) {
           console.error(
             "Genesis spec provided does not exist: ",
-            genesisStatePath
+            genesisStatePath,
           );
           process.exit();
         } else {
@@ -252,12 +252,12 @@ export async function generateNetworkSpec(
       if (parachain.genesis_wasm_path) {
         const genesisWasmPath = resolve(
           process.cwd(),
-          parachain.genesis_wasm_path
+          parachain.genesis_wasm_path,
         );
         if (!fs.existsSync(genesisWasmPath)) {
           console.error(
             "Genesis spec provided does not exist: ",
-            genesisWasmPath
+            genesisWasmPath,
           );
           process.exit();
         } else {
@@ -268,7 +268,7 @@ export async function generateNetworkSpec(
           ? parachain.genesis_wasm_generator
           : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND}`;
 
-          computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
+        computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
       let parachainSetup: Parachain = {
@@ -276,28 +276,30 @@ export async function generateNetworkSpec(
         name: getUniqueName(parachain.id.toString()),
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
-          parachain.add_to_genesis === undefined ? true : parachain.add_to_genesis, // add by default
-        registerPara: parachain.register_para === undefined ? true : parachain.register_para, // register by default
+          parachain.add_to_genesis === undefined
+            ? true
+            : parachain.add_to_genesis, // add by default
+        registerPara:
+          parachain.register_para === undefined
+            ? true
+            : parachain.register_para, // register by default
         collators,
       };
 
-      if(parachain.chain) parachainSetup.chain = parachain.chain;
+      if (parachain.chain) parachainSetup.chain = parachain.chain;
 
       // if we don't have a path to the chain-spec leave undefined to create
       if (parachain.chain_spec_path) {
-        const chainSpecPath = resolve(
-          process.cwd(),
-          parachain.chain_spec_path
-        );
+        const chainSpecPath = resolve(process.cwd(), parachain.chain_spec_path);
         if (!fs.existsSync(chainSpecPath)) {
-          console.error(`Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`);
+          console.error(
+            `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
+          );
           process.exit();
         } else {
           parachainSetup.chainSpecPath = chainSpecPath;
         }
       }
-
-
 
       parachainSetup = {
         ...parachainSetup,
@@ -310,7 +312,7 @@ export async function generateNetworkSpec(
         ...(computedStateCommand
           ? { genesisStateGenerator: computedStateCommand }
           : {}),
-        ...(parachain.genesis ? { genesis: parachain.genesis} : {}),
+        ...(parachain.genesis ? { genesis: parachain.genesis } : {}),
       };
 
       networkSpec.parachains.push(parachainSetup);
@@ -318,7 +320,7 @@ export async function generateNetworkSpec(
   }
 
   networkSpec.types = config.types ? config.types : {};
-  if(config.hrmpChannels) networkSpec.hrmpChannels = config.hrmpChannels;
+  if (config.hrmpChannels) networkSpec.hrmpChannels = config.hrmpChannels;
 
   return networkSpec as ComputedNetwork;
 }
@@ -369,7 +371,7 @@ export function getUniqueName(name: string): string {
 
 async function getLocalOverridePath(
   configBasePath: string,
-  definedLocalPath: string
+  definedLocalPath: string,
 ): Promise<string> {
   // let check if local_path is full or relative
   let local_real_path = definedLocalPath;
@@ -378,7 +380,7 @@ async function getLocalOverridePath(
     local_real_path = path.join(configBasePath, definedLocalPath);
     if (!fs.existsSync(local_real_path))
       throw new Error(
-        "Invalid override config, only fullpaths or relative paths (from the config) are allowed"
+        "Invalid override config, only fullpaths or relative paths (from the config) are allowed",
       );
   }
 
@@ -390,10 +392,11 @@ async function getCollatorNodeFromConfig(
   para_id: number,
   chain: string, // relay-chain
   bootnodes: string[], // parachain bootnodes
-  cumulusBased: boolean
+  cumulusBased: boolean,
 ): Promise<Node> {
   let args: string[] = [];
-  if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args));
+  if (collatorConfig.args)
+    args = args.concat(sanitizeArgs(collatorConfig.args));
 
   const env = [
     { name: "COLORBT_SHOW_HIDDEN", value: "1" },
@@ -427,9 +430,10 @@ async function getCollatorNodeFromConfig(
     parachainId: para_id,
   };
 
-  if(collatorConfig.ws_port) node.wsPort = collatorConfig.ws_port;
-  if(collatorConfig.rpc_port) node.rpcPort = collatorConfig.rpc_port;
-  if(collatorConfig.prometheus_port) node.prometheusPort = collatorConfig.prometheus_port;
+  if (collatorConfig.ws_port) node.wsPort = collatorConfig.ws_port;
+  if (collatorConfig.rpc_port) node.rpcPort = collatorConfig.rpc_port;
+  if (collatorConfig.prometheus_port)
+    node.prometheusPort = collatorConfig.prometheus_port;
   return node;
 }
 
@@ -438,15 +442,14 @@ async function getNodeFromConfig(
   node: NodeConfig,
   relayChainBootnodes: string[],
   globalOverrides: Override[],
-  group?: string
+  group?: string,
 ): Promise<Node> {
-
   const command = node.command
     ? node.command
     : networkSpec.relaychain.defaultCommand;
   const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
   let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || []);
-  if(node.args) args = args.concat(sanitizeArgs(node.args));
+  if (node.args) args = args.concat(sanitizeArgs(node.args));
 
   const uniqueArgs = [...new Set(args)];
 
@@ -458,13 +461,13 @@ async function getNodeFromConfig(
       node.overrides.map(async (override) => {
         const valid_local_path = await getLocalOverridePath(
           networkSpec.configBasePath,
-          override.local_path
+          override.local_path,
         );
         return {
           local_path: valid_local_path,
           remote_name: override.remote_name,
         };
-      })
+      }),
     );
   }
 
@@ -504,24 +507,24 @@ async function getNodeFromConfig(
     zombieRole: "node",
   };
 
-  if(group) nodeSetup.group = group;
-  if(node.ws_port) nodeSetup.wsPort = node.ws_port;
-  if(node.rpc_port) nodeSetup.rpcPort = node.rpc_port;
-  if(node.prometheus_port) nodeSetup.prometheusPort = node.prometheus_port;
+  if (group) nodeSetup.group = group;
+  if (node.ws_port) nodeSetup.wsPort = node.ws_port;
+  if (node.rpc_port) nodeSetup.rpcPort = node.rpc_port;
+  if (node.prometheus_port) nodeSetup.prometheusPort = node.prometheus_port;
   return nodeSetup;
 }
 
 function sanitizeArgs(args: string[]): string[] {
   let removeNext = false;
-  const filteredArgs = args.filter(arg=> {
-    if(removeNext) {
+  const filteredArgs = args.filter((arg) => {
+    if (removeNext) {
       removeNext = false;
       return false;
     }
 
-    const argParsed = (arg === "-d") ? "d" : arg.replace(/--/g, "");
-    if(ARGS_TO_REMOVE[argParsed]) {
-      if(ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
+    const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "");
+    if (ARGS_TO_REMOVE[argParsed]) {
+      if (ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
       return false;
     } else {
       return true;

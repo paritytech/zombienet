@@ -12,7 +12,11 @@ import {
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./constants";
 import { getClient } from "./providers/client";
 
-import { paraGetBlockHeight, paraIsRegistered, validateRuntimeCode } from "./jsapi-helpers";
+import {
+  paraGetBlockHeight,
+  paraIsRegistered,
+  validateRuntimeCode,
+} from "./jsapi-helpers";
 import { decorators } from "./utils/colors";
 import { resolve } from "path";
 
@@ -123,7 +127,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async parachainIsRegistered(
     parachainId: number,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     let expired = false;
     let limitTimeout;
@@ -140,7 +144,7 @@ export class NetworkNode implements NetworkNodeInterface {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         done = await paraIsRegistered(
           this.apiInstance as ApiPromise,
-          parachainId
+          parachainId,
         );
       }
 
@@ -155,37 +159,45 @@ export class NetworkNode implements NetworkNodeInterface {
   async parachainBlockHeight(
     parachainId: number,
     desiredValue: number,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
     let value: number = 0;
     try {
       const getValue = async () => {
-        while(desiredValue > value) {
+        while (desiredValue > value) {
           // reconnect iff needed
           if (!this.apiInstance) await this.connectApi();
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
           let blockNumber = await paraGetBlockHeight(
             this.apiInstance as ApiPromise,
-            parachainId
+            parachainId,
           );
 
           value = blockNumber;
         }
         return;
-      }
+      };
 
       const resp = await Promise.race([
         getValue(),
-        new Promise((resolve) => setTimeout(() => {
-          const err = new Error(`Timeout(${timeout}), "getting desired parachain block height ${desiredValue} within ${timeout} secs".`);
-          return resolve(err);
-        }, timeout * 1000))
+        new Promise((resolve) =>
+          setTimeout(() => {
+            const err = new Error(
+              `Timeout(${timeout}), "getting desired parachain block height ${desiredValue} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
       ]);
-      if( resp instanceof Error ) throw resp
+      if (resp instanceof Error) throw resp;
       return value;
-    } catch(err: any) {
-      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(
+          err.message,
+        )}\n`,
+      );
       return value || 0;
     }
   }
@@ -195,7 +207,7 @@ export class NetworkNode implements NetworkNodeInterface {
     comparator: string,
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  ): Promise<number|undefined> {
+  ): Promise<number | undefined> {
     let value;
     let timedout = false;
     try {
@@ -207,7 +219,10 @@ export class NetworkNode implements NetworkNodeInterface {
       const metricName = getMetricName(rawmetricName);
       value = this._getMetric(metricName, desiredMetricValue === null);
       if (value !== undefined) {
-        if (desiredMetricValue === null || compare(comparator, value, desiredMetricValue)) {
+        if (
+          desiredMetricValue === null ||
+          compare(comparator, value, desiredMetricValue)
+        ) {
           debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
           return value;
         }
@@ -216,7 +231,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const getValue = async () => {
         let c = 0;
         let done = false;
-        while(!done) {
+        while (!done) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
@@ -226,34 +241,43 @@ export class NetworkNode implements NetworkNodeInterface {
           if (
             value !== undefined &&
             desiredMetricValue !== null &&
-            compare(comparator,value, desiredMetricValue)
+            compare(comparator, value, desiredMetricValue)
           ) {
             done = true;
           } else {
             debug(
-              `current value: ${value} for metric ${rawmetricName}, keep trying...`
+              `current value: ${value} for metric ${rawmetricName}, keep trying...`,
             );
           }
         }
-      }
+      };
 
       const resp = await Promise.race([
         getValue(),
-        new Promise((resolve) => setTimeout(() => {
-          timedout = true;
-          const err = new Error(`Timeout(${timeout}), "getting desired metric value ${desiredMetricValue} within ${timeout} secs".`);
-          return resolve(err);
-        }, timeout * 1000))
+        new Promise((resolve) =>
+          setTimeout(() => {
+            timedout = true;
+            const err = new Error(
+              `Timeout(${timeout}), "getting desired metric value ${desiredMetricValue} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
       ]);
-      if( resp instanceof Error ) {
+      if (resp instanceof Error) {
         // use `undefined` metrics values in `equal` comparations as `0`
-        if(timedout && comparator === "equal" && desiredMetricValue === 0) value = 0;
+        if (timedout && comparator === "equal" && desiredMetricValue === 0)
+          value = 0;
         else throw resp;
       }
 
       return value || 0;
-    } catch(err: any) {
-      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(
+          err.message,
+        )}\n`,
+      );
       return value;
     }
   }
@@ -262,14 +286,14 @@ export class NetworkNode implements NetworkNodeInterface {
     rawmetricName: string,
     buckets: string[], // empty string means all.
     desiredMetricValue: number | null = null,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
     let value;
     try {
       const metricName = getMetricName(rawmetricName);
       let histogramBuckets = await getHistogramBuckets(
         this.prometheusUri,
-        metricName
+        metricName,
       );
       let value = this._getSamplesCount(histogramBuckets, buckets);
       if (desiredMetricValue === null || value >= desiredMetricValue) {
@@ -280,12 +304,12 @@ export class NetworkNode implements NetworkNodeInterface {
       const getValue = async () => {
         let c = 0;
         let done = false;
-        while(!done) {
+        while (!done) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           histogramBuckets = await getHistogramBuckets(
             this.prometheusUri,
-            metricName
+            metricName,
           );
 
           value = this._getSamplesCount(histogramBuckets, buckets);
@@ -297,24 +321,32 @@ export class NetworkNode implements NetworkNodeInterface {
             done = true;
           } else {
             debug(
-              `current value: ${value} for samples count of ${rawmetricName}, keep trying...`
+              `current value: ${value} for samples count of ${rawmetricName}, keep trying...`,
             );
           }
         }
-      }
+      };
 
       const resp = await Promise.race([
         getValue(),
-        new Promise((resolve) => setTimeout(() => {
-          const err = new Error(`Timeout(${timeout}), "getting samples count value ${desiredMetricValue} within ${timeout} secs".`);
-          return resolve(err);
-        }, timeout * 1000))
+        new Promise((resolve) =>
+          setTimeout(() => {
+            const err = new Error(
+              `Timeout(${timeout}), "getting samples count value ${desiredMetricValue} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
       ]);
-      if( resp instanceof Error ) throw resp;
+      if (resp instanceof Error) throw resp;
 
       return value || 0;
-    } catch(err: any){
-      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(
+          err.message,
+        )}\n`,
+      );
       return value || 0;
     }
   }
@@ -322,18 +354,18 @@ export class NetworkNode implements NetworkNodeInterface {
   async findPattern(
     pattern: string,
     isGlob: boolean,
-    timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+    timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     try {
       const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
       const client = getClient();
-      let logs = await client.getNodeLogs(this.name, undefined,  true);
+      let logs = await client.getNodeLogs(this.name, undefined, true);
       const getValue = async () => {
         let done = false;
         while (!done) {
           const dedupedLogs = this._dedupLogs(
             logs.split("\n"),
-            client.providerName === "native"
+            client.providerName === "native",
           );
           const index = dedupedLogs.findIndex((line) => {
             if (client.providerName !== "native") {
@@ -347,26 +379,36 @@ export class NetworkNode implements NetworkNodeInterface {
             done = true;
             this.lastLogLineCheckedTimestamp = dedupedLogs[index];
             this.lastLogLineCheckedIndex = index;
-            debug(this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
+            debug(
+              this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "),
+            );
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
-            logs = await client.getNodeLogs(this.name, 2,  true);
+            logs = await client.getNodeLogs(this.name, 2, true);
           }
         }
-      }
+      };
 
       const resp = await Promise.race([
         getValue(),
-        new Promise((resolve) => setTimeout(() => {
-          const err = new Error(`Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`);
-          return resolve(err);
-        }, timeout * 1000))
+        new Promise((resolve) =>
+          setTimeout(() => {
+            const err = new Error(
+              `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
       ]);
-      if( resp instanceof Error ) throw resp;
+      if (resp instanceof Error) throw resp;
 
       return true;
-    } catch(err: any) {
-      console.log(`\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(err.message)}\n`);
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.red(
+          err.message,
+        )}\n`,
+      );
       return false;
     }
   }
@@ -374,45 +416,57 @@ export class NetworkNode implements NetworkNodeInterface {
   async run(
     scriptPath: string,
     args: string[],
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT) {
-      const client = getClient();
-      const runScript = async (scriptPath: string, args: string[]) => {
-        const r = await client.runScript(this.name, scriptPath, args);
-        if( r.exitCode !== 0 ) throw new Error(`Error running cmd: ${scriptPath} with args ${args}`);
-        debug(r.stdout);
-        return r.stdout;
-      };
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  ) {
+    const client = getClient();
+    const runScript = async (scriptPath: string, args: string[]) => {
+      const r = await client.runScript(this.name, scriptPath, args);
+      if (r.exitCode !== 0)
+        throw new Error(`Error running cmd: ${scriptPath} with args ${args}`);
+      debug(r.stdout);
+      return r.stdout;
+    };
 
-      const resp = await Promise.race([
-        runScript(scriptPath, args),
-        new Promise((resolve) => setTimeout(() => {
-          const err = new Error(`Timeout(${timeout}), "running cmd: ${scriptPath} with args ${args} within ${timeout} secs".`);
+    const resp = await Promise.race([
+      runScript(scriptPath, args),
+      new Promise((resolve) =>
+        setTimeout(() => {
+          const err = new Error(
+            `Timeout(${timeout}), "running cmd: ${scriptPath} with args ${args} within ${timeout} secs".`,
+          );
           return resolve(err);
-        }, timeout * 1000))
-      ]);
-      if( resp instanceof Error ) throw resp;
+        }, timeout * 1000),
+      ),
+    ]);
+    if (resp instanceof Error) throw resp;
   }
 
-  async getSpansByTraceId(traceId: string, collatorUrl: string): Promise<string[]> {
+  async getSpansByTraceId(
+    traceId: string,
+    collatorUrl: string,
+  ): Promise<string[]> {
     const url = `${collatorUrl}/api/traces/${traceId}`;
     const response = await axios.get(url, { timeout: 2000 });
 
     // filter batches
-    const batches = response.data.batches.filter( (batch: any) => {
-      const serviceNameAttr = batch.resource.attributes.find((attr:any) => {
+    const batches = response.data.batches.filter((batch: any) => {
+      const serviceNameAttr = batch.resource.attributes.find((attr: any) => {
         return attr.key === "service.name";
       });
 
-      if(!serviceNameAttr) return false;
+      if (!serviceNameAttr) return false;
 
-      return serviceNameAttr.value.stringValue.split('-').slice(1).join('-') === this.name;
+      return (
+        serviceNameAttr.value.stringValue.split("-").slice(1).join("-") ===
+        this.name
+      );
     });
 
     // get the `names` of the spans
     const spanNames: string[] = [];
-    for(const batch of batches) {
-      for(const instrumentationSpan of batch.instrumentationLibrarySpans) {
-        for(const span of instrumentationSpan.spans) {
+    for (const batch of batches) {
+      for (const instrumentationSpan of batch.instrumentationLibrarySpans) {
+        for (const span of instrumentationSpan.spans) {
           spanNames.push(span.name);
         }
       }
@@ -436,7 +490,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   _getMetric(
     metricName: string,
-    metricShouldExists: boolean = true
+    metricShouldExists: boolean = true,
   ): number | undefined {
     if (!this.cachedMetrics) throw new Error("Metrics not availables");
 
@@ -468,14 +522,13 @@ export class NetworkNode implements NetworkNodeInterface {
   }
 }
 
-
 function compare(comparator: string, a: any, b: any): boolean {
   debug(`using comparator ${comparator} for ${a}, ${b}`);
   switch (comparator.trim()) {
     case "equal":
       return a == b;
     case "isAbove":
-      return a > b
+      return a > b;
     case "isAtLeast":
       return a >= b;
     case "isBelow":

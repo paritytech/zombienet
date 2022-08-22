@@ -20,7 +20,7 @@ const fs = require("fs").promises;
 
 export async function genBootnodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
   const container = await make_main_container(nodeSetup, volume_mounts);
@@ -127,7 +127,7 @@ scrape_configs:
 export async function genGrafanaDef(
   namespace: string,
   prometheusIp: string,
-  tempoIp: string
+  tempoIp: string,
 ): Promise<any> {
   const client = getClient();
   const volume_mounts = [
@@ -208,23 +208,22 @@ datasources:
   };
 }
 
-export async function getIntrospectorDef(namespace:string, wsUri: string): Promise<any> {
+export async function getIntrospectorDef(
+  namespace: string,
+  wsUri: string,
+): Promise<any> {
   const ports = [
     {
       containerPort: 65432,
       name: "prometheus",
       hostPort: await getRandomPort(),
-    }
+    },
   ];
 
   const containerDef = {
     image: "paritytech/polkadot-introspector:latest",
     name: INTROSPECTOR_POD_NAME,
-    args: [
-      "block-time-monitor",
-      `--ws=${wsUri}`,
-      "prometheus"
-    ],
+    args: ["block-time-monitor", `--ws=${wsUri}`, "prometheus"],
     imagePullPolicy: "Always",
     ports,
     volumeMounts: [],
@@ -247,14 +246,12 @@ export async function getIntrospectorDef(namespace:string, wsUri: string): Promi
     spec: {
       hostname: INTROSPECTOR_POD_NAME,
       containers: [containerDef],
-      restartPolicy: "OnFailure"
+      restartPolicy: "OnFailure",
     },
   };
 }
 
-export async function genTempoDef(
-  namespace: string
-): Promise<any> {
+export async function genTempoDef(namespace: string): Promise<any> {
   const client = getClient();
 
   const volume_mounts = [
@@ -271,8 +268,11 @@ export async function genTempoDef(
     { name: "tempo-data", hostPath: { type: "Directory", path: dataPath } },
   ];
 
-  const tempoConfigPath = resolve(__dirname, `../../../static-configs/tempo.yaml`);
-  await fs.copyFile(tempoConfigPath,`${cfgPath}/tempo.yaml`);
+  const tempoConfigPath = resolve(
+    __dirname,
+    `../../../static-configs/tempo.yaml`,
+  );
+  await fs.copyFile(tempoConfigPath, `${cfgPath}/tempo.yaml`);
 
   const ports = [
     {
@@ -299,13 +299,13 @@ export async function genTempoDef(
       containerPort: 9411,
       name: "zipkin",
       hostPort: await getRandomPort(),
-    }
+    },
   ];
 
   const containerDef = {
     image: "grafana/tempo:latest",
     name: "tempo",
-    args: [ "-config.file=/etc/tempo/tempo.yaml" ],
+    args: ["-config.file=/etc/tempo/tempo.yaml"],
     imagePullPolicy: "Always",
     ports,
     volumeMounts: volume_mounts,
@@ -336,7 +336,7 @@ export async function genTempoDef(
 
 export async function genNodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
   const container = await make_main_container(nodeSetup, volume_mounts);
@@ -406,7 +406,7 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
 
 async function make_main_container(
   nodeSetup: Node,
-  volume_mounts: any[]
+  volume_mounts: any[],
 ): Promise<any> {
   const ports = [
     {
@@ -429,7 +429,7 @@ async function make_main_container(
 
   let computedCommand;
   const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
-  if( nodeSetup.zombieRole === "cumulus-collator") {
+  if (nodeSetup.zombieRole === "cumulus-collator") {
     computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
@@ -450,12 +450,14 @@ async function make_main_container(
 
 export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed in containers
-  for( const container of podDef.spec.containers) {
-    if(Array.isArray(container.command)){
-      const finalCommand = container.command.map((item: string) => network.replaceWithNetworInfo(item))
+  for (const container of podDef.spec.containers) {
+    if (Array.isArray(container.command)) {
+      const finalCommand = container.command.map((item: string) =>
+        network.replaceWithNetworInfo(item),
+      );
       container.command = finalCommand;
     } else {
-      container.command =  network.replaceWithNetworInfo(container.command);
+      container.command = network.replaceWithNetworInfo(container.command);
     }
   }
 }
@@ -464,7 +466,7 @@ export function createTempNodeDef(
   name: string,
   image: string,
   chain: string,
-  fullCommand: string
+  fullCommand: string,
 ) {
   let node: Node = {
     name: getUniqueName("temp"),

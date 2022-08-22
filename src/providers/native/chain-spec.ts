@@ -15,7 +15,7 @@ export async function setupChainSpec(
   namespace: string,
   chaninConfig: any,
   chainName: string,
-  chainFullPath: string
+  chainFullPath: string,
 ): Promise<any> {
   // We have two options to get the chain-spec file, neither should use the `raw` file/argument
   // 1: User provide the chainSpecCommand (without the --raw option)
@@ -33,7 +33,7 @@ export async function setupChainSpec(
       "temp",
       defaultImage,
       chainName,
-      fullCommand
+      fullCommand,
     );
 
     const podDef = await genNodeDef(namespace, node);
@@ -53,7 +53,7 @@ export async function getChainSpecRaw(
   image: string,
   chainName: string,
   chainCommand: string,
-  chainFullPath: string
+  chainFullPath: string,
 ): Promise<any> {
   const plainPath = chainFullPath.replace(".json", "-plain.json");
   const client = getClient();
@@ -68,7 +68,7 @@ export async function getChainSpecRaw(
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
   const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
     /{{chainName}}/gi,
-    remoteChainSpecFullPath
+    remoteChainSpecFullPath,
   ).replace("{{DEFAULT_COMMAND}}", chainCommand);
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
@@ -86,7 +86,7 @@ export async function getChainSpecRaw(
     podName,
     remoteChainSpecRawFullPath,
     chainFullPath,
-    podName
+    podName,
   );
 
   // We had some issues where the `raw` file is empty

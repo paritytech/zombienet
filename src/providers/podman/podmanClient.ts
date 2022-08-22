@@ -14,14 +14,19 @@ import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
 import YAML from "yaml";
-import { genGrafanaDef, genPrometheusDef, genTempoDef, getIntrospectorDef } from "./dynResourceDefinition";
+import {
+  genGrafanaDef,
+  genPrometheusDef,
+  genTempoDef,
+  getIntrospectorDef,
+} from "./dynResourceDefinition";
 
 const debug = require("debug")("zombie::podman::client");
 
 export function initClient(
   configPath: string,
   namespace: string,
-  tmpDir: string
+  tmpDir: string,
 ): PodmanClient {
   const client = new PodmanClient(configPath, namespace, tmpDir);
   setClient(client);
@@ -84,8 +89,8 @@ export class PodmanClient extends Client {
     await this.createResource(prometheusSpec, false, true);
     console.log(
       `\n\t Monitor: ${decorators.green(
-        prometheusSpec.metadata.name
-      )} - url: http://127.0.0.1:${promPort}`
+        prometheusSpec.metadata.name,
+      )} - url: http://127.0.0.1:${promPort}`,
     );
 
     const tempoSpec = await genTempoDef(this.namespace);
@@ -94,33 +99,42 @@ export class PodmanClient extends Client {
     const tempoPort = tempoSpec.spec.containers[0].ports[1].hostPort;
     console.log(
       `\n\t Monitor: ${decorators.green(
-        tempoSpec.metadata.name
-      )} - url: http://127.0.0.1:${tempoPort}`
+        tempoSpec.metadata.name,
+      )} - url: http://127.0.0.1:${tempoPort}`,
     );
-
 
     const prometheusIp = await this.getNodeIP("prometheus");
     const tempoIp = await this.getNodeIP("tempo");
-    const grafanaSpec = await genGrafanaDef(this.namespace, prometheusIp.toString(), tempoIp.toString());
+    const grafanaSpec = await genGrafanaDef(
+      this.namespace,
+      prometheusIp.toString(),
+      tempoIp.toString(),
+    );
     await this.createResource(grafanaSpec, false, false);
     const grafanaPort = grafanaSpec.spec.containers[0].ports[0].hostPort;
     console.log(
       `\n\t Monitor: ${decorators.green(
-        grafanaSpec.metadata.name
-      )} - url: http://127.0.0.1:${grafanaPort}`
+        grafanaSpec.metadata.name,
+      )} - url: http://127.0.0.1:${grafanaPort}`,
     );
   }
 
-  async createStaticResource(filename: string, replacements?: {[properyName: string]: string}): Promise<void> {
+  async createStaticResource(
+    filename: string,
+    replacements?: { [properyName: string]: string },
+  ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
     let resourceDef = fileContent
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
 
-    if(replacements) {
-      for(const replacementKey of Object.keys(replacements)) {
-        resourceDef = resourceDef.replace(new RegExp(`{{${replacementKey}}}`, "g"), replacements[replacementKey]);
+    if (replacements) {
+      for (const replacementKey of Object.keys(replacements)) {
+        resourceDef = resourceDef.replace(
+          new RegExp(`{{${replacementKey}}}`, "g"),
+          replacements[replacementKey],
+        );
       }
     }
 
@@ -176,13 +190,13 @@ export class PodmanClient extends Client {
     const content = `[{"labels": {"pod": "${podName}"}, "targets": ["${podIp}:${PROMETHEUS_PORT}"]}]`;
     await fs.writeFile(
       `${this.tmpDir}/prometheus/data/sd_config_${podName}.json`,
-      content
+      content,
     );
   }
 
   async getNodeLogs(
     podName: string,
-    since: number | undefined = undefined
+    since: number | undefined = undefined,
   ): Promise<string> {
     const args = ["logs"];
     if (since && since > 0) args.push(...["--since", `${since}s`]);
@@ -203,7 +217,9 @@ export class PodmanClient extends Client {
   }
 
   async startPortForwarding(port: number, identifier: string): Promise<number> {
-    const podName = identifier.includes("/") ? identifier.split("/")[1] : identifier;
+    const podName = identifier.includes("/")
+      ? identifier.split("/")[1]
+      : identifier;
     const hostPort = await this.getPortMapping(port, podName);
     return hostPort;
   }
@@ -226,10 +242,16 @@ export class PodmanClient extends Client {
     return podIp;
   }
 
-  async getNodeInfo(podName: string, port?: number, externalView: boolean = false): Promise<[string, number]> {
+  async getNodeInfo(
+    podName: string,
+    port?: number,
+    externalView: boolean = false,
+  ): Promise<[string, number]> {
     let hostIp, hostPort;
-    if(externalView) {
-      hostPort = await ( port ? this.getPortMapping(port, podName) : this.getPortMapping(P2P_PORT, podName));
+    if (externalView) {
+      hostPort = await (port
+        ? this.getPortMapping(port, podName)
+        : this.getPortMapping(P2P_PORT, podName));
       hostIp = await getHostIp();
     } else {
       hostIp = await this.getNodeIP(podName);
@@ -242,7 +264,7 @@ export class PodmanClient extends Client {
   async runCommand(
     args: string[],
     resourceDef?: string,
-    scoped?: boolean
+    scoped?: boolean,
   ): Promise<RunCommandResponse> {
     try {
       const augmentedCmd: string[] = [];
@@ -269,25 +291,37 @@ export class PodmanClient extends Client {
     }
   }
 
-  async runScript(podName: string, scriptPath: string, args: string[] = []): Promise<RunCommandResponse> {
+  async runScript(
+    podName: string,
+    scriptPath: string,
+    args: string[] = [],
+  ): Promise<RunCommandResponse> {
     try {
       const scriptFileName = path.basename(scriptPath);
       const scriptPathInPod = `/tmp/${scriptFileName}`;
       const identifier = `${podName}_pod-${podName}`;
 
       // upload the script
-      await this.runCommand(["cp", scriptPath, `${identifier}:${scriptPathInPod}`]);
+      await this.runCommand([
+        "cp",
+        scriptPath,
+        `${identifier}:${scriptPathInPod}`,
+      ]);
 
       // set as executable
       const baseArgs = ["exec", identifier];
-      await this.runCommand([
-        ...baseArgs,
-        "/bin/chmod",
-        "+x",
-        scriptPathInPod], undefined, true);
+      await this.runCommand(
+        [...baseArgs, "/bin/chmod", "+x", scriptPathInPod],
+        undefined,
+        true,
+      );
 
       // exec
-      const result = await this.runCommand([...baseArgs, "bash", "-c", scriptPathInPod, ...args], undefined, true);
+      const result = await this.runCommand(
+        [...baseArgs, "bash", "-c", scriptPathInPod, ...args],
+        undefined,
+        true,
+      );
 
       return {
         exitCode: result.exitCode,
@@ -302,25 +336,25 @@ export class PodmanClient extends Client {
     podDef: any,
     filesToCopy: fileMap[] = [],
     keystore: string,
-    chainSpecId: string
+    chainSpecId: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
 
     console.log(
       `\n\tlaunching ${decorators.green(
-        podDef.metadata.name
-      )} pod with image ${decorators.green(podDef.spec.containers[0].image)}`
+        podDef.metadata.name,
+      )} pod with image ${decorators.green(podDef.spec.containers[0].image)}`,
     );
     console.log(
       `\t\t with command: ${decorators.magenta(
-        podDef.spec.containers[0].command.join(" ")
-      )}`
+        podDef.spec.containers[0].command.join(" "),
+      )}`,
     );
 
     if (keystore) {
       // initialize keystore
       const dataPath = podDef.spec.volumes.find(
-        (vol: any) => vol.name === "tmp-data"
+        (vol: any) => vol.name === "tmp-data",
       );
       debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
@@ -336,7 +370,7 @@ export class PodmanClient extends Client {
       const { localFilePath, remoteFilePath } = fileMap;
       await fs.copyFile(
         localFilePath,
-        `${this.tmpDir}/${name}${remoteFilePath}`
+        `${this.tmpDir}/${name}${remoteFilePath}`,
       );
     }
 
@@ -350,12 +384,12 @@ export class PodmanClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string
+    container?: string,
   ): Promise<void> {
     debug(`cp ${this.tmpDir}/${identifier}${podFilePath}  ${localFilePath}`);
     await fs.copyFile(
       `${this.tmpDir}/${identifier}${podFilePath}`,
-      localFilePath
+      localFilePath,
     );
   }
 
@@ -367,7 +401,7 @@ export class PodmanClient extends Client {
   async createResource(
     resourseDef: any,
     scoped: boolean,
-    waitReady: boolean
+    waitReady: boolean,
   ): Promise<void> {
     const name = resourseDef.metadata.name;
     const doc = new YAML.Document(resourseDef);
@@ -378,7 +412,7 @@ export class PodmanClient extends Client {
     await this.runCommand(
       ["play", "kube", "--network", this.namespace, localFilePath],
       undefined,
-      false
+      false,
     );
 
     if (waitReady) await this.wait_pod_ready(name);
@@ -386,7 +420,7 @@ export class PodmanClient extends Client {
 
   async wait_pod_ready(
     podName: string,
-    allowDegraded: boolean = true
+    allowDegraded: boolean = true,
   ): Promise<void> {
     // loop until ready
     let t = this.timeout;

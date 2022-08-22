@@ -7,7 +7,7 @@ import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
   BAKCCHANNEL_URI_PATTERN,
-  DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+  DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
 } from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
@@ -27,25 +27,44 @@ export interface NodeMappingMetrics {
 export enum Scope {
   RELAY,
   PARA,
-  COMPANION
+  COMPANION,
 }
 
-export function rebuildNetwork(client: Client, runningNetworkSpec: any): Network {
-  const {namespace, tmpDir, companions, launched, backchannel, chainSpecFullPath, nodesByName, tracingCollatorUrl} = runningNetworkSpec;
+export function rebuildNetwork(
+  client: Client,
+  runningNetworkSpec: any,
+): Network {
+  const {
+    namespace,
+    tmpDir,
+    companions,
+    launched,
+    backchannel,
+    chainSpecFullPath,
+    nodesByName,
+    tracingCollatorUrl,
+  } = runningNetworkSpec;
   const network: Network = new Network(client, namespace, tmpDir);
-  Object.assign(network, {companions, launched, backchannel, chainSpecFullPath, tracingCollatorUrl});
+  Object.assign(network, {
+    companions,
+    launched,
+    backchannel,
+    chainSpecFullPath,
+    tracingCollatorUrl,
+  });
 
-  for( const nodeName of Object.keys(nodesByName)) {
+  for (const nodeName of Object.keys(nodesByName)) {
     const node = nodesByName[nodeName];
     const networkNode = new NetworkNode(
       node.name,
       node.wsUri,
       node.prometheusUri,
-      node.userDefinedTypes
+      node.userDefinedTypes,
     );
 
-    if(node.parachainId) {
-      if (!network.paras[node.parachainId]) network.addPara(node.parachainId, node.parachainSpecPath);
+    if (node.parachainId) {
+      if (!network.paras[node.parachainId])
+        network.addPara(node.parachainId, node.parachainSpecPath);
       networkNode.parachainId = node.parachainId;
     }
 
@@ -68,7 +87,7 @@ export class Network {
     };
   } = {};
   groups: {
-    [id: string]: NetworkNode[]
+    [id: string]: NetworkNode[];
   } = {};
   companions: NetworkNode[] = [];
   nodesByName: NodeMapping = {};
@@ -80,7 +99,6 @@ export class Network {
   backchannelUri: string = "";
   chainSpecFullPath?: string;
   tracingCollatorUrl?: string;
-
 
   constructor(client: Client, namespace: string, tmpDir: string) {
     this.client = client;
@@ -105,7 +123,7 @@ export class Network {
     else {
       if (!node.parachainId || !this.paras[node.parachainId])
         throw new Error(
-          "Invalid network node configuration, collator must set the parachainId"
+          "Invalid network node configuration, collator must set the parachainId",
         );
 
       this.paras[node.parachainId].nodes.push(node);
@@ -113,8 +131,8 @@ export class Network {
 
     this.nodesByName[node.name] = node;
 
-    if(node.group) {
-      if(!this.groups[node.group]) this.groups[node.group] = [];
+    if (node.group) {
+      if (!this.groups[node.group]) this.groups[node.group] = [];
       this.groups[node.group].push(node);
     }
   }
@@ -132,7 +150,7 @@ export class Network {
         memo.concat(this.paras[paraId].nodes);
         return memo;
       },
-      []
+      [],
     );
 
     const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
@@ -140,7 +158,11 @@ export class Network {
     });
     await Promise.all(dumpsPromises);
 
-    console.log(`\n\t ${decorators.green("Node's logs are available in")} ${decorators.magenta(this.tmpDir + "/logs")}`);
+    console.log(
+      `\n\t ${decorators.green(
+        "Node's logs are available in",
+      )} ${decorators.magenta(this.tmpDir + "/logs")}`,
+    );
   }
 
   async upsertCronJob(minutes = 10) {
@@ -152,7 +174,7 @@ export class Network {
     wasmPath: string,
     statePath: string,
     apiInstance = null,
-    finalization = false
+    finalization = false,
   ) {
     return new Promise<void>(async (resolve, reject) => {
       await cryptoWaitReady();
@@ -167,9 +189,9 @@ export class Network {
         api = this.relay[0].apiInstance as ApiPromise;
       }
 
-      let nonce = (
-        await api.query.system.account(alice.address) as any
-      ).nonce.toNumber();
+      let nonce = ((await api.query.system.account(
+        alice.address,
+      )) as any).nonce.toNumber();
       const wasm_data = readDataFile(wasmPath);
       const genesis_state = readDataFile(statePath);
 
@@ -182,7 +204,7 @@ export class Network {
       const genesis = api.createType("ParaGenesisArgs", parachainGenesisArgs);
 
       console.log(
-        `Submitting extrinsic to register parachain ${id}. nonce: ${nonce}`
+        `Submitting extrinsic to register parachain ${id}. nonce: ${nonce}`,
       );
 
       const unsub = await api.tx.sudo
@@ -191,7 +213,7 @@ export class Network {
           console.log(`Current status is ${result.status}`);
           if (result.status.isInBlock) {
             console.log(
-              `Transaction included at blockhash ${result.status.asInBlock}`
+              `Transaction included at blockhash ${result.status.asInBlock}`,
             );
             if (finalization) {
               console.log("Waiting for finalization...");
@@ -201,7 +223,7 @@ export class Network {
             }
           } else if (result.status.isFinalized) {
             console.log(
-              `Transaction finalized at blockHash ${result.status.asFinalized}`
+              `Transaction finalized at blockHash ${result.status.asFinalized}`,
             );
             unsub();
             return resolve();
@@ -217,7 +239,7 @@ export class Network {
 
   async getBackchannelValue(
     key: string,
-    timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+    timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<any> {
     let limitTimeout;
     let expired = false;
@@ -231,11 +253,11 @@ export class Network {
         // create port-fw
         const port = await this.client.startPortForwarding(
           BAKCCHANNEL_PORT,
-          BAKCCHANNEL_POD_NAME
+          BAKCCHANNEL_POD_NAME,
         );
         this.backchannelUri = BAKCCHANNEL_URI_PATTERN.replace(
           "{{PORT}}",
-          port.toString()
+          port.toString(),
         );
       }
 
@@ -275,12 +297,13 @@ export class Network {
   getNodes(nodeOrGroupName: string): NetworkNode[] {
     //check if is a node
     const node = this.nodesByName[nodeOrGroupName];
-    if(node) return [node]
+    if (node) return [node];
 
     //check if is a group
     const nodes = this.groups[nodeOrGroupName];
 
-    if (!nodes) throw new Error(`Noode or Group: ${nodeOrGroupName} not present`);
+    if (!nodes)
+      throw new Error(`Noode or Group: ${nodeOrGroupName} not present`);
     return nodes;
   }
 
@@ -293,7 +316,7 @@ export class Network {
   // Testing abstraction
   async nodeIsUp(
     nodeName: string,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     try {
       const limitTimeout = setTimeout(() => {
@@ -314,7 +337,7 @@ export class Network {
     console.log("\n-----------------------------------------\n");
     console.log("\n\t Network launched 🚀🚀");
     console.log(
-      `\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`
+      `\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`,
     );
     for (const node of this.relay) {
       this.showNodeInfo(node, provider);
@@ -325,7 +348,7 @@ export class Network {
       console.log("\n\t Parachain ID: " + paraId);
       if (parachain.chainSpecPath)
         console.log(
-          "\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath
+          "\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath,
         );
 
       for (const node of parachain.nodes) {
@@ -333,7 +356,7 @@ export class Network {
       }
     }
 
-    if(this.companions.length) {
+    if (this.companions.length) {
       console.log("\n\t Companions:");
       for (const node of this.companions) {
         this.showNodeInfo(node, provider);
@@ -348,19 +371,23 @@ export class Network {
     // Support native VSCode remote extension automatic port forwarding.
     // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
-    let wsUri =
-      ["native", "podman"].includes(provider) ? node.wsUri : encodeURIComponent(node.wsUri);
+    let wsUri = ["native", "podman"].includes(provider)
+      ? node.wsUri
+      : encodeURIComponent(node.wsUri);
     console.log(
-      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer\n`
+      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer\n`,
     );
     console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
     console.log("---\n");
   }
 
   replaceWithNetworInfo(placeholder: string): string {
-    return placeholder.replace(/{{ZOMBIE:(.*?):(.*?)}}/ig, (_substring, nodeName, key: keyof NetworkNode) => {
-      const node = this.getNodeByName(nodeName);
-      return node[key];
-    });
+    return placeholder.replace(
+      /{{ZOMBIE:(.*?):(.*?)}}/gi,
+      (_substring, nodeName, key: keyof NetworkNode) => {
+        const node = this.getNodeByName(nodeName);
+        return node[key];
+      },
+    );
   }
 }
