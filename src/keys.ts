@@ -1,28 +1,30 @@
-import fs from "fs";
-import { Keyring } from "@polkadot/api";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { u8aToHex } from "@polkadot/util";
-import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto";
-import { Node } from "./types";
+import fs from "fs"
+import { Keyring } from "@polkadot/api"
+import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { u8aToHex } from "@polkadot/util"
+import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto"
+import { Node } from "./types"
 
 function nameCase(string: string) {
-	return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1)
 }
 
 export async function generateKeyForNode(nodeName?: string): Promise<any> {
-  await cryptoWaitReady();
+  await cryptoWaitReady()
 
-  const seed = nodeName ? `//${nameCase(nodeName)}` : u8aToHex(mnemonicToMiniSecret(mnemonicGenerate()));
+  const seed = nodeName
+    ? `//${nameCase(nodeName)}`
+    : u8aToHex(mnemonicToMiniSecret(mnemonicGenerate()))
 
-  const sr_keyring = new Keyring({ type: "sr25519" });
-  const sr_account = sr_keyring.createFromUri(`${seed}`);
-  const sr_stash = sr_keyring.createFromUri(`${seed}//stash`);
+  const sr_keyring = new Keyring({ type: "sr25519" })
+  const sr_account = sr_keyring.createFromUri(`${seed}`)
+  const sr_stash = sr_keyring.createFromUri(`${seed}//stash`)
 
-  const ed_keyring = new Keyring({ type: "ed25519" });
-  const ed_account = ed_keyring.createFromUri(`${seed}`);
+  const ed_keyring = new Keyring({ type: "ed25519" })
+  const ed_account = ed_keyring.createFromUri(`${seed}`)
 
-  const ec_keyring = new Keyring({ type: "ecdsa" });
-  const ec_account = ec_keyring.createFromUri(`${seed}`);
+  const ec_keyring = new Keyring({ type: "ecdsa" })
+  const ec_account = ec_keyring.createFromUri(`${seed}`)
 
   // return the needed info
   return {
@@ -42,20 +44,22 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
     ec_account: {
       publicKey: u8aToHex(ec_account.publicKey),
     },
-  };
+  }
 }
 
 export async function generateKeystoreFiles(
   node: Node,
   path: string,
-  isStatemint: boolean = false
+  isStatemint: boolean = false,
 ): Promise<string[]> {
-  const keystoreDir = `${path}/keystore`;
-  await fs.promises.mkdir(keystoreDir);
+  const keystoreDir = `${path}/keystore`
+  await fs.promises.mkdir(keystoreDir)
 
-  const paths: string[] = [];
+  const paths: string[] = []
   const keysHash = {
-    aura: isStatemint ? node.accounts.ed_account.publicKey : node.accounts.sr_account.publicKey,
+    aura: isStatemint
+      ? node.accounts.ed_account.publicKey
+      : node.accounts.sr_account.publicKey,
     babe: node.accounts.sr_account.publicKey,
     imon: node.accounts.sr_account.publicKey,
     gran: node.accounts.ed_account.publicKey,
@@ -63,14 +67,14 @@ export async function generateKeystoreFiles(
     asgn: node.accounts.sr_account.publicKey,
     para: node.accounts.sr_account.publicKey,
     beef: node.accounts.ec_account.publicKey,
-  };
-
-  for (const [k, v] of Object.entries(keysHash)) {
-    const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");
-    const keystoreFilePath = `${keystoreDir}/${filename}`;
-    paths.push(keystoreFilePath);
-    await fs.promises.writeFile(keystoreFilePath, `"${node.accounts.seed}"`);
   }
 
-  return paths;
+  for (const [k, v] of Object.entries(keysHash)) {
+    const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "")
+    const keystoreFilePath = `${keystoreDir}/${filename}`
+    paths.push(keystoreFilePath)
+    await fs.promises.writeFile(keystoreFilePath, `"${node.accounts.seed}"`)
+  }
+
+  return paths
 }

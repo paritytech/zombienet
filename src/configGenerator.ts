@@ -1,5 +1,5 @@
-import path, { resolve } from "path";
-import fs from "fs";
+import path, { resolve } from "path"
+import fs from "fs"
 
 import {
   LaunchConfig,
@@ -10,8 +10,8 @@ import {
   NodeConfig,
   envVars,
   NodeGroupConfig,
-} from "./types";
-import { getSha256 } from "./utils/misc-utils";
+} from "./types"
+import { getSha256 } from "./utils/misc-utils"
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -27,39 +27,39 @@ import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   ZOMBIE_WRAPPER,
-} from "./constants";
-import { generateKeyForNode } from "./keys";
+} from "./constants"
+import { generateKeyForNode } from "./keys"
 
-const debug = require("debug")("zombie::config-manager");
+const debug = require("debug")("zombie::config-manager")
 
 // get the path of the zombie wrapper
 export const zombieWrapperPath = resolve(
   __dirname,
-  `../scripts/${ZOMBIE_WRAPPER}`
-);
+  `../scripts/${ZOMBIE_WRAPPER}`,
+)
 
 const DEFAULT_ENV: envVars[] = [
   { name: "COLORBT_SHOW_HIDDEN", value: "1" },
   { name: "RUST_BACKTRACE", value: "FULL" },
-];
+]
 
 export async function generateNetworkSpec(
-  config: LaunchConfig
+  config: LaunchConfig,
 ): Promise<ComputedNetwork> {
-  let globalOverrides: Override[] = [];
+  let globalOverrides: Override[] = []
   if (config.relaychain.default_overrides) {
     globalOverrides = await Promise.all(
       config.relaychain.default_overrides.map(async (override) => {
         const valid_local_path = await getLocalOverridePath(
           config.configBasePath,
-          override.local_path
-        );
+          override.local_path,
+        )
         return {
           local_path: valid_local_path,
           remote_name: override.remote_name,
-        };
-      })
-    );
+        }
+      }),
+    )
   }
 
   let networkSpec: any = {
@@ -74,34 +74,34 @@ export async function generateNetworkSpec(
       defaultResources: config.relaychain.default_resources,
     },
     parachains: [],
-  };
+  }
 
   if (config.relaychain.genesis)
-    networkSpec.relaychain.genesis = config.relaychain.genesis;
-  const chainName = config.relaychain.chain || DEFAULT_CHAIN;
+    networkSpec.relaychain.genesis = config.relaychain.genesis
+  const chainName = config.relaychain.chain || DEFAULT_CHAIN
 
   // settings
   networkSpec.settings = {
     timeout: DEFAULT_GLOBAL_TIMEOUT,
     enable_tracing: true,
     ...(config.settings ? config.settings : {}),
-  };
+  }
 
   // default provider
   if (!networkSpec.settings.provider)
-    networkSpec.settings.provider = "kubernetes";
+    networkSpec.settings.provider = "kubernetes"
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {
     const chainSpecPath = resolve(
       process.cwd(),
-      config.relaychain.chain_spec_path
-    );
+      config.relaychain.chain_spec_path,
+    )
     if (!fs.existsSync(chainSpecPath)) {
-      console.error("Chain spec provided does not exist: ", chainSpecPath);
-      process.exit();
+      console.error("Chain spec provided does not exist: ", chainSpecPath)
+      process.exit()
     } else {
-      networkSpec.relaychain.chainSpecPath = chainSpecPath;
+      networkSpec.relaychain.chainSpecPath = chainSpecPath
     }
   } else {
     // Create the chain spec
@@ -110,21 +110,21 @@ export async function generateNetworkSpec(
       ? config.relaychain.chain_spec_command
       : DEFAULT_CHAIN_SPEC_COMMAND.replace(
           "{{chainName}}",
-          networkSpec.relaychain.chain
-        ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
+          networkSpec.relaychain.chain,
+        ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand)
   }
 
-  const relayChainBootnodes: string[] = [];
+  const relayChainBootnodes: string[] = []
   for (const node of config.relaychain.nodes || []) {
     const nodeSetup = await getNodeFromConfig(
       networkSpec,
       node,
       relayChainBootnodes,
       globalOverrides,
-      node.name // group of 1
-    );
+      node.name, // group of 1
+    )
 
-    networkSpec.relaychain.nodes.push(nodeSetup);
+    networkSpec.relaychain.nodes.push(nodeSetup)
   }
 
   for (const nodeGroup of config.relaychain.node_groups || []) {
@@ -133,26 +133,26 @@ export async function generateNetworkSpec(
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
-        args: sanitizeArgs(nodeGroup.args||[]),
+        args: sanitizeArgs(nodeGroup.args || []),
         validator: true, // groups are always validators
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
-      };
+      }
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
         node,
         relayChainBootnodes,
         globalOverrides,
-        nodeGroup.name
-      );
-      networkSpec.relaychain.nodes.push(nodeSetup);
+        nodeGroup.name,
+      )
+      networkSpec.relaychain.nodes.push(nodeSetup)
     }
   }
 
   if (networkSpec.relaychain.nodes.length < 1) {
-    throw new Error("No NODE defined in config, please review.");
+    throw new Error("No NODE defined in config, please review.")
   }
 
   if (config.parachains && config.parachains.length) {
@@ -160,115 +160,115 @@ export async function generateNetworkSpec(
       let computedStatePath,
         computedStateCommand,
         computedWasmPath,
-        computedWasmCommand;
-      const bootnodes = relayChainBootnodes;
+        computedWasmCommand
+      const bootnodes = relayChainBootnodes
 
       // collator could by defined in groups or
       // just using one collator definiton
-      let collators = [];
-      if(parachain.collator)
+      let collators = []
+      if (parachain.collator)
         collators.push(
           await getCollatorNodeFromConfig(
             parachain.collator,
             parachain.id,
             chainName,
             bootnodes,
-            Boolean(parachain.cumulus_based)
-          )
-        );
-      for(const collatorConfig of parachain.collators || []) {
+            Boolean(parachain.cumulus_based),
+          ),
+        )
+      for (const collatorConfig of parachain.collators || []) {
         collators.push(
           await getCollatorNodeFromConfig(
             collatorConfig,
             parachain.id,
             chainName,
             bootnodes,
-            Boolean(parachain.cumulus_based)
-          )
-        );
+            Boolean(parachain.cumulus_based),
+          ),
+        )
       }
 
       for (const collatorGroup of parachain.collator_groups || []) {
-
         for (let i = 0; i < collatorGroup.count; i++) {
           let node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
             image: collatorGroup.image || networkSpec.relaychain.defaultImage,
             command: collatorGroup.command,
-            args: sanitizeArgs(collatorGroup.args||[]),
+            args: sanitizeArgs(collatorGroup.args || []),
             validator: true, // groups are always validators
             env: collatorGroup.env,
             overrides: collatorGroup.overrides,
             resources:
-            collatorGroup.resources || networkSpec.relaychain.defaultResources,
-          };
+              collatorGroup.resources ||
+              networkSpec.relaychain.defaultResources,
+          }
           collators.push(
             await getCollatorNodeFromConfig(
               node,
               parachain.id,
               chainName,
               bootnodes,
-              Boolean(parachain.cumulus_based)
-            )
-          );
+              Boolean(parachain.cumulus_based),
+            ),
+          )
         }
       }
 
       // use the first collator for state/wasm generation
-      const firstCollator = collators[0];
+      const firstCollator = collators[0]
       if (!firstCollator)
         throw new Error(
-          `No Collator defined for parachain ${parachain.id}, please review.`
-        );
+          `No Collator defined for parachain ${parachain.id}, please review.`,
+        )
 
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
         : firstCollator.command
         ? firstCollator.command
-        : DEFAULT_ADDER_COLLATOR_BIN;
+        : DEFAULT_ADDER_COLLATOR_BIN
 
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
           process.cwd(),
-          parachain.genesis_state_path
-        );
+          parachain.genesis_state_path,
+        )
         if (!fs.existsSync(genesisStatePath)) {
           console.error(
             "Genesis spec provided does not exist: ",
-            genesisStatePath
-          );
-          process.exit();
+            genesisStatePath,
+          )
+          process.exit()
         } else {
-          computedStatePath = genesisStatePath;
+          computedStatePath = genesisStatePath
         }
       } else {
         computedStateCommand = parachain.genesis_state_generator
           ? parachain.genesis_state_generator
-          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
+          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`
 
-        computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
+        computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`
       }
 
       if (parachain.genesis_wasm_path) {
         const genesisWasmPath = resolve(
           process.cwd(),
-          parachain.genesis_wasm_path
-        );
+          parachain.genesis_wasm_path,
+        )
         if (!fs.existsSync(genesisWasmPath)) {
           console.error(
             "Genesis spec provided does not exist: ",
-            genesisWasmPath
-          );
-          process.exit();
+            genesisWasmPath,
+          )
+          process.exit()
         } else {
-          computedWasmPath = genesisWasmPath;
+          computedWasmPath = genesisWasmPath
         }
       } else {
         computedWasmCommand = parachain.genesis_wasm_generator
           ? parachain.genesis_wasm_generator
-          : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND}`;
+          : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND}`
 
-          computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
+        computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`
       }
 
       let parachainSetup: Parachain = {
@@ -276,28 +276,30 @@ export async function generateNetworkSpec(
         name: getUniqueName(parachain.id.toString()),
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
-          parachain.add_to_genesis === undefined ? true : parachain.add_to_genesis, // add by default
-        registerPara: parachain.register_para === undefined ? true : parachain.register_para, // register by default
+          parachain.add_to_genesis === undefined
+            ? true
+            : parachain.add_to_genesis, // add by default
+        registerPara:
+          parachain.register_para === undefined
+            ? true
+            : parachain.register_para, // register by default
         collators,
-      };
+      }
 
-      if(parachain.chain) parachainSetup.chain = parachain.chain;
+      if (parachain.chain) parachainSetup.chain = parachain.chain
 
       // if we don't have a path to the chain-spec leave undefined to create
       if (parachain.chain_spec_path) {
-        const chainSpecPath = resolve(
-          process.cwd(),
-          parachain.chain_spec_path
-        );
+        const chainSpecPath = resolve(process.cwd(), parachain.chain_spec_path)
         if (!fs.existsSync(chainSpecPath)) {
-          console.error(`Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`);
-          process.exit();
+          console.error(
+            `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
+          )
+          process.exit()
         } else {
-          parachainSetup.chainSpecPath = chainSpecPath;
+          parachainSetup.chainSpecPath = chainSpecPath
         }
       }
-
-
 
       parachainSetup = {
         ...parachainSetup,
@@ -310,17 +312,17 @@ export async function generateNetworkSpec(
         ...(computedStateCommand
           ? { genesisStateGenerator: computedStateCommand }
           : {}),
-        ...(parachain.genesis ? { genesis: parachain.genesis} : {}),
-      };
+        ...(parachain.genesis ? { genesis: parachain.genesis } : {}),
+      }
 
-      networkSpec.parachains.push(parachainSetup);
+      networkSpec.parachains.push(parachainSetup)
     }
   }
 
-  networkSpec.types = config.types ? config.types : {};
-  if(config.hrmpChannels) networkSpec.hrmpChannels = config.hrmpChannels;
+  networkSpec.types = config.types ? config.types : {}
+  if (config.hrmpChannels) networkSpec.hrmpChannels = config.hrmpChannels
 
-  return networkSpec as ComputedNetwork;
+  return networkSpec as ComputedNetwork
 }
 
 // TODO: move this fn to other module.
@@ -343,46 +345,46 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     telemetryUrl: "",
     overrides: [],
     zombieRole: "bootnode",
-  };
+  }
 
-  return nodeSetup;
+  return nodeSetup
 }
 
 interface UsedNames {
-  [properyName: string]: number;
+  [properyName: string]: number
 }
 
-let mUsedNames: UsedNames = {};
+let mUsedNames: UsedNames = {}
 
 export function getUniqueName(name: string): string {
-  let uniqueName;
+  let uniqueName
   if (!mUsedNames[name]) {
-    mUsedNames[name] = 1;
-    uniqueName = name;
+    mUsedNames[name] = 1
+    uniqueName = name
   } else {
-    uniqueName = `${name}-${mUsedNames[name]}`;
-    mUsedNames[name] += 1;
+    uniqueName = `${name}-${mUsedNames[name]}`
+    mUsedNames[name] += 1
   }
 
-  return uniqueName;
+  return uniqueName
 }
 
 async function getLocalOverridePath(
   configBasePath: string,
-  definedLocalPath: string
+  definedLocalPath: string,
 ): Promise<string> {
   // let check if local_path is full or relative
-  let local_real_path = definedLocalPath;
+  let local_real_path = definedLocalPath
   if (!fs.existsSync(definedLocalPath)) {
     // check relative to config
-    local_real_path = path.join(configBasePath, definedLocalPath);
+    local_real_path = path.join(configBasePath, definedLocalPath)
     if (!fs.existsSync(local_real_path))
       throw new Error(
-        "Invalid override config, only fullpaths or relative paths (from the config) are allowed"
-      );
+        "Invalid override config, only fullpaths or relative paths (from the config) are allowed",
+      )
   }
 
-  return local_real_path;
+  return local_real_path
 }
 
 async function getCollatorNodeFromConfig(
@@ -390,25 +392,25 @@ async function getCollatorNodeFromConfig(
   para_id: number,
   chain: string, // relay-chain
   bootnodes: string[], // parachain bootnodes
-  cumulusBased: boolean
+  cumulusBased: boolean,
 ): Promise<Node> {
-  let args: string[] = [];
-  if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args));
+  let args: string[] = []
+  if (collatorConfig.args) args = args.concat(sanitizeArgs(collatorConfig.args))
 
   const env = [
     { name: "COLORBT_SHOW_HIDDEN", value: "1" },
     { name: "RUST_BACKTRACE", value: "FULL" },
-  ];
-  if (collatorConfig.env) env.push(...collatorConfig.env);
+  ]
+  if (collatorConfig.env) env.push(...collatorConfig.env)
 
   const collatorBinary = collatorConfig.commandWithArgs
     ? collatorConfig.commandWithArgs.split(" ")[0]
     : collatorConfig.command
     ? collatorConfig.command
-    : DEFAULT_ADDER_COLLATOR_BIN;
+    : DEFAULT_ADDER_COLLATOR_BIN
 
-  const collatorName = getUniqueName(collatorConfig.name || "collator");
-  const accountsForNode = await generateKeyForNode(collatorName);
+  const collatorName = getUniqueName(collatorConfig.name || "collator")
+  const accountsForNode = await generateKeyForNode(collatorName)
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
@@ -425,12 +427,13 @@ async function getCollatorNodeFromConfig(
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
-  };
+  }
 
-  if(collatorConfig.ws_port) node.wsPort = collatorConfig.ws_port;
-  if(collatorConfig.rpc_port) node.rpcPort = collatorConfig.rpc_port;
-  if(collatorConfig.prometheus_port) node.prometheusPort = collatorConfig.prometheus_port;
-  return node;
+  if (collatorConfig.ws_port) node.wsPort = collatorConfig.ws_port
+  if (collatorConfig.rpc_port) node.rpcPort = collatorConfig.rpc_port
+  if (collatorConfig.prometheus_port)
+    node.prometheusPort = collatorConfig.prometheus_port
+  return node
 }
 
 async function getNodeFromConfig(
@@ -438,48 +441,47 @@ async function getNodeFromConfig(
   node: NodeConfig,
   relayChainBootnodes: string[],
   globalOverrides: Override[],
-  group?: string
+  group?: string,
 ): Promise<Node> {
-
   const command = node.command
     ? node.command
-    : networkSpec.relaychain.defaultCommand;
-  const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
-  let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || []);
-  if(node.args) args = args.concat(sanitizeArgs(node.args));
+    : networkSpec.relaychain.defaultCommand
+  const image = node.image ? node.image : networkSpec.relaychain.defaultImage
+  let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || [])
+  if (node.args) args = args.concat(sanitizeArgs(node.args))
 
-  const uniqueArgs = [...new Set(args)];
+  const uniqueArgs = [...new Set(args)]
 
-  const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
+  const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV
 
-  let nodeOverrides: Override[] = [];
+  let nodeOverrides: Override[] = []
   if (node.overrides) {
     nodeOverrides = await Promise.all(
       node.overrides.map(async (override) => {
         const valid_local_path = await getLocalOverridePath(
           networkSpec.configBasePath,
-          override.local_path
-        );
+          override.local_path,
+        )
         return {
           local_path: valid_local_path,
           remote_name: override.remote_name,
-        };
-      })
-    );
+        }
+      }),
+    )
   }
 
   // by default nodes are validators except for those
   // set explicit to not be validators.
-  const isValidator = node.validator !== false;
+  const isValidator = node.validator !== false
 
   // enable --prometheus-external by default
   const prometheusExternal =
     networkSpec.settings?.prometheus !== undefined
       ? networkSpec.settings.prometheus
-      : true;
+      : true
 
-  const nodeName = getUniqueName(node.name);
-  const accountsForNode = await generateKeyForNode(nodeName);
+  const nodeName = getUniqueName(node.name)
+  const accountsForNode = await generateKeyForNode(nodeName)
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,
@@ -502,31 +504,31 @@ async function getNodeFromConfig(
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
     zombieRole: "node",
-  };
+  }
 
-  if(group) nodeSetup.group = group;
-  if(node.ws_port) nodeSetup.wsPort = node.ws_port;
-  if(node.rpc_port) nodeSetup.rpcPort = node.rpc_port;
-  if(node.prometheus_port) nodeSetup.prometheusPort = node.prometheus_port;
-  return nodeSetup;
+  if (group) nodeSetup.group = group
+  if (node.ws_port) nodeSetup.wsPort = node.ws_port
+  if (node.rpc_port) nodeSetup.rpcPort = node.rpc_port
+  if (node.prometheus_port) nodeSetup.prometheusPort = node.prometheus_port
+  return nodeSetup
 }
 
 function sanitizeArgs(args: string[]): string[] {
-  let removeNext = false;
-  const filteredArgs = args.filter(arg=> {
-    if(removeNext) {
-      removeNext = false;
-      return false;
+  let removeNext = false
+  const filteredArgs = args.filter((arg) => {
+    if (removeNext) {
+      removeNext = false
+      return false
     }
 
-    const argParsed = (arg === "-d") ? "d" : arg.replace(/--/g, "");
-    if(ARGS_TO_REMOVE[argParsed]) {
-      if(ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
-      return false;
+    const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "")
+    if (ARGS_TO_REMOVE[argParsed]) {
+      if (ARGS_TO_REMOVE[argParsed] === 2) removeNext = true
+      return false
     } else {
-      return true;
+      return true
     }
-  });
+  })
 
-  return filteredArgs;
+  return filteredArgs
 }
