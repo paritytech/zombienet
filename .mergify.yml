@@ -6,7 +6,7 @@ queue_rules:
       - base=main
       - "#changes-requested-reviews-by=0"
       - "#approved-reviews-by>=1"
-      
+
 pull_request_rules:
   - name: automatic merge when CI passes on main
     conditions:
