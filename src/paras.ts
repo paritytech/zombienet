@@ -10,6 +10,7 @@ import { Providers } from "./providers";
 import { fileMap, Node, Parachain } from "./types";
 import fs from "fs";
 import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec";
+import { getRandomPort } from "./utils/net-utils";
 const debug = require("debug")("zombie::paras");
 
 export async function generateParachainFiles(
@@ -161,6 +162,10 @@ export async function generateParachainFiles(
       telemetryUrl: "",
       overrides: [],
       zombieRole: "temp",
+      p2pPort: await getRandomPort(),
+      wsPort: await getRandomPort(),
+      rpcPort: await getRandomPort(),
+      prometheusPort: await getRandomPort()
     };
 
     const provider = Providers.get(client.providerName);

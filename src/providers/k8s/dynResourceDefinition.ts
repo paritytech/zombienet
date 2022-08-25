@@ -6,13 +6,13 @@ import {
   WAIT_UNTIL_SCRIPT_SUFIX,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-  P2P_PORT,
-  DEFAULT_COMMAND,
+  P2P_PORT
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
+import { Node } from "../../types";
 import { getSha256 } from "../../utils/misc-utils";
 import { Network } from "../../network";
+import { getRandomPort } from "../../utils/net-utils";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -135,9 +135,8 @@ async function make_main_container(
   ];
 
   let computedCommand;
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
   if( nodeSetup.zombieRole === "cumulus-collator" ) {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
+    computedCommand = await genCumulusCollatorCmd(nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
   }
@@ -211,7 +210,7 @@ export function replaceNetworkRef(podDef: any, network: Network) {
   }
 }
 
-export function createTempNodeDef(
+export async function createTempNodeDef(
   name: string,
   image: string,
   chain: string,
@@ -231,6 +230,10 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
+    p2pPort: await getRandomPort(),
+    wsPort: await getRandomPort(),
+    rpcPort: await getRandomPort(),
+    prometheusPort: await getRandomPort()
   };
 
   return node;

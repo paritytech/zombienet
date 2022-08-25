@@ -11,6 +11,13 @@ export const RPC_HTTP_PORT = 9944;
 // The port substrate listens for p2p connections on
 export const P2P_PORT = 30333;
 
+export const DEFAULT_PORTS = {
+  p2pPort: P2P_PORT,
+  wsPort: RPC_WS_PORT,
+  rpcPort: RPC_HTTP_PORT,
+  prometheusPort: PROMETHEUS_PORT
+};
+
 export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 export const DEFAULT_COMMAND = "polkadot";
@@ -86,6 +93,7 @@ export const ARGS_TO_REMOVE: {[key:string]:number} = {
   "prometheus-external": 1,
   "ws-port": 2,
   "rpc-port": 2,
+  "prometheus-port": 2,
   "node-key": 2,
   "listen-addr": 2,
   d: 2,

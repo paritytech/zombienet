@@ -29,6 +29,7 @@ export interface Settings {
   provider: string;
   polkadot_introspector?: boolean;
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
+  image_pull_policy?: "IfNotPresent" | "Never" | "Always";
 }
 
 export interface RelayChainConfig {
@@ -61,6 +62,7 @@ export interface NodeConfig {
   ws_port?: number;
   rpc_port?: number;
   prometheus_port?: number;
+  p2p_port?: number;
 }
 
 export interface NodeGroupConfig {
@@ -147,9 +149,11 @@ export interface Node {
   resources?: Resources;
   parachainId?: number;
   jaegerUrl?: string;
-  wsPort?: number;
-  rpcPort?: number;
-  prometheusPort?: number;
+  wsPort: number;
+  rpcPort: number;
+  prometheusPort: number;
+  p2pPort: number;
+  imagePullPolicy?: "IfNotPresent" | "Never" | "Always"
 }
 
 export interface Collator {
