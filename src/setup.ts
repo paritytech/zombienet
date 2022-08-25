@@ -11,31 +11,10 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 
 interface OptIf {
-  [key: string]: { name: string; url?: string; size: string };
+  [key: string]: { name: string; url?: string; size?: string };
 }
 
-const latestReleaseURL = async (repo: string, name: string) => {
-  try {
-    const res = await axios.get(
-      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
-    );
-    console.log("res", res.data.assets);
-    return `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`;
-  } catch (err: any) {
-    if (err.code === "ENOTFOUND") {
-      throw new Error("Network error.");
-    } else if (err.response && err.response.status === 404) {
-      throw new Error("Could not find a release.");
-    }
-    throw new Error(err);
-  }
-};
-
 const options: OptIf = {
-  polkadot: {
-    name: "polkadot",
-    size: "130",
-  },
   parachain: {
     name: "parachain",
     url: DEFAULT_CUMULUS_COLLATOR_URL,
@@ -49,9 +28,46 @@ const options: OptIf = {
   // },
 };
 
-latestReleaseURL("polkadot", "polkadot").then(
-  (res) => (options.polkadot.url = res),
-);
+// Functions
+const convertBytes = (bytes: number) =>
+  (
+    bytes / Math.pow(1024, Math.floor(Math.log(bytes) / Math.log(1024)))
+  ).toFixed(0);
+
+const latestReleaseURL = async (
+  repo: string,
+  name: string,
+): Promise<[string, string]> => {
+  try {
+    const res = await axios.get(
+      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
+    );
+    const obj = res.data.assets.filter((a: any) => a.name === name);
+    return [
+      `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`,
+      convertBytes(obj[0].size),
+    ];
+  } catch (err: any) {
+    if (err.code === "ENOTFOUND") {
+      throw new Error("Network error.");
+    } else if (err.response && err.response.status === 404) {
+      throw new Error("Could not find a release.");
+    }
+    throw new Error(err);
+  }
+};
+
+const initiate = async (): Promise<void> =>
+  new Promise((resolve) => {
+    latestReleaseURL("polkadot", "polkadot").then((res) => {
+      options.polkadot = {
+        name: "polkadot",
+        url: res[0],
+        size: res[1],
+      };
+      resolve();
+    });
+  });
 
 const dec = (color: string, msg: string): string => decorators[color](msg);
 
@@ -142,6 +158,7 @@ const { argv } = process;
 argv.splice(0, 2);
 
 const execute = async () => {
+  await initiate();
   switch (argv[0]) {
     case undefined:
       console.error(`Error: ${dec("red", "No command specified")}`);
@@ -157,7 +174,7 @@ const execute = async () => {
       let count = 0;
       console.log("Setup will start to download binaries:");
       argv.forEach((a) => {
-        const size = parseInt(options[a].size, 10);
+        const size = parseInt(options[a]?.size || "0", 10);
         count += size;
         console.log("-", a, "\t Approx. size ", size, " MB");
       });
