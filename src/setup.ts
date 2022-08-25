@@ -77,9 +77,9 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
         data.on("data", (chunk: any) => progressBar.tick(chunk.length));
         data.pipe(writer);
         data.on("end", () => {
-          console.log(dec("yellow", `Binary ${name} downloaded`));
+          console.log(dec("yellow", `Binary "${name}" downloaded`));
           // Add permissions to the binary
-          console.log(dec("cyan", `Giving permissions to ${name}`));
+          console.log(dec("cyan", `Giving permissions to "${name}"`));
           fs.chmodSync(path.resolve(__dirname, name), 0o755);
           resolve();
         });
@@ -89,6 +89,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
   await Promise.all(promises);
   console.log(
     dec("cyan", `Please add the dir to your $PATH by running the command:`),
+    "\n",
     dec("blue", `export PATH=${__dirname}:$PATH`),
   );
 };
@@ -150,5 +151,7 @@ const execute = async () => {
   }
 };
 
-console.log(`\n🧟🧟🧟 ${dec("green", "ZombieNet dev setup ")}🧟🧟🧟\n`);
+console.log(
+  `\n🧟🧟🧟 ${dec("green", "ZombieNet dev environment setup ")}🧟🧟🧟\n`,
+);
 execute();
