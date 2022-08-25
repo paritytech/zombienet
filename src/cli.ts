@@ -44,8 +44,7 @@ process.on("unhandledRejection", async (err) => {
     await network.stop();
   }
   debug(err);
-  console.log(`unhandledRejection`);
-  console.log(err);
+  console.log(`UnhandledRejection: ${err}`);
   process.exit(1001);
 });
 
@@ -161,6 +160,9 @@ async function spawn(
   if (config.settings?.provider === "kubernetes") {
     creds = getCredsFilePath(credsFile || "config") || "";
     if (!creds) {
+      console.log(
+        `Running ${config.settings?.provider || DEFAULT_PROVIDER} provider:`,
+      );
       console.error("  ⚠ I can't find the Creds file: ", credsFile);
       process.exit();
     }
