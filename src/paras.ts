@@ -9,18 +9,9 @@ import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { fileMap, Node, Parachain } from "./types";
 import fs from "fs";
-<<<<<<< HEAD
 import { addAuraAuthority, addAuthority, changeGenesisConfig, clearAuthorities, specHaveSessionsKeys } from "./chain-spec";
 import { getRandomPort } from "./utils/net-utils";
-=======
-import {
-  addAuraAuthority,
-  addAuthority,
-  changeGenesisConfig,
-  clearAuthorities,
-  specHaveSessionsKeys,
-} from "./chain-spec";
->>>>>>> main
+
 const debug = require("debug")("zombie::paras");
 
 export async function generateParachainFiles(

@@ -95,7 +95,6 @@ export async function genCumulusCollatorCmd(
     let argsFullNode = null;
     let argsParachain = null;
     let splitIndex = nodeSetup.args.indexOf("--");
-    //nodeSetup.args ? nodeSetup.args.findIndex((value) => value == "--") : -1;
 
     if (splitIndex < 0) {
       argsParachain = nodeSetup.args;
