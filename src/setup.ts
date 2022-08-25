@@ -2,31 +2,31 @@ import readline from "readline";
 import {
   DEFAULT_COMMAND_URL,
   DEFAULT_CUMULUS_COLLATOR_URL,
-  // DEFAULT_ADDER_COLLATOR_URL,
+  DEFAULT_ADDER_COLLATOR_URL,
 } from "./constants";
 import { decorators } from "./utils/colors";
 import fs from "fs";
-import { exec } from "child_process";
 import path from "path";
 import axios from "axios";
 import progress from "progress";
-
-const polkadot = DEFAULT_COMMAND_URL;
-const parachain = DEFAULT_CUMULUS_COLLATOR_URL;
-// This will be activated once the binary is ready
-// const collator = DEFAULT_ADDER_COLLATOR_URL;
 
 interface OptIf {
   [key: string]: { name: string; url: string; size: string };
 }
 
 const options: OptIf = {
-  polkadot: { name: "polkadot", url: DEFAULT_COMMAND_URL, size: "131" },
+  polkadot: { name: "polkadot", url: DEFAULT_COMMAND_URL, size: "130" },
   parachain: {
     name: "parachain",
     url: DEFAULT_CUMULUS_COLLATOR_URL,
-    size: "117",
+    size: "120",
   },
+  // // Deactivate for now
+  // adderCollator: {
+  //   name: "adderCollator",
+  //   url: DEFAULT_ADDER_COLLATOR_URL,
+  //   size: "950",
+  // },
 };
 
 const dec = (color: string, msg: string): string => decorators[color](msg);
@@ -47,51 +47,50 @@ const askQuestion = async (query: string): Promise<string> => {
 
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
-  console.log("\nStart download...\n");
-  const promises = await binaries.map(async (binary: string) => {
-    const { url, name } = options[binary];
-    // if (fs.existsSync(path.resolve(__dirname, name))) {
-    //   console.log("Binary already exists. Do you want to overwrite it? (y/n)");
-    //   const response = await askQuestion("Do you want to continue? (y/n)");
-    //   if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
-    //     console.log("Invalid input. Exiting...");
-    //     return;
-    //   }
-    //   if (response.toLowerCase() === "n") {
-    //     return;
-    //   }
-    // }
-    console.log(`${dec("yellow", "Connecting …")}`);
-    const { data, headers } = await axios({
-      url,
-      method: "GET",
-      responseType: "stream",
-    });
-    const totalLength = headers["content-length"];
+  console.log(`${dec("yellow", "\nStart download...\n")}`);
+  const promises = [];
+  let count = 0;
+  for (let binary of binaries) {
+    promises.push(
+      new Promise<void>(async (resolve) => {
+        const { url, name } = options[binary];
+        const { data, headers } = await axios({
+          url,
+          method: "GET",
+          responseType: "stream",
+        });
+        const totalLength = headers["content-length"];
 
-    console.log("Starting download");
-    const progressBar = new progress("-> downloading [:bar] :percent :etas", {
-      width: 40,
-      complete: "=",
-      incomplete: " ",
-      renderThrottle: 1,
-      total: parseInt(totalLength),
-    });
+        const progressBar = new progress(
+          "-> downloading [:bar] :percent :etas",
+          {
+            width: 40,
+            complete: "=",
+            incomplete: " ",
+            renderThrottle: 1,
+            total: parseInt(totalLength),
+          },
+        );
 
-    const writer = fs.createWriteStream(path.resolve(__dirname, name));
+        const writer = fs.createWriteStream(path.resolve(__dirname, name));
 
-    data.on("data", (chunk: any) => progressBar.tick(chunk.length));
-    data.pipe(writer);
-    data.on("end", () => {
-      console.log(dec("yellow", "Download finished."));
-      // Add permissions to the binary
-      console.log(dec("yellow", "Giving permissions..."));
-      fs.chmodSync(path.resolve(__dirname, name), 0o755);
-      // Add all binaries to the PATH
-      console.log(dec("yellow", "Add to PATH."));
-    });
-  });
+        data.on("data", (chunk: any) => progressBar.tick(chunk.length));
+        data.pipe(writer);
+        data.on("end", () => {
+          console.log(dec("yellow", `Binary ${name} downloaded`));
+          // Add permissions to the binary
+          console.log(dec("cyan", `Giving permissions to ${name}`));
+          fs.chmodSync(path.resolve(__dirname, name), 0o755);
+          resolve();
+        });
+      }),
+    );
+  }
   await Promise.all(promises);
+  console.log(
+    dec("cyan", `Please add the dir to your $PATH by running the command:`),
+    dec("blue", `export PATH=${__dirname}:$PATH`),
+  );
 };
 
 const howTo = () => {
@@ -100,7 +99,7 @@ const howTo = () => {
     "Setup is meant for downloading and making everything ready for dev environment of ZombieNet;\n",
   );
   msg.push("You can use the following arguments:\n");
-  msg.push(`${dec("yellow", "--help")} shows this message;`);
+  msg.push(`${dec("yellow", "--help or -h")} shows this message;`);
   msg.push(
     `${dec(
       "yellow",
