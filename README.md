@@ -258,7 +258,7 @@ Other examples are provided in the [examples](examples) directory.
 
 ## Development
 
-### Requerimients
+### Requirements
 
 - [Node.js](https://nodejs.org/)
 - kubernetes cluster to use as target
@@ -274,6 +274,33 @@ cd zombienet
 npm install
 npm run build
 ```
+
+### Download and install needed artifacts (Optional)
+
+For easier and faster setup of local environment, upi can run:
+
+```bash
+❯ node dist/setup.js
+
+Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
+
+You can use the following arguments:
+
+--help shows this message;
+--binaries or -b: the binaries that you want to be downloaded and installed during the setup, provided in a row without any separators;
+	possible options: 'polkadot', 'parachain'
+	example: node dist/setup.js -b polkadot parachain
+```
+
+Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:
+
+e.g.
+
+```bash
+Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
+```
+
+### Run ZombieNet
 
 Then `zombienet` cli is ready to run:
 
