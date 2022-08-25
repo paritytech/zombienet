@@ -104,7 +104,7 @@ const howTo = () => {
     `${dec(
       "yellow",
       "--binaries or -b:",
-    )} the binaries that you want to be downloaded and installed during the setup, provided in a row without any separators;`,
+    )} the binaries that you want to be downloaded, provided in a row without any separators; They are downloaded in 'dist' directory and appropriate executable permissions are assigned.`,
   );
   msg.push(`\tpossible options: ${dec("cyan", "'polkadot', 'parachain'")}`);
   msg.push(
