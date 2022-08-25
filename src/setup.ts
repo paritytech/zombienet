@@ -1,21 +1,41 @@
 import readline from "readline";
-import {
-  DEFAULT_COMMAND_URL,
-  DEFAULT_CUMULUS_COLLATOR_URL,
-  DEFAULT_ADDER_COLLATOR_URL,
-} from "./constants";
 import { decorators } from "./utils/colors";
 import fs from "fs";
 import path from "path";
 import axios from "axios";
 import progress from "progress";
 
+const DEFAULT_CUMULUS_COLLATOR_URL =
+  "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
+// const DEFAULT_ADDER_COLLATOR_URL =
+//   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
+
 interface OptIf {
-  [key: string]: { name: string; url: string; size: string };
+  [key: string]: { name: string; url?: string; size: string };
 }
 
+const latestReleaseURL = async (repo: string, name: string) => {
+  try {
+    const res = await axios.get(
+      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
+    );
+    console.log("res", res.data.assets);
+    return `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`;
+  } catch (err: any) {
+    if (err.code === "ENOTFOUND") {
+      throw new Error("Network error.");
+    } else if (err.response && err.response.status === 404) {
+      throw new Error("Could not find a release.");
+    }
+    throw new Error(err);
+  }
+};
+
 const options: OptIf = {
-  polkadot: { name: "polkadot", url: DEFAULT_COMMAND_URL, size: "130" },
+  polkadot: {
+    name: "polkadot",
+    size: "130",
+  },
   parachain: {
     name: "parachain",
     url: DEFAULT_CUMULUS_COLLATOR_URL,
@@ -28,6 +48,10 @@ const options: OptIf = {
   //   size: "950",
   // },
 };
+
+latestReleaseURL("polkadot", "polkadot").then(
+  (res) => (options.polkadot.url = res),
+);
 
 const dec = (color: string, msg: string): string => decorators[color](msg);
 

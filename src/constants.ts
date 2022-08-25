@@ -11,14 +11,6 @@ export const RPC_HTTP_PORT = 9944;
 // The port substrate listens for p2p connections on
 export const P2P_PORT = 30333;
 
-// Paths for downloading the binaries for zombienet setup
-export const DEFAULT_COMMAND_URL =
-  "https://github.com/paritytech/polkadot/releases/download/v0.9.27/polkadot";
-export const DEFAULT_ADDER_COLLATOR_URL =
-  "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
-export const DEFAULT_CUMULUS_COLLATOR_URL =
-  "https://github.com/paritytech/cumulus/releases/download/v0.9.230/polkadot-parachain";
-
 export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 export const DEFAULT_COMMAND = "polkadot";
