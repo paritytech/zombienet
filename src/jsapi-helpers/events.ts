@@ -4,7 +4,7 @@ const debug = require("debug")("zombie::js-helpers::events");
 export async function findPatternInSystemEventSubscription(
   api: ApiPromise,
   re: RegExp,
-  timeout: number
+  timeout: number,
 ): Promise<boolean> {
   let found: boolean = false;
   found = await new Promise((resolve, _) => {

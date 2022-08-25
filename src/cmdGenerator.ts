@@ -15,7 +15,7 @@ const debug = require("debug")("zombie::cmdGenerator");
 
 function parseCmdWithArguments(
   commandWithArgs: string,
-  useWrapper = true
+  useWrapper = true,
 ): string[] {
   const parts = commandWithArgs.split(" ");
   let finalCommand: string[] = [];
@@ -43,7 +43,6 @@ export async function genCumulusCollatorCmd(
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
   useWrapper = true,
-  //portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator } = nodeSetup;
   const parachainAddedArgs: any = {
@@ -54,7 +53,7 @@ export async function genCumulusCollatorCmd(
     "--port": true,
     "--ws-port": true,
     "--chain": true,
-    "--prometheus-port": true
+    "--prometheus-port": true,
   };
 
   const colIndex = getCollatorIndex(parachainId!);
@@ -81,10 +80,10 @@ export async function genCumulusCollatorCmd(
     "--rpc-cors all",
     "--unsafe-rpc-external",
     "--rpc-methods unsafe",
-    "--unsafe-ws-external"
+    "--unsafe-ws-external",
   ];
 
-  if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
 
   const collatorPorts: any = {
     "--port": 0,
@@ -115,9 +114,15 @@ export async function genCumulusCollatorCmd(
       }
     }
 
-    if(fullCmd.findIndex(thisArg => thisArg.includes("relay-chain-rpc-url")) === -1 ) {
+    if (
+      fullCmd.findIndex((thisArg) =>
+        thisArg.includes("relay-chain-rpc-url"),
+      ) === -1
+    ) {
       // Arguments for the relay chain node part of the collator binary.
-      fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
+      fullCmd.push(
+        ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+      );
 
       if (argsFullNode) {
         // Add any additional flags to the CLI
@@ -129,8 +134,8 @@ export async function genCumulusCollatorCmd(
             if ([P2P_PORT, RPC_HTTP_PORT, RPC_WS_PORT, nodeSetup.p2pPort, nodeSetup.rpcPort, nodeSetup.wsPort].includes(selectedPort)) {
               console.log(
                 decorators.yellow(
-                  `WARN: default port configured, changing to use a random free port`
-                )
+                  `WARN: default port configured, changing to use a random free port`,
+                ),
               );
               const randomPort = await getRandomPort();
               collatorPorts[arg] = randomPort;
@@ -166,7 +171,9 @@ export async function genCumulusCollatorCmd(
   } else {
     // no args
     // Arguments for the relay chain node part of the collator binary.
-    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
+    fullCmd.push(
+      ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+    );
 
     // ensure ports
     for (const portArg of Object.keys(collatorPorts)) {
@@ -189,7 +196,6 @@ export async function genCmd(
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
   useWrapper = true,
-  //portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
   let {
     name,
@@ -206,9 +212,8 @@ export async function genCmd(
     args,
     zombieRole,
     jaegerUrl,
-    parachainId
+    parachainId,
   } = nodeSetup;
-
 
   // fullCommand is NOT decorated by the `zombie` wrapper
   // and is used internally in init containers.
@@ -229,14 +234,18 @@ export async function genCmd(
   if (!telemetry) args.push("--no-telemetry");
   else args.push(...["--telemetry-url", telemetryUrl]);
 
-  if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
+  if (prometheus && !args.includes("--prometheus-external"))
+    args.push("--prometheus-external");
 
-  if(jaegerUrl && zombieRole === "node") args.push(...["--jaeger-agent", jaegerUrl]);
+  if (jaegerUrl && zombieRole === "node")
+    args.push(...["--jaeger-agent", jaegerUrl]);
 
-  if (validator && ! args.includes("--validator")) args.push("--validator");
+  if (validator && !args.includes("--validator")) args.push("--validator");
 
-  if(zombieRole === "collator" && parachainId) {
-    const parachainIdArgIndex = args.findIndex((arg) => arg.includes("--parachain-id"));
+  if (zombieRole === "collator" && parachainId) {
+    const parachainIdArgIndex = args.findIndex((arg) =>
+      arg.includes("--parachain-id"),
+    );
     args.splice(parachainIdArgIndex, 1);
     args.push(`--parachain-id ${parachainId}`);
   }
@@ -286,8 +295,9 @@ export async function genCmd(
 // helper
 const parachainCollators: any = {};
 function getCollatorIndex(paraId: number): number {
-  if(parachainCollators[paraId] >= 0) parachainCollators[paraId] = parachainCollators[paraId] + 1;
-  else  parachainCollators[paraId] = 0;
+  if (parachainCollators[paraId] >= 0)
+    parachainCollators[paraId] = parachainCollators[paraId] + 1;
+  else parachainCollators[paraId] = 0;
 
   return parachainCollators[paraId];
 }

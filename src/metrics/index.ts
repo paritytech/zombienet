@@ -38,7 +38,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
 
 export async function getHistogramBuckets(
   metricUri: string,
-  metricName: string
+  metricName: string,
 ): Promise<BucketHash> {
   debug(`fetching: ${metricUri}`);
   const response = await axios.get(metricUri, { timeout: 2000 });
@@ -128,7 +128,9 @@ function _extractMetrics(text: string): Metrics {
       rawMetrics[ns][
         `${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`
       ] = metricValue;
-      rawMetrics["_raw"][`${parsedLine.name}{${labelStrings.join(",")}}`] = metricValue;
+      rawMetrics["_raw"][
+        `${parsedLine.name}{${labelStrings.join(",")}}`
+      ] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
       rawMetrics["_raw"][parsedLine.name] = metricValue;
@@ -137,7 +139,9 @@ function _extractMetrics(text: string): Metrics {
       rawMetrics[ns][
         `${rawMetricNameWithOutNs}{${labelStringsWithOutChain.join(",")}}`
       ] = metricValue;
-      rawMetrics["_raw"][`${parsedLine.name}{${labelStringsWithOutChain.join(",")}}`] = metricValue;
+      rawMetrics["_raw"][
+        `${parsedLine.name}{${labelStringsWithOutChain.join(",")}}`
+      ] = metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
       rawMetrics["_raw"][parsedLine.name] = metricValue;

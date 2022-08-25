@@ -6,13 +6,15 @@ import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto";
 import { Node } from "./types";
 
 function nameCase(string: string) {
-	return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 export async function generateKeyForNode(nodeName?: string): Promise<any> {
   await cryptoWaitReady();
 
-  const seed = nodeName ? `//${nameCase(nodeName)}` : u8aToHex(mnemonicToMiniSecret(mnemonicGenerate()));
+  const seed = nodeName
+    ? `//${nameCase(nodeName)}`
+    : u8aToHex(mnemonicToMiniSecret(mnemonicGenerate()));
 
   const sr_keyring = new Keyring({ type: "sr25519" });
   const sr_account = sr_keyring.createFromUri(`${seed}`);
@@ -48,14 +50,16 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
 export async function generateKeystoreFiles(
   node: Node,
   path: string,
-  isStatemint: boolean = false
+  isStatemint: boolean = false,
 ): Promise<string[]> {
   const keystoreDir = `${path}/keystore`;
   await fs.promises.mkdir(keystoreDir);
 
   const paths: string[] = [];
   const keysHash = {
-    aura: isStatemint ? node.accounts.ed_account.publicKey : node.accounts.sr_account.publicKey,
+    aura: isStatemint
+      ? node.accounts.ed_account.publicKey
+      : node.accounts.sr_account.publicKey,
     babe: node.accounts.sr_account.publicKey,
     imon: node.accounts.sr_account.publicKey,
     gran: node.accounts.ed_account.publicKey,

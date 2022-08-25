@@ -16,13 +16,12 @@ const fs = require("fs").promises;
 
 export async function genBootnodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
   const {rpcPort, wsPort, prometheusPort, p2pPort} = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
-
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
@@ -54,14 +53,12 @@ export async function genBootnodeDef(
 
 export async function genNodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
   const {rpcPort, wsPort, prometheusPort, p2pPort} = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
-
-
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
 
@@ -106,19 +103,19 @@ async function getPorts(rpc?: number, ws?:number, prometheus?:number, p2p?:numbe
       containerPort: PROMETHEUS_PORT,
       name: "prometheus",
       flag: "--prometheus-port",
-      hostPort: prometheus || await getRandomPort(),
+      hostPort: prometheus || (await getRandomPort()),
     },
     {
       containerPort: RPC_HTTP_PORT,
       name: "rpc",
       flag: "--rpc-port",
-      hostPort: rpc || await getRandomPort(),
+      hostPort: rpc || (await getRandomPort()),
     },
     {
       containerPort: RPC_WS_PORT,
       name: "ws",
       flag: "--ws-port",
-      hostPort: ws || await getRandomPort(),
+      hostPort: ws || (await getRandomPort()),
     },
     {
       containerPort: P2P_PORT,
@@ -133,8 +130,10 @@ async function getPorts(rpc?: number, ws?:number, prometheus?:number, p2p?:numbe
 
 export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed
-  if(Array.isArray(podDef.spec.command)) {
-    const finalCommand = podDef.spec.command.map((item: string) => network.replaceWithNetworInfo(item));
+  if (Array.isArray(podDef.spec.command)) {
+    const finalCommand = podDef.spec.command.map((item: string) =>
+      network.replaceWithNetworInfo(item),
+    );
     podDef.spec.command = finalCommand;
   } else {
     // string
@@ -146,7 +145,7 @@ export async function createTempNodeDef(
   name: string,
   image: string,
   chain: string,
-  fullCommand: string
+  fullCommand: string,
 ) {
   let node: Node = {
     name: getUniqueName("temp"),

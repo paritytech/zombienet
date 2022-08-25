@@ -22,7 +22,7 @@ export abstract class Client {
     namespace: string,
     tmpDir: string,
     command: string,
-    providerName: string
+    providerName: string,
   ) {
     this.configPath = configPath;
     this.namespace = namespace;
@@ -40,20 +40,24 @@ export abstract class Client {
   abstract getNodeLogs(
     podName: string,
     since?: number,
-    withTimestamp?: boolean
+    withTimestamp?: boolean,
   ): Promise<string>;
   abstract dumpLogs(path: string, podName: string): Promise<void>;
   abstract upsertCronJob(minutes: number): Promise<void>;
   abstract startPortForwarding(
     port: number,
-    identifier: string
+    identifier: string,
   ): Promise<number>;
   abstract runCommand(
     args: string[],
     resourceDef?: string,
-    scoped?: boolean
+    scoped?: boolean,
   ): Promise<RunCommandResponse>;
-  abstract runScript(identifier: string, scriptPath: string, args: string[]): Promise<RunCommandResponse>;
+  abstract runScript(
+    identifier: string,
+    scriptPath: string,
+    args: string[],
+  ): Promise<RunCommandResponse>;
   abstract spawnFromDef(
     podDef: any,
     filesToCopy?: fileMap[],
@@ -64,13 +68,13 @@ export abstract class Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string | undefined
+    container?: string | undefined,
   ): Promise<void>;
   abstract putLocalMagicFile(name: string, container?: string): Promise<void>;
   abstract createResource(
     resourseDef: any,
     scoped: boolean,
-    waitReady: boolean
+    waitReady: boolean,
   ): Promise<void>;
   abstract createPodMonitor(filename: string, chain: string): Promise<void>;
   abstract setupCleaner(): Promise<any>;
