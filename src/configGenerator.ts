@@ -332,7 +332,7 @@ export async function generateNetworkSpec(
 
 // TODO: move this fn to other module.
 export async function generateBootnodeSpec(config: ComputedNetwork): Promise<Node> {
-  const ports = config.settings.provider === "native" ? DEFAULT_PORTS :
+  const ports = config.settings.provider !== "native" ? DEFAULT_PORTS :
     {
       p2pPort: await getRandomPort(),
       wsPort: await getRandomPort(),
@@ -428,6 +428,15 @@ async function getCollatorNodeFromConfig(
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const accountsForNode = await generateKeyForNode(collatorName);
+
+  const ports = networkSpec.settings.provider !== "native" ? DEFAULT_PORTS :
+    {
+      p2pPort: await getRandomPort(),
+      wsPort: await getRandomPort(),
+      rpcPort: await getRandomPort(),
+      prometheusPort: await getRandomPort()
+    };
+
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
@@ -444,11 +453,8 @@ async function getCollatorNodeFromConfig(
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
-    wsPort: collatorConfig.ws_port || await getRandomPort(),
-    rpcPort: collatorConfig.rpc_port || await getRandomPort(),
-    prometheusPort: collatorConfig.prometheus_port || await getRandomPort(),
-    p2pPort: collatorConfig.p2p_port || await getRandomPort(),
-    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always"
+    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always",
+    ...ports
   };
 
   return node;
@@ -500,6 +506,14 @@ async function getNodeFromConfig(
 
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
+  const ports = networkSpec.settings.provider !== "native" ? DEFAULT_PORTS :
+    {
+      p2pPort: await getRandomPort(),
+      wsPort: await getRandomPort(),
+      rpcPort: await getRandomPort(),
+      prometheusPort: await getRandomPort()
+    };
+
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,
@@ -522,11 +536,8 @@ async function getNodeFromConfig(
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
     zombieRole: "node",
-    wsPort: node.ws_port || await getRandomPort(),
-    rpcPort: node.rpc_port || await getRandomPort(),
-    prometheusPort: node.prometheus_port || await getRandomPort(),
-    p2pPort: node.p2p_port || await getRandomPort(),
-    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always"
+    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always",
+    ...ports
   };
 
   if(group) nodeSetup.group = group;
