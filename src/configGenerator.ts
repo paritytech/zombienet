@@ -9,7 +9,6 @@ import {
   Override,
   NodeConfig,
   envVars,
-  NodeGroupConfig,
 } from "./types";
 import { getSha256 } from "./utils/misc-utils";
 import {
@@ -22,13 +21,16 @@ import {
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
+  DEFAULT_PORTS,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  RPC_WS_PORT,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
+import { getRandomPort } from "./utils/net-utils";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -169,6 +171,7 @@ export async function generateNetworkSpec(
       if (parachain.collator)
         collators.push(
           await getCollatorNodeFromConfig(
+            networkSpec,
             parachain.collator,
             parachain.id,
             chainName,
@@ -179,6 +182,7 @@ export async function generateNetworkSpec(
       for (const collatorConfig of parachain.collators || []) {
         collators.push(
           await getCollatorNodeFromConfig(
+            networkSpec,
             collatorConfig,
             parachain.id,
             chainName,
@@ -204,6 +208,7 @@ export async function generateNetworkSpec(
           };
           collators.push(
             await getCollatorNodeFromConfig(
+              networkSpec,
               node,
               parachain.id,
               chainName,
@@ -326,7 +331,15 @@ export async function generateNetworkSpec(
 }
 
 // TODO: move this fn to other module.
-export function generateBootnodeSpec(config: ComputedNetwork): Node {
+export async function generateBootnodeSpec(config: ComputedNetwork): Promise<Node> {
+  const ports = config.settings.provider !== "native" ? DEFAULT_PORTS :
+    {
+      p2pPort: await getRandomPort(),
+      wsPort: await getRandomPort(),
+      rpcPort: await getRandomPort(),
+      prometheusPort: await getRandomPort()
+    };
+
   const nodeSetup: Node = {
     name: "bootnode",
     key: "0000000000000000000000000000000000000000000000000000000000000001",
@@ -345,6 +358,8 @@ export function generateBootnodeSpec(config: ComputedNetwork): Node {
     telemetryUrl: "",
     overrides: [],
     zombieRole: "bootnode",
+    imagePullPolicy: config.settings.image_pull_policy? config.settings.image_pull_policy : "Always",
+    ...ports
   };
 
   return nodeSetup;
@@ -388,6 +403,7 @@ async function getLocalOverridePath(
 }
 
 async function getCollatorNodeFromConfig(
+  networkSpec: any,
   collatorConfig: NodeConfig,
   para_id: number,
   chain: string, // relay-chain
@@ -412,6 +428,15 @@ async function getCollatorNodeFromConfig(
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const accountsForNode = await generateKeyForNode(collatorName);
+
+  const ports = networkSpec.settings.provider !== "native" ? DEFAULT_PORTS :
+    {
+      p2pPort: await getRandomPort(),
+      wsPort: await getRandomPort(),
+      rpcPort: await getRandomPort(),
+      prometheusPort: await getRandomPort()
+    };
+
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
@@ -428,12 +453,10 @@ async function getCollatorNodeFromConfig(
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
+    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always",
+    ...ports
   };
 
-  if (collatorConfig.ws_port) node.wsPort = collatorConfig.ws_port;
-  if (collatorConfig.rpc_port) node.rpcPort = collatorConfig.rpc_port;
-  if (collatorConfig.prometheus_port)
-    node.prometheusPort = collatorConfig.prometheus_port;
   return node;
 }
 
@@ -483,6 +506,14 @@ async function getNodeFromConfig(
 
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
+  const ports = networkSpec.settings.provider !== "native" ? DEFAULT_PORTS :
+    {
+      p2pPort: await getRandomPort(),
+      wsPort: await getRandomPort(),
+      rpcPort: await getRandomPort(),
+      prometheusPort: await getRandomPort()
+    };
+
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,
@@ -505,19 +536,20 @@ async function getNodeFromConfig(
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
     zombieRole: "node",
+    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always",
+    ...ports
   };
 
-  if (group) nodeSetup.group = group;
-  if (node.ws_port) nodeSetup.wsPort = node.ws_port;
-  if (node.rpc_port) nodeSetup.rpcPort = node.rpc_port;
-  if (node.prometheus_port) nodeSetup.prometheusPort = node.prometheus_port;
+  if(group) nodeSetup.group = group;
   return nodeSetup;
 }
 
 function sanitizeArgs(args: string[]): string[] {
+  // Do NOT filter any argument to the internal full-node of the collator
+
   let removeNext = false;
-  const filteredArgs = args.filter((arg) => {
-    if (removeNext) {
+  const filteredArgs = args.slice(0, args.indexOf("--")).filter(arg=> {
+    if(removeNext) {
       removeNext = false;
       return false;
     }

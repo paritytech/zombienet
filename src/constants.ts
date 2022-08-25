@@ -5,11 +5,18 @@ export const REGULAR_BIN_PATH = "substrate";
 // The remote port prometheus can be accessed with
 export const PROMETHEUS_PORT = 9615;
 // The remote port websocket to access the RPC
-export const RPC_WS_PORT = 9933;
+export const RPC_WS_PORT = 9944;
 // The remote port http to access the RPC
-export const RPC_HTTP_PORT = 9944;
+export const RPC_HTTP_PORT = 9933;
 // The port substrate listens for p2p connections on
 export const P2P_PORT = 30333;
+
+export const DEFAULT_PORTS = {
+  p2pPort: P2P_PORT,
+  wsPort: RPC_WS_PORT,
+  rpcPort: RPC_HTTP_PORT,
+  prometheusPort: PROMETHEUS_PORT
+};
 
 export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
@@ -86,6 +93,7 @@ export const ARGS_TO_REMOVE: { [key: string]: number } = {
   "prometheus-external": 1,
   "ws-port": 2,
   "rpc-port": 2,
+  "prometheus-port": 2,
   "node-key": 2,
   "listen-addr": 2,
   d: 2,

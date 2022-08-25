@@ -29,7 +29,7 @@ export async function setupChainSpec(
       DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
 
     const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
-    const node = createTempNodeDef(
+    const node = await createTempNodeDef(
       "temp",
       defaultImage,
       chainName,
@@ -80,7 +80,7 @@ export async function getChainSpecRaw(
   ).replace("{{DEFAULT_COMMAND}}", chainCommand);
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
-  const node = createTempNodeDef("temp", image, chainName, fullCommand);
+  const node = await createTempNodeDef("temp", image, chainName, fullCommand);
 
   const podDef = await genNodeDef(namespace, node);
   const podName = podDef.metadata.name;
