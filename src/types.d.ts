@@ -153,7 +153,7 @@ export interface Node {
   rpcPort: number;
   prometheusPort: number;
   p2pPort: number;
-  imagePullPolicy?: "IfNotPresent" | "Never" | "Always"
+  imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
 }
 
 export interface Collator {

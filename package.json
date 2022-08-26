@@ -1,6 +1,6 @@
 {
   "name": "@parity/zombienet",
-  "version": "1.2.56",
+  "version": "1.2.57",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Parity Technologies <admin@parity.io>",
@@ -16,7 +16,8 @@
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "build": "tsc",
-    "lint": "npx prettier --write ./src",
+    "lint": "npx prettier --check ./src",
+    "lint:write": "npx prettier --write ./src",
     "package": "pkg . --out-path ./bins"
   },
   "dependencies": {

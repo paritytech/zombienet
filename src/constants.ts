@@ -15,7 +15,7 @@ export const DEFAULT_PORTS = {
   p2pPort: P2P_PORT,
   wsPort: RPC_WS_PORT,
   rpcPort: RPC_HTTP_PORT,
-  prometheusPort: PROMETHEUS_PORT
+  prometheusPort: PROMETHEUS_PORT,
 };
 
 export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
