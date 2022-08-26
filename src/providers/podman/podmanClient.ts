@@ -1,4 +1,4 @@
-import execa from "execa";
+import { execa } from "execa";
 import path, { resolve } from "path";
 import { copy as fseCopy } from "fs-extra";
 import {

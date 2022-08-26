@@ -1,4 +1,4 @@
-import execa from "execa";
+import { execaCommand } from "execa";
 import path, { resolve } from "path";
 import {
   DEFAULT_DATA_DIR,
@@ -668,7 +668,7 @@ export class KubeClient extends Client {
   async isPodMonitorAvailable() {
     let available = false;
     try {
-      const result = await execa.command("kubectl api-resources -o name");
+      const result = await execaCommand("kubectl api-resources -o name");
       if (result.exitCode == 0) {
         if (result.stdout.includes("podmonitor")) available = true;
       }

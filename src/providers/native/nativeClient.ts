@@ -1,4 +1,4 @@
-import execa from "execa";
+import { execa } from "execa";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,

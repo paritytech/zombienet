@@ -9,7 +9,6 @@ import {
 } from "./constants";
 import { Node } from "./types";
 import { getRandomPort } from "./utils/net-utils";
-import { node } from "execa";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
