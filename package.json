@@ -16,7 +16,8 @@
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "build": "tsc",
-    "lint": "npx prettier --write ./src",
+    "lint": "npx prettier --check ./src",
+    "lint:write": "npx prettier --write ./src",
     "package": "pkg . --out-path ./bins"
   },
   "dependencies": {
