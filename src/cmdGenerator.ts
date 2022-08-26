@@ -76,7 +76,10 @@ export async function genCumulusCollatorCmd(
     (nodeSetup.wsPort ? nodeSetup.wsPort : RPC_WS_PORT).toString(),
     "--prometheus-external",
     "--prometheus-port",
-    (nodeSetup.prometheusPort ? nodeSetup.prometheusPort : PROMETHEUS_PORT).toString(),
+    (nodeSetup.prometheusPort
+      ? nodeSetup.prometheusPort
+      : PROMETHEUS_PORT
+    ).toString(),
     "--rpc-cors all",
     "--unsafe-rpc-external",
     "--rpc-methods unsafe",
@@ -130,7 +133,16 @@ export async function genCumulusCollatorCmd(
             // port passed as argument, we need to ensure is not a default one because it will be
             // use by the parachain part.
             const selectedPort = parseInt(argsFullNode[index + 1], 10);
-            if ([P2P_PORT, RPC_HTTP_PORT, RPC_WS_PORT, nodeSetup.p2pPort, nodeSetup.rpcPort, nodeSetup.wsPort].includes(selectedPort)) {
+            if (
+              [
+                P2P_PORT,
+                RPC_HTTP_PORT,
+                RPC_WS_PORT,
+                nodeSetup.p2pPort,
+                nodeSetup.rpcPort,
+                nodeSetup.wsPort,
+              ].includes(selectedPort)
+            ) {
               console.log(
                 decorators.yellow(
                   `WARN: default port configured, changing to use a random free port`,
@@ -252,17 +264,15 @@ export async function genCmd(
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
 
-
-
   // port flags logic
   const portFlags = {
     "--prometheus-port": nodeSetup.prometheusPort,
     "--rpc-port": nodeSetup.rpcPort,
-    "--ws-port": nodeSetup.wsPort
-  }
+    "--ws-port": nodeSetup.wsPort,
+  };
 
-  for( const [k,v] of Object.entries(portFlags)) {
-    args.push(...[k,v.toString()]);
+  for (const [k, v] of Object.entries(portFlags)) {
+    args.push(...[k, v.toString()]);
   }
   args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
 

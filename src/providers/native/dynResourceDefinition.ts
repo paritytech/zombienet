@@ -20,7 +20,7 @@ export async function genBootnodeDef(
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
-  const {rpcPort, wsPort, prometheusPort, p2pPort} = nodeSetup;
+  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
@@ -57,7 +57,7 @@ export async function genNodeDef(
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
-  const {rpcPort, wsPort, prometheusPort, p2pPort} = nodeSetup;
+  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
@@ -66,8 +66,13 @@ export async function genNodeDef(
   await fs.mkdir(dataPath, { recursive: true });
 
   let computedCommand;
-  if( nodeSetup.zombieRole === "cumulus-collator" ) {
-    computedCommand = await genCumulusCollatorCmd(nodeSetup, cfgPath, dataPath, false);
+  if (nodeSetup.zombieRole === "cumulus-collator") {
+    computedCommand = await genCumulusCollatorCmd(
+      nodeSetup,
+      cfgPath,
+      dataPath,
+      false,
+    );
   } else {
     computedCommand = await genCmd(nodeSetup, cfgPath, dataPath, false);
   }
@@ -97,7 +102,12 @@ export async function genNodeDef(
   };
 }
 
-async function getPorts(rpc?: number, ws?:number, prometheus?:number, p2p?:number) {
+async function getPorts(
+  rpc?: number,
+  ws?: number,
+  prometheus?: number,
+  p2p?: number,
+) {
   const ports = [
     {
       containerPort: PROMETHEUS_PORT,
@@ -121,7 +131,7 @@ async function getPorts(rpc?: number, ws?:number, prometheus?:number, p2p?:numbe
       containerPort: P2P_PORT,
       name: "p2p",
       flag: "--port",
-      hostPort: p2p || await getRandomPort(),
+      hostPort: p2p || (await getRandomPort()),
     },
   ];
 
@@ -162,7 +172,7 @@ export async function createTempNodeDef(
     p2pPort: await getRandomPort(),
     wsPort: await getRandomPort(),
     rpcPort: await getRandomPort(),
-    prometheusPort: await getRandomPort()
+    prometheusPort: await getRandomPort(),
   };
 
   return node;

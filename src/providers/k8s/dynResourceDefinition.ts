@@ -6,7 +6,7 @@ import {
   WAIT_UNTIL_SCRIPT_SUFIX,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-  P2P_PORT
+  P2P_PORT,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
@@ -138,7 +138,7 @@ async function make_main_container(
   ];
 
   let computedCommand;
-  if( nodeSetup.zombieRole === "cumulus-collator" ) {
+  if (nodeSetup.zombieRole === "cumulus-collator") {
     computedCommand = await genCumulusCollatorCmd(nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
@@ -236,7 +236,7 @@ export async function createTempNodeDef(
     p2pPort: await getRandomPort(),
     wsPort: await getRandomPort(),
     rpcPort: await getRandomPort(),
-    prometheusPort: await getRandomPort()
+    prometheusPort: await getRandomPort(),
   };
 
   return node;
