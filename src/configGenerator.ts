@@ -331,14 +331,18 @@ export async function generateNetworkSpec(
 }
 
 // TODO: move this fn to other module.
-export async function generateBootnodeSpec(config: ComputedNetwork): Promise<Node> {
-  const ports = config.settings.provider !== "native" ? DEFAULT_PORTS :
-    {
-      p2pPort: await getRandomPort(),
-      wsPort: await getRandomPort(),
-      rpcPort: await getRandomPort(),
-      prometheusPort: await getRandomPort()
-    };
+export async function generateBootnodeSpec(
+  config: ComputedNetwork,
+): Promise<Node> {
+  const ports =
+    config.settings.provider !== "native"
+      ? DEFAULT_PORTS
+      : {
+          p2pPort: await getRandomPort(),
+          wsPort: await getRandomPort(),
+          rpcPort: await getRandomPort(),
+          prometheusPort: await getRandomPort(),
+        };
 
   const nodeSetup: Node = {
     name: "bootnode",
@@ -358,8 +362,10 @@ export async function generateBootnodeSpec(config: ComputedNetwork): Promise<Nod
     telemetryUrl: "",
     overrides: [],
     zombieRole: "bootnode",
-    imagePullPolicy: config.settings.image_pull_policy? config.settings.image_pull_policy : "Always",
-    ...ports
+    imagePullPolicy: config.settings.image_pull_policy
+      ? config.settings.image_pull_policy
+      : "Always",
+    ...ports,
   };
 
   return nodeSetup;
@@ -429,13 +435,15 @@ async function getCollatorNodeFromConfig(
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const accountsForNode = await generateKeyForNode(collatorName);
 
-  const ports = networkSpec.settings.provider !== "native" ? DEFAULT_PORTS :
-    {
-      p2pPort: await getRandomPort(),
-      wsPort: await getRandomPort(),
-      rpcPort: await getRandomPort(),
-      prometheusPort: await getRandomPort()
-    };
+  const ports =
+    networkSpec.settings.provider !== "native"
+      ? DEFAULT_PORTS
+      : {
+          p2pPort: await getRandomPort(),
+          wsPort: await getRandomPort(),
+          rpcPort: await getRandomPort(),
+          prometheusPort: await getRandomPort(),
+        };
 
   const node: Node = {
     name: collatorName,
@@ -453,8 +461,10 @@ async function getCollatorNodeFromConfig(
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
-    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always",
-    ...ports
+    imagePullPolicy: networkSpec.settings.image_pull_policy
+      ? networkSpec.settings.image_pull_policy
+      : "Always",
+    ...ports,
   };
 
   return node;
@@ -506,13 +516,15 @@ async function getNodeFromConfig(
 
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
-  const ports = networkSpec.settings.provider !== "native" ? DEFAULT_PORTS :
-    {
-      p2pPort: await getRandomPort(),
-      wsPort: await getRandomPort(),
-      rpcPort: await getRandomPort(),
-      prometheusPort: await getRandomPort()
-    };
+  const ports =
+    networkSpec.settings.provider !== "native"
+      ? DEFAULT_PORTS
+      : {
+          p2pPort: await getRandomPort(),
+          wsPort: await getRandomPort(),
+          rpcPort: await getRandomPort(),
+          prometheusPort: await getRandomPort(),
+        };
 
   // build node Setup
   const nodeSetup: Node = {
@@ -536,11 +548,13 @@ async function getNodeFromConfig(
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
     zombieRole: "node",
-    imagePullPolicy: networkSpec.settings.image_pull_policy? networkSpec.settings.image_pull_policy : "Always",
-    ...ports
+    imagePullPolicy: networkSpec.settings.image_pull_policy
+      ? networkSpec.settings.image_pull_policy
+      : "Always",
+    ...ports,
   };
 
-  if(group) nodeSetup.group = group;
+  if (group) nodeSetup.group = group;
   return nodeSetup;
 }
 
@@ -548,8 +562,8 @@ function sanitizeArgs(args: string[]): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
 
   let removeNext = false;
-  const filteredArgs = args.slice(0, args.indexOf("--")).filter(arg=> {
-    if(removeNext) {
+  const filteredArgs = args.slice(0, args.indexOf("--")).filter((arg) => {
+    if (removeNext) {
       removeNext = false;
       return false;
     }
