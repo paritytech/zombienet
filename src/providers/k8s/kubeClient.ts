@@ -1,4 +1,4 @@
-import { execaCommand } from "execa";
+import { execaCommand, execa } from "execa";
 import path, { resolve } from "path";
 import {
   DEFAULT_DATA_DIR,
