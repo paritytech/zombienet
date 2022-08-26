@@ -20,7 +20,7 @@
     "package": "pkg . --out-path ./bins"
   },
   "dependencies": {
-    "@polkadot/api": "^8.9.1",
+    "@polkadot/api": "^9.2.3",
     "@polkadot/keyring": "^9.5.1",
     "@polkadot/util-crypto": "^9.5.1",
     "axios": "^0.24.0",
