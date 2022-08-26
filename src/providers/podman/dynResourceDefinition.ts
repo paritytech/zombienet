@@ -428,7 +428,7 @@ async function make_main_container(
   ];
 
   let computedCommand;
-  if( nodeSetup.zombieRole === "cumulus-collator") {
+  if (nodeSetup.zombieRole === "cumulus-collator") {
     computedCommand = await genCumulusCollatorCmd(nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
@@ -482,7 +482,7 @@ export async function createTempNodeDef(
     p2pPort: await getRandomPort(),
     wsPort: await getRandomPort(),
     rpcPort: await getRandomPort(),
-    prometheusPort: await getRandomPort()
+    prometheusPort: await getRandomPort(),
   };
 
   return node;
