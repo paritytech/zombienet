@@ -24,7 +24,7 @@
     "@polkadot/api": "^9.2.3",
     "@polkadot/keyring": "^9.5.1",
     "@polkadot/util-crypto": "^9.5.1",
-    "axios": "^0.24.0",
+    "axios": "^0.27.2",
     "chai": "^4.3.4",
     "commander": "^8.2.0",
     "debug": "^4.3.2",
