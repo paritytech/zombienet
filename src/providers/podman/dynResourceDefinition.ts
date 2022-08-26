@@ -10,7 +10,7 @@ import {
   RPC_WS_PORT,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
+import { Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
 import { resolve } from "path";
@@ -428,9 +428,8 @@ async function make_main_container(
   ];
 
   let computedCommand;
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
-  if (nodeSetup.zombieRole === "cumulus-collator") {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
+  if( nodeSetup.zombieRole === "cumulus-collator") {
+    computedCommand = await genCumulusCollatorCmd(nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
   }
@@ -462,7 +461,7 @@ export function replaceNetworkRef(podDef: any, network: Network) {
   }
 }
 
-export function createTempNodeDef(
+export async function createTempNodeDef(
   name: string,
   image: string,
   chain: string,
@@ -480,6 +479,10 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
+    p2pPort: await getRandomPort(),
+    wsPort: await getRandomPort(),
+    rpcPort: await getRandomPort(),
+    prometheusPort: await getRandomPort()
   };
 
   return node;

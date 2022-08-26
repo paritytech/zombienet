@@ -16,7 +16,6 @@
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "build": "tsc",
-    "start": "yarn build && node dist/cli.js",
     "lint": "npx prettier --write ./src",
     "package": "pkg . --out-path ./bins"
   },
@@ -37,6 +36,7 @@
     "napi-maybe-compressed-blob": "0.0.2",
     "nunjucks": "^3.2.3",
     "peer-id": "^0.16.0",
+    "progress": "^2.0.3",
     "tmp-promise": "^3.0.2",
     "toml": "^3.0.0",
     "yaml": "^2.0.0-9"
@@ -71,6 +71,7 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.4.12",
     "@types/nunjucks": "^3.2.1",
+    "@types/progress": "^2.0.5",
     "@types/tmp": "^0.2.1",
     "pkg": "~5.5.1",
     "prettier": "2.2.1",

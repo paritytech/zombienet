@@ -419,13 +419,8 @@ export async function start(
       }
 
       let networkNode: NetworkNode;
-      const endpointPort =
-        node.zombieRole === "node" || node.zombieRole === "collator"
-          ? client.providerName === "native"
-            ? RPC_WS_PORT
-            : RPC_HTTP_PORT
-          : RPC_WS_PORT;
 
+      const endpointPort = RPC_WS_PORT;
       if (options?.inCI) {
         const nodeIp = await client.getNodeIP(podDef.metadata.name);
         networkNode = new NetworkNode(
