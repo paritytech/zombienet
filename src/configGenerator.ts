@@ -459,9 +459,7 @@ async function getCollatorNodeFromConfig(
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
-    imagePullPolicy: networkSpec.settings.image_pull_policy
-      ? networkSpec.settings.image_pull_policy
-      : "Always",
+    imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
   };
 
