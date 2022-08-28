@@ -362,9 +362,7 @@ export async function generateBootnodeSpec(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "bootnode",
-    imagePullPolicy: config.settings.image_pull_policy
-      ? config.settings.image_pull_policy
-      : "Always",
+    imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
   };
 
