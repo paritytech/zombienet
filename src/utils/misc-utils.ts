@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import { format } from "util";
 import { createHash } from "crypto";
+import { LOKI_URL_FOR_NODE } from "../constants";
 
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -78,4 +79,18 @@ export function convertExponentials(data: string): string {
     return "0".repeat(e);
   });
   return converted;
+}
+
+export function getLokiUrl(
+  namespace: string,
+  podName: string,
+  from: number | string,
+  to?: number | string,
+): string {
+  const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace)
+    .replace(/{{podName}}/, podName)
+    .replace(/{{from}}/, from.toString())
+    .replace(/{{to}}/, to ? to.toString() : "now");
+
+  return loki_url;
 }

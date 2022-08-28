@@ -19,13 +19,11 @@ import {
   WS_URI_PATTERN,
   METRICS_URI_PATTERN,
   ZOMBIE_WRAPPER,
-  LOKI_URL_FOR_NODE,
   RPC_WS_PORT,
   RPC_HTTP_PORT,
   LOCALHOST,
   INTROSPECTOR_POD_NAME,
   INTROSPECTOR_PORT,
-  TRACING_COLLATOR_NAME,
   TRACING_COLLATOR_PORT,
   TRACING_COLLATOR_SERVICE,
   TRACING_COLLATOR_NAMESPACE,
@@ -41,7 +39,12 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes,
 } from "./chain-spec";
-import { generateNamespace, sleep, filterConsole } from "./utils/misc-utils";
+import {
+  generateNamespace,
+  sleep,
+  filterConsole,
+  getLokiUrl,
+} from "./utils/misc-utils";
 import { series } from "./utils/promise-series";
 import { loadTypeDef } from "./utils/fs-utils";
 import tmp from "tmp-promise";
@@ -143,6 +146,7 @@ export async function start(
     if (networkSpec.settings.node_spawn_timeout)
       client.timeout = networkSpec.settings.node_spawn_timeout;
     network = new Network(client, namespace, tmpDir.path);
+    network.networkStartTime = new Date().getTime();
 
     console.log(
       `\t Launching network under namespace: ${decorators.magenta(namespace)}`,
@@ -484,10 +488,11 @@ export async function start(
 
       console.log(msg);
       if (monitorIsAvailable) {
-        const loki_url = LOKI_URL_FOR_NODE.replace(
-          /{{namespace}}/,
+        const loki_url = getLokiUrl(
           namespace,
-        ).replace(/{{podName}}/, podDef.metadata.name);
+          podDef.metadata.name,
+          network.networkStartTime!,
+        );
         console.log(`\t${decorators.green("Grafana logs url:")}`);
         console.log(`\t\t${decorators.magenta(loki_url)}`);
       } else {
