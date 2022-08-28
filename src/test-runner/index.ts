@@ -153,13 +153,13 @@ export async function run(
       const logsPath = await network.dumpLogs(false);
       const tests = this.test?.parent?.tests;
       if (tests) {
-        const fail = tests.find((test) => {
+        const failed = tests.filter((test) => {
           return test.state !== "passed";
         });
-        if (fail) {
+        if (failed.length) {
           console.log(
             `\n\n\t${decorators.red(
-              "Hey one of your test failed, to see the full logs of the nodes please go to:",
+              "Hey one or more of your test failed, to see the full logs of the nodes please go to:",
             )}`,
           );
 
@@ -219,7 +219,7 @@ export async function run(
               // keep pods running for 30 mins.
               console.log(
                 `\n\t${decorators.yellow(
-                  "Some test fail, we will keep the namespace up for 30 more minutes",
+                  "One or more test failed, we will keep the namespace up for 30 more minutes",
                 )}`,
               );
               await network.upsertCronJob(30);
