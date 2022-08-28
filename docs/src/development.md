@@ -1,6 +1,6 @@
 # Development
 
-## Requerimients
+## Requirements
 
 - [Node.js](https://nodejs.org/)
 - kubernetes cluster to use as target
