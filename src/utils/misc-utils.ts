@@ -90,7 +90,7 @@ export function getLokiUrl(
   const loki_url = LOKI_URL_FOR_NODE.replace(/{{namespace}}/, namespace)
     .replace(/{{podName}}/, podName)
     .replace(/{{from}}/, from.toString())
-    .replace(/{{to}}/, to ? to.toString() : "now");
+    .replace(/{{to}}/, to?.toString() || "now");
 
   return loki_url;
 }
