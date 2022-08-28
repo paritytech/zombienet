@@ -362,9 +362,7 @@ export async function generateBootnodeSpec(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "bootnode",
-    imagePullPolicy: config.settings.image_pull_policy
-      ? config.settings.image_pull_policy
-      : "Always",
+    imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
   };
 
@@ -461,9 +459,7 @@ async function getCollatorNodeFromConfig(
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
-    imagePullPolicy: networkSpec.settings.image_pull_policy
-      ? networkSpec.settings.image_pull_policy
-      : "Always",
+    imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
   };
 
@@ -548,9 +544,7 @@ async function getNodeFromConfig(
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
     zombieRole: "node",
-    imagePullPolicy: networkSpec.settings.image_pull_policy
-      ? networkSpec.settings.image_pull_policy
-      : "Always",
+    imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
   };
 
