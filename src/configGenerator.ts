@@ -544,9 +544,7 @@ async function getNodeFromConfig(
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
     zombieRole: "node",
-    imagePullPolicy: networkSpec.settings.image_pull_policy
-      ? networkSpec.settings.image_pull_policy
-      : "Always",
+    imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
   };
 
