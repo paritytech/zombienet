@@ -158,7 +158,7 @@ export async function run(
         });
         if (fail) {
           console.log(
-            `\n\t${decorators.red(
+            `\n\n\t${decorators.red(
               "Hey one of your test failed, to see the full logs of the nodes please go to:",
             )}`,
           );
@@ -209,7 +209,7 @@ export async function run(
 
                 // logs are also collaected as artifacts
                 console.log(
-                  `\n\t ${decorators.yellow(
+                  `\n\n\t ${decorators.yellow(
                     "Logs are also available in the artifacts' pipeline in gitlab",
                   )}`,
                 );
