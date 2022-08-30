@@ -381,6 +381,7 @@ zombienet-histogram-assertion:
 zombienet-update-genesis-config:
   stage:                           deploy
   <<:                              *kubernetes-env
+  <<:                              *collect-artifacts
   image:                           "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
