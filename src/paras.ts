@@ -85,6 +85,8 @@ export async function generateParachainFiles(
             false,
             isStatemint,
           );
+        // Add some extra space until next log
+        console.log("\n");
       }
     } else {
       // use `aura` keys
@@ -96,6 +98,8 @@ export async function generateParachainFiles(
             node.name,
             node.accounts!,
           );
+        // Add some extra space until next log
+        console.log("\n");
       }
     }
 
