@@ -404,7 +404,6 @@ zombienet-update-genesis-config:
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0011-update-genesis-config.feature"
-  after_script:
     - mkdir -p ./artifacts/zombienet-logs
     - ls /tmp/zombie*/logs
     - cp /tmp/zombie*/logs/* ./artifacts/zombienet-logs/
