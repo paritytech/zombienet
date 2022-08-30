@@ -56,7 +56,7 @@ export function clearAuthorities(
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\n\t\t🧹 ${decorators.green("Starting with a fresh authority set...")}`,
+    `\n🧹 ${decorators.green("Starting with a fresh authority set...")}`,
   );
 }
 
@@ -100,7 +100,7 @@ export async function addAuthority(
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\t\t\t  👤 Added Genesis Authority ${decorators.green(
+    `\t👤 Added Genesis Authority ${decorators.green(
       name,
     )} - ${decorators.magenta(sr_stash.address)}`,
   );
@@ -122,7 +122,7 @@ export async function addAuraAuthority(
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\t\t\t  👤 Added Genesis Authority (AURA) ${decorators.green(
+    `\t👤 Added Genesis Authority (AURA) ${decorators.green(
       name,
     )} - ${decorators.magenta(sr_account.address)}`,
   );

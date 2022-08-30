@@ -14,6 +14,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
+import { CreateLogTable } from "../../utils/logger";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -90,16 +91,25 @@ export class KubeClient extends Client {
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
-    console.log(
-      `\n\tlaunching ${decorators.green(
-        podDef.metadata.name,
-      )} pod with image ${decorators.green(podDef.spec.containers[0].image)}`,
-    );
-    console.log(
-      `\t\t with command: ${decorators.magenta(
-        podDef.spec.containers[0].command.join(" "),
-      )}`,
-    );
+
+    const logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+
+    logTable.pushTo([
+      [
+        `${decorators.cyan("Launching")}`,
+        `${decorators.green(podDef.metadata.name)}`,
+      ],
+      [
+        `${decorators.cyan("Image")}`,
+        `${decorators.green(podDef.spec.containers[0].image)}`,
+      ],
+      [
+        `${decorators.cyan("Command")}`,
+        `${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`,
+      ],
+    ]);
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
@@ -144,7 +154,10 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.wait_pod_ready(name);
-    console.log(`\t\t${decorators.green(name)} pod is ready!`);
+    logTable.pushTo([
+      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+    ]);
+    logTable.print();
   }
 
   async putLocalMagicFile(name: string, container?: string) {

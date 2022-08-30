@@ -20,6 +20,7 @@ import {
   genTempoDef,
   getIntrospectorDef,
 } from "./dynResourceDefinition";
+import { CreateLogTable } from "../../utils/logger";
 
 const debug = require("debug")("zombie::podman::client");
 
@@ -340,16 +341,20 @@ export class PodmanClient extends Client {
   ): Promise<void> {
     const name = podDef.metadata.name;
 
-    console.log(
-      `\n\tlaunching ${decorators.green(
-        podDef.metadata.name,
-      )} pod with image ${decorators.green(podDef.spec.containers[0].image)}`,
-    );
-    console.log(
-      `\t\t with command: ${decorators.magenta(
-        podDef.spec.containers[0].command.join(" "),
-      )}`,
-    );
+    const logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+
+    logTable.pushTo([
+      [
+        `${decorators.cyan("Launching")}`,
+        `${decorators.green(podDef.metadata.name)}`,
+      ],
+      [
+        `${decorators.cyan("Command")}`,
+        `${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`,
+      ],
+    ]);
 
     if (keystore) {
       // initialize keystore
@@ -378,7 +383,10 @@ export class PodmanClient extends Client {
 
     await this.wait_pod_ready(name);
     await this.addNodeToPrometheus(name);
-    console.log(`\t\t${decorators.green(name)} pod is ready!`);
+    logTable.pushTo([
+      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+    ]);
+    logTable.print();
   }
   async copyFileFromPod(
     identifier: string,

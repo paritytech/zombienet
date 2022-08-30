@@ -13,6 +13,7 @@ import { decorators } from "../../utils/colors";
 import YAML from "yaml";
 import { spawn } from "child_process";
 import path from "path";
+import { CreateLogTable } from "../../utils/logger";
 
 const debug = require("debug")("zombie::native::client");
 
@@ -236,10 +237,17 @@ export class NativeClient extends Client {
       }, {}),
     };
 
-    console.log(`\n\tlaunching ${decorators.green(name)}`);
-    console.log(
-      `\t\t with command: ${decorators.magenta(podDef.spec.command.join(" "))}`,
-    );
+    const logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+
+    logTable.pushTo([
+      [`${decorators.cyan("Launching")}`, `${decorators.green(name)}`],
+      [
+        `${decorators.cyan("Command")}`,
+        `${decorators.magenta(podDef.spec.command.join(" "))}`,
+      ],
+    ]);
 
     if (keystore) {
       // initialize keystore
@@ -265,7 +273,10 @@ export class NativeClient extends Client {
     }
 
     await this.createResource(podDef);
-    console.log(`\t\t${decorators.green(name)} is ready!`);
+    logTable.pushTo([
+      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+    ]);
+    logTable.print();
   }
 
   async copyFileFromPod(
