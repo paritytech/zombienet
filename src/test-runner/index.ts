@@ -873,8 +873,8 @@ function getComparatorFn(comparator: string) {
     case "<":
       fn = "isBelow";
       break;
-    default:
-      fn = "equal"; //default
+    default: //default
+      fn = "equal";
       break;
   }
 
