@@ -99,6 +99,7 @@ export class Network {
   backchannelUri: string = "";
   chainSpecFullPath?: string;
   tracingCollatorUrl?: string;
+  networkStartTime?: number;
 
   constructor(client: Client, namespace: string, tmpDir: string) {
     this.client = client;
@@ -141,9 +142,10 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async dumpLogs() {
+  async dumpLogs(showLogPath: boolean = true): Promise<string> {
+    const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
-    fs.mkdirSync(`${this.tmpDir}/logs`);
+    fs.mkdirSync(logsPath);
     const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
       (memo: NetworkNode[], key) => {
         const paraId = parseInt(key, 10);
@@ -158,11 +160,14 @@ export class Network {
     });
     await Promise.all(dumpsPromises);
 
-    console.log(
-      `\n\t ${decorators.green(
-        "Node's logs are available in",
-      )} ${decorators.magenta(this.tmpDir + "/logs")}`,
-    );
+    if (showLogPath)
+      console.log(
+        `\n\t ${decorators.green(
+          "Node's logs are available in",
+        )} ${decorators.magenta(logsPath)}`,
+      );
+
+    return logsPath;
   }
 
   async upsertCronJob(minutes = 10) {
