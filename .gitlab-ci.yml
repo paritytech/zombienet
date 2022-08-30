@@ -406,6 +406,7 @@ zombienet-update-genesis-config:
         --test="0011-update-genesis-config.feature"
   after_script:
     - mkdir -p ./artifacts
+    - ls /tmp/zombie*
     - cp -r /tmp/zombie*/logs ./artifacts
   allow_failure:                   true
   retry: 2
