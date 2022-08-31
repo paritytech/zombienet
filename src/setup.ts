@@ -15,8 +15,8 @@ interface OptIf {
 }
 
 const options: OptIf = {
-  parachain: {
-    name: "parachain",
+  "polkadot-parachain": {
+    name: "polkadot-parachain",
     url: DEFAULT_CUMULUS_COLLATOR_URL,
     size: "120",
   },
@@ -147,9 +147,14 @@ const howTo = () => {
       "--binaries or -b:",
     )} the binaries that you want to be downloaded, provided in a row without any separators; They are downloaded in 'dist' directory and appropriate executable permissions are assigned.`,
   );
-  msg.push(`\tpossible options: ${dec("cyan", "'polkadot', 'parachain'")}`);
   msg.push(
-    `\texample: ${dec("blue", "node dist/setup.js -b polkadot parachain")}`,
+    `\tpossible options: ${dec("cyan", "'polkadot', 'polkadot-parachain'")}`,
+  );
+  msg.push(
+    `\texample: ${dec(
+      "blue",
+      "node dist/setup.js -b polkadot polkadot-parachain",
+    )}`,
   );
   console.log(msg.join("\n"));
 };
