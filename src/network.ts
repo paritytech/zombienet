@@ -14,6 +14,7 @@ import { NetworkNode } from "./networkNode";
 import fs from "fs";
 import axios from "axios";
 import { decorators } from "./utils/colors";
+import { CreateLogTable } from "./utils/logger";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -194,9 +195,9 @@ export class Network {
         api = this.relay[0].apiInstance as ApiPromise;
       }
 
-      let nonce = ((await api.query.system.account(
-        alice.address,
-      )) as any).nonce.toNumber();
+      let nonce = (
+        (await api.query.system.account(alice.address)) as any
+      ).nonce.toNumber();
       const wasm_data = readDataFile(wasmPath);
       const genesis_state = readDataFile(statePath);
 
@@ -339,51 +340,71 @@ export class Network {
 
   // show links for access and debug
   showNetworkInfo(provider: string) {
-    console.log("\n-----------------------------------------\n");
-    console.log("\n\t Network launched 🚀🚀");
-    console.log(
-      `\n\t\t In namespace ${this.namespace} with ${this.client.providerName} provider`,
-    );
+    const logTable = new CreateLogTable({
+      head: [
+        {
+          colSpan: 2,
+          hAlign: "center",
+          content: `${decorators.green("Network launched 🚀🚀")}`,
+        },
+      ],
+      colWidths: [30, 100],
+    });
+    logTable.pushTo([
+      ["Namespace", this.namespace],
+      ["Provider", this.client.providerName],
+    ]);
+
     for (const node of this.relay) {
-      this.showNodeInfo(node, provider);
+      this.showNodeInfo(node, provider, logTable);
     }
 
     for (const [paraId, parachain] of Object.entries(this.paras)) {
-      console.log("\n");
-      console.log("\n\t Parachain ID: " + paraId);
+      logTable.pushTo([[decorators.cyan("Parachain ID"), paraId]]);
+
       if (parachain.chainSpecPath)
-        console.log(
-          "\n\t Parachain chainSpecPath path: " + parachain.chainSpecPath,
-        );
+        logTable.pushTo([
+          [decorators.cyan("ChainSpec Path"), parachain.chainSpecPath],
+        ]);
 
       for (const node of parachain.nodes) {
-        this.showNodeInfo(node, provider);
+        this.showNodeInfo(node, provider, logTable);
       }
     }
 
     if (this.companions.length) {
-      console.log("\n\t Companions:");
+      logTable.pushTo([
+        [
+          {
+            colSpan: 2,
+            content: "Companions",
+          },
+        ],
+      ]);
       for (const node of this.companions) {
-        this.showNodeInfo(node, provider);
+        this.showNodeInfo(node, provider, logTable);
       }
     }
+    logTable.print();
   }
 
-  showNodeInfo(node: NetworkNode, provider: string) {
-    console.log("\n");
-    console.log(`\t\t Node name: ${decorators.green(node.name)}\n`);
-
+  showNodeInfo(node: NetworkNode, provider: string, logTable: CreateLogTable) {
     // Support native VSCode remote extension automatic port forwarding.
     // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
     let wsUri = ["native", "podman"].includes(provider)
       ? node.wsUri
       : encodeURIComponent(node.wsUri);
-    console.log(
-      `\t\t Node direct link: https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer\n`,
-    );
-    console.log(`\t\t Node prometheus link: ${node.prometheusUri}\n`);
-    console.log("---\n");
+
+    logTable.pushTo([
+      [{ colSpan: 2, hAlign: "center", content: "Node Information" }],
+      [`${decorators.cyan("Name")}`, `${decorators.green(node.name)}`],
+      [
+        `${decorators.cyan("Direct Link")}`,
+        `https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer`,
+      ],
+      [`${decorators.cyan("Prometheus Link")}`, node.prometheusUri],
+    ]);
   }
 
   replaceWithNetworInfo(placeholder: string): string {
