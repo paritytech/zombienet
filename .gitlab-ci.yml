@@ -399,7 +399,7 @@ zombienet-update-genesis-config:
     when:                          always
     expire_in:                     2 days
     paths:
-      - ../../../../home/nonroot/artifacts/
+      - ./zombienet-logs
 
   before_script:
     - echo "Zombienet Tests Genesis config update"
@@ -412,9 +412,9 @@ zombienet-update-genesis-config:
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
         --test="0011-update-genesis-config.feature"
-    - mkdir -p /home/nonroot/artifacts/zombienet-logs
+    - mkdir -p ./zombienet-logs
     - ls /tmp/zombie*/logs
-    - cp /tmp/zombie*/logs/* /home/nonroot/artifacts/zombienet-logs/
+    - cp /tmp/zombie*/logs/* ./zombienet-logs/
     - sleep 600
   allow_failure:                   true
   retry: 2
