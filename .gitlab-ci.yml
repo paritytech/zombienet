@@ -398,7 +398,7 @@ zombienet-update-genesis-config:
     when:                          always
     expire_in:                     2 days
     paths:
-      - /home/nonroot/artifacts/
+      - ../../../home/nonroot/artifacts/
 
   before_script:
     - echo "Zombienet Tests Genesis config update"
