@@ -414,7 +414,6 @@ zombienet-update-genesis-config:
     - mkdir -p /home/nonroot/artifacts/zombienet-logs
     - ls /tmp/zombie*/logs
     - cp /tmp/zombie*/logs/* /home/nonroot/artifacts/zombienet-logs/
-    - sleep 3600
   allow_failure:                   true
   retry: 2
   tags:
