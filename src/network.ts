@@ -195,9 +195,9 @@ export class Network {
         api = this.relay[0].apiInstance as ApiPromise;
       }
 
-      let nonce = ((await api.query.system.account(
-        alice.address,
-      )) as any).nonce.toNumber();
+      let nonce = (
+        (await api.query.system.account(alice.address)) as any
+      ).nonce.toNumber();
       const wasm_data = readDataFile(wasmPath);
       const genesis_state = readDataFile(statePath);
 
