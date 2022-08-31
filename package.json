@@ -19,7 +19,7 @@
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
     "package": "pkg . --out-path ./bins",
-    "docs": "npm run build && gh-pages -d docs/book"
+    "docs": "mdbook build docs && gh-pages -d docs/book"
   },
   "dependencies": {
     "@polkadot/api": "^9.2.4",
