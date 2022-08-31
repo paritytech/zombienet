@@ -55,6 +55,8 @@ import { generateBootnodeString } from "./bootnode";
 import { generateKeystoreFiles } from "./keys";
 import path from "path";
 
+import { CreateLogTable } from "./utils/logger";
+
 const debug = require("debug")("zombie");
 
 // Hide some warning messages that are coming from Polkadot JS API.
@@ -127,11 +129,7 @@ export async function start(
           Array.from(Providers.keys()).join(", "),
       );
     }
-    console.log(
-      `\n\t Using provider: ${decorators.magenta(
-        networkSpec.settings.provider,
-      )}\n`,
-    );
+
     const {
       genBootnodeDef,
       genNodeDef,
@@ -148,12 +146,23 @@ export async function start(
     network = new Network(client, namespace, tmpDir.path);
     network.networkStartTime = new Date().getTime();
 
-    console.log(
-      `\t Launching network under namespace: ${decorators.magenta(namespace)}`,
-    );
-    console.log(
-      `\t\t Using temporary directory: ${decorators.magenta(tmpDir.path)}`,
-    );
+    const zombieTable = new CreateLogTable({
+      head: [
+        `${decorators.green("🧟 Zombienet")}`,
+        `${decorators.green("Initiation")}`,
+      ],
+      colWidths: [20, 100],
+      main: true,
+    });
+
+    zombieTable.pushTo([
+      ["Provider", `${decorators.magenta(networkSpec.settings.provider)}`],
+      ["Namespace", `${decorators.magenta(namespace)}`],
+      ["Temp Dir", `${decorators.magenta(tmpDir.path)}`],
+    ]);
+
+    zombieTable.print();
+
     debug(`\t Launching network under namespace: ${namespace}`);
 
     // validate access to cluster
@@ -219,6 +228,8 @@ export async function start(
       for (const node of networkSpec.relaychain.nodes) {
         if (node.validator)
           await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+        // Add some extra space until next log
+        console.log("\n");
       }
 
       if (networkSpec.relaychain.genesis) {
