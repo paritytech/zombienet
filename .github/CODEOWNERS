@@ -1,4 +1,0 @@
-# CI
-/.github/ @paritytech/ci @pepoviola
-/.gitlab-ci.yml @paritytech/ci @pepoviola
-/scripts/ci/ @paritytech/ci @pepoviola
