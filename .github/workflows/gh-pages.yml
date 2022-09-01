@@ -22,5 +22,10 @@ jobs:
 
       - run: mdbook build docs
 
-      - name: Deploy
-        run: npm run docs:deploy
+      - name: Deploy to GitHub Pages
+        uses: crazy-max/ghaction-github-pages@v3
+        with:
+          target_branch: gh-pages
+          build_dir: docs/book
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
