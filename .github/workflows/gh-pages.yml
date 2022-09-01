@@ -5,9 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-
+  permissions:
+    contents: write
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -23,9 +24,6 @@ jobs:
       - run: mdbook build docs
 
       - name: Deploy to GitHub Pages
-        uses: crazy-max/ghaction-github-pages@v3
+        uses: amesIves/github-pages-deploy-action@v4
         with:
-          target_branch: gh-pages
-          build_dir: docs/book
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAGES_TOKEN }}
+          folder: docs/book
