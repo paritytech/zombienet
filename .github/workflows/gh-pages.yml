@@ -24,6 +24,6 @@ jobs:
       - run: mdbook build docs
 
       - name: Deploy to GitHub Pages
-        uses: amesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs/book
