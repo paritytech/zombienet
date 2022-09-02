@@ -119,7 +119,7 @@ async function performChainUpgrade(api: ApiPromise, code: string) {
 
   await new Promise<void>(async (resolve, reject) => {
     const unsub = await api.tx.sudo
-      .sudoUncheckedWeight(api.tx.system.setCodeWithoutChecks(`0x${code}`), 1)
+      .sudoUncheckedWeight(api.tx.system.setCodeWithoutChecks(`0x${code}`), {refTime: 1})
       .signAndSend(alice, (result) => {
         console.log(`Current status is ${result.status}`);
         if (result.status.isInBlock) {
