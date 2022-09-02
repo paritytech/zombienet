@@ -76,7 +76,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="requeriments/kubernetes.html"><strong aria-hidden="true">2.1.</strong> Kubernetes requirements</a></li><li class="chapter-item expanded "><a href="requeriments/podman.html"><strong aria-hidden="true">2.2.</strong> Podman requirements</a></li><li class="chapter-item expanded "><a href="requeriments/native.html"><strong aria-hidden="true">2.3.</strong> Native requirements</a></li></ol></li><li class="chapter-item expanded "><a href="features/index.html"><strong aria-hidden="true">3.</strong> Features by providers</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="features/kubernetes.html"><strong aria-hidden="true">3.1.</strong> Kubernetes</a></li><li class="chapter-item expanded "><a href="features/podman.html"><strong aria-hidden="true">3.2.</strong> Podman</a></li><li class="chapter-item expanded "><a href="features/native.html"><strong aria-hidden="true">3.3.</strong> Native</a></li></ol></li><li class="chapter-item expanded "><a href="cli/index.html"><strong aria-hidden="true">4.</strong> Cli usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/spawn.html"><strong aria-hidden="true">4.1.</strong> Spawning</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/env_vars.html"><strong aria-hidden="true">4.1.1.</strong> Using env vars</a></li><li class="chapter-item expanded "><a href="cli/teardown.html"><strong aria-hidden="true">4.1.2.</strong> Teardown</a></li></ol></li><li class="chapter-item expanded "><a href="testing.html"><strong aria-hidden="true">4.2.</strong> Testing</a></li></ol></li><li class="chapter-item expanded "><a href="guide.html"><strong aria-hidden="true">5.</strong> Guide</a></li><li class="chapter-item expanded "><a href="network-definition-spec.html"><strong aria-hidden="true">6.</strong> Network definition spec</a></li><li class="chapter-item expanded "><a href="test-dsl-definition-spec.html"><strong aria-hidden="true">7.</strong> Testing DSL spec</a></li><li class="chapter-item expanded "><a href="development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li class="chapter-item expanded "><a href="acknowledgement.html"><strong aria-hidden="true">9.</strong> Acknowledgement</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="requirements/kubernetes.html"><strong aria-hidden="true">2.1.</strong> Kubernetes requirements</a></li><li class="chapter-item expanded "><a href="requirements/podman.html"><strong aria-hidden="true">2.2.</strong> Podman requirements</a></li><li class="chapter-item expanded "><a href="requirements/native.html"><strong aria-hidden="true">2.3.</strong> Native requirements</a></li></ol></li><li class="chapter-item expanded "><a href="features/index.html"><strong aria-hidden="true">3.</strong> Features by providers</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="features/kubernetes.html"><strong aria-hidden="true">3.1.</strong> Kubernetes</a></li><li class="chapter-item expanded "><a href="features/podman.html"><strong aria-hidden="true">3.2.</strong> Podman</a></li><li class="chapter-item expanded "><a href="features/native.html"><strong aria-hidden="true">3.3.</strong> Native</a></li></ol></li><li class="chapter-item expanded "><a href="cli/index.html"><strong aria-hidden="true">4.</strong> Cli usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/setup.html"><strong aria-hidden="true">4.1.</strong> Setup</a></li><li class="chapter-item expanded "><a href="cli/spawn.html"><strong aria-hidden="true">4.2.</strong> Spawning</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/env_vars.html"><strong aria-hidden="true">4.2.1.</strong> Using env vars</a></li><li class="chapter-item expanded "><a href="cli/teardown.html"><strong aria-hidden="true">4.2.2.</strong> Teardown</a></li></ol></li><li class="chapter-item expanded "><a href="cli/testing.html"><strong aria-hidden="true">4.3.</strong> Testing</a></li></ol></li><li class="chapter-item expanded "><a href="guide.html"><strong aria-hidden="true">5.</strong> Guide</a></li><li class="chapter-item expanded "><a href="network-definition-spec.html"><strong aria-hidden="true">6.</strong> Network definition spec</a></li><li class="chapter-item expanded "><a href="test-dsl-definition-spec.html"><strong aria-hidden="true">7.</strong> Testing DSL spec</a></li><li class="chapter-item expanded "><a href="development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li class="chapter-item expanded "><a href="acknowledgement.html"><strong aria-hidden="true">9.</strong> Acknowledgement</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -144,7 +144,7 @@
 <p>Zombienet should works with any k8s cluster (e.g <a href="https://cloud.google.com/kubernetes-engine">GKE</a>, <a href="https://docs.docker.com/desktop/kubernetes/">docker-desktop</a>, <a href="https://kind.sigs.k8s.io/">kind</a>) <strong>but</strong> you need to have <code>kubectl</code> installed to interact with your cluster.</p>
 <p>Also, you need <em>permission</em> to create resources (e.g <code>namespaces</code>, <code>pods</code> and <code>cronJobs</code>) in the target cluster.</p>
 <h2 id="using-zombienet-gke-cluster-internally"><a class="header" href="#using-zombienet-gke-cluster-internally">Using <code>Zombienet</code> GKE cluster (internally).</a></h2>
-<p>Zombienet project has it's own k8s cluster in GCP, to use it please ping <a href="requeriments/@javier:matrix.parity.io">Javier</a> in element to gain access and steps to use.</p>
+<p>Zombienet project has it's own k8s cluster in GCP, to use it please ping <a href="requirements/@javier:matrix.parity.io">Javier</a> in element to gain access and steps to use.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="podman-requirements"><a class="header" href="#podman-requirements">Podman requirements</a></h1>
 <p>ZombieNet support <a href="https://podman.io/">Podman</a> <em>rootless</em> as provider, you only need to have <code>podman</code> installed in your environment to use and either set in the <em>network</em> file or with the <code>--provider</code> flag in the cli.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="native-requirements"><a class="header" href="#native-requirements">Native requirements</a></h1>
@@ -181,10 +181,31 @@ Options:
   -h, --help                             display help for command
 
 Commands:
-  spawn &lt;networkConfig&gt; [creds]  Spawn the network defined in the config
-  test &lt;testFile&gt;                Run tests on the network defined
-  version                        Prints zombienet version
-  help [command]                 display help for command
+  spawn &lt;networkConfig&gt; [creds]          Spawn the network defined in the config
+  test &lt;testFile&gt; [runningNetworkSpec]   Run tests on the network defined
+  setup &lt;binaries...&gt;                    Setup is meant for downloading and making dev environment of ZombieNet ready
+  version                                Prints zombienet version
+  help [command]                         display help for command
+
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="setup"><a class="header" href="#setup">Setup</a></h1>
+<p>This command will help you to easily download latest artifacts and make them executablein order to use them with zombienet</p>
+<h2 id="download-and-install-needed-artifacts"><a class="header" href="#download-and-install-needed-artifacts">Download and install needed artifacts</a></h2>
+<p>For easier and faster setup of local environment, upi can run:</p>
+<pre><code class="language-bash">❯ zombienet setup
+
+Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
+
+You can use the following arguments:
+  binaries    the binaries that you want to be downloaded, provided in a row without any separators;
+              They are downloaded in current directory and appropriate executable permissions are assigned.
+              Possible options: 'polkadot', 'polkadot-parachain'
+              &gt; zombienet setup polkadot polkadot-parachain
+
+</code></pre>
+<p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
+<p>e.g.</p>
+<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/current_directory:$PATH
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="spawning"><a class="header" href="#spawning">Spawning</a></h1>
 <p>One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but poweful <em>cli</em> that allow you to declare the desired network in <code>toml</code> or <code>json</code> format. You can check the <a href="cli/../network-definition-spec.html">definition spec</a> to view the available options.</p>
@@ -286,7 +307,7 @@ export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 <p>You can teardown the network (and cleanup the used resources) by terminating the process (<code>Ctrl+c</code>).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
 <p>The other goal of ZombieNet is provide a way to perform test/assertions agins the spawned network, using a set of <code>natural language expressions</code> that allow to make assertions based on metrics, logs and some <code>built-in</code> function that query the network usin <code>polkadot.js</code>.
-Those assertions should be defined in a <em>feature test</em>, and the <code>dsl</code> and format is documented in <a href="./test-dsl-definition-spec.html">here</a>.</p>
+Those assertions should be defined in a <em>feature test</em>, and the <code>dsl</code> and format is documented in <a href="cli/./test-dsl-definition-spec.html">here</a>.</p>
 <p>The following is an small example to spawn a network (using the previos <code>simple network definition</code>) and assert that:</p>
 <ul>
 <li>Both <code>nodes</code> are running</li>
@@ -868,11 +889,11 @@ You can use the following arguments:
 --help shows this message;
 --binaries or -b: the binaries that you want to be downloaded and installed during the setup, provided in a row without any separators;
 	possible options: 'polkadot', 'polkadot-parachain'
-	example: node dist/setup.js -b polkadot polkadot-parachain
+	example: node dist/cli.js setup polkadot polkadot-parachain
 </code></pre>
 <p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
 <p>e.g.</p>
-<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/zombienet/dist:$PATH
+<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/current_directory:$PATH
 </code></pre>
 <h3 id="using-zombienet"><a class="header" href="#using-zombienet">Using Zombienet</a></h3>
 <p>Then <code>zombienet</code> cli is ready to run:</p>
