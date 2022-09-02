@@ -437,10 +437,10 @@ async function getCollatorNodeFromConfig(
     networkSpec.settings.provider !== "native"
       ? DEFAULT_PORTS
       : {
-          p2pPort: await getRandomPort(),
-          wsPort: await getRandomPort(),
-          rpcPort: await getRandomPort(),
-          prometheusPort: await getRandomPort(),
+          p2pPort: collatorConfig.p2p_port || await getRandomPort(),
+          wsPort: collatorConfig.ws_port || await getRandomPort(),
+          rpcPort: collatorConfig.rpc_port || await getRandomPort(),
+          prometheusPort: collatorConfig.prometheus_port || await getRandomPort(),
         };
 
   const node: Node = {
@@ -516,10 +516,10 @@ async function getNodeFromConfig(
     networkSpec.settings.provider !== "native"
       ? DEFAULT_PORTS
       : {
-          p2pPort: await getRandomPort(),
-          wsPort: await getRandomPort(),
-          rpcPort: await getRandomPort(),
-          prometheusPort: await getRandomPort(),
+          p2pPort: node.p2p_port || await getRandomPort(),
+          wsPort: node.ws_port || await getRandomPort(),
+          rpcPort: node.rpc_port || await getRandomPort(),
+          prometheusPort: node.prometheus_port || await getRandomPort(),
         };
 
   // build node Setup
