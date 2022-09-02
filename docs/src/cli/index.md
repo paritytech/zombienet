@@ -1,6 +1,6 @@
 # Cli usage
 
-*For this example we will use the `macos` version of the executable*
+_For this example we will use the `macos` version of the executable_
 
 ```bash
 ./zombienet-macos
@@ -13,9 +13,10 @@ Options:
   -h, --help                             display help for command
 
 Commands:
-  spawn <networkConfig> [creds]  Spawn the network defined in the config
-  test <testFile>                Run tests on the network defined
-  version                        Prints zombienet version
-  help [command]                 display help for command
-```
+  spawn <networkConfig> [creds]          Spawn the network defined in the config
+  test <testFile> [runningNetworkSpec]   Run tests on the network defined
+  setup <binaries...>                    Setup is meant for downloading and making dev environment of ZombieNet ready
+  version                                Prints zombienet version
+  help [command]                         display help for command
 
+```

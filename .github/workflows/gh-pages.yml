@@ -3,14 +3,16 @@ name: Deploy on gh-pages
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
-
+permissions:
+  contents: write
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Install
+        run: npm install
 
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v1
@@ -19,9 +21,7 @@ jobs:
 
       - run: mdbook build docs
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: github.event.pull_request.merged
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GH_PAGES_TOKEN }}
-          publish_dir: .
+          folder: docs/book
