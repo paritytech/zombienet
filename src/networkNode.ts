@@ -358,6 +358,7 @@ export class NetworkNode implements NetworkNodeInterface {
   ): Promise<boolean> {
     try {
       const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      if(!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
       let logs = await client.getNodeLogs(this.name, undefined, true);
       const getValue = async () => {
