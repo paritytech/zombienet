@@ -604,50 +604,7 @@ export async function start(
           ],
         ]);
         logTable.print();
-        // console.log("logCommand => ", logCommand);
       }
-      // let msg = `\t${decorators.green(node.name)} running`;
-      // if (node.overrides && node.overrides.length > 0) {
-      //   msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
-      //   for (const override of node.overrides) {
-      //     msg += `\t\t local_path: ${override.local_path}\n`;
-      //     msg += `\t\t remote name: ${override.remote_name}`;
-      //   }
-      // }
-
-      // console.log(msg);
-      // if (monitorIsAvailable) {
-      //   const loki_url = getLokiUrl(
-      //     namespace,
-      //     podDef.metadata.name,
-      //     network.networkStartTime!,
-      //   );
-      //   console.log(`\t${decorators.green("Grafana logs url:")}`);
-      //   console.log(`\t\t${decorators.magenta(loki_url)}`);
-      // } else {
-      //   console.log(
-      //     `\n\t\t ${decorators.magenta(
-      //       "You can follow the logs of the node by running this command: ",
-      //     )}`,
-      //   );
-      //   switch (networkSpec.settings.provider) {
-      //     case "podman":
-      //       console.log(
-      //         `\n\t\t\t podman logs -f ${podDef.metadata.name}_pod-${podDef.metadata.name}`,
-      //       );
-      //       break;
-      //     case "kubernetes":
-      //       console.log(
-      //         `\n\t\t\t kubectl logs -f ${podDef.metadata.name} -c ${podDef.metadata.name} -n ${namespace}`,
-      //       );
-      //       break;
-      //     case "native":
-      //       console.log(
-      //         `\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`,
-      //       );
-      //       break;
-      //   }
-      // }
     };
 
     const firstNode = networkSpec.relaychain.nodes.shift();
