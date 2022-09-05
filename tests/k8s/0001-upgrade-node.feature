@@ -1,4 +1,4 @@
-Description: Check that paritydb works without affecting finality lag and block production.
+Description: Upgrade node
 Network: ./0001-upgrade-node.toml
 Creds: config
 

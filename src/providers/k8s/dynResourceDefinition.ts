@@ -110,15 +110,17 @@ function make_transfer_containter(): any {
     command: [
       "ash",
       "-c",
-      [ "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
-      "&&",
-      "echo downloaded",
-      "&&",
-      "chmod +x /cfg/curl",
-      "&&",
-      "echo chmoded",
-      "&&",
-      `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`].join(" ")
+      [
+        "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
+        "&&",
+        "echo downloaded",
+        "&&",
+        "chmod +x /cfg/curl",
+        "&&",
+        "echo chmoded",
+        "&&",
+        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
+      ].join(" "),
     ],
   };
 }
