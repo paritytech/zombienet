@@ -23,10 +23,8 @@ import {
   DEFAULT_IMAGE,
   DEFAULT_PORTS,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
-  DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  RPC_WS_PORT,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
@@ -556,21 +554,23 @@ function sanitizeArgs(args: string[]): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
 
   let removeNext = false;
-  const separatorIndex =  args.indexOf("--");
-  const filteredArgs = args.slice(0, separatorIndex >= 0 ? separatorIndex : args.length).filter((arg) => {
-    if (removeNext) {
-      removeNext = false;
-      return false;
-    }
+  const separatorIndex = args.indexOf("--");
+  const filteredArgs = args
+    .slice(0, separatorIndex >= 0 ? separatorIndex : args.length)
+    .filter((arg) => {
+      if (removeNext) {
+        removeNext = false;
+        return false;
+      }
 
-    const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "");
-    if (ARGS_TO_REMOVE[argParsed]) {
-      if (ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
-      return false;
-    } else {
-      return true;
-    }
-  });
+      const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "");
+      if (ARGS_TO_REMOVE[argParsed]) {
+        if (ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
+        return false;
+      } else {
+        return true;
+      }
+    });
 
   return filteredArgs;
 }
