@@ -26,3 +26,30 @@ e.g.
 ```bash
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/current_directory:$PATH
 ```
+
+Command example:
+
+```bash
+➜ zombienet setup polkadot polkadot-parachain
+```
+
+Output example:
+
+```bash
+Setup will start to download binaries:
+- polkadot 	 Approx. size  113  MB
+- polkadot-parachain 	 Approx. size  120  MB
+Total approx. size:  233 MB
+Do you want to continue? (y/n)y
+
+Start download...
+
+-> downloading [========================================] 100% 0.0s
+Binary "polkadot-parachain" downloaded
+Giving permissions to "polkadot-parachain"
+-> downloading [========================================] 100% 0.0s
+Binary "polkadot" downloaded
+Giving permissions to "polkadot"
+Please add the dir to your $PATH by running the command:
+ export PATH=/home/<username>/zombienet/dist:$PATH
+```
