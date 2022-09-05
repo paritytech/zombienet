@@ -8,7 +8,7 @@ import { Environment } from "nunjucks";
 export function writeLocalJsonFile(
   path: string,
   fileName: string,
-  content: any
+  content: any,
 ) {
   fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
@@ -54,8 +54,8 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
   const configBasePath = path.dirname(filepath);
   const env = new Environment(new RelativeLoader([configBasePath]));
 
-  env.addFilter('zombie', function(nodeName){
-    return `{{ZOMBIE:${nodeName}}}`;
+  env.addFilter("zombie", function (nodeName, key) {
+    return `{{ZOMBIE:${nodeName}:${key}}}`;
   });
 
   const temmplateContent = fs.readFileSync(filepath).toString();

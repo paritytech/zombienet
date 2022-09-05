@@ -8,7 +8,7 @@
 
 
         <!-- Custom HTML head -->
-
+        
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -584,6 +584,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>bootnode</code>: (Boolean, default true) add bootnode to network.</li>
 <li><code>timeout</code>: (number) global timeout to use for spawning the whole network.</li>
 <li><code>provider</code>: (String, default <code>kubernetes</code>) Provider to use (e.g kubernetes, podman).</li>
+<li><code>backchannel</code>: (Boolean, default false) Deploy an instance of backchannel server. <strong>Only</strong> available on <code>kubernetes</code>.</li>
 <li><code>polkadot_introspector</code>: (Boolean, default false) Deploy an instance of <a href="https://github.com/paritytech/polkadot-introspector">polkadot-introspector</a>, <strong>only</strong> available on <code>podman</code> and <code>kubernetes</code>.</li>
 <li><code>jaeger_agent</code>: (String) The jaeger agent endpoint passed to the <em>nodes</em>, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>enable_tracing</code>: (Boolean, default true) Enable the tracing system, <strong>only</strong> available on  <code>kubernetes</code>.</li>
@@ -591,6 +592,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>tracing_collator_service_name</code>: (String, default <code>tempo-tempo-distributed-query-frontend</code>) service name for tempo query frontend, <strong>only</strong> available on  <code>kubernetes</code>.</li>
 <li><code>tracing_collator_service_namespace</code>: (String, default <code>tempo</code>) namespace where tempo is running, <strong>only</strong> available on  <code>kubernetes</code>.</li>
 <li><code>tracing_collator_service_port</code>: (Number, default <code>3100</code>) port of the query instance of tempo, <strong>only</strong> available on  <code>kubernetes</code>.</li>
+<li><code>node_spawn_timeout</code>: (Number, default per provider) timeout to spawn pod/process.</li>
 </ul>
 <h2 id="relaychain"><a class="header" href="#relaychain"><code>relaychain</code></a></h2>
 <ul>
@@ -625,6 +627,9 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>overrides</code>: Array of <code>overrides</code> definitions.</li>
 <li><code>add_to_bootnodes</code>: (Boolean, default false) Add this node to the bootnode list.</li>
 <li><code>resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the node.</li>
+<li><code>ws_port</code>: (number), WS port to use.;</li>
+<li><code>rpc_port</code>: (number) RPC port to use;</li>
+<li><code>prometheus_port</code>: (number) Prometheus port to use;</li>
 </ul>
 </li>
 <li><code>node_groups</code>:
@@ -844,7 +849,7 @@ Will sleep the test-runner for <code>x</code> ammount of seconds.</li>
 </li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="development"><a class="header" href="#development">Development</a></h1>
-<h2 id="requerimients"><a class="header" href="#requerimients">Requerimients</a></h2>
+<h2 id="requirements"><a class="header" href="#requirements">Requirements</a></h2>
 <ul>
 <li><a href="https://nodejs.org/">Node.js</a></li>
 <li>kubernetes cluster to use as target
@@ -860,6 +865,24 @@ Will sleep the test-runner for <code>x</code> ammount of seconds.</li>
 npm install
 npm run build
 </code></pre>
+<h3 id="download-and-install-needed-artifacts-optional"><a class="header" href="#download-and-install-needed-artifacts-optional">Download and install needed artifacts (Optional)</a></h3>
+<p>For easier and faster setup of local environment, upi can run:</p>
+<pre><code class="language-bash">❯ node dist/setup.js
+
+Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
+
+You can use the following arguments:
+
+--help shows this message;
+--binaries or -b: the binaries that you want to be downloaded and installed during the setup, provided in a row without any separators;
+	possible options: 'polkadot', 'polkadot-parachain'
+	example: node dist/setup.js -b polkadot polkadot-parachain
+</code></pre>
+<p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
+<p>e.g.</p>
+<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/zombienet/dist:$PATH
+</code></pre>
+<h3 id="using-zombienet"><a class="header" href="#using-zombienet">Using Zombienet</a></h3>
 <p>Then <code>zombienet</code> cli is ready to run:</p>
 <pre><code class="language-bash">❯ node dist/cli.js
 Usage: zombienet [options] [command]

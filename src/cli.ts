@@ -8,14 +8,137 @@ import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
-import { AVAILABLE_PROVIDERS, DEFAULT_GLOBAL_TIMEOUT } from "./constants";
+import axios from "axios";
+import progress from "progress";
+import path from "path";
+import readline from "readline";
+import {
+  AVAILABLE_PROVIDERS,
+  DEFAULT_GLOBAL_TIMEOUT,
+  DEFAULT_PROVIDER,
+} from "./constants";
+const DEFAULT_CUMULUS_COLLATOR_URL =
+  "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
+// const DEFAULT_ADDER_COLLATOR_URL =
+//   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
+
+interface OptIf {
+  [key: string]: { name: string; url?: string; size?: string };
+}
+
+const options: OptIf = {
+  "polkadot-parachain": {
+    name: "polkadot-parachain",
+    url: DEFAULT_CUMULUS_COLLATOR_URL,
+    size: "120",
+  },
+  // // Deactivate for now
+  // adderCollator: {
+  //   name: "adderCollator",
+  //   url: DEFAULT_ADDER_COLLATOR_URL,
+  //   size: "950",
+  // },
+};
 
 const debug = require("debug")("zombie-cli");
 
 const program = new Command("zombienet");
 
 let network: Network;
+
+const dec = (color: string, msg: string): string => decorators[color](msg);
+
+const askQuestion = async (query: string): Promise<string> => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) =>
+    rl.question(query, (ans) => {
+      rl.close();
+      resolve(ans);
+    }),
+  );
+};
+
+// Download the binaries
+const downloadBinaries = async (binaries: string[]): Promise<void> => {
+  console.log(`${dec("yellow", "\nStart download...\n")}`);
+  const promises = [];
+  let count = 0;
+  for (let binary of binaries) {
+    promises.push(
+      new Promise<void>(async (resolve) => {
+        const { url, name } = options[binary];
+        const { data, headers } = await axios({
+          url,
+          method: "GET",
+          responseType: "stream",
+        });
+        const totalLength = headers["content-length"];
+
+        const progressBar = new progress(
+          "-> downloading [:bar] :percent :etas",
+          {
+            width: 40,
+            complete: "=",
+            incomplete: " ",
+            renderThrottle: 1,
+            total: parseInt(totalLength),
+          },
+        );
+
+        const writer = fs.createWriteStream(path.resolve(__dirname, name));
+
+        data.on("data", (chunk: any) => progressBar.tick(chunk.length));
+        data.pipe(writer);
+        data.on("end", () => {
+          console.log(dec("yellow", `Binary "${name}" downloaded`));
+          // Add permissions to the binary
+          console.log(dec("cyan", `Giving permissions to "${name}"`));
+          fs.chmodSync(path.resolve(__dirname, name), 0o755);
+          resolve();
+        });
+      }),
+    );
+  }
+  await Promise.all(promises);
+  console.log(
+    dec("cyan", `Please add the dir to your $PATH by running the command:`),
+    "\n",
+    dec("blue", `export PATH=${__dirname}:$PATH`),
+  );
+};
+
+const convertBytes = (bytes: number) =>
+  (
+    bytes / Math.pow(1024, Math.floor(Math.log(bytes) / Math.log(1024)))
+  ).toFixed(0);
+
+const latestPolkadotReleaseURL = async (
+  repo: string,
+  name: string,
+): Promise<[string, string]> => {
+  try {
+    const res = await axios.get(
+      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
+    );
+    const obj = res.data.assets.filter((a: any) => a.name === name);
+    return [
+      `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`,
+      convertBytes(obj[0].size),
+    ];
+  } catch (err: any) {
+    if (err.code === "ENOTFOUND") {
+      throw new Error("Network error.");
+    } else if (err.response && err.response.status === 404) {
+      throw new Error("Could not find a release.");
+    }
+    throw new Error(err);
+  }
+};
 
 // Ensure to log the uncaught exceptions
 // to debug the problem, also exit because we don't know
@@ -40,8 +163,7 @@ process.on("unhandledRejection", async (err) => {
     await network.stop();
   }
   debug(err);
-  console.log(`unhandledRejection`);
-  console.log(err);
+  console.log(`UnhandledRejection: ${err}`);
   process.exit(1001);
 });
 
@@ -76,16 +198,19 @@ program
   .addOption(
     new Option(
       "-c, --spawn-concurrency <concurrency>",
-      "Number of concurrent spawning process to launch, default is 1"
-    )
+      "Number of concurrent spawning process to launch, default is 1",
+    ),
   )
   .addOption(
-    new Option("-p, --provider <provider>", "Override provider to use")
-      .choices(["podman", "kubernetes", "native"])
-      .default("kubernetes", "kubernetes")
+    new Option("-p, --provider <provider>", "Override provider to use").choices(
+      ["podman", "kubernetes", "native"],
+    ),
   )
   .addOption(
-    new Option("-m, --monitor", "Start as monitor, do not auto cleanup network")
+    new Option(
+      "-m, --monitor",
+      "Start as monitor, do not auto cleanup network",
+    ),
   );
 
 program
@@ -99,8 +224,25 @@ program
   .command("test")
   .description("Run tests on the network defined")
   .argument("<testFile>", "Feature file describing the tests")
-  .argument("[runningNetworkSpec]", "Path to the network spec json, for using a running network for running the test")
+  .argument(
+    "[runningNetworkSpec]",
+    "Path to the network spec json, for using a running network for running the test",
+  )
   .action(test);
+
+program
+  .command("setup")
+  .description(
+    "Setup is meant for downloading and making dev environment of ZombieNet ready",
+  )
+  .argument(
+    "<binaries...>",
+    `the binaries that you want to be downloaded, provided in a row without any separators;\nThey are downloaded in current directory and appropriate executable permissions are assigned.\nPossible options: 'polkadot', 'polkadot-parachain'\n${dec(
+      "blue",
+      "zombienet setup polkadot polkadot-parachain",
+    )}`,
+  )
+  .action(setup);
 
 program
   .command("version")
@@ -115,7 +257,7 @@ program
 async function spawn(
   configFile: string,
   credsFile: string | undefined,
-  _opts: any
+  _opts: any,
 ) {
   const opts = program.opts();
   const monitor = opts.monitor || false;
@@ -129,22 +271,30 @@ async function spawn(
   const filePath = resolve(configFile);
   const config: LaunchConfig = readNetworkConfig(filePath);
 
+  // set default provider and timeout if not provided
+  if (!config.settings) {
+    config.settings = {
+      provider: DEFAULT_PROVIDER,
+      timeout: DEFAULT_GLOBAL_TIMEOUT,
+    };
+  } else {
+    if (!config.settings.provider) config.settings.provider = DEFAULT_PROVIDER;
+    if (!config.settings.timeout)
+      config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
+  }
+
   // if a provider is passed, let just use it.
   if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
-    if (!config.settings) {
-      config.settings = {
-        provider: opts.provider,
-        timeout: DEFAULT_GLOBAL_TIMEOUT,
-      };
-    } else {
-      config.settings.provider = opts.provider;
-    }
+    config.settings.provider = opts.provider;
   }
 
   let creds = "";
   if (config.settings?.provider === "kubernetes") {
     creds = getCredsFilePath(credsFile || "config") || "";
     if (!creds) {
+      console.log(
+        `Running ${config.settings?.provider || DEFAULT_PROVIDER} provider:`,
+      );
       console.error("  ⚠ I can't find the Creds file: ", credsFile);
       process.exit();
     }
@@ -156,7 +306,11 @@ async function spawn(
 }
 
 // test
-async function test(testFile: string, runningNetworkSpec: string|undefined, _opts: any) {
+async function test(
+  testFile: string,
+  runningNetworkSpec: string | undefined,
+  _opts: any,
+) {
   const opts = program.opts();
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
@@ -165,7 +319,46 @@ async function test(testFile: string, runningNetworkSpec: string|undefined, _opt
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
-  await run(testFile, providerToUse, inCI, opts.spawnConcurrency, runningNetworkSpec);
+  await run(
+    testFile,
+    providerToUse,
+    inCI,
+    opts.spawnConcurrency,
+    runningNetworkSpec,
+  );
+}
+
+async function setup(params: any) {
+  await new Promise<void>((resolve) => {
+    latestPolkadotReleaseURL("polkadot", "polkadot").then(
+      (res: [string, string]) => {
+        options.polkadot = {
+          name: "polkadot",
+          url: res[0],
+          size: res[1],
+        };
+        resolve();
+      },
+    );
+  });
+  let count = 0;
+  console.log("Setup will start to download binaries:");
+  params.forEach((a: any) => {
+    const size = parseInt(options[a]?.size || "0", 10);
+    count += size;
+    console.log("-", a, "\t Approx. size ", size, " MB");
+  });
+  console.log("Total approx. size: ", count, "MB");
+  const response = await askQuestion("Do you want to continue? (y/n)");
+  if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
+    console.log("Invalid input. Exiting...");
+    return;
+  }
+  if (response.toLowerCase() === "n") {
+    return;
+  }
+  downloadBinaries(params);
+  return;
 }
 
 program.parse(process.argv);

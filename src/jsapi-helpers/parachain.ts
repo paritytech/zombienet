@@ -6,7 +6,7 @@ const debug = require("debug")("zombie::js-helpers::parachain");
 
 export async function paraGetBlockHeight(
   api: ApiPromise,
-  paraId: number
+  paraId: number,
 ): Promise<number> {
   const optHeadData = await api.query.paras.heads<Option<HeadData>>(paraId);
 
@@ -25,7 +25,7 @@ export async function paraGetBlockHeight(
 
 export async function paraIsRegistered(
   api: ApiPromise,
-  paraId: number
+  paraId: number,
 ): Promise<boolean> {
   const parachains = (await api.query.paras.parachains<Vec<ParaId>>()) || [];
   debug(`parachains : ${JSON.stringify(parachains)}`);

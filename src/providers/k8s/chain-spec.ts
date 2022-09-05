@@ -15,7 +15,7 @@ export async function setupChainSpec(
   namespace: string,
   chaninConfig: any,
   chainName: string,
-  chainFullPath: string
+  chainFullPath: string,
 ): Promise<any> {
   // We have two options to get the chain-spec file, neither should use the `raw` file/argument
   // 1: User provide the chainSpecCommand (without the --raw option)
@@ -29,11 +29,11 @@ export async function setupChainSpec(
       DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
 
     const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
-    const node = createTempNodeDef(
+    const node = await createTempNodeDef(
       "temp",
       defaultImage,
       chainName,
-      fullCommand
+      fullCommand,
     );
 
     const podDef = await genNodeDef(namespace, node);
@@ -45,7 +45,7 @@ export async function setupChainSpec(
       podName,
       plainChainSpecOutputFilePath,
       chainFullPath,
-      podName
+      podName,
     );
 
     await client.putLocalMagicFile(podName, podName);
@@ -61,7 +61,7 @@ export async function getChainSpecRaw(
   image: string,
   chainName: string,
   chainCommand: string,
-  chainFullPath: string
+  chainFullPath: string,
 ): Promise<any> {
   const client = getClient();
   const plainPath = chainFullPath.replace(".json", "-plain.json");
@@ -76,11 +76,11 @@ export async function getChainSpecRaw(
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
   const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
     /{{chainName}}/gi,
-    remoteChainSpecFullPath
+    remoteChainSpecFullPath,
   ).replace("{{DEFAULT_COMMAND}}", chainCommand);
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
-  const node = createTempNodeDef("temp", image, chainName, fullCommand);
+  const node = await createTempNodeDef("temp", image, chainName, fullCommand);
 
   const podDef = await genNodeDef(namespace, node);
   const podName = podDef.metadata.name;
@@ -97,7 +97,7 @@ export async function getChainSpecRaw(
     podName,
     remoteChainSpecRawFullPath,
     chainFullPath,
-    podName
+    podName,
   );
 
   // let's just wait 2 secs before download

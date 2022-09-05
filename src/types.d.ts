@@ -2,7 +2,7 @@
 // mapped from the json/toml to compute the
 // network config to spawn.
 export interface LaunchConfig {
-  config: { provider: string; };
+  config: { provider: string };
   settings: Settings;
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
@@ -24,11 +24,12 @@ export interface Settings {
   tracing_collator_url?: string; // collator query url
   tracing_collator_service_name?: string; // only used by k8s provider and if not set the `url`
   tracing_collator_service_namespace?: string; // only used by k8s provider and if not set the `url`
-  tracing_collator_service_port?: number // only used by k8s provider and if not set the `url`
+  tracing_collator_service_port?: number; // only used by k8s provider and if not set the `url`
   enable_tracing?: boolean;
   provider: string;
   polkadot_introspector?: boolean;
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
+  image_pull_policy?: "IfNotPresent" | "Never" | "Always";
 }
 
 export interface RelayChainConfig {
@@ -61,6 +62,7 @@ export interface NodeConfig {
   ws_port?: number;
   rpc_port?: number;
   prometheus_port?: number;
+  p2p_port?: number;
 }
 
 export interface NodeGroupConfig {
@@ -147,9 +149,11 @@ export interface Node {
   resources?: Resources;
   parachainId?: number;
   jaegerUrl?: string;
-  wsPort?: number;
-  rpcPort?: number;
-  prometheusPort?: number;
+  wsPort: number;
+  rpcPort: number;
+  prometheusPort: number;
+  p2pPort: number;
+  imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
 }
 
 export interface Collator {
@@ -179,7 +183,7 @@ export interface Parachain {
   specPath?: string;
   balance?: number;
   collators: Node[];
-  genesis?: JSON | ObjectJSON
+  genesis?: JSON | ObjectJSON;
 }
 
 export interface envVars {

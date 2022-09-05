@@ -17,6 +17,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `tracing_collator_service_name`: (String, default `tempo-tempo-distributed-query-frontend`) service name for tempo query frontend, **only** available on  `kubernetes`.
 - `tracing_collator_service_namespace`: (String, default `tempo`) namespace where tempo is running, **only** available on  `kubernetes`.
 - `tracing_collator_service_port`: (Number, default `3100`) port of the query instance of tempo, **only** available on  `kubernetes`.
+- `node_spawn_timeout`: (Number, default per provider) timeout to spawn pod/process.
 
 
 ## `relaychain`

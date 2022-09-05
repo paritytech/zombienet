@@ -7,21 +7,21 @@ import {
   DEFAULT_COMMAND,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
+import { Node } from "../../types";
 import { getRandomPort } from "../../utils/net-utils";
 import { getClient } from "../client";
+import { Network } from "../../network";
 
 const fs = require("fs").promises;
 
 export async function genBootnodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
-  const {rpcPort, wsPort, prometheusPort} = nodeSetup;
-  const ports = await getPorts(rpcPort, wsPort, prometheusPort);
-  const portFlags = getPortFlags(ports);
+  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
+  const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
@@ -29,7 +29,7 @@ export async function genBootnodeDef(
   const dataPath = `${client.tmpDir}/${name}/data`;
   await fs.mkdir(dataPath, { recursive: true });
 
-  const command = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
+  const command = await genCmd(nodeSetup, cfgPath, dataPath, false);
 
   return {
     metadata: {
@@ -53,14 +53,12 @@ export async function genBootnodeDef(
 
 export async function genNodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
   const name = nodeSetup.name;
-  const {rpcPort, wsPort, prometheusPort} = nodeSetup;
-  const ports = await getPorts(rpcPort, wsPort, prometheusPort);
-  const portFlags = getPortFlags(ports);
-
+  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
+  const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   await fs.mkdir(cfgPath, { recursive: true });
 
@@ -68,11 +66,15 @@ export async function genNodeDef(
   await fs.mkdir(dataPath, { recursive: true });
 
   let computedCommand;
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
-  if( nodeSetup.zombieRole === "cumulus-collator" ) {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup, cfgPath, dataPath, false, portFlags);
+  if (nodeSetup.zombieRole === "cumulus-collator") {
+    computedCommand = await genCumulusCollatorCmd(
+      nodeSetup,
+      cfgPath,
+      dataPath,
+      false,
+    );
   } else {
-    computedCommand = await genCmd(nodeSetup, cfgPath, dataPath, false, portFlags);
+    computedCommand = await genCmd(nodeSetup, cfgPath, dataPath, false);
   }
 
   return {
@@ -100,67 +102,60 @@ export async function genNodeDef(
   };
 }
 
-async function getPorts(rpc?: number, ws?:number, prometheus?:number) {
+async function getPorts(
+  rpc?: number,
+  ws?: number,
+  prometheus?: number,
+  p2p?: number,
+) {
   const ports = [
     {
       containerPort: PROMETHEUS_PORT,
       name: "prometheus",
       flag: "--prometheus-port",
-      hostPort: prometheus || await getRandomPort(),
+      hostPort: prometheus || (await getRandomPort()),
     },
     {
       containerPort: RPC_HTTP_PORT,
       name: "rpc",
       flag: "--rpc-port",
-      hostPort: rpc || await getRandomPort(),
+      hostPort: rpc || (await getRandomPort()),
     },
     {
       containerPort: RPC_WS_PORT,
       name: "ws",
       flag: "--ws-port",
-      hostPort: ws || await getRandomPort(),
+      hostPort: ws || (await getRandomPort()),
     },
     {
       containerPort: P2P_PORT,
       name: "p2p",
       flag: "--port",
-      hostPort: await getRandomPort(),
+      hostPort: p2p || (await getRandomPort()),
     },
   ];
 
   return ports;
 }
 
-export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed
-  if(Array.isArray(podDef.spec.command)) {
-    const finalCommand = podDef.spec.command.map((item: string) => {
-      return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
-        return multiAddressByNode[nodeName];
-      });
-    });
+  if (Array.isArray(podDef.spec.command)) {
+    const finalCommand = podDef.spec.command.map((item: string) =>
+      network.replaceWithNetworInfo(item),
+    );
     podDef.spec.command = finalCommand;
   } else {
     // string
-    podDef.spec.command = podDef.spec.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
-        return multiAddressByNode[nodeName];
-      });
+    podDef.spec.command = network.replaceWithNetworInfo(podDef.spec.command);
   }
 }
 
-function getPortFlags(ports: any): { [flag: string]: number } {
-  const portFlags = ports.reduce((memo: any, portItem: any) => {
-    memo[portItem.flag] = portItem.hostPort;
-    return memo;
-  }, {});
-  return portFlags;
-}
-
-export function createTempNodeDef(
+export async function createTempNodeDef(
   name: string,
   image: string,
   chain: string,
-  fullCommand: string
+  fullCommand: string,
 ) {
   let node: Node = {
     name: getUniqueName("temp"),
@@ -174,6 +169,10 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
+    p2pPort: await getRandomPort(),
+    wsPort: await getRandomPort(),
+    rpcPort: await getRandomPort(),
+    prometheusPort: await getRandomPort(),
   };
 
   return node;

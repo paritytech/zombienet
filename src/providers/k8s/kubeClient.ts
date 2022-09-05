@@ -1,5 +1,5 @@
 import execa from "execa";
-import { resolve } from "path";
+import path, { resolve } from "path";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
@@ -14,6 +14,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
+import { CreateLogTable } from "../../utils/logger";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -24,7 +25,7 @@ export interface ReplaceMapping {
 export function initClient(
   configPath: string,
   namespace: string,
-  tmpDir: string
+  tmpDir: string,
 ): KubeClient {
   const client = new KubeClient(configPath, namespace, tmpDir);
   setClient(client);
@@ -86,20 +87,29 @@ export class KubeClient extends Client {
     podDef: any,
     filesToCopy: fileMap[] = [],
     keystore: string,
-    chainSpecId: string
+    chainSpecId: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
-    console.log(
-      `\n\tlaunching ${decorators.green(
-        podDef.metadata.name
-      )} pod with image ${decorators.green(podDef.spec.containers[0].image)}`
-    );
-    console.log(
-      `\t\t with command: ${decorators.magenta(
-        podDef.spec.containers[0].command.join(" ")
-      )}`
-    );
+
+    const logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+
+    logTable.pushTo([
+      [
+        `${decorators.cyan("Launching")}`,
+        `${decorators.green(podDef.metadata.name)}`,
+      ],
+      [
+        `${decorators.cyan("Image")}`,
+        `${decorators.green(podDef.spec.containers[0].image)}`,
+      ],
+      [
+        `${decorators.cyan("Command")}`,
+        `${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`,
+      ],
+    ]);
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
@@ -118,7 +128,7 @@ export class KubeClient extends Client {
           `/data/chains/${chainSpecId}/keystore`,
         ],
         undefined,
-        true
+        true,
       );
 
       // inject keys
@@ -127,7 +137,7 @@ export class KubeClient extends Client {
         keystore,
         `/data/chains/${chainSpecId}`,
         TRANSFER_CONTAINER_NAME,
-        true
+        true,
       );
     }
 
@@ -138,13 +148,16 @@ export class KubeClient extends Client {
         localFilePath,
         remoteFilePath,
         TRANSFER_CONTAINER_NAME,
-        unique
+        unique,
       );
     }
 
     await this.putLocalMagicFile(name);
     await this.wait_pod_ready(name);
-    console.log(`\t\t${decorators.green(name)} pod is ready!`);
+    logTable.pushTo([
+      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+    ]);
+    logTable.print();
   }
 
   async putLocalMagicFile(name: string, container?: string) {
@@ -165,12 +178,12 @@ export class KubeClient extends Client {
   async createResource(
     resourseDef: any,
     scoped: boolean = false,
-    waitReady: boolean = false
+    waitReady: boolean = false,
   ): Promise<void> {
     await this.runCommand(
       ["apply", "-f", "-"],
       JSON.stringify(resourseDef),
-      scoped
+      scoped,
     );
 
     debug(resourseDef);
@@ -233,14 +246,14 @@ export class KubeClient extends Client {
     } while (t > 0);
 
     throw new Error(
-      `Timeout(${this.timeout}) for transfer container for pod : ${podName}`
+      `Timeout(${this.timeout}) for transfer container for pod : ${podName}`,
     );
   }
 
   async createStaticResource(
     filename: string,
     scopeNamespace?: string,
-    replacements?: {[properyName: string]: string}
+    replacements?: { [properyName: string]: string },
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
@@ -248,16 +261,19 @@ export class KubeClient extends Client {
       .toString("utf-8")
       .replace(new RegExp("{{namespace}}", "g"), this.namespace);
 
-    if(replacements) {
-      for(const replacementKey of Object.keys(replacements)) {
-        resourceDef = resourceDef.replace(new RegExp(`{{${replacementKey}}}`, "g"), replacements[replacementKey]);
+    if (replacements) {
+      for (const replacementKey of Object.keys(replacements)) {
+        resourceDef = resourceDef.replace(
+          new RegExp(`{{${replacementKey}}}`, "g"),
+          replacements[replacementKey],
+        );
       }
     }
 
     if (scopeNamespace) {
       await this.runCommand(
         ["-n", scopeNamespace, "apply", "-f", "-"],
-        resourceDef
+        resourceDef,
       );
     } else {
       await this.runCommand(["apply", "-f", "-"], resourceDef);
@@ -279,14 +295,14 @@ export class KubeClient extends Client {
     await this.runCommand(
       ["-n", "monitoring", "apply", "-f", "-"],
       resourceDef,
-      false
+      false,
     );
     // await this.kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
   async updateResource(
     filename: string,
-    replacements: ReplaceMapping = {}
+    replacements: ReplaceMapping = {},
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
     const fileContent = await fs.readFile(filePath);
@@ -297,7 +313,7 @@ export class KubeClient extends Client {
     for (const replaceKey of Object.keys(replacements)) {
       resourceDef = resourceDef.replace(
         new RegExp(`{{${replaceKey}}}`, "g"),
-        replacements[replaceKey]
+        replacements[replaceKey],
       );
     }
 
@@ -309,7 +325,7 @@ export class KubeClient extends Client {
     localFilePath: string,
     podFilePath: string,
     container: string | undefined = undefined,
-    unique: boolean = false
+    unique: boolean = false,
   ) {
     if (unique) {
       const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
@@ -323,7 +339,7 @@ export class KubeClient extends Client {
       const fileName = parts[parts.length - 1];
       if (!fileUploadCache[fileHash]) {
         console.log(
-          "uploading to fileserver: " + localFilePath + " as:" + fileHash
+          "uploading to fileserver: " + localFilePath + " as:" + fileHash,
         );
         const args = [
           "cp",
@@ -351,7 +367,7 @@ export class KubeClient extends Client {
       let result = await this.runCommand(
         [...args, ...extraArgs],
         undefined,
-        true
+        true,
       );
       debug(result);
 
@@ -367,7 +383,7 @@ export class KubeClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container: string | undefined = undefined
+    container: string | undefined = undefined,
   ) {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
     if (container) args.push("-c", container);
@@ -390,7 +406,7 @@ export class KubeClient extends Client {
     await this.runCommand(
       ["delete", "namespace", this.namespace],
       undefined,
-      false
+      false,
     );
   }
 
@@ -400,7 +416,10 @@ export class KubeClient extends Client {
     return result.stdout;
   }
 
-  async getNodeInfo(identifier: string, port?: number): Promise<[string, number]> {
+  async getNodeInfo(
+    identifier: string,
+    port?: number,
+  ): Promise<[string, number]> {
     const ip = await this.getNodeIP(identifier);
     return [ip, port ? port : P2P_PORT];
   }
@@ -429,22 +448,24 @@ export class KubeClient extends Client {
       {
         type: "deployment",
         files: [
-          settings.backchannel ? "backchannel-pod.yaml": null,
-          "fileserver-pod.yaml"
+          settings.backchannel ? "backchannel-pod.yaml" : null,
+          "fileserver-pod.yaml",
         ],
       },
     ];
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
-        if(file) await this.createStaticResource(file);
+        if (file) await this.createStaticResource(file);
       }
     }
+
+    // ensure baseline resources if we are running in CI
+    if (process.env.RUN_IN_CONTAINER === "1")
+      await this.createStaticResource("baseline-resources.yaml");
   }
 
-  async spawnBackchannel() {
-
-  }
+  async spawnBackchannel() {}
 
   async setupCleaner(): Promise<NodeJS.Timer> {
     this.podMonitorAvailable = await this.isPodMonitorAvailable();
@@ -455,7 +476,7 @@ export class KubeClient extends Client {
 
     let cronInterval = setInterval(
       async () => await this.upsertCronJob(),
-      8 * 60 * 1000
+      8 * 60 * 1000,
     );
     return cronInterval;
   }
@@ -464,7 +485,7 @@ export class KubeClient extends Client {
     if (this.podMonitorAvailable)
       await this.createStaticResource(
         "job-delete-podmonitor-role.yaml",
-        "monitoring"
+        "monitoring",
       );
     await this.createStaticResource("job-svc-account.yaml");
   }
@@ -501,9 +522,18 @@ export class KubeClient extends Client {
     return true;
   }
 
-  async startPortForwarding(port: number, identifier: string, namespace?: string): Promise<number> {
+  async startPortForwarding(
+    port: number,
+    identifier: string,
+    namespace?: string,
+  ): Promise<number> {
     let intents = 0;
-    const createTunnel = (remotePort: number, identifier: string, namespace?: string, localPort?: number) => {
+    const createTunnel = (
+      remotePort: number,
+      identifier: string,
+      namespace?: string,
+      localPort?: number,
+    ) => {
       const mapping = localPort ? `${localPort}:${port}` : `:${port}`;
       const args = [
         "port-forward",
@@ -517,10 +547,14 @@ export class KubeClient extends Client {
 
       const subprocess = spawn("kubectl", args);
       return subprocess;
-    }
+    };
 
     return new Promise((resolve, reject) => {
-      let subprocess: null| ChildProcessWithoutNullStreams = createTunnel(port, identifier, namespace);
+      let subprocess: null | ChildProcessWithoutNullStreams = createTunnel(
+        port,
+        identifier,
+        namespace,
+      );
 
       let resolved = false;
       let mappedPort: number;
@@ -531,7 +565,7 @@ export class KubeClient extends Client {
         debug("stdout: " + stdout);
         if (m && !resolved) {
           resolved = true;
-          mappedPort = parseInt(m[1],10)
+          mappedPort = parseInt(m[1], 10);
           return resolve(mappedPort);
         }
       });
@@ -545,10 +579,12 @@ export class KubeClient extends Client {
 
       subprocess.on("exit", function () {
         console.log("child process exited");
-        if(resolved && intents < 5 && process.env.terminating !== "1") {
+        if (resolved && intents < 5 && process.env.terminating !== "1") {
           intents++;
           subprocess = null;
-          console.log(`creating new port-fw for ${identifier}, with map ${mappedPort}:${port}`);
+          console.log(
+            `creating new port-fw for ${identifier}, with map ${mappedPort}:${port}`,
+          );
           createTunnel(port, identifier, namespace, mappedPort);
         }
       });
@@ -558,7 +594,7 @@ export class KubeClient extends Client {
   async getNodeLogs(
     podName: string,
     since: number | undefined = undefined,
-    withTimestamp = false
+    withTimestamp = false,
   ): Promise<string> {
     const args = ["logs"];
     if (since && since > 0) args.push(`--since=${since}s`);
@@ -579,7 +615,7 @@ export class KubeClient extends Client {
   async runCommand(
     args: string[],
     resourceDef?: string,
-    scoped: boolean = true
+    scoped: boolean = true,
   ): Promise<RunCommandResponse> {
     try {
       const augmentedCmd: string[] = ["--kubeconfig", this.configPath];
@@ -589,6 +625,48 @@ export class KubeClient extends Client {
       const result = await execa("kubectl", finalArgs, {
         input: resourceDef,
       });
+
+      return {
+        exitCode: result.exitCode,
+        stdout: result.stdout,
+      };
+    } catch (error) {
+      debug(error);
+      throw error;
+    }
+  }
+
+  async runScript(
+    identifier: string,
+    scriptPath: string,
+    args: string[] = [],
+  ): Promise<RunCommandResponse> {
+    try {
+      const scriptFileName = path.basename(scriptPath);
+      const scriptPathInPod = `/tmp/${scriptFileName}`;
+      // upload the script
+      await this.copyFileToPod(
+        identifier,
+        scriptPath,
+        scriptPathInPod,
+        undefined,
+        true,
+      );
+
+      // set as executable
+      const baseArgs = ["exec", `Pod/${identifier}`, "--"];
+      await this.runCommand(
+        [...baseArgs, "/bin/chmod", "+x", scriptPathInPod],
+        undefined,
+        true,
+      );
+
+      // exec
+      const result = await this.runCommand(
+        [...baseArgs, "bash", "-c", scriptPathInPod, ...args],
+        undefined,
+        true,
+      );
 
       return {
         exitCode: result.exitCode,
@@ -615,15 +693,13 @@ export class KubeClient extends Client {
   }
 
   async spawnIntrospector(wsUri: string) {
-    await this.createStaticResource(
-      "introspector-pod.yaml",
-      this.namespace,
-      {WS_URI: wsUri}
-    );
+    await this.createStaticResource("introspector-pod.yaml", this.namespace, {
+      WS_URI: wsUri,
+    });
 
     await this.createStaticResource(
       "introspector-service.yaml",
-      this.namespace
+      this.namespace,
     );
 
     await this.wait_pod_ready("introspector");

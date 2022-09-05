@@ -5,3 +5,4 @@ log.md
 
 # Cargo compiled files and executables
 **/target/
+bins

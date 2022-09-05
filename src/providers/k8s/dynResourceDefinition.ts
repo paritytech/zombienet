@@ -7,15 +7,16 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
   P2P_PORT,
-  DEFAULT_COMMAND,
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
-import { MultiAddressByNode, Node } from "../../types";
+import { Node } from "../../types";
 import { getSha256 } from "../../utils/misc-utils";
+import { Network } from "../../network";
+import { getRandomPort } from "../../utils/net-utils";
 
 export async function genBootnodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const [volume_mounts, devices] = make_volume_mounts();
   const container = await make_main_container(nodeSetup, volume_mounts);
@@ -49,19 +50,22 @@ export async function genBootnodeDef(
 
 export async function genNodeDef(
   namespace: string,
-  nodeSetup: Node
+  nodeSetup: Node,
 ): Promise<any> {
   const [volume_mounts, devices] = make_volume_mounts();
   const container = await make_main_container(nodeSetup, volume_mounts);
   const transferContainter = make_transfer_containter();
 
   const containersToRun = [container];
-  if((nodeSetup.zombieRole === "node" || nodeSetup.zombieRole === "cumulus-collator" ) &&
-      nodeSetup.jaegerUrl && nodeSetup.jaegerUrl === "localhost:6831") {
+  if (
+    (nodeSetup.zombieRole === "node" ||
+      nodeSetup.zombieRole === "cumulus-collator") &&
+    nodeSetup.jaegerUrl &&
+    nodeSetup.jaegerUrl === "localhost:6831"
+  ) {
     // add sidecar
     containersToRun.push(jaegerAgentDef());
   }
-
 
   return {
     apiVersion: "v1",
@@ -106,7 +110,17 @@ function make_transfer_containter(): any {
     command: [
       "ash",
       "-c",
-      `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
+      [
+        "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
+        "&&",
+        "echo downloaded",
+        "&&",
+        "chmod +x /cfg/curl",
+        "&&",
+        "echo chmoded",
+        "&&",
+        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
+      ].join(" "),
     ],
   };
 }
@@ -124,7 +138,7 @@ function make_volume_mounts(): [any, any] {
 
 async function make_main_container(
   nodeSetup: Node,
-  volume_mounts: any[]
+  volume_mounts: any[],
 ): Promise<any> {
   const ports = [
     { containerPort: PROMETHEUS_PORT, name: "prometheus" },
@@ -134,13 +148,11 @@ async function make_main_container(
   ];
 
   let computedCommand;
-  const launchCommand = nodeSetup.command || DEFAULT_COMMAND;
-  if( nodeSetup.zombieRole === "cumulus-collator" ) {
-    computedCommand = await genCumulusCollatorCmd(launchCommand, nodeSetup);
+  if (nodeSetup.zombieRole === "cumulus-collator") {
+    computedCommand = await genCumulusCollatorCmd(nodeSetup);
   } else {
     computedCommand = await genCmd(nodeSetup);
   }
-
 
   const containerDef: any = {
     image: nodeSetup.image,
@@ -157,71 +169,65 @@ async function make_main_container(
   return containerDef;
 }
 
-
 function jaegerAgentDef() {
   return {
-    "name": "jaeger-agent",
-    "image": "jaegertracing/jaeger-agent:1.28.0",
-    "ports": [
+    name: "jaeger-agent",
+    image: "jaegertracing/jaeger-agent:1.28.0",
+    ports: [
       {
-        "containerPort": 5775,
-        "protocol": "UDP"
+        containerPort: 5775,
+        protocol: "UDP",
       },
       {
-        "containerPort": 5778,
-        "protocol": "TCP"
+        containerPort: 5778,
+        protocol: "TCP",
       },
       {
-        "containerPort": 6831,
-        "protocol": "UDP"
+        containerPort: 6831,
+        protocol: "UDP",
       },
       {
-        "containerPort": 6832,
-        "protocol": "UDP"
-      }
+        containerPort: 6832,
+        protocol: "UDP",
+      },
     ],
-    "command": [
+    command: [
       "/go/bin/agent-linux",
       "--reporter.type=grpc",
-      "--reporter.grpc.host-port=tempo-tempo-distributed-distributor.tempo.svc.cluster.local:14250"
+      "--reporter.grpc.host-port=tempo-tempo-distributed-distributor.tempo.svc.cluster.local:14250",
     ],
-    "resources": {
-      "limits": {
-        "memory": "50M",
-        "cpu": "100m"
+    resources: {
+      limits: {
+        memory: "50M",
+        cpu: "100m",
       },
-      "requests": {
-        "memory": "50M",
-        "cpu": "100m"
-      }
-    }
-  }
+      requests: {
+        memory: "50M",
+        cpu: "100m",
+      },
+    },
+  };
 }
 
-export function replaceMultiAddresReferences(podDef: any, multiAddressByNode: MultiAddressByNode) {
+export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed in containers
-  for( const container of podDef.spec.containers) {
-    if(Array.isArray(container.command)){
-      const finalCommand = container.command.map((item: string) => {
-        return item.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring, nodeName) => {
-          return multiAddressByNode[nodeName];
-        });
-      });
+  for (const container of podDef.spec.containers) {
+    if (Array.isArray(container.command)) {
+      const finalCommand = container.command.map((item: string) =>
+        network.replaceWithNetworInfo(item),
+      );
       container.command = finalCommand;
     } else {
-      container.command = container.command.replace(/{{ZOMBIE:(.*?)?}}/ig, (_substring: any, nodeName: string) => {
-        return multiAddressByNode[nodeName];
-      });
+      container.command = network.replaceWithNetworInfo(container.command);
     }
-
   }
 }
 
-export function createTempNodeDef(
+export async function createTempNodeDef(
   name: string,
   image: string,
   chain: string,
-  fullCommand: string
+  fullCommand: string,
 ) {
   const nodeName = getUniqueName("temp");
   let node: Node = {
@@ -237,6 +243,10 @@ export function createTempNodeDef(
     telemetryUrl: "",
     overrides: [],
     zombieRole: "temp",
+    p2pPort: await getRandomPort(),
+    wsPort: await getRandomPort(),
+    rpcPort: await getRandomPort(),
+    prometheusPort: await getRandomPort(),
   };
 
   return node;
