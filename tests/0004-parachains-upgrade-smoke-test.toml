@@ -9,7 +9,6 @@ command = "polkadot"
 
   [[relaychain.nodes]]
   name = "alice"
-  extra_args = [ "--alice" ]
 
   [[relaychain.nodes.env]]
   name = "RUST_LOG"

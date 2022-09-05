@@ -2,6 +2,7 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig } from "./types";
 import { readDataFile } from "./utils/fs-utils";
+import { convertExponentials } from "./utils/misc-utils";
 const fs = require("fs");
 const debug = require("debug")("zombie::chain-spec");
 
@@ -12,13 +13,16 @@ export function specHaveSessionsKeys(chainSpec: ChainSpec) {
   // Check runtime_genesis_config key for rococo compatibility.
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  return (runtimeConfig && runtimeConfig.session) || (runtimeConfig && runtimeConfig.palletSession);
+  return (
+    (runtimeConfig && runtimeConfig.session) ||
+    (runtimeConfig && runtimeConfig.palletSession)
+  );
 }
 
 // Get authority keys from within chainSpec data
 function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   const runtimeConfig = getRuntimeConfig(chainSpec);
-  if( keyType === "session") {
+  if (keyType === "session") {
     if (runtimeConfig && runtimeConfig.session) {
       return runtimeConfig.session.keys;
     }
@@ -33,27 +37,37 @@ function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
 }
 
 // Remove all existing keys from `session.keys`
-export function clearAuthorities(specPath: string, keyType: KeyType = "session") {
+export function clearAuthorities(
+  specPath: string,
+  keyType: KeyType = "session",
+) {
   const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec, keyType);
-  if(! keys) return;
+  if (!keys) return;
 
   keys.length = 0;
 
-  if(keyType === "session") {
+  if (keyType === "session") {
     const runtime = getRuntimeConfig(chainSpec);
-    if(runtime.collatorSelection && runtime.collatorSelection.invulnerables) runtime.collatorSelection.invulnerables.length = 0;
+    if (runtime.collatorSelection && runtime.collatorSelection.invulnerables)
+      runtime.collatorSelection.invulnerables.length = 0;
   }
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\n\t\t🧹 ${decorators.green("Starting with a fresh authority set...")}`
+    `\n🧹 ${decorators.green("Starting with a fresh authority set...")}`,
   );
 }
 
 // Add additional authorities to chain spec in `session.keys`
-export async function addAuthority(specPath: string, name: string, accounts: any, useStash: boolean = true, isStatemint: boolean = false) {
+export async function addAuthority(
+  specPath: string,
+  name: string,
+  accounts: any,
+  useStash: boolean = true,
+  isStatemint: boolean = false,
+) {
   const { sr_stash, sr_account, ed_account, ec_account } = accounts;
 
   const key = [
@@ -75,39 +89,42 @@ export async function addAuthority(specPath: string, name: string, accounts: any
   const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec);
-  if(! keys) return;
+  if (!keys) return;
 
   keys.push(key);
 
   // Collators
   const runtime = getRuntimeConfig(chainSpec);
-  if(runtime.collatorSelection && runtime.collatorSelection.invulnerables) runtime.collatorSelection.invulnerables.push(sr_account.address);
-
+  if (runtime.collatorSelection && runtime.collatorSelection.invulnerables)
+    runtime.collatorSelection.invulnerables.push(sr_account.address);
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\t\t\t  👤 Added Genesis Authority ${decorators.green(
-      name
-    )} - ${decorators.magenta(sr_stash.address)}`
+    `\t👤 Added Genesis Authority ${decorators.green(
+      name,
+    )} - ${decorators.magenta(sr_stash.address)}`,
   );
 }
 
-
-export async function addAuraAuthority(specPath: string, name: string, accounts: any) {
+export async function addAuraAuthority(
+  specPath: string,
+  name: string,
+  accounts: any,
+) {
   const { sr_account } = accounts;
 
   const chainSpec = readAndParseChainSpec(specPath);
 
   let keys = getAuthorityKeys(chainSpec, "aura");
-  if(! keys) return;
+  if (!keys) return;
 
   keys.push(sr_account.address);
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\t\t\t  👤 Added Genesis Authority (AURA) ${decorators.green(
-      name
-    )} - ${decorators.magenta(sr_account.address)}`
+    `\t👤 Added Genesis Authority (AURA) ${decorators.green(
+      name,
+    )} - ${decorators.magenta(sr_account.address)}`,
   );
 }
 
@@ -117,7 +134,7 @@ export async function addParachainToGenesis(
   para_id: string,
   head: string,
   wasm: string,
-  parachain: boolean = true
+  parachain: boolean = true,
 ) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
@@ -140,11 +157,11 @@ export async function addParachainToGenesis(
 
     writeChainSpec(specPath, chainSpec);
     console.log(
-      `\n\t\t  ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`
+      `\n\t\t  ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`,
     );
   } else {
     console.error(
-      `\n\t\t  ${decorators.red("  ⚠ paras not found in runtimeConfig")}`
+      `\n\t\t  ${decorators.red("  ⚠ paras not found in runtimeConfig")}`,
     );
     process.exit(1);
   }
@@ -155,9 +172,7 @@ export async function addParachainToGenesis(
 export async function changeGenesisConfig(specPath: string, updates: any) {
   const chainSpec = readAndParseChainSpec(specPath);
   const msg = `⚙ Updating Chain Genesis Configuration (path: ${specPath})`;
-  console.log(
-    `\n\t\t ${decorators.green(msg)}`
-  );
+  console.log(`\n\t\t ${decorators.green(msg)}`);
 
   if (chainSpec.genesis) {
     let config = chainSpec.genesis;
@@ -175,7 +190,7 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
 
   if (addresses.length) {
     console.log(
-      `\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`
+      `\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`,
     );
   } else {
     console.log(`\n\t\t ${decorators.green("⚙ Clear Boot Nodes")}`);
@@ -184,7 +199,7 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
 
 export async function addHrmpChannelsToGenesis(
   specPath: string,
-  hrmpChannels: HrmpChannelsConfig[]
+  hrmpChannels: HrmpChannelsConfig[],
 ) {
   console.log(`\n\t\t ⛓  ${decorators.green("Adding Genesis HRMP Channels")}`);
 
@@ -214,7 +229,9 @@ export async function addHrmpChannelsToGenesis(
       hrmp.preopenHrmpChannels.push(newHrmpChannel);
 
       console.log(
-        decorators.green(`\t\t\t  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`)
+        decorators.green(
+          `\t\t\t  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`,
+        ),
       );
     } else {
       console.error("  ⚠ hrmp not found in runtimeConfig");
@@ -242,8 +259,8 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
         obj2[key] = obj1[key];
         console.log(
           `\n\t\t  ${decorators.green(
-            "✓ Updated Genesis Configuration"
-            )} [ key : ${key} ]`
+            "✓ Updated Genesis Configuration",
+          )} [ key : ${key} ]`,
         );
         debug(`[ ${key}: ${JSON.parse(JSON.stringify(obj2))[key]} ]`);
       }
@@ -251,7 +268,7 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
       console.error(
         `\n\t\t  ${decorators.red("⚠ Bad Genesis Configuration")} [ ${key}: ${
           obj1[key]
-        } ]`
+        } ]`,
       );
     }
   });
@@ -273,7 +290,7 @@ function readAndParseChainSpec(specPath: string) {
     return chainSpec;
   } catch {
     console.error(
-      `\n\t\t  ${decorators.red("  ⚠ failed to parse the chain spec")}`
+      `\n\t\t  ${decorators.red("  ⚠ failed to parse the chain spec")}`,
     );
     process.exit(1);
   }
@@ -282,10 +299,12 @@ function readAndParseChainSpec(specPath: string) {
 function writeChainSpec(specPath: string, chainSpec: any) {
   try {
     let data = JSON.stringify(chainSpec, null, 2);
-    fs.writeFileSync(specPath, data);
+    fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(
-      `\n\t\t  ${decorators.red("  ⚠ failed to write the chain spec with path: ")} ${specPath}`
+      `\n\t\t  ${decorators.red(
+        "  ⚠ failed to write the chain spec with path: ",
+      )} ${specPath}`,
     );
     process.exit(1);
   }

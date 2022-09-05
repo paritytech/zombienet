@@ -5,11 +5,18 @@ export const REGULAR_BIN_PATH = "substrate";
 // The remote port prometheus can be accessed with
 export const PROMETHEUS_PORT = 9615;
 // The remote port websocket to access the RPC
-export const RPC_WS_PORT = 9933;
+export const RPC_WS_PORT = 9944;
 // The remote port http to access the RPC
-export const RPC_HTTP_PORT = 9944;
+export const RPC_HTTP_PORT = 9933;
 // The port substrate listens for p2p connections on
 export const P2P_PORT = 30333;
+
+export const DEFAULT_PORTS = {
+  p2pPort: P2P_PORT,
+  wsPort: RPC_WS_PORT,
+  rpcPort: RPC_HTTP_PORT,
+  prometheusPort: PROMETHEUS_PORT,
+};
 
 export const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 export const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
@@ -49,18 +56,19 @@ export const INTROSPECTOR_POD_NAME = "introspector";
 
 // Spans collator config
 export const TRACING_COLLATOR_NAME = "tracing_collator";
-export const TRACING_COLLATOR_SERVICE = "tempo-tempo-distributed-query-frontend"; // tempo installation in k8s
+export const TRACING_COLLATOR_SERVICE =
+  "tempo-tempo-distributed-query-frontend"; // tempo installation in k8s
 export const TRACING_COLLATOR_NAMESPACE = "tempo"; // tempo installation in k8s
 export const TRACING_COLLATOR_PODNAME = "tempo"; // tempo installation in podman
 export const TRACING_COLLATOR_PORT = 3100;
 
-
 export const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 
 export const LOKI_URL_FOR_NODE =
-  "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22now-3h%22,%22now%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
+  "https://grafana.parity-mgmt.parity.io/explore?orgId=1&left=%5B%22{{from}}%22,%22{{to}}%22,%22loki.parity-zombienet%22,%7B%22expr%22:%22%7Bpod%3D~%5C%22{{namespace}}%2F{{podName}}%5C%22%7D%22,%22refId%22:%22A%22,%22range%22:true%7D%5D";
 
 export const AVAILABLE_PROVIDERS = ["podman", "kubernetes", "native"];
+export const DEFAULT_PROVIDER = "kubernetes";
 export const DEV_ACCOUNTS = [
   "alice",
   "bob",
@@ -72,7 +80,7 @@ export const DEV_ACCOUNTS = [
   "two",
 ];
 
-export const ARGS_TO_REMOVE: {[key:string]:number} = {
+export const ARGS_TO_REMOVE: { [key: string]: number } = {
   alice: 1,
   bob: 1,
   charlie: 1,
@@ -85,9 +93,9 @@ export const ARGS_TO_REMOVE: {[key:string]:number} = {
   "prometheus-external": 1,
   "ws-port": 2,
   "rpc-port": 2,
+  "prometheus-port": 2,
   "node-key": 2,
   "listen-addr": 2,
   d: 2,
   "base-path": 2,
-
 };

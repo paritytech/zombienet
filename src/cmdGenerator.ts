@@ -9,12 +9,13 @@ import {
 } from "./constants";
 import { Node } from "./types";
 import { getRandomPort } from "./utils/net-utils";
+import { node } from "execa";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
 function parseCmdWithArguments(
   commandWithArgs: string,
-  useWrapper = true
+  useWrapper = true,
 ): string[] {
   const parts = commandWithArgs.split(" ");
   let finalCommand: string[] = [];
@@ -38,14 +39,12 @@ function parseCmdWithArguments(
 }
 
 export async function genCumulusCollatorCmd(
-  command: string,
   nodeSetup: Node,
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
   useWrapper = true,
-  portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
-  const { name, args, chain, parachainId, key, validator } = nodeSetup;
+  const { name, chain, parachainId, key, validator } = nodeSetup;
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
@@ -54,23 +53,13 @@ export async function genCumulusCollatorCmd(
     "--port": true,
     "--ws-port": true,
     "--chain": true,
-    "--prometheus-port": true
+    "--prometheus-port": true,
   };
 
   const colIndex = getCollatorIndex(parachainId!);
-  let collatorPort;
-  let collatorRpcPort;
-  let collatorWsPort;
-  let collatorPrometheusPort;
-  if(portFlags) {
-    if(portFlags["--port"]) collatorPort = portFlags["--port"];
-    if(portFlags["--ws-port"]) collatorWsPort = portFlags["--ws-port"];
-    if(portFlags["--prometheus-port"]) collatorPrometheusPort = portFlags["--prometheus-port"];
-    if(portFlags["--rpc-port"]) collatorRpcPort = portFlags["--rpc-port"];
-  }
 
   let fullCmd: string[] = [
-    command,
+    nodeSetup.command || DEFAULT_COMMAND,
     "--name",
     name,
     "--node-key",
@@ -80,21 +69,24 @@ export async function genCumulusCollatorCmd(
     "--base-path",
     dataPath,
     "--listen-addr",
-    `/ip4/0.0.0.0/tcp/${collatorPort ? collatorPort : P2P_PORT}/ws`,
+    `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
     "--rpc-port",
-    (collatorRpcPort ? collatorRpcPort : RPC_HTTP_PORT).toString(),
+    (nodeSetup.rpcPort ? nodeSetup.rpcPort : RPC_HTTP_PORT).toString(),
     "--ws-port",
-    (collatorWsPort ? collatorWsPort : RPC_WS_PORT).toString(),
+    (nodeSetup.wsPort ? nodeSetup.wsPort : RPC_WS_PORT).toString(),
     "--prometheus-external",
     "--prometheus-port",
-    (collatorPrometheusPort ? collatorPrometheusPort : PROMETHEUS_PORT).toString(),
+    (nodeSetup.prometheusPort
+      ? nodeSetup.prometheusPort
+      : PROMETHEUS_PORT
+    ).toString(),
     "--rpc-cors all",
     "--unsafe-rpc-external",
     "--rpc-methods unsafe",
-    "--unsafe-ws-external"
+    "--unsafe-ws-external",
   ];
 
-  if(validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
 
   const collatorPorts: any = {
     "--port": 0,
@@ -105,13 +97,13 @@ export async function genCumulusCollatorCmd(
   if (nodeSetup.args.length > 0) {
     let argsFullNode = null;
     let argsParachain = null;
-    let splitIndex = args ? args.findIndex((value) => value == "--") : -1;
+    let splitIndex = nodeSetup.args.indexOf("--");
 
     if (splitIndex < 0) {
-      argsParachain = args;
+      argsParachain = nodeSetup.args;
     } else {
-      argsParachain = args ? args.slice(0, splitIndex) : null;
-      argsFullNode = args ? args.slice(splitIndex + 1) : null;
+      argsParachain = nodeSetup.args.slice(0, splitIndex);
+      argsFullNode = nodeSetup.args.slice(splitIndex + 1);
     }
 
     if (argsParachain) {
@@ -124,57 +116,75 @@ export async function genCumulusCollatorCmd(
       }
     }
 
-    // Arguments for the relay chain node part of the collator binary.
-    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
+    if (
+      fullCmd.findIndex((thisArg) =>
+        thisArg.includes("relay-chain-rpc-url"),
+      ) === -1
+    ) {
+      // Arguments for the relay chain node part of the collator binary.
+      fullCmd.push(
+        ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+      );
 
-    if (argsFullNode) {
-      // Add any additional flags to the CLI
-      for (const [index, arg] of argsFullNode.entries()) {
-        if (collatorPorts[arg] >= 0) {
-          // port passed as argument, we need to ensure is not a default one because it will be
-          // use by the parachain part.
-          const selectedPort = parseInt(argsFullNode[index + 1], 10);
-          if ([P2P_PORT, RPC_HTTP_PORT, RPC_WS_PORT].includes(selectedPort)) {
-            console.log(
-              decorators.yellow(
-                `WARN: default port configured, changing to use a random free port`
-              )
-            );
-            const randomPort = await getRandomPort();
-            collatorPorts[arg] = randomPort;
-            argsFullNode[index + 1] = randomPort.toString();
+      if (argsFullNode) {
+        // Add any additional flags to the CLI
+        for (const [index, arg] of argsFullNode.entries()) {
+          if (collatorPorts[arg] >= 0) {
+            // port passed as argument, we need to ensure is not a default one because it will be
+            // use by the parachain part.
+            const selectedPort = parseInt(argsFullNode[index + 1], 10);
+            if (
+              [
+                P2P_PORT,
+                RPC_HTTP_PORT,
+                RPC_WS_PORT,
+                nodeSetup.p2pPort,
+                nodeSetup.rpcPort,
+                nodeSetup.wsPort,
+              ].includes(selectedPort)
+            ) {
+              console.log(
+                decorators.yellow(
+                  `WARN: default port configured, changing to use a random free port`,
+                ),
+              );
+              const randomPort = await getRandomPort();
+              collatorPorts[arg] = randomPort;
+              argsFullNode[index + 1] = randomPort.toString();
+            }
           }
         }
-      }
 
-      // check ports
-      for (const portArg of Object.keys(collatorPorts)) {
-        if (collatorPorts[portArg] === 0) {
-          const randomPort = await getRandomPort();
-          argsFullNode.push(portArg);
-          argsFullNode.push(randomPort.toString());
-          debug(`Added ${portArg} with value ${randomPort}`);
+        // check ports
+        for (const portArg of Object.keys(collatorPorts)) {
+          if (collatorPorts[portArg] === 0) {
+            const randomPort = await getRandomPort();
+            argsFullNode.push(portArg);
+            argsFullNode.push(randomPort.toString());
+            debug(`Added ${portArg} with value ${randomPort}`);
+          }
         }
-      }
 
-      fullCmd = fullCmd.concat(argsFullNode);
-      debug(`Added ${argsFullNode} to collator`);
-    } else {
-      // ensure ports
-      for (const portArg of Object.keys(collatorPorts)) {
-        if (collatorPorts[portArg] === 0) {
-          const randomPort = await getRandomPort();
-          fullCmd.push(portArg);
-          fullCmd.push(randomPort.toString());
-          debug(`Added ${portArg} with value ${randomPort}`);
+        fullCmd = fullCmd.concat(argsFullNode);
+        debug(`Added ${argsFullNode} to collator`);
+      } else {
+        // ensure ports
+        for (const portArg of Object.keys(collatorPorts)) {
+          if (collatorPorts[portArg] === 0) {
+            const randomPort = await getRandomPort();
+            fullCmd.push(portArg);
+            fullCmd.push(randomPort.toString());
+            debug(`Added ${portArg} with value ${randomPort}`);
+          }
         }
       }
     }
   } else {
     // no args
-
     // Arguments for the relay chain node part of the collator binary.
-    fullCmd.push(...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"]);
+    fullCmd.push(
+      ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+    );
 
     // ensure ports
     for (const portArg of Object.keys(collatorPorts)) {
@@ -197,7 +207,6 @@ export async function genCmd(
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
   useWrapper = true,
-  portFlags?: { [flag: string]: number }
 ): Promise<string[]> {
   let {
     name,
@@ -214,9 +223,8 @@ export async function genCmd(
     args,
     zombieRole,
     jaegerUrl,
-    parachainId
+    parachainId,
   } = nodeSetup;
-
 
   // fullCommand is NOT decorated by the `zombie` wrapper
   // and is used internally in init containers.
@@ -237,14 +245,18 @@ export async function genCmd(
   if (!telemetry) args.push("--no-telemetry");
   else args.push(...["--telemetry-url", telemetryUrl]);
 
-  if (prometheus && ! args.includes("--prometheus-external")) args.push("--prometheus-external");
+  if (prometheus && !args.includes("--prometheus-external"))
+    args.push("--prometheus-external");
 
-  if(jaegerUrl && zombieRole === "node") args.push(...["--jaeger-agent", jaegerUrl]);
+  if (jaegerUrl && zombieRole === "node")
+    args.push(...["--jaeger-agent", jaegerUrl]);
 
-  if (validator && ! args.includes("--validator")) args.push("--validator");
+  if (validator && !args.includes("--validator")) args.push("--validator");
 
-  if(zombieRole === "collator" && parachainId) {
-    const parachainIdArgIndex = args.findIndex((arg) => arg.includes("--parachain-id"));
+  if (zombieRole === "collator" && parachainId) {
+    const parachainIdArgIndex = args.findIndex((arg) =>
+      arg.includes("--parachain-id"),
+    );
     args.splice(parachainIdArgIndex, 1);
     args.push(`--parachain-id ${parachainId}`);
   }
@@ -252,34 +264,17 @@ export async function genCmd(
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
 
-  if (portFlags) {
-    // ensure port are set as desired
-    for (const flag of Object.keys(portFlags)) {
-      const index = args.findIndex((arg) => arg === flag);
-      if (index < 0) args.push(...[flag, portFlags[flag].toString()]);
-      else {
-        args[index + 1] = portFlags[flag].toString();
-      }
-    }
+  // port flags logic
+  const portFlags = {
+    "--prometheus-port": nodeSetup.prometheusPort,
+    "--rpc-port": nodeSetup.rpcPort,
+    "--ws-port": nodeSetup.wsPort,
+  };
 
-    const port = portFlags["--port"];
-    const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
-    if (listenIndex >= 0) {
-      const parts = args[listenIndex + 1].split("/");
-      parts[4] = port.toString();
-      args[listenIndex + 1] = parts.join("/");
-    } else {
-      args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${port}/ws`]);
-    }
-
-    const portFlagIndex = args.findIndex((arg) => arg === "--port");
-    if (portFlagIndex >= 0) args.splice(portFlagIndex, 2);
-  } else {
-    // ensure listen on `ws`
-    const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
-    if (listenIndex >= 0) args.splice(listenIndex, 2);
-    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${P2P_PORT}/ws`]);
+  for (const [k, v] of Object.entries(portFlags)) {
+    args.push(...[k, v.toString()]);
   }
+  args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
 
   // set our base path
   const basePathFlagIndex = args.findIndex((arg) => arg === "--base-path");
@@ -309,8 +304,9 @@ export async function genCmd(
 // helper
 const parachainCollators: any = {};
 function getCollatorIndex(paraId: number): number {
-  if(parachainCollators[paraId] >= 0) parachainCollators[paraId] = parachainCollators[paraId] + 1;
-  else  parachainCollators[paraId] = 0;
+  if (parachainCollators[paraId] >= 0)
+    parachainCollators[paraId] = parachainCollators[paraId] + 1;
+  else parachainCollators[paraId] = 0;
 
   return parachainCollators[paraId];
 }
