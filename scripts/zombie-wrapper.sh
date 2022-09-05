@@ -65,7 +65,7 @@ do
         if [[ $line =~ [^0-9]+([0-9]+) ]]; then
             restart "${BASH_REMATCH[1]}"
         else
-            restart
+            restart 0
         fi;
     elif [[ "$line" == "pause" ]]; then
         pause

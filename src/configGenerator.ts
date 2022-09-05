@@ -482,7 +482,6 @@ async function getNodeFromConfig(
   if (node.args) args = args.concat(sanitizeArgs(node.args));
 
   const uniqueArgs = [...new Set(args)];
-
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
   let nodeOverrides: Override[] = [];
@@ -557,7 +556,8 @@ function sanitizeArgs(args: string[]): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
 
   let removeNext = false;
-  const filteredArgs = args.slice(0, args.indexOf("--")).filter((arg) => {
+  const separatorIndex =  args.indexOf("--");
+  const filteredArgs = args.slice(0, separatorIndex >= 0 ? separatorIndex : args.length).filter((arg) => {
     if (removeNext) {
       removeNext = false;
       return false;
