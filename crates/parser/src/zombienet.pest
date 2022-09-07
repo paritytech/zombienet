@@ -23,7 +23,12 @@ metric_key_value = @{ (ASCII_ALPHANUMERIC | "_" | "-")+ ~ "=" ~ double_quoted_st
 /// matches Jaeger span ids
 span_id = { ASCII_HEX_DIGIT{32} }
 
-metric_name = @{ (ASCII_ALPHANUMERIC | "_" )+ ~ ("{" ~ metric_key_value ~ "}")? }
+/// METRICS
+block_height = { "blockheight" | "block height" | "best block" }
+finalized_height = { "finalised height" | "finalised block" }
+peers_count = { "peers count" | "peers" }
+
+metric_name = @{ (block_height | finalized_height | peers_count | (ASCII_ALPHANUMERIC | "_" )+) ~ ("{" ~ metric_key_value ~ "}")? }
 square_brackets_strings = {
     "[" ~ double_quoted_string ~ ("," ~ double_quoted_string)* ~ "]"
 }
@@ -31,17 +36,16 @@ match_type = { "regex" | "glob" }
 
 /// OPERATORS
 op_lte       = { "<=" }
-op_gte       = { ">=" | "is greater than" | "is at least" }
+op_gte       = { ">=" | "is at least" | "at least" }
 op_lt        = { "<" | "is lower than" }
-op_gt        = { ">" }
+op_gt        = { ">" | "is greater than" | "greater than" }
 op_eq        = { "==" | "=" | "is equals" | "is equals to" | "is" }
 op_ineq      = { "!=" }
-comparison_op   = _{ op_lte | op_gte | op_gt | op_lt | op_eq | op_ineq }
-comparison = { comparison_op ~ int+ }
+comparison = { (op_lte | op_gte | op_gt | op_lt | op_eq | op_ineq) ~ int+ }
 
 // commons
 node_name = { name ~ colon }
-seconds = _{ "seconds"|"sec"|"s" }
+seconds = _{ "seconds"|"secs"|"s" }
 within = { "within" ~ int+ ~ seconds }
 parachain = { "parachain" ~ int+ }
 
@@ -54,11 +58,11 @@ creds = { "Creds:" ~ ("config" | file_path) }
 // ASSERTIONS
 is_up = { node_name ~ "is up" ~ within? }
 para_is_registered = { node_name ~ parachain ~ "is registered" ~ within? }
-para_block_height = { node_name ~ parachain ~ "block height" ~ comparison? ~ within? }
+para_block_height = { node_name ~ parachain ~ "block height" ~ comparison ~ within? }
 para_runtime_upgrade = { node_name ~ parachain ~ "perform upgrade with" ~ ( uri | file_path ) ~ within? }
 para_runtime_dummy_upgrade = { node_name ~ parachain ~ "perform dummy upgrade" ~ within? }
 histogram = { node_name ~ "reports histogram" ~ metric_name ~ "has" ~ (comparison | int+) ~ "samples in buckets" ~ square_brackets_strings ~ within? }
-report = { node_name ~ "reports" ~ metric_name ~ comparison? ~ within? }
+report = { node_name ~ "reports" ~ metric_name ~ comparison ~ within? }
 log_match = { node_name ~ "log line" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
 trace = { node_name ~ "trace with traceID" ~ span_id ~ "contains" ~ square_brackets_strings ~ within? }
 system_event = { node_name ~ "system event" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
@@ -72,7 +76,7 @@ resume = { node_name ~ "resume" }
 restart = { node_name ~ "restart" ~ ("after" ~ int+ ~ seconds)? }
 
 /// COMMENTS
-comment = { ("#" | "//") ~ ANY* }
+comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)+ }
 
 file = { SOI ~ (
     comment |
