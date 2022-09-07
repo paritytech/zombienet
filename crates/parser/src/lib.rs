@@ -133,7 +133,6 @@ fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> AssertionKind {
 
 /// Parse a `feature` file and return a `json string`
 pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserError> {
-    //println!("{}", unparsed_file);
     let mut pairs = match ZombieNetParser::parse(Rule::file, unparsed_file) {
         Ok(p) => p,
         Err(e) => return Err(errors::ParserError::ParseError(e.to_string())),
