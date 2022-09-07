@@ -16,9 +16,7 @@ struct Cli {
 
 pub fn main() {
     let cli = Cli::parse();
-
     let unparsed_file = fs::read_to_string(&cli.file_path).expect(&format!("cannot read file {}", cli.file_path.to_string_lossy()));
-
     let a = parser::parse(&unparsed_file);
     match a {
         Ok(test_def) => {

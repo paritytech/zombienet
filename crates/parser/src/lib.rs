@@ -90,7 +90,7 @@ fn parse_match_pattern_rule(record: Pair<Rule> ) -> (String, String, String, Opt
 fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> AssertionKind {
     let mut pairs =  record.into_inner();
     let node_name = parse_name(pairs.next().unwrap()).to_owned();
-    let file_path = parse_name(pairs.next().unwrap()).to_owned();
+    let file_path = pairs.next().unwrap().as_str().to_owned();
 
     let mut args: Option<String> = None;
     let mut cmp: Option<Comparison> = None;
