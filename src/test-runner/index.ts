@@ -334,7 +334,7 @@ const assertCustomJsRegex = new RegExp(
 
 // Run command in the node
 const assertCustomShInNode = new RegExp(
-  /^([\w-]+): run (\.{0,2}\/.*\.[\w]+)( with \"[\w \,\-/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i,
+  /^([\w-]+): run (\.{0,2}\/.*\.[\w]+)( with \"[\w \,\-\/:.]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i,
 );
 
 // Backchannel
