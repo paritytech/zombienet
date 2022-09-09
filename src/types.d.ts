@@ -54,6 +54,8 @@ export interface NodeConfig {
   commandWithArgs?: string;
   args?: string[];
   validator: boolean;
+  invulnerable: boolean;
+  balance: number;
   env?: envVars[];
   bootnodes?: string[];
   overrides?: Override[];
@@ -129,6 +131,7 @@ export interface Node {
   name: string;
   key?: string;
   accounts?: any;
+  balance?: number;
   command?: string;
   commandWithArgs?: string;
   fullCommand?: string;
@@ -136,6 +139,7 @@ export interface Node {
   chain: string;
   chainSpec?: string;
   validator: boolean;
+  invulnerable: boolean;
   args: string[];
   env: envVars[];
   bootnodes: string[];

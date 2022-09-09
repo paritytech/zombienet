@@ -237,6 +237,7 @@ export async function createTempNodeDef(
     fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,
     validator: false,
+    invulnerable: false,
     bootnodes: [],
     args: [],
     env: [],

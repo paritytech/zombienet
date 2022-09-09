@@ -1,6 +1,6 @@
 import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
-import { ChainSpec, HrmpChannelsConfig } from "./types";
+import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { readDataFile } from "./utils/fs-utils";
 import { convertExponentials } from "./utils/misc-utils";
 const fs = require("fs");
@@ -36,22 +36,27 @@ function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   console.error(`\n\t\t  ${decorators.yellow(errorMsg)}`);
 }
 
-// Remove all existing keys from `session.keys`
+// Remove all existing keys from `session.keys`and aura.authorities
 export function clearAuthorities(
   specPath: string,
   keyType: KeyType = "session",
 ) {
   const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  let keys = getAuthorityKeys(chainSpec, keyType);
-  if (!keys) return;
+  //clear keys
+  if (runtimeConfig && runtimeConfig.session) runtimeConfig.session.keys.length = 0;
+  // clear aura
+  if (runtimeConfig && runtimeConfig.aura) runtimeConfig.aura.authorities.length = 0;
 
-  keys.length = 0;
+  // clear collatorSelection
+  if (runtimeConfig && runtimeConfig.collatorSelection) runtimeConfig.collatorSelection.invulnerables = [];
 
-  if (keyType === "session") {
-    const runtime = getRuntimeConfig(chainSpec);
-    if (runtime.collatorSelection && runtime.collatorSelection.invulnerables)
-      runtime.collatorSelection.invulnerables.length = 0;
+  // Clear staking
+  if (runtimeConfig && runtimeConfig.staking) {
+    runtimeConfig.staking.stakers = [];
+    runtimeConfig.staking.invulnerables = [];
+    runtimeConfig.staking.validatorCount = 0;
   }
 
   writeChainSpec(specPath, chainSpec);
@@ -60,15 +65,38 @@ export function clearAuthorities(
   );
 }
 
+export async function addBalances(specPath: string, nodes: Node[] ) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtime = getRuntimeConfig(chainSpec);
+  for (const node of nodes) {
+    if(node.balance) {
+      const stash_key = node.accounts.sr_stash.address;
+      runtime.balances.balances.push( [
+        stash_key,
+        node.balance
+      ]);
+
+      console.log(
+        `\t👤 Added Balance ${node.balance} for ${decorators.green(
+          node.name,
+        )} - ${decorators.magenta(stash_key)}`,
+      );
+    }
+  }
+
+  writeChainSpec(specPath, chainSpec);
+}
 // Add additional authorities to chain spec in `session.keys`
 export async function addAuthority(
   specPath: string,
-  name: string,
-  accounts: any,
+  node: Node,
   useStash: boolean = true,
   isStatemint: boolean = false,
 ) {
-  const { sr_stash, sr_account, ed_account, ec_account } = accounts;
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+
+  const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
 
   const key = [
     useStash ? sr_stash.address : sr_account.address,
@@ -86,24 +114,39 @@ export async function addAuthority(
     },
   ];
 
-  const chainSpec = readAndParseChainSpec(specPath);
+
 
   let keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
 
-  // Collators
-  const runtime = getRuntimeConfig(chainSpec);
-  if (runtime.collatorSelection && runtime.collatorSelection.invulnerables)
-    runtime.collatorSelection.invulnerables.push(sr_account.address);
+  // staking
+  if(runtimeConfig.staking) {
+    runtimeConfig.staking.stakers.push([
+      sr_stash.address,
+      sr_account.address,
+      1000000000000,
+      "Validator"
+    ]);
 
-  writeChainSpec(specPath, chainSpec);
+    runtimeConfig.staking.validatorCount += 1;
+
+    // by default add to invulnerables
+    if(node.invulnerable) runtimeConfig.staking.invulnerables.push(sr_stash.address);
+  }
+
+  // Collators
+  if (runtimeConfig.collatorSelection && runtimeConfig.collatorSelection.invulnerables)
+    runtimeConfig.collatorSelection.invulnerables.push(sr_account.address);
+
   console.log(
     `\t👤 Added Genesis Authority ${decorators.green(
-      name,
+      node.name,
     )} - ${decorators.magenta(sr_stash.address)}`,
   );
+
+  writeChainSpec(specPath, chainSpec);
 }
 
 export async function addAuraAuthority(

@@ -38,12 +38,14 @@ import {
   addParachainToGenesis,
   addHrmpChannelsToGenesis,
   addBootNodes,
+  addBalances,
 } from "./chain-spec";
 import {
   generateNamespace,
   sleep,
   filterConsole,
   getLokiUrl,
+  getSha256,
 } from "./utils/misc-utils";
 import { series } from "./utils/promise-series";
 import { loadTypeDef } from "./utils/fs-utils";
@@ -224,10 +226,16 @@ export async function start(
 
     if (!chainSpecContent.genesis.raw) {
       // Chain spec customization logic
+      // Clear all defaults
       clearAuthorities(chainSpecFullPathPlain);
+
+      // add balances for nodes
+      await addBalances(chainSpecFullPathPlain, networkSpec.relaychain.nodes);
+
+      // add authorities for nodes
       for (const node of networkSpec.relaychain.nodes) {
         if (node.validator)
-          await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+          await addAuthority(chainSpecFullPathPlain, node);
         // Add some extra space until next log
         console.log("\n");
       }
@@ -546,6 +554,15 @@ export async function start(
       await addBootNodes(chainSpecFullPath, bootnodes);
       // flush require cache since we change the chain-spec
       delete require.cache[require.resolve(chainSpecFullPath)];
+
+      if(client.providerName === "kubernetes") {
+        // cache the chainSpec with bootnodes
+        const fileBuffer = await fs.promises.readFile(chainSpecFullPath);
+        const fileHash = getSha256(fileBuffer.toString());
+        const parts = chainSpecFullPath.split("/");
+        const fileName = parts[parts.length - 1];
+        await client.uploadToFileserver(chainSpecFullPath, fileName, fileHash);
+      }
     }
 
     const promiseGenerators = networkSpec.relaychain.nodes.map((node: Node) => {

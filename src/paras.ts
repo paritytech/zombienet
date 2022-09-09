@@ -80,8 +80,7 @@ export async function generateParachainFiles(
         if (node.validator)
           await addAuthority(
             chainSpecFullPathPlain,
-            node.name,
-            node.accounts!,
+            node,
             false,
             isStatemint,
           );
@@ -195,6 +194,7 @@ export async function generateParachainFiles(
     let node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,
+      invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
       chain: chainName,

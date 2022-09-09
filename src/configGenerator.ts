@@ -14,6 +14,7 @@ import { getSha256 } from "./utils/misc-utils";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
+  DEFAULT_BALANCE,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
@@ -137,6 +138,8 @@ export async function generateNetworkSpec(
         command: nodeGroup.command,
         args: sanitizeArgs(nodeGroup.args || []),
         validator: true, // groups are always validators
+        invulnerable: false,
+        balance: DEFAULT_BALANCE,
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
         resources:
@@ -200,6 +203,8 @@ export async function generateNetworkSpec(
             command: collatorGroup.command,
             args: sanitizeArgs(collatorGroup.args || []),
             validator: true, // groups are always validators
+            invulnerable: false,
+            balance: DEFAULT_BALANCE,
             env: collatorGroup.env,
             overrides: collatorGroup.overrides,
             resources:
@@ -351,6 +356,7 @@ export async function generateBootnodeSpec(
     image: config.relaychain.defaultImage || DEFAULT_IMAGE,
     chain: config.relaychain.chain,
     validator: false,
+    invulnerable: false,
     args: [
       "--ws-external",
       "--rpc-external",
@@ -449,6 +455,8 @@ async function getCollatorNodeFromConfig(
     key: getSha256(collatorName),
     accounts: accountsForNode,
     validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
+    invulnerable: collatorConfig.invulnerable,
+    balance: collatorConfig.balance,
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.commandWithArgs,
@@ -532,6 +540,8 @@ async function getNodeFromConfig(
     image: image || DEFAULT_IMAGE,
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
+    invulnerable: node.invulnerable,
+    balance: node.balance,
     args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,
