@@ -360,16 +360,16 @@ export class Network {
     }
 
     for (const [paraId, parachain] of Object.entries(this.paras)) {
+      for (const node of parachain.nodes) {
+        this.showNodeInfo(node, provider, logTable);
+      }
+
       logTable.pushTo([[decorators.cyan("Parachain ID"), paraId]]);
 
       if (parachain.chainSpecPath)
         logTable.pushTo([
           [decorators.cyan("ChainSpec Path"), parachain.chainSpecPath],
         ]);
-
-      for (const node of parachain.nodes) {
-        this.showNodeInfo(node, provider, logTable);
-      }
     }
 
     if (this.companions.length) {
