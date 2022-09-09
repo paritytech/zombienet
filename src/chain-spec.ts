@@ -45,11 +45,9 @@ export function clearAuthorities(
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
   //clear keys
-  if (runtimeConfig?.session)
-    runtimeConfig.session.keys.length = 0;
+  if (runtimeConfig?.session) runtimeConfig.session.keys.length = 0;
   // clear aura
-  if (runtimeConfig?.aura)
-    runtimeConfig.aura.authorities.length = 0;
+  if (runtimeConfig?.aura) runtimeConfig.aura.authorities.length = 0;
 
   // clear collatorSelection
   if (runtimeConfig?.collatorSelection)
