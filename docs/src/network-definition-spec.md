@@ -39,6 +39,8 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `commandWithArgs`: (String) Override default command and args.
   - `args`: (Array of strings) Arguments to be passed to the `command`.
   - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
+  - `invulnerable`: (Boolean, default false) If true, the node will be added to `invulnerables` in the chain spec.
+  - `balance`: (number, default 2000000000000) Balance to set in `balances` for node's account.
   - `env`: Array of env vars Object to set in the container.
     - name: (String) name of the `env` var.
     - value: (String| number) Value of the env var.

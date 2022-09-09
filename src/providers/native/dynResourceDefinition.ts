@@ -163,6 +163,7 @@ export async function createTempNodeDef(
     fullCommand: fullCommand,
     chain,
     validator: false,
+    invulnerable: false,
     bootnodes: [],
     args: [],
     env: [],

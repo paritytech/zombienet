@@ -78,13 +78,7 @@ export async function generateParachainFiles(
       const isStatemint = parachain.chain?.includes("statemint");
       for (const node of parachain.collators) {
         if (node.validator)
-          await addAuthority(
-            chainSpecFullPathPlain,
-            node.name,
-            node.accounts!,
-            false,
-            isStatemint,
-          );
+          await addAuthority(chainSpecFullPathPlain, node, false, isStatemint);
         // Add some extra space until next log
         console.log("\n");
       }
@@ -195,6 +189,7 @@ export async function generateParachainFiles(
     let node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,
+      invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
       chain: chainName,
