@@ -45,18 +45,18 @@ export function clearAuthorities(
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
   //clear keys
-  if (runtimeConfig && runtimeConfig.session)
+  if (runtimeConfig?.session)
     runtimeConfig.session.keys.length = 0;
   // clear aura
-  if (runtimeConfig && runtimeConfig.aura)
+  if (runtimeConfig?.aura)
     runtimeConfig.aura.authorities.length = 0;
 
   // clear collatorSelection
-  if (runtimeConfig && runtimeConfig.collatorSelection)
+  if (runtimeConfig?.collatorSelection)
     runtimeConfig.collatorSelection.invulnerables = [];
 
   // Clear staking
-  if (runtimeConfig && runtimeConfig.staking) {
+  if (runtimeConfig?.staking) {
     runtimeConfig.staking.stakers = [];
     runtimeConfig.staking.invulnerables = [];
     runtimeConfig.staking.validatorCount = 0;
@@ -120,7 +120,7 @@ export async function addAuthority(
   keys.push(key);
 
   // staking
-  if (runtimeConfig.staking) {
+  if (runtimeConfig?.staking) {
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
       sr_account.address,
