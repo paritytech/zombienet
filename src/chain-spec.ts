@@ -45,12 +45,15 @@ export function clearAuthorities(
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
   //clear keys
-  if (runtimeConfig && runtimeConfig.session) runtimeConfig.session.keys.length = 0;
+  if (runtimeConfig && runtimeConfig.session)
+    runtimeConfig.session.keys.length = 0;
   // clear aura
-  if (runtimeConfig && runtimeConfig.aura) runtimeConfig.aura.authorities.length = 0;
+  if (runtimeConfig && runtimeConfig.aura)
+    runtimeConfig.aura.authorities.length = 0;
 
   // clear collatorSelection
-  if (runtimeConfig && runtimeConfig.collatorSelection) runtimeConfig.collatorSelection.invulnerables = [];
+  if (runtimeConfig && runtimeConfig.collatorSelection)
+    runtimeConfig.collatorSelection.invulnerables = [];
 
   // Clear staking
   if (runtimeConfig && runtimeConfig.staking) {
@@ -65,16 +68,13 @@ export function clearAuthorities(
   );
 }
 
-export async function addBalances(specPath: string, nodes: Node[] ) {
+export async function addBalances(specPath: string, nodes: Node[]) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtime = getRuntimeConfig(chainSpec);
   for (const node of nodes) {
-    if(node.balance) {
+    if (node.balance) {
       const stash_key = node.accounts.sr_stash.address;
-      runtime.balances.balances.push( [
-        stash_key,
-        node.balance
-      ]);
+      runtime.balances.balances.push([stash_key, node.balance]);
 
       console.log(
         `\t👤 Added Balance ${node.balance} for ${decorators.green(
@@ -114,30 +114,32 @@ export async function addAuthority(
     },
   ];
 
-
-
   let keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
 
   // staking
-  if(runtimeConfig.staking) {
+  if (runtimeConfig.staking) {
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
       sr_account.address,
       1000000000000,
-      "Validator"
+      "Validator",
     ]);
 
     runtimeConfig.staking.validatorCount += 1;
 
-    // by default add to invulnerables
-    if(node.invulnerable) runtimeConfig.staking.invulnerables.push(sr_stash.address);
+    // add to invulnerables
+    if (node.invulnerable)
+      runtimeConfig.staking.invulnerables.push(sr_stash.address);
   }
 
   // Collators
-  if (runtimeConfig.collatorSelection && runtimeConfig.collatorSelection.invulnerables)
+  if (
+    runtimeConfig.collatorSelection &&
+    runtimeConfig.collatorSelection.invulnerables
+  )
     runtimeConfig.collatorSelection.invulnerables.push(sr_account.address);
 
   console.log(

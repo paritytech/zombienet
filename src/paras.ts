@@ -78,12 +78,7 @@ export async function generateParachainFiles(
       const isStatemint = parachain.chain?.includes("statemint");
       for (const node of parachain.collators) {
         if (node.validator)
-          await addAuthority(
-            chainSpecFullPathPlain,
-            node,
-            false,
-            isStatemint,
-          );
+          await addAuthority(chainSpecFullPathPlain, node, false, isStatemint);
         // Add some extra space until next log
         console.log("\n");
       }

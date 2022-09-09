@@ -234,8 +234,7 @@ export async function start(
 
       // add authorities for nodes
       for (const node of networkSpec.relaychain.nodes) {
-        if (node.validator)
-          await addAuthority(chainSpecFullPathPlain, node);
+        if (node.validator) await addAuthority(chainSpecFullPathPlain, node);
         // Add some extra space until next log
         console.log("\n");
       }
@@ -555,7 +554,7 @@ export async function start(
       // flush require cache since we change the chain-spec
       delete require.cache[require.resolve(chainSpecFullPath)];
 
-      if(client.providerName === "kubernetes") {
+      if (client.providerName === "kubernetes") {
         // cache the chainSpec with bootnodes
         const fileBuffer = await fs.promises.readFile(chainSpecFullPath);
         const fileHash = getSha256(fileBuffer.toString());

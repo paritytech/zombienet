@@ -339,19 +339,6 @@ export class KubeClient extends Client {
       const fileName = parts[parts.length - 1];
       if (!fileUploadCache[fileHash]) {
         await this.uploadToFileserver(localFilePath, fileName, fileHash);
-        // console.log(
-        //   "uploading to fileserver: " + localFilePath + " as:" + fileHash,
-        // );
-        // const args = [
-        //   "cp",
-        //   localFilePath,
-        //   `fileserver:/usr/share/nginx/html/${fileHash}`,
-        // ];
-
-        // debug("copyFileToPod", args);
-        // const result = await this.runCommand(args, undefined, true);
-        // debug(result);
-        // fileUploadCache[fileHash] = fileName;
       }
 
       // download the file in the container
@@ -706,7 +693,11 @@ export class KubeClient extends Client {
     await this.wait_pod_ready("introspector");
   }
 
-  async uploadToFileserver(localFilePath: string, fileName: string, fileHash: string) {
+  async uploadToFileserver(
+    localFilePath: string,
+    fileName: string,
+    fileHash: string,
+  ) {
     console.log(
       "uploading to fileserver: " + localFilePath + " as:" + fileHash,
     );
