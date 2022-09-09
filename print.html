@@ -650,6 +650,8 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>commandWithArgs</code>: (String) Override default command and args.</li>
 <li><code>args</code>: (Array of strings) Arguments to be passed to the <code>command</code>.</li>
 <li><code>validator</code>: (Boolean, default true) Pass the <code>--validator</code> flag to the <code>command</code>.</li>
+<li><code>invulnerable</code>: (Boolean, default false) If true, the node will be added to <code>invulnerables</code> in the chain spec.</li>
+<li><code>balance</code>: (number, default 2000000000000) Balance to set in <code>balances</code> for node's account.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
 <ul>
 <li>name: (String) name of the <code>env</code> var.</li>
