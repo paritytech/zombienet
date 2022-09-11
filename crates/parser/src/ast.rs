@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum Operator {
@@ -7,7 +7,7 @@ pub enum Operator {
     IsAbove,
     IsAtLeast,
     IsBelow,
-    IsAtMost
+    IsAtMost,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -103,11 +103,11 @@ pub enum AssertionKind {
     },
     Restart {
         node_name: String,
-        after: Option<u32>
+        after: Option<u32>,
     },
     Sleep {
-        seconds: u32
-    }
+        seconds: u32,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]

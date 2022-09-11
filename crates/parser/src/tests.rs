@@ -1,9 +1,7 @@
 use super::*;
-use serde_json;
 
 const NETWORK: &str = "Network: ./a.toml";
 const CREDS: &str = "Creds: config";
-
 
 #[test]
 fn is_up_parse_ok() {
@@ -146,7 +144,8 @@ fn para_dummy_upgrade_parse_ok() {
 
 #[test]
 fn para_upgrade_parse_ok() {
-    let line: &str = r#"alice: parachain 100 perform upgrade with ./some.wasm.compact within 200 seconds"#;
+    let line: &str =
+        r#"alice: parachain 100 perform upgrade with ./some.wasm.compact within 200 seconds"#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",
