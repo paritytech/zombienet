@@ -14,7 +14,9 @@ import {
   addAuthority,
   changeGenesisConfig,
   clearAuthorities,
+  readAndParseChainSpec,
   specHaveSessionsKeys,
+  writeChainSpec,
 } from "./chain-spec";
 import { getRandomPort } from "./utils/net-utils";
 
@@ -58,19 +60,17 @@ export async function generateParachainFiles(
       chainSpecFullPathPlain,
     );
 
-    const plainData = JSON.parse(
-      fs.readFileSync(chainSpecFullPathPlain).toString(),
-    );
+    const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
 
-    const relayChainSpec = JSON.parse(
-      fs.readFileSync(relayChainSpecFullPathPlain).toString(),
-    );
+    const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
     plainData.para_id = parachain.id;
     if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if (plainData.genesis.runtime.parachainInfo?.parachainId)
       plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
-    const data = JSON.stringify(plainData, null, 2);
-    fs.writeFileSync(chainSpecFullPathPlain, data);
+
+    writeChainSpec(chainSpecFullPathPlain, plainData);
+    // const data = JSON.stringify(plainData, null, 2);
+    // fs.writeFileSync(chainSpecFullPathPlain, data);
 
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
@@ -119,11 +119,10 @@ export async function generateParachainFiles(
     );
 
     // ensure the correct para_id
-    const paraSpecRaw = JSON.parse(
-      fs.readFileSync(chainSpecFullPath).toString(),
-    );
-    paraSpecRaw.para_id = parachain.id;
-    fs.writeFileSync(chainSpecFullPath, JSON.stringify(paraSpecRaw, null, 2));
+    const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
+    if(paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
+    if(paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
+    writeChainSpec(chainSpecFullPath, paraSpecRaw);
 
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;

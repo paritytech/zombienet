@@ -4,7 +4,11 @@ import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { readDataFile } from "./utils/fs-utils";
 import { convertExponentials } from "./utils/misc-utils";
 const fs = require("fs");
+const JSONbig = require('json-bigint')({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
+
+// track 1st staking as default;
+let stakingBond: number | undefined;
 
 export type KeyType = "session" | "aura";
 
@@ -55,10 +59,13 @@ export function clearAuthorities(
 
   // Clear staking
   if (runtimeConfig?.staking) {
+    stakingBond = runtimeConfig.staking.stakers[0][2];
     runtimeConfig.staking.stakers = [];
     runtimeConfig.staking.invulnerables = [];
     runtimeConfig.staking.validatorCount = 0;
   }
+
+
 
   writeChainSpec(specPath, chainSpec);
   console.log(
@@ -72,7 +79,8 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   for (const node of nodes) {
     if (node.balance) {
       const stash_key = node.accounts.sr_stash.address;
-      runtime.balances.balances.push([stash_key, node.balance]);
+      const balanceToAdd = (node.validator && stakingBond && node.balance > stakingBond) ? node.balance : stakingBond! + 1;
+      runtime.balances.balances.push([stash_key, balanceToAdd]);
 
       console.log(
         `\t👤 Added Balance ${node.balance} for ${decorators.green(
@@ -122,7 +130,7 @@ export async function addAuthority(
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
       sr_account.address,
-      1000000000000,
+      stakingBond || 1000000000000,
       "Validator",
     ]);
 
@@ -325,11 +333,11 @@ function getRuntimeConfig(chainSpec: any) {
   return runtimeConfig;
 }
 
-function readAndParseChainSpec(specPath: string) {
+export function readAndParseChainSpec(specPath: string) {
   let rawdata = fs.readFileSync(specPath);
   let chainSpec;
   try {
-    chainSpec = JSON.parse(rawdata);
+    chainSpec = JSONbig.parse(rawdata);
     return chainSpec;
   } catch {
     console.error(
@@ -339,9 +347,9 @@ function readAndParseChainSpec(specPath: string) {
   }
 }
 
-function writeChainSpec(specPath: string, chainSpec: any) {
+export function writeChainSpec(specPath: string, chainSpec: any) {
   try {
-    let data = JSON.stringify(chainSpec, null, 2);
+    let data = JSONbig.stringify(chainSpec, null, 2);
     fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(
