@@ -78,11 +78,11 @@ export async function addBalances(specPath: string, nodes: Node[]) {
     if (node.balance) {
       const stash_key = node.accounts.sr_stash.address;
 
-      const balanceToAdd = stakingBond ?
-          node.validator && node.balance > stakingBond
-            ? node.balance
-            : stakingBond! + 1
-          : node.balance;
+      const balanceToAdd = stakingBond
+        ? node.validator && node.balance > stakingBond
+          ? node.balance
+          : stakingBond! + 1
+        : node.balance;
       runtime.balances.balances.push([stash_key, balanceToAdd]);
 
       console.log(
@@ -299,7 +299,7 @@ export async function addHrmpChannelsToGenesis(
 // Look at the key + values from `obj1` and try to replace them in `obj2`.
 function findAndReplaceConfig(obj1: any, obj2: any) {
   // create new Object without  null prototype
-  obj2 = {...obj2};
+  obj2 = { ...obj2 };
   // Look at keys of obj1
   Object.keys(obj1).forEach((key) => {
     // See if obj2 also has this key

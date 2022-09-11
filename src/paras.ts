@@ -39,8 +39,10 @@ export async function generateParachainFiles(
 
   let chainSpecFullPath;
   if (parachain.cumulusBased) {
-    // need to create the parachain spec
-    const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.name}-plain.json`;
+    // need to create the parachain spec parachain file name is [para chain]-<para name>-<relay chain>
+    const chainSpecFullPathPlain = `${tmpDir}/${
+      parachain.chain ? parachain.chain : ""
+    }-${parachain.name}-${chainName}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
     const chainSpecFileName = `${
       parachain.chain ? parachain.chain : chainName
@@ -112,7 +114,9 @@ export async function generateParachainFiles(
     await getChainSpecRaw(
       namespace,
       parachain.collators[0].image,
-      `${chainName}-${parachain.name}`,
+      `${parachain.chain ? parachain.chain : ""}-${
+        parachain.name
+      }-${chainName}`,
       parachain.collators[0].command!,
       chainSpecFullPath,
     );
