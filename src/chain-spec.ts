@@ -4,7 +4,7 @@ import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { readDataFile } from "./utils/fs-utils";
 import { convertExponentials } from "./utils/misc-utils";
 const fs = require("fs");
-const JSONbig = require('json-bigint')({ useNativeBigInt: true });
+const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
 // track 1st staking as default;
@@ -65,8 +65,6 @@ export function clearAuthorities(
     runtimeConfig.staking.validatorCount = 0;
   }
 
-
-
   writeChainSpec(specPath, chainSpec);
   console.log(
     `\n🧹 ${decorators.green("Starting with a fresh authority set...")}`,
@@ -79,7 +77,10 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   for (const node of nodes) {
     if (node.balance) {
       const stash_key = node.accounts.sr_stash.address;
-      const balanceToAdd = (node.validator && stakingBond && node.balance > stakingBond) ? node.balance : stakingBond! + 1;
+      const balanceToAdd =
+        node.validator && stakingBond && node.balance > stakingBond
+          ? node.balance
+          : stakingBond! + 1;
       runtime.balances.balances.push([stash_key, balanceToAdd]);
 
       console.log(

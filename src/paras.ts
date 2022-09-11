@@ -118,8 +118,8 @@ export async function generateParachainFiles(
 
     // ensure the correct para_id
     const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
-    if(paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
-    if(paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
+    if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
+    if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
     writeChainSpec(chainSpecFullPath, paraSpecRaw);
 
     // add spec file to copy to all collators.
