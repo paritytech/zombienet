@@ -69,8 +69,6 @@ export async function generateParachainFiles(
       plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
 
     writeChainSpec(chainSpecFullPathPlain, plainData);
-    // const data = JSON.stringify(plainData, null, 2);
-    // fs.writeFileSync(chainSpecFullPathPlain, data);
 
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
