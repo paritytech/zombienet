@@ -63,7 +63,8 @@ export async function generateParachainFiles(
     const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
 
     const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
-    plainData.para_id = parachain.id;
+    if (plainData.para_id) plainData.para_id = parachain.id;
+    if (plainData.paraId) plainData.paraId = parachain.id;
     if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if (plainData.genesis.runtime.parachainInfo?.parachainId)
       plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
