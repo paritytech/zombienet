@@ -239,14 +239,22 @@ export async function start(
       // add balances for nodes
       await addBalances(chainSpecFullPathPlain, networkSpec.relaychain.nodes);
 
-
       // add authorities for nodes
       for (const node of networkSpec.relaychain.nodes) {
         if (node.validator)
-          if( keyType === "session") await addAuthority(chainSpecFullPathPlain, node);
+          if (keyType === "session")
+            await addAuthority(chainSpecFullPathPlain, node);
           else {
-            await addAuraAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
-            await addGrandpaAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+            await addAuraAuthority(
+              chainSpecFullPathPlain,
+              node.name,
+              node.accounts!,
+            );
+            await addGrandpaAuthority(
+              chainSpecFullPathPlain,
+              node.name,
+              node.accounts!,
+            );
           }
         // Add some extra space until next log
         console.log("\n");

@@ -30,10 +30,11 @@ export function specHaveSessionsKeys(chainSpec: ChainSpec): boolean {
 function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  switch(keyType) {
+  switch (keyType) {
     case "session":
       if (runtimeConfig?.session) return runtimeConfig.session.keys;
-      if (runtimeConfig?.authorMapping) return runtimeConfig.authorMapping.mappings;
+      if (runtimeConfig?.authorMapping)
+        return runtimeConfig.authorMapping.mappings;
       break;
     case "aura":
       if (runtimeConfig?.aura) return runtimeConfig.aura.authorities;
@@ -48,9 +49,7 @@ function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
 }
 
 // Remove all existing keys from `session.keys` / aura.authorities / grandpa.authorities
-export function clearAuthorities(
-  specPath: string
-) {
+export function clearAuthorities(specPath: string) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
