@@ -14,7 +14,9 @@ import {
   addAuthority,
   changeGenesisConfig,
   clearAuthorities,
+  readAndParseChainSpec,
   specHaveSessionsKeys,
+  writeChainSpec,
 } from "./chain-spec";
 import { getRandomPort } from "./utils/net-utils";
 
@@ -37,8 +39,10 @@ export async function generateParachainFiles(
 
   let chainSpecFullPath;
   if (parachain.cumulusBased) {
-    // need to create the parachain spec
-    const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.name}-plain.json`;
+    // need to create the parachain spec parachain file name is [para chain]-<para name>-<relay chain>
+    const chainSpecFullPathPlain = `${tmpDir}/${
+      parachain.chain ? parachain.chain : ""
+    }-${parachain.name}-${chainName}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
     const chainSpecFileName = `${
       parachain.chain ? parachain.chain : chainName
@@ -58,19 +62,16 @@ export async function generateParachainFiles(
       chainSpecFullPathPlain,
     );
 
-    const plainData = JSON.parse(
-      fs.readFileSync(chainSpecFullPathPlain).toString(),
-    );
+    const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
 
-    const relayChainSpec = JSON.parse(
-      fs.readFileSync(relayChainSpecFullPathPlain).toString(),
-    );
-    plainData.para_id = parachain.id;
+    const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
+    if (plainData.para_id) plainData.para_id = parachain.id;
+    if (plainData.paraId) plainData.paraId = parachain.id;
     if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if (plainData.genesis.runtime.parachainInfo?.parachainId)
       plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
-    const data = JSON.stringify(plainData, null, 2);
-    fs.writeFileSync(chainSpecFullPathPlain, data);
+
+    writeChainSpec(chainSpecFullPathPlain, plainData);
 
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
@@ -113,17 +114,18 @@ export async function generateParachainFiles(
     await getChainSpecRaw(
       namespace,
       parachain.collators[0].image,
-      `${chainName}-${parachain.name}`,
+      `${parachain.chain ? parachain.chain : ""}-${
+        parachain.name
+      }-${chainName}`,
       parachain.collators[0].command!,
       chainSpecFullPath,
     );
 
     // ensure the correct para_id
-    const paraSpecRaw = JSON.parse(
-      fs.readFileSync(chainSpecFullPath).toString(),
-    );
-    paraSpecRaw.para_id = parachain.id;
-    fs.writeFileSync(chainSpecFullPath, JSON.stringify(paraSpecRaw, null, 2));
+    const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
+    if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
+    if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
+    writeChainSpec(chainSpecFullPath, paraSpecRaw);
 
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;

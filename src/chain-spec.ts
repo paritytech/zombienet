@@ -4,7 +4,11 @@ import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { readDataFile } from "./utils/fs-utils";
 import { convertExponentials } from "./utils/misc-utils";
 const fs = require("fs");
+const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
+
+// track 1st staking as default;
+let stakingBond: number | undefined;
 
 export type KeyType = "session" | "aura";
 
@@ -55,6 +59,7 @@ export function clearAuthorities(
 
   // Clear staking
   if (runtimeConfig?.staking) {
+    stakingBond = runtimeConfig.staking.stakers[0][2];
     runtimeConfig.staking.stakers = [];
     runtimeConfig.staking.invulnerables = [];
     runtimeConfig.staking.validatorCount = 0;
@@ -72,7 +77,13 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   for (const node of nodes) {
     if (node.balance) {
       const stash_key = node.accounts.sr_stash.address;
-      runtime.balances.balances.push([stash_key, node.balance]);
+
+      const balanceToAdd = stakingBond
+        ? node.validator && node.balance > stakingBond
+          ? node.balance
+          : stakingBond! + 1
+        : node.balance;
+      runtime.balances.balances.push([stash_key, balanceToAdd]);
 
       console.log(
         `\t👤 Added Balance ${node.balance} for ${decorators.green(
@@ -122,7 +133,7 @@ export async function addAuthority(
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
       sr_account.address,
-      1000000000000,
+      stakingBond || 1000000000000,
       "Validator",
     ]);
 
@@ -287,6 +298,8 @@ export async function addHrmpChannelsToGenesis(
 
 // Look at the key + values from `obj1` and try to replace them in `obj2`.
 function findAndReplaceConfig(obj1: any, obj2: any) {
+  // create new Object without  null prototype
+  obj2 = { ...obj2 };
   // Look at keys of obj1
   Object.keys(obj1).forEach((key) => {
     // See if obj2 also has this key
@@ -305,7 +318,7 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
             "✓ Updated Genesis Configuration",
           )} [ key : ${key} ]`,
         );
-        debug(`[ ${key}: ${JSON.parse(JSON.stringify(obj2))[key]} ]`);
+        debug(`[ ${key}: ${obj2[key]} ]`);
       }
     } else {
       console.error(
@@ -325,11 +338,11 @@ function getRuntimeConfig(chainSpec: any) {
   return runtimeConfig;
 }
 
-function readAndParseChainSpec(specPath: string) {
+export function readAndParseChainSpec(specPath: string) {
   let rawdata = fs.readFileSync(specPath);
   let chainSpec;
   try {
-    chainSpec = JSON.parse(rawdata);
+    chainSpec = JSONbig.parse(rawdata);
     return chainSpec;
   } catch {
     console.error(
@@ -339,9 +352,9 @@ function readAndParseChainSpec(specPath: string) {
   }
 }
 
-function writeChainSpec(specPath: string, chainSpec: any) {
+export function writeChainSpec(specPath: string, chainSpec: any) {
   try {
-    let data = JSON.stringify(chainSpec, null, 2);
+    let data = JSONbig.stringify(chainSpec, null, 2);
     fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(

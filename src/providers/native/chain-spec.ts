@@ -55,7 +55,6 @@ export async function getChainSpecRaw(
   chainCommand: string,
   chainFullPath: string,
 ): Promise<any> {
-  const plainPath = chainFullPath.replace(".json", "-plain.json");
   const client = getClient();
 
   const remoteChainSpecFullPath =
@@ -95,7 +94,9 @@ export async function getChainSpecRaw(
   try {
     require(chainFullPath);
     isValid = true;
-  } catch (_) {}
+  } catch (e) {
+    debug(e);
+  }
 
   if (!isValid) throw new Error(`Invalid chain spec raw file generated.`);
 
