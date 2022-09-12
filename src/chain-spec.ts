@@ -225,7 +225,7 @@ export async function addGrandpaAuthority(
 
   const chainSpec = readAndParseChainSpec(specPath);
 
-  let keys = getAuthorityKeys(chainSpec, "grandpa");
+  const keys = getAuthorityKeys(chainSpec, "grandpa");
   if (!keys) return;
 
   keys.push([ed_account.address, 1]);
