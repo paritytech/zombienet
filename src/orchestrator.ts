@@ -39,6 +39,10 @@ import {
   addHrmpChannelsToGenesis,
   addBootNodes,
   addBalances,
+  specHaveSessionsKeys,
+  readAndParseChainSpec,
+  addAuraAuthority,
+  addGrandpaAuthority,
 } from "./chain-spec";
 import {
   generateNamespace,
@@ -226,6 +230,9 @@ export async function start(
 
     if (!chainSpecContent.genesis.raw) {
       // Chain spec customization logic
+      const relayChainSpec = readAndParseChainSpec(chainSpecFullPathPlain);
+      const keyType = specHaveSessionsKeys(relayChainSpec) ? "session" : "aura";
+
       // Clear all defaults
       clearAuthorities(chainSpecFullPathPlain);
 
@@ -234,7 +241,21 @@ export async function start(
 
       // add authorities for nodes
       for (const node of networkSpec.relaychain.nodes) {
-        if (node.validator) await addAuthority(chainSpecFullPathPlain, node);
+        if (node.validator)
+          if (keyType === "session")
+            await addAuthority(chainSpecFullPathPlain, node);
+          else {
+            await addAuraAuthority(
+              chainSpecFullPathPlain,
+              node.name,
+              node.accounts!,
+            );
+            await addGrandpaAuthority(
+              chainSpecFullPathPlain,
+              node.name,
+              node.accounts!,
+            );
+          }
         // Add some extra space until next log
         console.log("\n");
       }
