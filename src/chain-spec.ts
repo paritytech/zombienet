@@ -10,10 +10,10 @@ const debug = require("debug")("zombie::chain-spec");
 // track 1st staking as default;
 let stakingBond: number | undefined;
 
-export type KeyType = "session" | "aura";
+export type KeyType = "session" | "aura" | "grandpa";
 
 // Check if the chainSpec have session keys
-export function specHaveSessionsKeys(chainSpec: ChainSpec) {
+export function specHaveSessionsKeys(chainSpec: ChainSpec): boolean {
   // Check runtime_genesis_config key for rococo compatibility.
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
@@ -29,22 +29,27 @@ export function specHaveSessionsKeys(chainSpec: ChainSpec) {
 // Get authority keys from within chainSpec data
 function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   const runtimeConfig = getRuntimeConfig(chainSpec);
-  if (keyType === "session") {
-    if (runtimeConfig?.session) return runtimeConfig.session.keys;
-    if (runtimeConfig?.authorMapping)
-      return runtimeConfig.authorMapping.mappings;
-  } else {
-    if (runtimeConfig?.aura) return runtimeConfig.aura.authorities;
+
+  switch(keyType) {
+    case "session":
+      if (runtimeConfig?.session) return runtimeConfig.session.keys;
+      if (runtimeConfig?.authorMapping) return runtimeConfig.authorMapping.mappings;
+      break;
+    case "aura":
+      if (runtimeConfig?.aura) return runtimeConfig.aura.authorities;
+      break;
+    case "grandpa":
+      if (runtimeConfig?.grandpa) return runtimeConfig.grandpa.authorities;
+      break;
   }
 
   const errorMsg = `⚠ ${keyType} keys not found in runtimeConfig`;
   console.error(`\n\t\t  ${decorators.yellow(errorMsg)}`);
 }
 
-// Remove all existing keys from `session.keys`and aura.authorities
+// Remove all existing keys from `session.keys` / aura.authorities / grandpa.authorities
 export function clearAuthorities(
-  specPath: string,
-  keyType: KeyType = "session",
+  specPath: string
 ) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
@@ -53,6 +58,8 @@ export function clearAuthorities(
   if (runtimeConfig?.session) runtimeConfig.session.keys.length = 0;
   // clear aura
   if (runtimeConfig?.aura) runtimeConfig.aura.authorities.length = 0;
+  // clear grandpa
+  if (runtimeConfig?.grandpa) runtimeConfig.grandpa.authorities.length = 0;
 
   // clear collatorSelection
   if (runtimeConfig?.collatorSelection)
@@ -207,6 +214,28 @@ export async function addAuraAuthority(
     `\t👤 Added Genesis Authority (AURA) ${decorators.green(
       name,
     )} - ${decorators.magenta(sr_account.address)}`,
+  );
+}
+
+export async function addGrandpaAuthority(
+  specPath: string,
+  name: string,
+  accounts: any,
+) {
+  const { ed_account } = accounts;
+
+  const chainSpec = readAndParseChainSpec(specPath);
+
+  let keys = getAuthorityKeys(chainSpec, "grandpa");
+  if (!keys) return;
+
+  keys.push([ed_account.address, 1]);
+
+  writeChainSpec(specPath, chainSpec);
+  console.log(
+    `\t👤 Added Genesis Authority (GRANDPA) ${decorators.green(
+      name,
+    )} - ${decorators.magenta(ed_account.address)}`,
   );
 }
 
