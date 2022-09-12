@@ -19,7 +19,8 @@ export function specHaveSessionsKeys(chainSpec: ChainSpec) {
 
   return (
     (runtimeConfig && runtimeConfig.session) ||
-    (runtimeConfig && runtimeConfig.palletSession)
+    (runtimeConfig && runtimeConfig.palletSession) ||
+    (runtimeConfig && runtimeConfig.authorMapping)
   );
 }
 
@@ -29,6 +30,9 @@ function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   if (keyType === "session") {
     if (runtimeConfig && runtimeConfig.session) {
       return runtimeConfig.session.keys;
+    }
+    if (runtimeConfig && runtimeConfig.authorMapping) {
+      return runtimeConfig.authorMapping.mappings;
     }
   } else {
     if (runtimeConfig && runtimeConfig.aura) {
@@ -48,7 +52,7 @@ export function clearAuthorities(
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  //clear keys
+  // clear keys
   if (runtimeConfig?.session) runtimeConfig.session.keys.length = 0;
   // clear aura
   if (runtimeConfig?.aura) runtimeConfig.aura.authorities.length = 0;
@@ -63,6 +67,17 @@ export function clearAuthorities(
     runtimeConfig.staking.stakers = [];
     runtimeConfig.staking.invulnerables = [];
     runtimeConfig.staking.validatorCount = 0;
+  }
+
+  // Moonbeam Specific
+  // clear authorMapping
+  if (runtimeConfig?.authorMapping)
+    runtimeConfig.authorMapping.mappings.length = 0;
+  // clear parachainStaking
+  if (runtimeConfig?.parachainStaking) {
+    stakingBond = runtimeConfig.parachainStaking.candidates[0][1];
+    runtimeConfig.parachainStaking.candidates.length = 0;
+    runtimeConfig.parachainStaking.delegations.length = 0;
   }
 
   writeChainSpec(specPath, chainSpec);
@@ -100,28 +115,35 @@ export async function addAuthority(
   specPath: string,
   node: Node,
   useStash: boolean = true,
-  isStatemint: boolean = false,
+  chainSessionType?: "statemint" | "moonbeam",
 ) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
+  const { sr_stash, sr_account, ed_account, ec_account, eth_account } =
+    node.accounts;
 
-  const key = [
-    useStash ? sr_stash.address : sr_account.address,
-    useStash ? sr_stash.address : sr_account.address,
-    {
-      grandpa: ed_account.address,
-      babe: sr_account.address,
-      im_online: sr_account.address,
-      parachain_validator: sr_account.address,
-      authority_discovery: sr_account.address,
-      para_validator: sr_account.address,
-      para_assignment: sr_account.address,
-      beefy: encodeAddress(ec_account.publicKey),
-      aura: isStatemint ? ed_account.address : sr_account.address,
-    },
-  ];
+  const key =
+    chainSessionType == "moonbeam"
+      ? [sr_account.address, eth_account.address]
+      : [
+          useStash ? sr_stash.address : sr_account.address,
+          useStash ? sr_stash.address : sr_account.address,
+          {
+            grandpa: ed_account.address,
+            babe: sr_account.address,
+            im_online: sr_account.address,
+            parachain_validator: sr_account.address,
+            authority_discovery: sr_account.address,
+            para_validator: sr_account.address,
+            para_assignment: sr_account.address,
+            beefy: encodeAddress(ec_account.publicKey),
+            aura:
+              chainSessionType == "statemint"
+                ? ed_account.address
+                : sr_account.address,
+          },
+        ];
 
   let keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
@@ -142,6 +164,14 @@ export async function addAuthority(
     // add to invulnerables
     if (node.invulnerable)
       runtimeConfig.staking.invulnerables.push(sr_stash.address);
+  }
+
+  // parachainStaking
+  if (runtimeConfig?.parachainStaking) {
+    runtimeConfig.parachainStaking.candidates.push([
+      eth_account.address,
+      stakingBond || 1000000000000,
+    ]);
   }
 
   // Collators
