@@ -44,7 +44,9 @@ export async function generateParachainFiles(
       parachain.chain ? parachain.chain + "-" : ""
     }${parachain.name}-${chainName}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
-    const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${parachain.name}-${chainName}.json`;
+    const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
+      parachain.name
+    }-${chainName}.json`;
 
     debug("creating chain spec plain");
     // create or copy chain spec
