@@ -4,7 +4,7 @@ import { start } from "./orchestrator";
 import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
-import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils";
+import { getCredsFilePath, readNetworkConfig } from "./utils/fs";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";

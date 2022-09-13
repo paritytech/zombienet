@@ -18,7 +18,7 @@ import {
   specHaveSessionsKeys,
   writeChainSpec,
 } from "./chain-spec";
-import { getRandomPort } from "./utils/net-utils";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
 

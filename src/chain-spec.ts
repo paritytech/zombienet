@@ -1,9 +1,9 @@
 import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
-import { readDataFile } from "./utils/fs-utils";
-import { convertExponentials } from "./utils/misc-utils";
-const fs = require("fs");
+import { readDataFile } from "./utils/fs";
+import { convertExponentials } from "./utils/misc";
+import fs from "fs";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 

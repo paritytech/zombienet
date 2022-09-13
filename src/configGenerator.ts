@@ -10,7 +10,7 @@ import {
   NodeConfig,
   envVars,
 } from "./types";
-import { getSha256 } from "./utils/misc-utils";
+import { getSha256 } from "./utils/misc";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -31,7 +31,7 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { getRandomPort } from "./utils/net-utils";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::config-manager");
 
