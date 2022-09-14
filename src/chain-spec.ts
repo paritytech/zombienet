@@ -19,8 +19,6 @@ export function specHaveSessionsKeys(chainSpec: ChainSpec): boolean {
 
   return (
     runtimeConfig?.session ||
-    runtimeConfig?.authorMapping ||
-    runtimeConfig?.session ||
     runtimeConfig?.palletSession ||
     runtimeConfig?.authorMapping
   );
@@ -33,8 +31,6 @@ function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   switch (keyType) {
     case "session":
       if (runtimeConfig?.session) return runtimeConfig.session.keys;
-      if (runtimeConfig?.authorMapping)
-        return runtimeConfig.authorMapping.mappings;
       break;
     case "aura":
       if (runtimeConfig?.aura) return runtimeConfig.aura.authorities;
@@ -386,7 +382,7 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
   });
 }
 
-function getRuntimeConfig(chainSpec: any) {
+export function getRuntimeConfig(chainSpec: any) {
   const runtimeConfig =
     chainSpec.genesis.runtime?.runtime_genesis_config ||
     chainSpec.genesis.runtime;

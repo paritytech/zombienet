@@ -19,6 +19,7 @@ import {
   writeChainSpec,
 } from "./chain-spec";
 import { getRandomPort } from "./utils/net-utils";
+import { decorate, PARA } from "./paras-decorators";
 
 const debug = require("debug")("zombie::paras");
 
@@ -29,6 +30,22 @@ export async function generateParachainFiles(
   chainName: string,
   parachain: Parachain,
 ): Promise<void> {
+
+  // [ addAuraAuthority,
+  //   addAuthority,
+  //   changeGenesisConfig,
+  //   clearAuthorities,
+  //   readAndParseChainSpec,
+  //   specHaveSessionsKeys,
+  //   writeChainSpec ] = decorate(PARA.Moonbeam, [
+  //     addAuraAuthority,
+  //     addAuthority,
+  //     changeGenesisConfig,
+  //     clearAuthorities,
+  //     readAndParseChainSpec,
+  //     specHaveSessionsKeys,
+  //     writeChainSpec
+  //   ]);
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
   const client = getClient();
