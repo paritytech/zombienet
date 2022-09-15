@@ -22,6 +22,7 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
+import { getFilePathNameExt } from "./utils/misc-utils";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -245,6 +246,17 @@ program
   .action(setup);
 
 program
+  .command("convert")
+  .description(
+    "Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration",
+  )
+  .argument(
+    "<filepath>",
+    `the filepath of the polkadot-lauch name. It could be either a .js or .json file`,
+  )
+  .action(convert);
+
+program
   .command("version")
   .description("Prints zombienet version")
   .action(() => {
@@ -359,6 +371,47 @@ async function setup(params: any) {
   }
   downloadBinaries(params);
   return;
+}
+
+const startStream = (filePath: string): fs.WriteStream => {
+  const writableStream = fs.createWriteStream(filePath);
+
+  writableStream.on("error", (error) => {
+    console.log(
+      `An error occured while writing to the file. Error: ${error.message}`,
+    );
+  });
+  writableStream.on("finish", () => {
+    console.log(`All your sentences have been written to ${filePath}`);
+  });
+
+  return writableStream;
+};
+
+async function convert(filePath: string) {
+  try {
+    const { path, fileName, extension } = getFilePathNameExt(filePath);
+    let jsonConfig: object;
+    if (extension === "json") {
+      // If JSON then read file else if JS just import dynamically
+      jsonConfig = JSON.parse(fs.readFileSync(`${filePath}`, "utf8"));
+
+      const stream = startStream(`${path}/${fileName}-zombie.${extension}`);
+
+      stream.write(`[relaychain]
+      default_image = "docker.io/paritypr/polkadot-debug:master"
+      default_command = "polkadot"
+      default_args = [ "-lparachain=debug" ])`);
+      stream.end();
+    } else {
+      throw Error("No valid extension was found.");
+    }
+
+    // Read through the
+    console.log("j", jsonConfig);
+  } catch (err) {
+    console.log("error", err);
+  }
 }
 
 program.parse(process.argv);

@@ -94,3 +94,18 @@ export function getLokiUrl(
 
   return loki_url;
 }
+
+export function getFilePathNameExt(filePath: string): {
+  path: string;
+  fileName: string;
+  extension: string;
+} {
+  // Get path, fileName and extension
+  const index = filePath.lastIndexOf("/");
+  const path = filePath.slice(0, index);
+  const fileNameWithExt = filePath.slice(index + 1);
+  const extension = fileNameWithExt.split(".").pop() || "";
+  const [fileName] = fileNameWithExt.split(".");
+
+  return { path, fileName, extension };
+}
