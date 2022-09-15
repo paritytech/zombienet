@@ -10,9 +10,9 @@ import {
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getSha256 } from "../../utils/misc-utils";
+import { getSha256 } from "../../utils/misc";
 import { Network } from "../../network";
-import { getRandomPort } from "../../utils/net-utils";
+import { getRandomPort } from "../../utils/net";
 
 export async function genBootnodeDef(
   namespace: string,

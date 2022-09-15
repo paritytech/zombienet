@@ -50,9 +50,9 @@ import {
   filterConsole,
   getLokiUrl,
   getSha256,
-} from "./utils/misc-utils";
+} from "./utils/misc";
 import { series } from "./utils/promise-series";
-import { loadTypeDef } from "./utils/fs-utils";
+import { loadTypeDef } from "./utils/fs";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
@@ -61,7 +61,7 @@ import { generateBootnodeString } from "./bootnode";
 import { generateKeystoreFiles } from "./keys";
 import path from "path";
 
-import { CreateLogTable } from "./utils/logger";
+import { CreateLogTable } from "./utils/tableCli";
 
 const debug = require("debug")("zombie");
 
@@ -72,7 +72,7 @@ filterConsole([
   `API-WS: disconnected`,
 ]);
 
-export interface orchestratorOptions {
+export interface OrcOptionsInterface {
   monitor?: boolean;
   spawnConcurrency?: number;
   inCI?: boolean;
@@ -81,7 +81,7 @@ export interface orchestratorOptions {
 export async function start(
   credentials: string,
   launchConfig: LaunchConfig,
-  options?: orchestratorOptions,
+  options?: OrcOptionsInterface,
 ) {
   const opts = {
     ...{ monitor: false, spawnConcurrency: 1, inCI: false },

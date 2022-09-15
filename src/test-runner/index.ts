@@ -5,8 +5,8 @@ import path from "path";
 import { ApiPromise, Keyring } from "@polkadot/api";
 const utilCrypto = require("@polkadot/util-crypto");
 import { LaunchConfig } from "../types";
-import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc-utils";
-import { readNetworkConfig } from "../utils/fs-utils";
+import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc";
+import { readNetworkConfig } from "../utils/fs";
 import { Network, rebuildNetwork } from "../network";
 import { decorators } from "../utils/colors";
 import {

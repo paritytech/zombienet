@@ -8,7 +8,7 @@ import {
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils/net-utils";
+import { getRandomPort } from "../../utils/net";
 import { getClient } from "../client";
 import { Network } from "../../network";
 

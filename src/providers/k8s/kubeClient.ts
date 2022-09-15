@@ -7,14 +7,14 @@ import {
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
-import { addMinutes, getSha256 } from "../../utils/misc-utils";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
+import { addMinutes, getSha256 } from "../../utils/misc";
+import { writeLocalJsonFile } from "../../utils/fs";
 const fs = require("fs").promises;
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
-import { CreateLogTable } from "../../utils/logger";
+import { CreateLogTable } from "../../utils/tableCli";
 
 const debug = require("debug")("zombie::kube::client");
 
