@@ -24,6 +24,12 @@ export function addMinutes(howMany: number, baseDate?: Date): [number, number] {
   return [targetDate.getUTCHours(), targetDate.getUTCMinutes()];
 }
 
+// Helper function to convert bytes to MB
+export const convertBytes = (bytes: number) =>
+  (
+    bytes / Math.pow(1024, Math.floor(Math.log(bytes) / Math.log(1024)))
+  ).toFixed(0);
+
 export function isValidHttpUrl(input: string) {
   let url;
 
