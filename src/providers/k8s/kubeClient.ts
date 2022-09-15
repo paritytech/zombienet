@@ -651,7 +651,7 @@ export class KubeClient extends Client {
 
       // exec
       const result = await this.runCommand(
-        [...baseArgs, "bash", "-c", scriptPathInPod, ...args],
+        [...baseArgs, "bash", scriptPathInPod, ...args],
         undefined,
         true,
       );
