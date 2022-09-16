@@ -36,7 +36,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `*name`: (String) Name of the node.
   - `image`: (String) Override default docker image to use for this node.
   - `command`: (String) Override default command.
-  - `commandWithArgs`: (String) Override default command and args.
+  - `command_with_args`: (String) Override default command and args.
   - `args`: (Array of strings) Arguments to be passed to the `command`.
   - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
   - `invulnerable`: (Boolean, default false) If true, the node will be added to `invulnerables` in the chain spec.
@@ -77,7 +77,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
-    - `commandWithArgs`: (String) Overrides `command` and `args`.
+    - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
@@ -88,7 +88,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
-    - `commandWithArgs`: (String) Overrides `command` and `args`.
+    - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.

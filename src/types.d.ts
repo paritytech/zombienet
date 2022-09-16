@@ -51,7 +51,7 @@ export interface NodeConfig {
   name: string;
   image?: string;
   command?: string;
-  commandWithArgs?: string;
+  command_with_args?: string;
   args?: string[];
   validator: boolean;
   invulnerable: boolean;
