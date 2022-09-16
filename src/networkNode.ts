@@ -200,9 +200,9 @@ export class NetworkNode implements NetworkNodeInterface {
         return;
       };
 
-      // force connect
-      if (this.apiInstance) (this.apiInstance as ApiPromise).disconnect();
-      await this.connectApi();
+      // // force connect
+      // if (this.apiInstance) (this.apiInstance as ApiPromise).disconnect();
+      // await this.connectApi();
 
       const resp = await Promise.race([
         getValue(),
@@ -236,6 +236,7 @@ export class NetworkNode implements NetworkNodeInterface {
     let value;
     let timedout = false;
     try {
+      // process_start_time_seconds metric is used by `is up`, and we don't want to use cached values.
       if (desiredMetricValue === null || !this.cachedMetrics || rawMetricName === "process_start_time_seconds") {
         debug("reloading cache");
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
