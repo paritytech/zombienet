@@ -9,7 +9,12 @@ import {
   getHistogramBuckets,
   BucketHash,
 } from "./metrics";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, LOCALHOST, RPC_WS_PORT, WS_URI_PATTERN } from "./constants";
+import {
+  DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  LOCALHOST,
+  RPC_WS_PORT,
+  WS_URI_PATTERN,
+} from "./constants";
 import { getClient } from "./providers/client";
 
 import {
@@ -78,10 +83,10 @@ export class NetworkNode implements NetworkNodeInterface {
     args.push(cmd);
 
     const result = await client.runCommand(args, undefined, true);
-    if( result.exitCode === 0){
+    if (result.exitCode === 0) {
       // restart the port-fw if needed
       const url = new URL(this.wsUri);
-      if(parseInt(url.port,10) !== RPC_WS_PORT) {
+      if (parseInt(url.port, 10) !== RPC_WS_PORT) {
         const fwdPort = await client.startPortForwarding(
           RPC_WS_PORT,
           this.name,
@@ -96,7 +101,6 @@ export class NetworkNode implements NetworkNodeInterface {
       }
 
       return true;
-
     }
     return false;
   }
@@ -237,7 +241,11 @@ export class NetworkNode implements NetworkNodeInterface {
     let timedout = false;
     try {
       // process_start_time_seconds metric is used by `is up`, and we don't want to use cached values.
-      if (desiredMetricValue === null || !this.cachedMetrics || rawMetricName === "process_start_time_seconds") {
+      if (
+        desiredMetricValue === null ||
+        !this.cachedMetrics ||
+        rawMetricName === "process_start_time_seconds"
+      ) {
         debug("reloading cache");
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
       }
