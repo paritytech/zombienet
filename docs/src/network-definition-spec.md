@@ -95,7 +95,7 @@ The network config can be provided both in `json` or `toml` format and each sect
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
 
-## `hrmpChannels`: (Array of objects)
+## `hrmp_channels`: (Array of objects)
 
 - `sender`: (Number) parachain Id.
 - `recipient`: (Number) parachain Id.

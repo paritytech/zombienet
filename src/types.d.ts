@@ -7,7 +7,7 @@ export interface LaunchConfig {
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;
-  hrmpChannels?: HrmpChannelsConfig[];
+  hrmp_channels?: HrmpChannelsConfig[];
   configBasePath: string;
 }
 
@@ -122,7 +122,7 @@ export interface ComputedNetwork {
   };
   parachains: Parachain[];
   types: any;
-  hrmpChannels?: HrmpChannelsConfig[];
+  hrmp_channels?: HrmpChannelsConfig[];
   configBasePath: string;
   seed: string;
 }

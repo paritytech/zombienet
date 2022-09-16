@@ -298,10 +298,10 @@ export async function start(
           );
       }
 
-      if (networkSpec.hrmpChannels) {
+      if (networkSpec.hrmp_channels) {
         await addHrmpChannelsToGenesis(
           chainSpecFullPathPlain,
-          networkSpec.hrmpChannels,
+          networkSpec.hrmp_channels,
         );
       }
 
