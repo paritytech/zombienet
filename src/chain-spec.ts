@@ -319,8 +319,8 @@ export async function addHrmpChannelsToGenesis(
     let newHrmpChannel = [
       hrmpChannel.sender,
       hrmpChannel.recipient,
-      hrmpChannel.maxCapacity,
-      hrmpChannel.maxMessageSize,
+      hrmpChannel.max_capacity,
+      hrmpChannel.max_message_size,
     ];
 
     const runtimeConfig = getRuntimeConfig(chainSpec);

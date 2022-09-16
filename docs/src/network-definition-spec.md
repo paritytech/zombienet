@@ -99,8 +99,8 @@ The network config can be provided both in `json` or `toml` format and each sect
 
 - `sender`: (Number) parachain Id.
 - `recipient`: (Number) parachain Id.
-- `maxCapacity`: (Number)
-- `maxMessageSize`: (Number)
+- `max_capacity`: (Number)
+- `max_message_size`: (Number)
 
 ## `types`
 

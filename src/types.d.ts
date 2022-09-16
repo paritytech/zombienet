@@ -101,8 +101,8 @@ export interface ParachainConfig {
 export interface HrmpChannelsConfig {
   sender: number;
   recipient: number;
-  maxCapacity: number;
-  maxMessageSize: number;
+  max_capacity: number;
+  max_message_size: number;
 }
 
 // Computed Network
