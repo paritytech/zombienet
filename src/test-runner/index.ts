@@ -461,7 +461,7 @@ function parseAssertionLine(assertion: string) {
       const nodes = network.getNodes(nodeName);
       const results = await Promise.all(
         nodes.map((node) =>
-          node.getSpansByTraceId(traceId, network.tracingCollatorUrl!),
+          node.getSpansByTraceId(traceId, network.tracing_collator_url!),
         ),
       );
 

@@ -43,7 +43,7 @@ export function rebuildNetwork(
     backchannel,
     chainSpecFullPath,
     nodesByName,
-    tracingCollatorUrl,
+    tracing_collator_url,
   } = runningNetworkSpec;
   const network: Network = new Network(client, namespace, tmpDir);
   Object.assign(network, {
@@ -51,7 +51,7 @@ export function rebuildNetwork(
     launched,
     backchannel,
     chainSpecFullPath,
-    tracingCollatorUrl,
+    tracing_collator_url,
   });
 
   for (const nodeName of Object.keys(nodesByName)) {
@@ -99,7 +99,7 @@ export class Network {
   tmpDir: string;
   backchannelUri: string = "";
   chainSpecFullPath?: string;
-  tracingCollatorUrl?: string;
+  tracing_collator_url?: string;
   networkStartTime?: number;
 
   constructor(client: Client, namespace: string, tmpDir: string) {

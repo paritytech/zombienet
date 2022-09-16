@@ -298,10 +298,10 @@ export async function start(
           );
       }
 
-      if (networkSpec.hrmpChannels) {
+      if (networkSpec.hrmp_channels) {
         await addHrmpChannelsToGenesis(
           chainSpecFullPathPlain,
-          networkSpec.hrmpChannels,
+          networkSpec.hrmp_channels,
         );
       }
 
@@ -693,7 +693,7 @@ export async function start(
 
     // Add span collator if is available
     if (networkSpec.settings.tracing_collator_url) {
-      network.tracingCollatorUrl = networkSpec.settings.tracing_collator_url;
+      network.tracing_collator_url = networkSpec.settings.tracing_collator_url;
     } else {
       const servicePort =
         networkSpec.settings.tracing_collator_service_port ||
@@ -733,7 +733,7 @@ export async function start(
                 `service/${serviceName}`,
                 serviceNamespace,
               );
-              network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
+              network.tracing_collator_url = `http://localhost:${tracingPort}`;
             } catch (_) {
               console.log(
                 decorators.yellow(
@@ -748,7 +748,7 @@ export async function start(
             servicePort,
             TRACING_COLLATOR_PODNAME,
           );
-          network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
+          network.tracing_collator_url = `http://localhost:${tracingPort}`;
           break;
       }
     }

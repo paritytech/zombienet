@@ -309,18 +309,18 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
 
 export async function addHrmpChannelsToGenesis(
   specPath: string,
-  hrmpChannels: HrmpChannelsConfig[],
+  hrmp_channels: HrmpChannelsConfig[],
 ) {
   console.log(`\n\t\t ⛓  ${decorators.green("Adding Genesis HRMP Channels")}`);
 
   const chainSpec = readAndParseChainSpec(specPath);
 
-  for (const hrmpChannel of hrmpChannels) {
+  for (const h of hrmp_channels) {
     let newHrmpChannel = [
-      hrmpChannel.sender,
-      hrmpChannel.recipient,
-      hrmpChannel.maxCapacity,
-      hrmpChannel.maxMessageSize,
+      h.sender,
+      h.recipient,
+      h.max_capacity,
+      h.max_message_size,
     ];
 
     const runtimeConfig = getRuntimeConfig(chainSpec);
@@ -340,7 +340,7 @@ export async function addHrmpChannelsToGenesis(
 
       console.log(
         decorators.green(
-          `\t\t\t  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`,
+          `\t\t\t  ✓ Added HRMP channel ${h.sender} -> ${h.recipient}`,
         ),
       );
     } else {

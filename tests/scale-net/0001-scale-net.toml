@@ -20,7 +20,7 @@ chain = "rococo-local"
 {% for id in [100,200] %}
 [[parachains]]
 id = {{id}}
-addToGenesis = true
+add_to_genesis = true
 
   [parachains.collator]
   name = "collator01"

@@ -330,7 +330,7 @@ export async function generateNetworkSpec(
   }
 
   networkSpec.types = config.types ? config.types : {};
-  if (config.hrmpChannels) networkSpec.hrmpChannels = config.hrmpChannels;
+  if (config.hrmp_channels) networkSpec.hrmp_channels = config.hrmp_channels;
 
   return networkSpec as ComputedNetwork;
 }
@@ -430,8 +430,8 @@ async function getCollatorNodeFromConfig(
   ];
   if (collatorConfig.env) env.push(...collatorConfig.env);
 
-  const collatorBinary = collatorConfig.commandWithArgs
-    ? collatorConfig.commandWithArgs.split(" ")[0]
+  const collatorBinary = collatorConfig.command_with_args
+    ? collatorConfig.command_with_args.split(" ")[0]
     : collatorConfig.command
     ? collatorConfig.command
     : DEFAULT_ADDER_COLLATOR_BIN;
@@ -459,7 +459,7 @@ async function getCollatorNodeFromConfig(
     balance: collatorConfig.balance,
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
-    commandWithArgs: collatorConfig.commandWithArgs,
+    commandWithArgs: collatorConfig.command_with_args,
     args: collatorConfig.args || [],
     chain,
     bootnodes,
@@ -536,7 +536,7 @@ async function getNodeFromConfig(
     key: getSha256(nodeName),
     accounts: accountsForNode,
     command: command || DEFAULT_COMMAND,
-    commandWithArgs: node.commandWithArgs,
+    commandWithArgs: node.command_with_args,
     image: image || DEFAULT_IMAGE,
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
