@@ -309,7 +309,7 @@ chain = &quot;rococo-local&quot;
 
 [[parachains]]
 id = 100
-addToGenesis = false
+add_to_genesis = false
 
   [parachains.collator]
   name = &quot;collator01&quot;
@@ -620,11 +620,11 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>backchannel</code>: (Boolean, default false) Deploy an instance of backchannel server. <strong>Only</strong> available on <code>kubernetes</code>.</li>
 <li><code>polkadot_introspector</code>: (Boolean, default false) Deploy an instance of <a href="https://github.com/paritytech/polkadot-introspector">polkadot-introspector</a>, <strong>only</strong> available on <code>podman</code> and <code>kubernetes</code>.</li>
 <li><code>jaeger_agent</code>: (String) The jaeger agent endpoint passed to the <em>nodes</em>, <strong>only</strong> available on <code>kubernetes</code>.</li>
-<li><code>enable_tracing</code>: (Boolean, default true) Enable the tracing system, <strong>only</strong> available on  <code>kubernetes</code>.</li>
-<li><code>tracingCollatorUrl</code>: (String) The url of the tracing collator used to query by the <em>tracing assertion</em> (<strong>Should be tempo query compatible</strong>).</li>
-<li><code>tracing_collator_service_name</code>: (String, default <code>tempo-tempo-distributed-query-frontend</code>) service name for tempo query frontend, <strong>only</strong> available on  <code>kubernetes</code>.</li>
-<li><code>tracing_collator_service_namespace</code>: (String, default <code>tempo</code>) namespace where tempo is running, <strong>only</strong> available on  <code>kubernetes</code>.</li>
-<li><code>tracing_collator_service_port</code>: (Number, default <code>3100</code>) port of the query instance of tempo, <strong>only</strong> available on  <code>kubernetes</code>.</li>
+<li><code>enable_tracing</code>: (Boolean, default true) Enable the tracing system, <strong>only</strong> available on <code>kubernetes</code>.</li>
+<li><code>tracing_collator_url</code>: (String) The url of the tracing collator used to query by the <em>tracing assertion</em> (<strong>Should be tempo query compatible</strong>).</li>
+<li><code>tracing_collator_service_name</code>: (String, default <code>tempo-tempo-distributed-query-frontend</code>) service name for tempo query frontend, <strong>only</strong> available on <code>kubernetes</code>.</li>
+<li><code>tracing_collator_service_namespace</code>: (String, default <code>tempo</code>) namespace where tempo is running, <strong>only</strong> available on <code>kubernetes</code>.</li>
+<li><code>tracing_collator_service_port</code>: (Number, default <code>3100</code>) port of the query instance of tempo, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>node_spawn_timeout</code>: (Number, default per provider) timeout to spawn pod/process.</li>
 </ul>
 <h2 id="relaychain"><a class="header" href="#relaychain"><code>relaychain</code></a></h2>
@@ -647,7 +647,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>*name</code>: (String) Name of the node.</li>
 <li><code>image</code>: (String) Override default docker image to use for this node.</li>
 <li><code>command</code>: (String) Override default command.</li>
-<li><code>commandWithArgs</code>: (String) Override default command and args.</li>
+<li><code>command_with_args</code>: (String) Override default command and args.</li>
 <li><code>args</code>: (Array of strings) Arguments to be passed to the <code>command</code>.</li>
 <li><code>validator</code>: (Boolean, default true) Pass the <code>--validator</code> flag to the <code>command</code>.</li>
 <li><code>invulnerable</code>: (Boolean, default false) If true, the node will be added to <code>invulnerables</code> in the chain spec.</li>
@@ -687,13 +687,14 @@ b: reports sub_libp2p_is_major_syncing is 0
 </ul>
 <h2 id="parachains"><a class="header" href="#parachains"><code>parachains</code></a></h2>
 <ul>
-<li><code>parachains</code> Array of <code>parachain</code> definition objects
+<li>
+<p><code>parachains</code> Array of <code>parachain</code> definition objects</p>
 <ul>
 <li>
 <p><code>*id</code>: (Number) The id to assign to this parachain. Must be unique.</p>
 </li>
 <li>
-<p><code>addToGenesis</code>: (Boolean) flag to add parachain to genesis or register in runtime.</p>
+<p><code>add_to_genesis</code>: (Boolean) flag to add parachain to genesis or register in runtime.</p>
 </li>
 <li>
 <p><code>cumulus_based</code>: (Boolean) flag to use <code>cumulus</code> command generation.</p>
@@ -717,7 +718,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
 <li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
-<li><code>commandWithArgs</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
+<li><code>command_with_args</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
 <ul>
 <li>name: (String) name of the <code>env</code> var.</li>
@@ -734,7 +735,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
 <li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
-<li><code>commandWithArgs</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
+<li><code>command_with_args</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
 <ul>
 <li>name: (String) name of the <code>env</code> var.</li>
@@ -746,12 +747,12 @@ b: reports sub_libp2p_is_major_syncing is 0
 </ul>
 </li>
 </ul>
-<h2 id="hrmpchannels-array-of-objects"><a class="header" href="#hrmpchannels-array-of-objects"><code>hrmpChannels</code>: (Array of objects)</a></h2>
+<h2 id="hrmp_channels-array-of-objects"><a class="header" href="#hrmp_channels-array-of-objects"><code>hrmp_channels</code>: (Array of objects)</a></h2>
 <ul>
 <li><code>sender</code>: (Number) parachain Id.</li>
 <li><code>recipient</code>: (Number) parachain Id.</li>
-<li><code>maxCapacity</code>: (Number)</li>
-<li><code>maxMessageSize</code>: (Number)</li>
+<li><code>max_capacity</code>: (Number)</li>
+<li><code>max_message_size</code>: (Number)</li>
 </ul>
 <h2 id="types"><a class="header" href="#types"><code>types</code></a></h2>
 <ul>
