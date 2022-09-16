@@ -13,7 +13,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `polkadot_introspector`: (Boolean, default false) Deploy an instance of [polkadot-introspector](https://github.com/paritytech/polkadot-introspector), **only** available on `podman` and `kubernetes`.
 - `jaeger_agent`: (String) The jaeger agent endpoint passed to the *nodes*, **only** available on `kubernetes`.
 - `enable_tracing`: (Boolean, default true) Enable the tracing system, **only** available on  `kubernetes`.
-- `tracingCollatorUrl`: (String) The url of the tracing collator used to query by the *tracing assertion* (**Should be tempo query compatible**).
+- `tracing_collator_url`: (String) The url of the tracing collator used to query by the *tracing assertion* (**Should be tempo query compatible**).
 - `tracing_collator_service_name`: (String, default `tempo-tempo-distributed-query-frontend`) service name for tempo query frontend, **only** available on  `kubernetes`.
 - `tracing_collator_service_namespace`: (String, default `tempo`) namespace where tempo is running, **only** available on  `kubernetes`.
 - `tracing_collator_service_port`: (Number, default `3100`) port of the query instance of tempo, **only** available on  `kubernetes`.
