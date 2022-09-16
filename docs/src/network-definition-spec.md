@@ -2,23 +2,22 @@
 
 **NOTE**: Final config spec is TBD, check [examples](../examples) for use cases.
 
-The network config can be provided both in `json` or `toml` format and each section can contain `provider` specific *keys* that are ignored by others, e.g. when you use the `native` provider all references to `image/s` for nodes are ignored.
-
+The network config can be provided both in `json` or `toml` format and each section can contain `provider` specific _keys_ that are ignored by others, e.g. when you use the `native` provider all references to `image/s` for nodes are ignored.
 
 ## `settings`
+
 - `bootnode`: (Boolean, default true) add bootnode to network.
 - `timeout`: (number) global timeout to use for spawning the whole network.
 - `provider`: (String, default `kubernetes`) Provider to use (e.g kubernetes, podman).
 - `backchannel`: (Boolean, default false) Deploy an instance of backchannel server. **Only** available on `kubernetes`.
 - `polkadot_introspector`: (Boolean, default false) Deploy an instance of [polkadot-introspector](https://github.com/paritytech/polkadot-introspector), **only** available on `podman` and `kubernetes`.
-- `jaeger_agent`: (String) The jaeger agent endpoint passed to the *nodes*, **only** available on `kubernetes`.
-- `enable_tracing`: (Boolean, default true) Enable the tracing system, **only** available on  `kubernetes`.
-- `tracing_collator_url`: (String) The url of the tracing collator used to query by the *tracing assertion* (**Should be tempo query compatible**).
-- `tracing_collator_service_name`: (String, default `tempo-tempo-distributed-query-frontend`) service name for tempo query frontend, **only** available on  `kubernetes`.
-- `tracing_collator_service_namespace`: (String, default `tempo`) namespace where tempo is running, **only** available on  `kubernetes`.
-- `tracing_collator_service_port`: (Number, default `3100`) port of the query instance of tempo, **only** available on  `kubernetes`.
+- `jaeger_agent`: (String) The jaeger agent endpoint passed to the _nodes_, **only** available on `kubernetes`.
+- `enable_tracing`: (Boolean, default true) Enable the tracing system, **only** available on `kubernetes`.
+- `tracing_collator_url`: (String) The url of the tracing collator used to query by the _tracing assertion_ (**Should be tempo query compatible**).
+- `tracing_collator_service_name`: (String, default `tempo-tempo-distributed-query-frontend`) service name for tempo query frontend, **only** available on `kubernetes`.
+- `tracing_collator_service_namespace`: (String, default `tempo`) namespace where tempo is running, **only** available on `kubernetes`.
+- `tracing_collator_service_port`: (Number, default `3100`) port of the query instance of tempo, **only** available on `kubernetes`.
 - `node_spawn_timeout`: (Number, default per provider) timeout to spawn pod/process.
-
 
 ## `relaychain`
 
@@ -62,17 +61,20 @@ The network config can be provided both in `json` or `toml` format and each sect
     - value: (String| number) Value of the env var.
   - `overrides`: Array of `overrides` definitions.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
+
 ## `parachains`
 
 - `parachains` Array of `parachain` definition objects
+
   - `*id`: (Number) The id to assign to this parachain. Must be unique.
-  - `addToGenesis`: (Boolean) flag to add parachain to genesis or register in runtime.
+  - `add_to_genesis`: (Boolean) flag to add parachain to genesis or register in runtime.
   - `cumulus_based`: (Boolean) flag to use `cumulus` command generation.
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.
   - `genesis_state_generator`: (String) Command to generate the state file.
   - `collator`:
+
     - `*name`: (String) Name of the collator.
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
@@ -94,10 +96,12 @@ The network config can be provided both in `json` or `toml` format and each sect
       - value: (String| number) Value of the env var.
 
 ## `hrmpChannels`: (Array of objects)
-  - `sender`: (Number) parachain Id.
-  - `recipient`: (Number) parachain Id.
-  - `maxCapacity`: (Number)
-  - `maxMessageSize`: (Number)
+
+- `sender`: (Number) parachain Id.
+- `recipient`: (Number) parachain Id.
+- `maxCapacity`: (Number)
+- `maxMessageSize`: (Number)
+
 ## `types`
 
 - Object to use as `user defined types` with the js api.
