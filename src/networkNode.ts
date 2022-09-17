@@ -198,10 +198,6 @@ export class NetworkNode implements NetworkNodeInterface {
         return;
       };
 
-      // // force connect
-      // if (this.apiInstance) (this.apiInstance as ApiPromise).disconnect();
-      // await this.connectApi();
-
       const resp = await Promise.race([
         getValue(),
         new Promise((resolve) =>
