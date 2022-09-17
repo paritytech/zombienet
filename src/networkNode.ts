@@ -83,22 +83,20 @@ export class NetworkNode implements NetworkNodeInterface {
     args.push(cmd);
 
     const result = await client.runCommand(args, undefined, true);
-    if(result.exitCode !== 0) return false;
+    if (result.exitCode !== 0) return false;
     // restart the port-fw if needed
     const url = new URL(this.wsUri);
     if (parseInt(url.port, 10) !== RPC_WS_PORT) {
-      const fwdPort = await client.startPortForwarding(
-        RPC_WS_PORT,
-        this.name,
+      const fwdPort = await client.startPortForwarding(RPC_WS_PORT, this.name);
+
+      this.wsUri = WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+        "{{PORT}}",
+        fwdPort.toString(),
       );
 
-    this.wsUri = WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
-      "{{PORT}}",
-      fwdPort.toString(),
-    );
-
-    this.apiInstance = undefined;
-    return true;
+      this.apiInstance = undefined;
+      return true;
+    }
   }
 
   async pause() {
