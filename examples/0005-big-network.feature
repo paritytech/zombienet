@@ -3,7 +3,7 @@ Network: ./0005-big-network.toml
 Creds: config
 
 
-# well know functions using groups and specific node
+# well known functions using groups and specific node
 a: is up
 b: is up
 

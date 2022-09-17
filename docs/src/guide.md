@@ -2,13 +2,14 @@
 
 ## Intro
 
-Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that works across the suppored `providers` (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create an smooth experiencie for developers, giving confidense and simplicity to build and ship.
+Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that work across supported `providers` (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create a smooth experience for parachain developers, giving them the confidence and simplicity to build and ship.
 
-In this guide we will walkthrough from simple use cases to more complex, describing the trade-offs made and the *current* constraints for both netwrok configruations and test specifications.
+In this guide we will go through simple use cases as well as more complex ones, describing the trade-offs made and the *current* constraints for both network configurations and test specifications.
 
 ### Example 1 - Small network (2 validators/ 1 parachain)
 
-In this example [small-network](../examples//0001-small-network.toml), we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the *default* image, command and args.
+In this [small-network](../examples//0001-small-network.toml) example, we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). 
+Both of the validators are using the *default* image, command and args.
 
 ```toml
 [relaychain]
@@ -34,12 +35,14 @@ id = 100
   command = "adder-collator"
 ```
 
-Then we can just spawn this network by running (by kubernetes as provider)
+Using kubernetes as provider we can simply spawn this network by running:
 
 ```bash
 ./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
 ```
-And you will see how `zombienet` start creating the needded resources and launch the network, at the end of the process a list of `nodes` (with direct access links) will be printed. So, you can now connect to one of the `nodes`
+
+You will see how `zombienet` starts creating the needed resources to launch the network.
+At the end of the process a list of `nodes` (with direct access links) will be printed. So, you can now connect to one of the `nodes`.
 
 ![small network banner](./imgs/small-network-banner.png)
 
@@ -47,7 +50,8 @@ And you will see how `zombienet` start creating the needded resources and launch
 
 ---
 
-Now we've explored how to launch a network lets add a test file to ensure that works as expected. In zombienet the test are defined in the `*.feature` file and we have a *simple* [DSL](./test-dsl-definition-spec.md) to write the assertions to make.
+Now we've explored how to launch a network, let's add a test file to ensure that it works as expected. 
+In Zombienet the tests are defined in the `*.feature` file, which uses a *simple* [DSL](./test-dsl-definition-spec.md) to write test assertions.
 
 [0001-small-network.feature](../examples/0001-small-network.feature)
 
@@ -57,7 +61,7 @@ Network: ./0001-small-network.toml
 Creds: config
 
 
-# well know functions
+# well known functions
 alice: is up
 bob: is up
 alice: parachain 100 is registered within 225 seconds
@@ -78,22 +82,21 @@ bob: system event contains "A candidate was included" within 20 seconds
 alice: system event matches glob "*was backed*" within 10 seconds
 ```
 
-Now this time we run the tests with the following command
+Now, run the tests with the following command to get both the *launching* output and the test reports:
 
 ```bash
 ./zombienet-linux -p kubernetes test examples/0001-small-network.feature
 ```
-
-And we get both, the *launching* output and the test reports.
 
 ![test report](./imgs/small-network-test-report.png)
 
 
 ### Example 2 - Small network with replacements
 
-In the *first* example we use some *hardcoded* default values, that works but sometimes is more useful to set those dynamically. For example, this is useful if you are building images in your `CI` and those images have an unique tag. For cover those cases, zombienet use a templating languaje ([nunjucks](https://mozilla.github.io/nunjucks/)) allowing to use *variables* and replace those in *runtime* from the environment variables.
+In Example 1, we used some *hardcoded* default values but sometimes it's more useful to be able to change them dynamically. 
+For example, if you are building images in your `CI` and those images have an unique tag. To address these cases, Zombienet uses a templating language called [Nunjucks](https://mozilla.github.io/nunjucks/) that allows defining environment variables which then can get updated at *runtime*.
 
-Following the previous example, we will replace the *images* with variables that will read the value from the environment.
+Following the previous example, we will replace the *images* with variables that will read the value from the environment:
 
 [0002-small-network-env-vars.toml](../examples/0002-small-network-env-vars.toml)
 ```toml
@@ -120,23 +123,27 @@ id = 100
   command = "adder-collator"
 ```
 
-
-To spawn this network now we need to define both `ZOMBIENET_INTEGRATION_TEST_IMAGE` and `ZOMBIENET_COL_IMAGE` environment variables and zombienet will replace at runtime.
+To spawn this network now we need to define the `ZOMBIENET_INTEGRATION_TEST_IMAGE` and `ZOMBIENET_COL_IMAGE` environment variables.
+For example:
 
 ```bash
 export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
 export ZOMBIENET_COL_IMAGE=docker.io/paritypr/colander:master
+```
 
+Now we can run this command to spawn the network:
+
+```bash
 ./zombienet-linux -p kubernetes spawn examples/0002-small-network-env-vars.toml
 ```
 
-And again we get the network info with direct links
+And again we get the network info with direct links:
 
 ![network info](./imgs/small-network-envs-launch.png)
 
 ### Example 3 - Small network with custom images per node
 
-Continue with out `small network` example, this time will be *overriding* some of the default methods to allow developers to use and test different configurations. For example different `images` or `arguments`.
+Continuing with our `small network` example, this time will be *overriding* some of the default methods to allow developers to use and test different configurations. For example different `images` or `arguments`.
 
 As an example, this config will use different `images` and `dbs` between the nodes.
 
@@ -286,7 +293,7 @@ Network: ./0005-big-network.toml
 Creds: config
 
 
-# well know functions using groups
+# well known functions using groups
 a: is up
 b: is up
 
