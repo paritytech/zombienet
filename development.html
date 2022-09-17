@@ -153,7 +153,7 @@ npm run build
 </code></pre>
 <h3 id="download-and-install-needed-artifacts-optional"><a class="header" href="#download-and-install-needed-artifacts-optional">Download and install needed artifacts (Optional)</a></h3>
 <p>For easier and faster setup of local environment, upi can run:</p>
-<pre><code class="language-bash">❯ node dist/setup.js
+<pre><code class="language-bash">❯ node dist/cli.js setup &lt;binaries&gt;
 
 Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
 
@@ -164,6 +164,9 @@ You can use the following arguments:
 	possible options: 'polkadot', 'polkadot-parachain'
 	example: node dist/cli.js setup polkadot polkadot-parachain
 </code></pre>
+<blockquote>
+<p>Note: If you are using MacOS. Please, clone the polkadot repo (https://github.com/paritytech/polkadot) and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
+</blockquote>
 <p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
 <p>e.g.</p>
 <pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/current_directory:$PATH
