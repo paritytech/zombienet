@@ -143,7 +143,7 @@ And again we get the network info with direct links:
 
 ### Example 3 - Small network with custom images per node
 
-Continuing with our `small network` example, this time will be *overriding* some of the default methods to allow developers to use and test different configurations. For example different `images` or `arguments`.
+Continuing with our `small network` example, this time we will be *overriding* some of the default methods to allow developers to use and test different configurations, such as different `images` or `arguments`.
 
 As an example, this config will use different `images` and `dbs` between the nodes.
 
@@ -176,24 +176,27 @@ id = 100
   command = "adder-collator"
 ```
 
-Again, we *launch* our network using `zombienet`
+We start by launching our simulated network using `zombienet`:
 
 ```bash
 ./zombienet-linux -p kubernetes spawn examples/0003-small-network-custom.toml
 ```
 
-And we get the *information* about the network
+And we get the *information* about the network.
+
 ![network info](./imgs/small-network-custom-launch.png)
 
 **But** if we scroll up the output we can see that `bob` is using the custom image and argument we set.
 
 ![bob custom image and command](./imgs/bob-custom.png)
 
-In general all the config fields that start with `default_` can we overrided in the `nodes` or `collators` config.
+In general all the config fields that start with `default_*` can be overridden in the `nodes` or `collators` config.
 
 ### Example 4 - Small network with cumulus based collator
 
-Until now we use the *parachain tests collators* that are built from the `polkadot` repo. In this example we will set the config to use a `cumulus` based collator. Continuing with the example we are using, we need first to change the `image` and `command` of the collator, and also add the config key `cumulus_based` set to true
+Until now we've been using the *parachain tests collators* that are built from the `polkadot` repo. In this example we will set the config to use a `cumulus` based collator. 
+
+Continuing with the example we are using, we need to change the `image` and `command` of the collator, and also set the config key `cumulus_based` to true.
 
 [small network cumulus](../examples/0004-small-network-cumulus.toml)
 
@@ -231,14 +234,14 @@ And again, we just *launch* the network using the following command:
 ./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml
 ```
 
-Anf get the network information but this time using a `cumulus based` collator.
+And get the network information but this time using a `cumulus based` collator.
 
 ![cumulus launch](./imgs/cumulus-launch.png)
 
 
 ### Example 5 - Big networks with groups
 
-Some times you need to launch and test bigger networks and define nodes one by one is a very *manual* and error prone way. For this use cases zombienet allow to define `groups` of nodes, for both `validators` and `collators`.
+Sometimes you need to launch and test bigger networks and defining nodes one by one is a very *manual* and error prone task. For this use cases Zombienet allows to define `groups` of nodes, for both `validators` and `collators`.
 
 Using the `small network` example as base, we can add `groups` to spawn a bigger network.
 
@@ -270,10 +273,11 @@ id = 100
     image = "docker.io/paritypr/colander:master"
 ```
 
-We use `node_groups` and `collator_groups` to define the groups we want to spawn, zombienet will spawn the desired `count` and will name the `nodes`/`collators` with the *index* suffix (e.g `a-1`). Again, the groups use the `default_*` fields if they are not overrided in the group definition.
+We use `node_groups` and `collator_groups` to define the groups we want to spawn, then Zombienet will spawn the desired `count` and will name the `nodes`/`collators` with the *index* suffix (e.g `a-1`). 
+Again, the groups use the `default_*` fields if they are not overridden in the group definition.
 
 
-This time for `spawning` the network we will use the *concurrency* (`-c`) flag to spawn the nodes in batches and speed the process.
+This time for `spawning` the network we will use the *concurrency* (`-c`) flag to spawn the nodes in batches and speed up the process.
 
 ```bash
 ./zombienet-linux -p kubernetes -c 5 spawn examples/0005-big-network.toml
@@ -283,9 +287,8 @@ And this time we get also a bigger output...
 
 ![big network](./imgs/big-launch.png)
 
-Also, you can use the *group name* in the testing definition to make the same assertion on all the `nodes`/`collators` of the group.
-
-For example
+You can use the *group name* in the testing definition to make the same assertion on all the `nodes`/`collators` of the group.
+For example:
 
 ```
 Description: Big Network test
@@ -316,11 +319,13 @@ And now we can run the test and get the report
 
 ### Node logs
 
-Logs are always a great resource for troubleshooting, zombienet give you an easy way to access `node's` logs in all the supported providers.
+Logs are always a great resource for troubleshooting. 
+Zombienet gives you an easy way to access a node's logs in all the supported providers.
 
-#### Logs in kubernetes
+#### Logs in Kubernetes
 
-With `kubernetes` provider you have a couple of options to follow the logs, the first one is using the command that `zombienet` suggest in the output of the running nodes
+Using the `kubernetes` provider you have a couple of options to follow the logs.
+The first is using the command that `zombienet` suggests in the output of the running nodes:
 
 ```
 	a-0 running
@@ -330,11 +335,11 @@ With `kubernetes` provider you have a couple of options to follow the logs, the 
 			 kubectl logs -f a-0
 ```
 
-Or if you have [prometheus operator](https://prometheus-operator.dev/) installed in your cluster zombienet will create a `PodMonitor` to collect all the `node's` logs and make it available in your grafana dashboard.
+If you have a [prometheus operator](https://prometheus-operator.dev/) installed in your cluster, Zombienet will create a `PodMonitor` to collect all the node's logs and make it available in your Grafana dashboard which you can also use.
 
-#### Logs in podman
+#### Logs in Podman
 
-When you use `podman` you can follow the logs of the pods with the command suggestion that `zombienet` give you when spawn each pod.
+When you use `podman` you can follow the logs of the pods with the command suggestion that `zombienet` gives you when it spawns each pod.
 
 ```
     alice running
@@ -346,7 +351,8 @@ When you use `podman` you can follow the logs of the pods with the command sugge
 
 #### Logs in native
 
-With the `native` provider you can follow the logs of the pods with the command suggestion that `zombienet` give you when spawn process.
+With the `native` provider you can follow the logs of the pods with the command suggestion that `zombienet` gives you when it spawn a new process.
+For example:
 
 ```
     alice running
@@ -373,4 +379,4 @@ DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-networ
 
 ![podman infra](./imgs/podman-infra.png)
 
-The `grafana` pod is running under the default user configuration and have `prometheus` and `tempo` already configured as datasources.
+The `grafana` pod is running under the default user configuration and has `prometheus` and `tempo` already configured as datasources.
