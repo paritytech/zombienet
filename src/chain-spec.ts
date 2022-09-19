@@ -354,12 +354,12 @@ export async function addHrmpChannelsToGenesis(
 
 // Look at the key + values from `obj1` and try to replace them in `obj2`.
 function findAndReplaceConfig(obj1: any, obj2: any) {
-  // create new Object without  null prototype
-  obj2 = { ...obj2 };
+  // create new Object without null prototype
+  const tempObj = { ...obj2 };
   // Look at keys of obj1
   Object.keys(obj1).forEach((key) => {
     // See if obj2 also has this key
-    if (obj2.hasOwnProperty(key)) {
+    if (tempObj.hasOwnProperty(key)) {
       // If it goes deeper, recurse...
       if (
         obj1[key] !== null &&
