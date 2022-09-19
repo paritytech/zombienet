@@ -7,7 +7,7 @@ export interface LaunchConfig {
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;
-  hrmpChannels?: HrmpChannelsConfig[];
+  hrmp_channels?: HrmpChannelsConfig[];
   configBasePath: string;
 }
 
@@ -51,7 +51,7 @@ export interface NodeConfig {
   name: string;
   image?: string;
   command?: string;
-  commandWithArgs?: string;
+  command_with_args?: string;
   args?: string[];
   validator: boolean;
   invulnerable: boolean;
@@ -101,8 +101,8 @@ export interface ParachainConfig {
 export interface HrmpChannelsConfig {
   sender: number;
   recipient: number;
-  maxCapacity: number;
-  maxMessageSize: number;
+  max_capacity: number;
+  max_message_size: number;
 }
 
 // Computed Network
@@ -122,7 +122,7 @@ export interface ComputedNetwork {
   };
   parachains: Parachain[];
   types: any;
-  hrmpChannels?: HrmpChannelsConfig[];
+  hrmp_channels?: HrmpChannelsConfig[];
   configBasePath: string;
   seed: string;
 }

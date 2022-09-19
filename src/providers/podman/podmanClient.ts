@@ -7,8 +7,8 @@ import {
   P2P_PORT,
   PROMETHEUS_PORT,
 } from "../../constants";
-import { getHostIp } from "../../utils/net-utils";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
+import { getHostIp } from "../../utils/net";
+import { writeLocalJsonFile } from "../../utils/fs";
 const fs = require("fs").promises;
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
@@ -20,7 +20,7 @@ import {
   genTempoDef,
   getIntrospectorDef,
 } from "./dynResourceDefinition";
-import { CreateLogTable } from "../../utils/logger";
+import { CreateLogTable } from "../../utils/tableCli";
 
 const debug = require("debug")("zombie::podman::client");
 

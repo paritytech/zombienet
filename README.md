@@ -224,7 +224,7 @@ chain = "rococo-local"
 
 [[parachains]]
 id = 100
-addToGenesis = false
+add_to_genesis = false
 
   [parachains.collator]
   name = "collator01"
@@ -295,12 +295,12 @@ npm install
 npm run build
 ```
 
-### Download and install needed artifacts (Optional)
+### Download and install needed artifacts (`Optional`)
 
 For easier and faster setup of local environment, you can run:
 
 ```bash
-❯ node dist/setup.js
+❯ node dist/cli.js setup <binaries>
 
 Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
 
@@ -311,6 +311,7 @@ You can use the following arguments:
 	possible options: 'polkadot', 'polkadot-parachain'
 	example: node dist/cli.js setup polkadot polkadot-parachain
 ```
+> Note: If you are using MacOS. Please, clone the polkadot repo (https://github.com/paritytech/polkadot) and run it locally. At the moment there is no `polkadot` binary for MacOs.
 
 Script above will retrieve the binaries provided and try to download and prepare those binaries for
 usage. At the end of the download, script will provide a command to run in your local environment in

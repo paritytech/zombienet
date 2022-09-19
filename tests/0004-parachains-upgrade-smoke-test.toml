@@ -24,12 +24,12 @@ command = "polkadot"
 
 [[parachains]]
 id = 100
-addToGenesis = true
+add_to_genesis = true
 
   [parachains.collator]
   name = "collator01"
   image = "docker.io/parity/polkadot-parachain:latest"
-  commandWithArgs = "polkadot-parachain --collator --alice --force-authoring --tmp --parachain-id 100 --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe --unsafe-ws-external -- --execution wasm --chain /cfg/rococo-local.json --bootnodes /dns/bootnode/tcp/30333/ws/p2p/12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp"
+  command_with_args = "polkadot-parachain --collator --alice --force-authoring --tmp --parachain-id 100 --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe --unsafe-ws-external -- --execution wasm --chain /cfg/rococo-local.json --bootnodes /dns/bootnode/tcp/30333/ws/p2p/12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp"
 
   [[parachains.collator.env]]
   name = "RUST_LOG"

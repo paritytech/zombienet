@@ -19,7 +19,7 @@ chain = "rococo-local"
 
 [[parachains]]
 id = 100
-addToGenesis = true
+add_to_genesis = true
 
   [parachains.collator]
   name = "collator01"

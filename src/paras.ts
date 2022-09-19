@@ -9,17 +9,18 @@ import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { fileMap, Node, Parachain } from "./types";
 import fs from "fs";
-import {
-  addAuraAuthority,
-  addAuthority,
-  changeGenesisConfig,
-  clearAuthorities,
-  readAndParseChainSpec,
-  specHaveSessionsKeys,
-  writeChainSpec,
-} from "./chain-spec";
-import { getRandomPort } from "./utils/net-utils";
-import { decorate, PARA } from "./paras-decorators";
+// import {
+//   addAuraAuthority,
+//   addAuthority,
+//   changeGenesisConfig,
+//   clearAuthorities,
+//   readAndParseChainSpec,
+//   specHaveSessionsKeys,
+//   writeChainSpec,
+// } from "./chain-spec";
+import chainSpecFns from "./chain-spec";
+import { decorate, PARA, whichPara } from "./paras-decorators";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
 
@@ -31,21 +32,23 @@ export async function generateParachainFiles(
   parachain: Parachain,
 ): Promise<void> {
 
-  // [ addAuraAuthority,
-  //   addAuthority,
-  //   changeGenesisConfig,
-  //   clearAuthorities,
-  //   readAndParseChainSpec,
-  //   specHaveSessionsKeys,
-  //   writeChainSpec ] = decorate(PARA.Moonbeam, [
-  //     addAuraAuthority,
-  //     addAuthority,
-  //     changeGenesisConfig,
-  //     clearAuthorities,
-  //     readAndParseChainSpec,
-  //     specHaveSessionsKeys,
-  //     writeChainSpec
-  //   ]);
+  let para: PARA = whichPara(parachain.chain || "");
+  let [ addAuraAuthority,
+    addAuthority,
+    changeGenesisConfig,
+    clearAuthorities,
+    readAndParseChainSpec,
+    specHaveSessionsKeys,
+    writeChainSpec ] = decorate(para, [
+      chainSpecFns.addAuraAuthority,
+      chainSpecFns.addAuthority,
+      chainSpecFns.changeGenesisConfig,
+      chainSpecFns.clearAuthorities,
+      chainSpecFns.readAndParseChainSpec,
+      chainSpecFns.specHaveSessionsKeys,
+      chainSpecFns.writeChainSpec
+  ]);
+
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
   const client = getClient();
