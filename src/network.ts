@@ -143,10 +143,8 @@ export class Network {
     // Cleanup all api instances
     for (const node of Object.values(this.nodesByName))
       node.apiInstance?.disconnect();
-      for (const node of para.nodes) 
-        if (node.apiInstance) node.apiInstance.disconnect()
     for (const relay of this.relay) 
-        if (relay.apiInstance) relay.apiInstance.disconnect()
+      relay.apiInstance?.disconnect()
     await this.client.destroyNamespace();
   }
 
