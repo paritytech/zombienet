@@ -140,6 +140,9 @@ export class Network {
   }
 
   async stop() {
+    // Cleanup all api instances
+    for (const node of Object.values(this.nodesByName))
+      node.apiInstance?.disconnect();
     await this.client.destroyNamespace();
   }
 

@@ -99,7 +99,7 @@ export async function start(
     debug(JSON.stringify(networkSpec, null, 4));
 
     // global timeout to spin the network
-    setTimeout(() => {
+    const timeoutTimer = setTimeout(() => {
       if (network && !network.launched) {
         throw new Error(
           `GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `,
@@ -753,8 +753,9 @@ export async function start(
       }
     }
 
-    // prevent global timeout
+    // cleanup global timeout
     network.launched = true;
+    clearTimeout(timeoutTimer);
     debug(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );
