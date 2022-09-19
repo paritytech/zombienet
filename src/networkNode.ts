@@ -95,8 +95,9 @@ export class NetworkNode implements NetworkNodeInterface {
       );
 
       this.apiInstance = undefined;
-      return true;
     }
+
+    return true;
   }
 
   async pause() {
