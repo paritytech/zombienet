@@ -144,7 +144,7 @@
 <p>Zombienet should works with any k8s cluster (e.g <a href="https://cloud.google.com/kubernetes-engine">GKE</a>, <a href="https://docs.docker.com/desktop/kubernetes/">docker-desktop</a>, <a href="https://kind.sigs.k8s.io/">kind</a>) <strong>but</strong> you need to have <code>kubectl</code> installed to interact with your cluster.</p>
 <p>Also, you need <em>permission</em> to create resources (e.g <code>namespaces</code>, <code>pods</code> and <code>cronJobs</code>) in the target cluster.</p>
 <h2 id="using-zombienet-gke-cluster-internally"><a class="header" href="#using-zombienet-gke-cluster-internally">Using <code>Zombienet</code> GKE cluster (internally).</a></h2>
-<p>Zombienet project has it's own k8s cluster in GCP, to use it please ping <a href="requirements/@javier:matrix.parity.io">Javier</a> in element to gain access and steps to use.</p>
+<p>Zombienet project has it's own k8s cluster in GCP, to use it please ping <em>Javier</em> (@javier:matrix.parity.io) in element to gain access and steps to use.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="podman-requirements"><a class="header" href="#podman-requirements">Podman requirements</a></h1>
 <p>ZombieNet support <a href="https://podman.io/">Podman</a> <em>rootless</em> as provider, you only need to have <code>podman</code> installed in your environment to use and either set in the <em>network</em> file or with the <code>--provider</code> flag in the cli.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="native-requirements"><a class="header" href="#native-requirements">Native requirements</a></h1>
@@ -256,41 +256,41 @@ id = 100
 <pre><code class="language-bash">./zombienet-macos spawn examples/0001-small-network.toml
 </code></pre>
 <p>You can follow the output of the <code>steps</code> to spawn the network and once the network is launched a message with the <code>node</code>s information like this one is show</p>
-<pre><code class="language-bash">┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                                       Network launched 🚀🚀                                                       │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│ Namespace                    │ zombie-0c26e3512b222b8cd7053d4f632f0b62                                                            │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│ Provider                     │ native                                                                                             │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│                                                         Node Information                                                          │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│ Name                         │ alice                                                                                              │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│ Direct Link                  │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:43185#/explorer                                   │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│ Prometheus Link              │ http://127.0.0.1:44521/metrics                                                                     │
-├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────┤
-│                                                         Node Information                                                          │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ Name                         │ bob                                                                                                │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ Direct Link                  │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:45645#/explorer                                   │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ Prometheus Link              │ http://127.0.0.1:38901/metrics                                                                     │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ Parachain ID                 │ 100                                                                                                │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ ChainSpec Path               │ /tmp/zombie-0c26e3512b222b8cd7053d4f632f0b62_-20554-cMuCmVc8OQ7f/rococo-local-100.json             │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│                                                         Node Information                                                          │
-├─────────────────────────-─────────────────────────────────────────────────────────────────────────────────────┤
-│ Name                         │ collator01                                                                                         │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ Direct Link                  │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:37543#/explorer                                   │
-├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────┤
-│ Prometheus Link              │ http://127.0.0.1:44807/metrics                                                                     │
-└─────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────┘
+<pre><code class="language-bash">┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                       Network launched 🚀🚀                                        |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Namespace               | zombie-0c26e3512b222b8cd7053d4f632f0b62                                                 |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Provider                | native                                                                                  |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                         Node Information                                          |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Name                    | alice                                                                                   |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Direct Link             | https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:43185#/explorer                        |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Prometheus Link         | http://127.0.0.1:44521/metrics                                                          |
+├─────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                         Node Information                                          |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Name                    | bob                                                                                     |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Direct Link             | https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:45645#/explorer                        |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Prometheus Link         | http://127.0.0.1:38901/metrics                                                          |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Parachain ID            | 100                                                                                     |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ ChainSpec Path          | /tmp/zombie-0c26e3512b222b8cd7053d4f632f0b62_-20554-cMuCmVc8OQ7f/rococo-local-100.json  │
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                         Node Information                                          |
+├─────────────────────────-─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Name                    | collator01                                                                              |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Direct Link             | https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:37543#/explorer                        |
+├─────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Prometheus Link         | http://127.0.0.1:44807/metrics                                                          |
+└─────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────┘
 
 </code></pre>
 <p>Both the <code>prometheus</code> and the <code>node</code> links are accesibles in your local machine to get the <code>metrics</code> or connect to the node.</p>
@@ -350,7 +350,7 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 <p>Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that works across the suppored <code>providers</code> (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create an smooth experiencie for developers, giving confidense and simplicity to build and ship.</p>
 <p>In this guide we will walkthrough from simple use cases to more complex, describing the trade-offs made and the <em>current</em> constraints for both netwrok configruations and test specifications.</p>
 <h3 id="example-1---small-network-2-validators-1-parachain"><a class="header" href="#example-1---small-network-2-validators-1-parachain">Example 1 - Small network (2 validators/ 1 parachain)</a></h3>
-<p>In this example <a href="../examples//0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
+<p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
 default_command = &quot;polkadot&quot;
@@ -381,7 +381,7 @@ id = 100
 <p><img src="./imgs/small-network-web.png" alt="small network node" /></p>
 <hr />
 <p>Now we've explored how to launch a network lets add a test file to ensure that works as expected. In zombienet the test are defined in the <code>*.feature</code> file and we have a <em>simple</em> <a href="./test-dsl-definition-spec.html">DSL</a> to write the assertions to make.</p>
-<p><a href="../examples/0001-small-network.feature">0001-small-network.feature</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.feature">0001-small-network.feature</a></p>
 <pre><code>Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
@@ -415,7 +415,7 @@ alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
 <h3 id="example-2---small-network-with-replacements"><a class="header" href="#example-2---small-network-with-replacements">Example 2 - Small network with replacements</a></h3>
 <p>In the <em>first</em> example we use some <em>hardcoded</em> default values, that works but sometimes is more useful to set those dynamically. For example, this is useful if you are building images in your <code>CI</code> and those images have an unique tag. For cover those cases, zombienet use a templating languaje (<a href="https://mozilla.github.io/nunjucks/">nunjucks</a>) allowing to use <em>variables</em> and replace those in <em>runtime</em> from the environment variables.</p>
 <p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment.</p>
-<p><a href="../examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
 default_command = &quot;polkadot&quot;
@@ -449,7 +449,7 @@ export ZOMBIENET_COL_IMAGE=docker.io/paritypr/colander:master
 <h3 id="example-3---small-network-with-custom-images-per-node"><a class="header" href="#example-3---small-network-with-custom-images-per-node">Example 3 - Small network with custom images per node</a></h3>
 <p>Continue with out <code>small network</code> example, this time will be <em>overriding</em> some of the default methods to allow developers to use and test different configurations. For example different <code>images</code> or <code>arguments</code>.</p>
 <p>As an example, this config will use different <code>images</code> and <code>dbs</code> between the nodes.</p>
-<p><a href="../examples/0003-small-network-custom.toml">small network custom</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0003-small-network-custom.toml">small network custom</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
 default_command = &quot;polkadot&quot;
@@ -485,7 +485,7 @@ id = 100
 <p>In general all the config fields that start with <code>default_</code> can we overrided in the <code>nodes</code> or <code>collators</code> config.</p>
 <h3 id="example-4---small-network-with-cumulus-based-collator"><a class="header" href="#example-4---small-network-with-cumulus-based-collator">Example 4 - Small network with cumulus based collator</a></h3>
 <p>Until now we use the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator. Continuing with the example we are using, we need first to change the <code>image</code> and <code>command</code> of the collator, and also add the config key <code>cumulus_based</code> set to true</p>
-<p><a href="../examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
 default_command = &quot;polkadot&quot;
@@ -610,7 +610,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <p><img src="./imgs/podman-infra.png" alt="podman infra" /></p>
 <p>The <code>grafana</code> pod is running under the default user configuration and have <code>prometheus</code> and <code>tempo</code> already configured as datasources.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="network-definition-spec"><a class="header" href="#network-definition-spec">Network definition spec</a></h1>
-<p><strong>NOTE</strong>: Final config spec is TBD, check <a href="../examples">examples</a> for use cases.</p>
+<p><strong>NOTE</strong>: Final config spec is TBD, check <a href="https://github.com/paritytech/zombienet/blob/main/examples">examples</a> for use cases.</p>
 <p>The network config can be provided both in <code>json</code> or <code>toml</code> format and each section can contain <code>provider</code> specific <em>keys</em> that are ignored by others, e.g. when you use the <code>native</code> provider all references to <code>image/s</code> for nodes are ignored.</p>
 <h2 id="settings"><a class="header" href="#settings"><code>settings</code></a></h2>
 <ul>

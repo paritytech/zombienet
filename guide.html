@@ -139,7 +139,7 @@
 <p>Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that works across the suppored <code>providers</code> (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create an smooth experiencie for developers, giving confidense and simplicity to build and ship.</p>
 <p>In this guide we will walkthrough from simple use cases to more complex, describing the trade-offs made and the <em>current</em> constraints for both netwrok configruations and test specifications.</p>
 <h3 id="example-1---small-network-2-validators-1-parachain"><a class="header" href="#example-1---small-network-2-validators-1-parachain">Example 1 - Small network (2 validators/ 1 parachain)</a></h3>
-<p>In this example <a href="../examples//0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
+<p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
 default_command = &quot;polkadot&quot;
@@ -170,7 +170,7 @@ id = 100
 <p><img src="./imgs/small-network-web.png" alt="small network node" /></p>
 <hr />
 <p>Now we've explored how to launch a network lets add a test file to ensure that works as expected. In zombienet the test are defined in the <code>*.feature</code> file and we have a <em>simple</em> <a href="./test-dsl-definition-spec.html">DSL</a> to write the assertions to make.</p>
-<p><a href="../examples/0001-small-network.feature">0001-small-network.feature</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.feature">0001-small-network.feature</a></p>
 <pre><code>Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
@@ -204,7 +204,7 @@ alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
 <h3 id="example-2---small-network-with-replacements"><a class="header" href="#example-2---small-network-with-replacements">Example 2 - Small network with replacements</a></h3>
 <p>In the <em>first</em> example we use some <em>hardcoded</em> default values, that works but sometimes is more useful to set those dynamically. For example, this is useful if you are building images in your <code>CI</code> and those images have an unique tag. For cover those cases, zombienet use a templating languaje (<a href="https://mozilla.github.io/nunjucks/">nunjucks</a>) allowing to use <em>variables</em> and replace those in <em>runtime</em> from the environment variables.</p>
 <p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment.</p>
-<p><a href="../examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
 default_command = &quot;polkadot&quot;
@@ -238,7 +238,7 @@ export ZOMBIENET_COL_IMAGE=docker.io/paritypr/colander:master
 <h3 id="example-3---small-network-with-custom-images-per-node"><a class="header" href="#example-3---small-network-with-custom-images-per-node">Example 3 - Small network with custom images per node</a></h3>
 <p>Continue with out <code>small network</code> example, this time will be <em>overriding</em> some of the default methods to allow developers to use and test different configurations. For example different <code>images</code> or <code>arguments</code>.</p>
 <p>As an example, this config will use different <code>images</code> and <code>dbs</code> between the nodes.</p>
-<p><a href="../examples/0003-small-network-custom.toml">small network custom</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0003-small-network-custom.toml">small network custom</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
 default_command = &quot;polkadot&quot;
@@ -274,7 +274,7 @@ id = 100
 <p>In general all the config fields that start with <code>default_</code> can we overrided in the <code>nodes</code> or <code>collators</code> config.</p>
 <h3 id="example-4---small-network-with-cumulus-based-collator"><a class="header" href="#example-4---small-network-with-cumulus-based-collator">Example 4 - Small network with cumulus based collator</a></h3>
 <p>Until now we use the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator. Continuing with the example we are using, we need first to change the <code>image</code> and <code>command</code> of the collator, and also add the config key <code>cumulus_based</code> set to true</p>
-<p><a href="../examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
 default_command = &quot;polkadot&quot;
