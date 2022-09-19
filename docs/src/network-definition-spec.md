@@ -1,10 +1,6 @@
 # Network definition spec
 
-<<<<<<< Updated upstream
-**NOTE**: Final config spec is TBD, check [examples](../examples) for use cases.
-=======
 **NOTE**: Final config spec is TBD, check [examples](https://github.com/paritytech/zombienet/blob/main/examples) for use cases.
->>>>>>> Stashed changes
 
 The network config can be provided both in `json` or `toml` format and each section can contain `provider` specific _keys_ that are ignored by others, e.g. when you use the `native` provider all references to `image/s` for nodes are ignored.
 
@@ -17,11 +13,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `polkadot_introspector`: (Boolean, default false) Deploy an instance of [polkadot-introspector](https://github.com/paritytech/polkadot-introspector), **only** available on `podman` and `kubernetes`.
 - `jaeger_agent`: (String) The jaeger agent endpoint passed to the _nodes_, **only** available on `kubernetes`.
 - `enable_tracing`: (Boolean, default true) Enable the tracing system, **only** available on `kubernetes`.
-<<<<<<< Updated upstream
 - `tracing_collator_url`: (String) The url of the tracing collator used to query by the _tracing assertion_ (**Should be tempo query compatible**).
-=======
-- `tracingCollatorUrl`: (String) The url of the tracing collator used to query by the _tracing assertion_ (**Should be tempo query compatible**).
->>>>>>> Stashed changes
 - `tracing_collator_service_name`: (String, default `tempo-tempo-distributed-query-frontend`) service name for tempo query frontend, **only** available on `kubernetes`.
 - `tracing_collator_service_namespace`: (String, default `tempo`) namespace where tempo is running, **only** available on `kubernetes`.
 - `tracing_collator_service_port`: (Number, default `3100`) port of the query instance of tempo, **only** available on `kubernetes`.
@@ -103,21 +95,12 @@ The network config can be provided both in `json` or `toml` format and each sect
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
 
-<<<<<<< Updated upstream
 ## `hrmp_channels`: (Array of objects)
 
 - `sender`: (Number) parachain Id.
 - `recipient`: (Number) parachain Id.
 - `max_capacity`: (Number)
 - `max_message_size`: (Number)
-=======
-## `hrmpChannels`: (Array of objects)
-
-- `sender`: (Number) parachain Id.
-- `recipient`: (Number) parachain Id.
-- `maxCapacity`: (Number)
-- `maxMessageSize`: (Number)
->>>>>>> Stashed changes
 
 ## `types`
 
