@@ -1,0 +1,30 @@
+Roadmap Zombienet v2
+
+## Infra
+- Chaos testing, add examples and explore possibilities in `native` and `podman` provider
+- Add docker provider
+- Add nomad provider
+- Create helm chart to allow other use zombienet in k8s
+- Auth system to not use k8s users
+- Create GitHub Action and publish in marketplace
+
+
+## UI
+- Create UI to create `feature` and `network` file.
+- Create script to translate from polkadot launch config to zombienet network file.
+
+## Registry
+- Create decorators registry and allow override by paras (wip)
+- Explore how to get info from paras.
+
+## Functional tasks
+
+- Add subxt integration, allow to compile/run on the fly
+- Move parser to pest (wip)
+- Dettach phases and use json to communicate instead of `paths`
+- Add relative values assertions (for metrics/scripts)
+- Allow to define nodes that are not started in the launching phase and can be started by the test-runner
+- Allow to define `race` assertions
+- Rust integration -> Create multiples libs (crates)
+- Explore backchannel use case
+
