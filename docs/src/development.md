@@ -44,7 +44,7 @@ The command above will retrieve the binaries provided and try to download and pr
 At the end of the download, the `setup` script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:
 
 ```bash
-Please add the dir to your $PATH by running the command: export PATH=/home/<user>/current_directory:$PATH
+Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
 ```
 
 ### Using Zombienet
