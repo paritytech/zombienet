@@ -6,4 +6,4 @@ Also, you need _permission_ to create resources (e.g `namespaces`, `pods` and `c
 
 ## Using `Zombienet` GKE cluster (internally).
 
-The Zombienet project has it's own k8s cluster in GCP, to use it please ping [Javier](@javier:matrix.parity.io) in Element to get access and learn how to use it.
+The Zombienet project has it's own k8s cluster in GCP, to use it please ping _Javier_ (@javier:matrix.parity.io) in Element to get access and learn how to use it.
