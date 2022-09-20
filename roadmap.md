@@ -12,7 +12,7 @@ Roadmap Zombienet v2
 - Add more teams (wip)
 
 ## UI
-- Create UI to create `feature` and `network` file.
+- Create UI to create `.feature` (`.zndls`) and `network` files.
 - Create script to translate from polkadot launch config to zombienet network file. ([wip](https://github.com/paritytech/zombienet/tree/nik-convert-polkadot-launch-config-to-zombienet))
 - Improve VSCode extension (grammar/snippets/syntax highlighting) ([repo](https://github.com/paritytech/zombienet-vscode-extension))
 
