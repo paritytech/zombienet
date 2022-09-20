@@ -39,6 +39,9 @@ export async function generateParachainFiles(
     clearAuthorities,
     readAndParseChainSpec,
     specHaveSessionsKeys,
+    getNodeKey,
+    addParaCustom,
+    addCollatorSelection,
     writeChainSpec ] = decorate(para, [
       chainSpecFns.addAuraAuthority,
       chainSpecFns.addAuthority,
@@ -46,6 +49,9 @@ export async function generateParachainFiles(
       chainSpecFns.clearAuthorities,
       chainSpecFns.readAndParseChainSpec,
       chainSpecFns.specHaveSessionsKeys,
+      chainSpecFns.getNodeKey,
+      chainSpecFns.addParaCustom,
+      chainSpecFns.addCollatorSelection,
       chainSpecFns.writeChainSpec
   ]);
 
@@ -97,34 +103,30 @@ export async function generateParachainFiles(
     clearAuthorities(chainSpecFullPathPlain);
 
     // Chain spec customization logic
-    if (specHaveSessionsKeys(plainData)) {
-      const chainSessionType = parachain.chain?.includes("statemint")
-        ? "statemint"
-        : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
-            parachain.chain?.includes(prefix),
-          )
-        ? "moonbeam"
-        : undefined;
-      for (const node of parachain.collators) {
-        if (node.validator)
-          await addAuthority(
-            chainSpecFullPathPlain,
-            node,
-            false,
-            chainSessionType,
-          );
-        // Add some extra space until next log
-        console.log("\n");
-      }
-    } else {
-      // use `aura` keys
-      for (const node of parachain.collators) {
-        if (node.validator)
-          await addAuraAuthority(
-            chainSpecFullPathPlain,
-            node.name,
-            node.accounts!,
-          );
+    const addToSession = async (node: Node) => {
+      const key = getNodeKey(node, false);
+      await addAuthority(
+        chainSpecFullPathPlain,
+        node,
+        key
+      );
+    }
+
+    const addToAura = async (node: Node) => {
+      await addAuraAuthority(
+        chainSpecFullPathPlain,
+        node.name,
+        node.accounts!,
+      );
+    }
+
+    const addAuthFn = specHaveSessionsKeys(plainData) ? addToSession : addToAura;
+
+    for (const node of parachain.collators) {
+      if(node.validator) {
+        await addAuthFn(node);
+        await addCollatorSelection(chainSpecFullPathPlain, node);
+        await addParaCustom(chainSpecFullPathPlain, node);
         // Add some extra space until next log
         console.log("\n");
       }

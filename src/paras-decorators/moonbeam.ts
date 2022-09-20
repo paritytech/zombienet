@@ -2,8 +2,17 @@ import { ChainSpec } from "../types";
 import {
     getRuntimeConfig,
     specHaveSessionsKeys as _specHaveSessionsKeys,
-    KeyType
+    clearAuthorities as _clearAuthorities,
+    KeyType,
+    GenesisNodeKey,
+    readAndParseChainSpec,
+    writeChainSpec
 } from "../chain-spec";
+import {  Node } from "../types";
+
+
+// track 1st staking as default;
+let paraStakingBond: number | undefined;
 
 const KNOWN_MOONBEAM_KEYS: { [name: string]: string } = {
     alith: "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133",
@@ -35,27 +44,58 @@ function getAuthorityKeys(chainSpec: ChainSpec) {
 async function addAuthority(
     specPath: string,
     node: Node,
-    useStash: boolean = true,
-    chainSessionType?: "statemint" | "moonbeam",
+    key: GenesisNodeKey
   ) {
 
   }
 
-function clearAuthorities(
-    specPath: string,
-    keyType: KeyType = "session",
-  ) {
+async function clearAuthorities(specPath: string) {
+  await _clearAuthorities(specPath);
 
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+
+  // clear authorMapping
+  if (runtimeConfig?.authorMapping)
+    runtimeConfig.authorMapping.mappings.length = 0;
+
+    // clear parachainStaking
+  if (runtimeConfig?.parachainStaking) {
+    paraStakingBond = runtimeConfig.parachainStaking.candidates[0][1];
+    runtimeConfig.parachainStaking.candidates.length = 0;
+    runtimeConfig.parachainStaking.delegations.length = 0;
   }
+
+  writeChainSpec(specPath, chainSpec);
+}
 
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
 
-  }
+}
 
+
+async function addParaCustom( specPath: string, node: Node) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+
+  // parachainStaking
+  if (! runtimeConfig?.parachainStaking) return;
+
+  const { sr_account, eth_account } = node.accounts;
+
+  runtimeConfig.parachainStaking.candidates.push([
+    eth_account.address,
+    paraStakingBond || 1000000000000,
+  ]);
+
+  writeChainSpec(specPath, chainSpec);
+}
 export default {
     specHaveSessionsKeys,
     addAuthority,
     clearAuthorities,
-    generateKeyForNode
+    generateKeyForNode,
+    addParaCustom,
+    getAuthorityKeys
 }

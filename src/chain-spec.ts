@@ -12,6 +12,9 @@ let stakingBond: number | undefined;
 
 export type KeyType = "session" | "aura" | "grandpa";
 
+export type GenesisNodeKey = [ string, string, {[key: string]: string}];
+
+
 // Check if the chainSpec have session keys
 export function specHaveSessionsKeys(chainSpec: ChainSpec): boolean {
   // Check runtime_genesis_config key for rococo compatibility.
@@ -68,18 +71,6 @@ export function clearAuthorities(specPath: string) {
     runtimeConfig.staking.validatorCount = 0;
   }
 
-  // TODO: Fix parachain specific code with decorator pattern
-  // Moonbeam Specific
-  // clear authorMapping
-  if (runtimeConfig?.authorMapping)
-    runtimeConfig.authorMapping.mappings.length = 0;
-  // clear parachainStaking
-  if (runtimeConfig?.parachainStaking) {
-    stakingBond = runtimeConfig.parachainStaking.candidates[0][1];
-    runtimeConfig.parachainStaking.candidates.length = 0;
-    runtimeConfig.parachainStaking.delegations.length = 0;
-  }
-
   writeChainSpec(specPath, chainSpec);
   console.log(
     `\n🧹 ${decorators.green("Starting with a fresh authority set...")}`,
@@ -110,23 +101,11 @@ export async function addBalances(specPath: string, nodes: Node[]) {
 
   writeChainSpec(specPath, chainSpec);
 }
-// Add additional authorities to chain spec in `session.keys`
-export async function addAuthority(
-  specPath: string,
-  node: Node,
-  useStash: boolean = true,
-  chainSessionType?: "statemint" | "moonbeam",
-) {
-  const chainSpec = readAndParseChainSpec(specPath);
-  const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  const { sr_stash, sr_account, ed_account, ec_account, eth_account } =
-    node.accounts;
+export function getNodeKey(node: Node, useStash: boolean = true): GenesisNodeKey {
+  const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
 
-  const key =
-    chainSessionType == "moonbeam"
-      ? [sr_account.address, eth_account.address]
-      : [
+    const key: GenesisNodeKey = [
           useStash ? sr_stash.address : sr_account.address,
           useStash ? sr_stash.address : sr_account.address,
           {
@@ -138,48 +117,28 @@ export async function addAuthority(
             para_validator: sr_account.address,
             para_assignment: sr_account.address,
             beefy: encodeAddress(ec_account.publicKey),
-            aura:
-              chainSessionType == "statemint"
-                ? ed_account.address
-                : sr_account.address,
+            aura: sr_account.address
           },
         ];
+
+    return key;
+}
+
+// Add additional authorities to chain spec in `session.keys`
+export async function addAuthority(
+  specPath: string,
+  node: Node,
+  key: GenesisNodeKey,
+) {
+  const chainSpec = readAndParseChainSpec(specPath);
+
+  const { sr_stash } = node.accounts;
+
 
   let keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
-
-  // staking
-  if (runtimeConfig?.staking) {
-    runtimeConfig.staking.stakers.push([
-      sr_stash.address,
-      sr_account.address,
-      stakingBond || 1000000000000,
-      "Validator",
-    ]);
-
-    runtimeConfig.staking.validatorCount += 1;
-
-    // add to invulnerables
-    if (node.invulnerable)
-      runtimeConfig.staking.invulnerables.push(sr_stash.address);
-  }
-
-  // parachainStaking
-  if (runtimeConfig?.parachainStaking) {
-    runtimeConfig.parachainStaking.candidates.push([
-      eth_account.address,
-      stakingBond || 1000000000000,
-    ]);
-  }
-
-  // Collators
-  if (
-    runtimeConfig.collatorSelection &&
-    runtimeConfig.collatorSelection.invulnerables
-  )
-    runtimeConfig.collatorSelection.invulnerables.push(sr_account.address);
 
   console.log(
     `\t👤 Added Genesis Authority ${decorators.green(
@@ -188,6 +147,65 @@ export async function addAuthority(
   );
 
   writeChainSpec(specPath, chainSpec);
+}
+
+/// Add node to staking
+export async function addStaking(
+  specPath: string,
+  node: Node,
+) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+  if (! runtimeConfig?.staking) return;
+
+  const { sr_stash, sr_account } = node.accounts;
+  runtimeConfig.staking.stakers.push([
+    sr_stash.address,
+    sr_account.address,
+    stakingBond || 1000000000000,
+    "Validator",
+  ]);
+
+  runtimeConfig.staking.validatorCount += 1;
+
+  // add to invulnerables
+  if (node.invulnerable)
+    runtimeConfig.staking.invulnerables.push(sr_stash.address);
+
+  console.log(
+    `\t👤 Added Staking  ${decorators.green(
+      node.name,
+    )} - ${decorators.magenta(sr_stash.address)} - ${stakingBond}`,
+  );
+
+  writeChainSpec(specPath, chainSpec);
+}
+
+/// Add collators
+export async function addCollatorSelection(specPath: string,node: Node) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+  if (! runtimeConfig?.collatorSelection?.invulnerables) return;
+
+  const { sr_account } = node.accounts;
+
+  runtimeConfig.collatorSelection.invulnerables.push(sr_account.address);
+
+  console.log(
+    `\t👤 Added CollatorSelection  ${decorators.green(
+      node.name,
+    )} - ${decorators.magenta(sr_account.address)}`,
+  );
+
+  writeChainSpec(specPath, chainSpec);
+}
+
+/// Add node to staking
+export async function addParaCustom(
+  specPath: string,
+  node: Node,
+) {
+  /// nop
 }
 
 export async function addAuraAuthority(
@@ -425,5 +443,8 @@ export default {
   clearAuthorities,
   readAndParseChainSpec,
   specHaveSessionsKeys,
-  writeChainSpec
+  writeChainSpec,
+  getNodeKey,
+  addParaCustom,
+  addCollatorSelection
 };

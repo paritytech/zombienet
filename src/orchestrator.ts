@@ -43,6 +43,8 @@ import {
   readAndParseChainSpec,
   addAuraAuthority,
   addGrandpaAuthority,
+  getNodeKey,
+  addStaking,
 } from "./chain-spec";
 import {
   generateNamespace,
@@ -241,9 +243,11 @@ export async function start(
 
       // add authorities for nodes
       for (const node of networkSpec.relaychain.nodes) {
-        if (node.validator)
-          if (keyType === "session")
-            await addAuthority(chainSpecFullPathPlain, node);
+        if (node.validator) {
+          if (keyType === "session") {
+            const key = getNodeKey(node);
+            await addAuthority(chainSpecFullPathPlain, node, key);
+          }
           else {
             await addAuraAuthority(
               chainSpecFullPathPlain,
@@ -256,6 +260,9 @@ export async function start(
               node.accounts!,
             );
           }
+
+          await addStaking(chainSpecFullPathPlain, node);
+        }
         // Add some extra space until next log
         console.log("\n");
       }
