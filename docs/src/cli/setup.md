@@ -24,7 +24,7 @@ Script above will retrieve the binaries provided and try to download and prepare
 e.g.
 
 ```bash
-Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
+Please add the dir to your $PATH by running the command: export PATH=/home/<user>/<current_directory>/dist:$PATH
 ```
 
 Command example:
