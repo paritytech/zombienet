@@ -329,6 +329,15 @@ async function test(
  * @returns
  */
 async function setup(params: any) {
+  console.log(`${decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n")}`);
+  if (
+    ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
+  ) {
+    console.log(
+      "Zombienet currently supports linux and MacOS. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
+    );
+    return;
+  }
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL("polkadot", "polkadot").then(
       (res: [string, string]) => {
@@ -341,6 +350,29 @@ async function setup(params: any) {
       },
     );
   });
+
+  // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
+  // as polkadot do not release a binary for MacOS
+  if (process.platform === "darwin" && params.includes("polkadot")) {
+    console.log(
+      `${decorators.yellow(
+        "Note: ",
+      )} You are using MacOS. Please, clone the polkadot repo ` +
+        `${decorators.cyan("(https://github.com/paritytech/polkadot)")}` +
+        ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
+    );
+    const index = params.indexOf("polkadot");
+    if (index !== -1) {
+      params.splice(index, 1);
+    }
+  }
+
+  if (params.length === 0) {
+    console.log(
+      `${decorators.green("No more binaries to download. Exiting...")}`,
+    );
+    return;
+  }
   let count = 0;
   console.log("Setup will start to download binaries:");
   params.forEach((a: any) => {
@@ -349,7 +381,9 @@ async function setup(params: any) {
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
   console.log("Total approx. size: ", count, "MB");
-  const response = await askQuestion("Do you want to continue? (y/n)");
+  const response = await askQuestion(
+    `${decorators.yellow("\nDo you want to continue? (y/n)")}`,
+  );
   if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
     console.log("Invalid input. Exiting...");
     return;
