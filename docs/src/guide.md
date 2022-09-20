@@ -8,8 +8,7 @@ In this guide we will go through simple use cases as well as more complex ones, 
 
 ### Example 1 - Small network (2 validators/ 1 parachain)
 
-In this [small-network](../examples//0001-small-network.toml) example, we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). 
-Both of the validators are using the *default* image, command and args.
+In this example [small-network](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml), we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the _default_ image, command and args.
 
 ```toml
 [relaychain]
@@ -53,7 +52,7 @@ At the end of the process a list of `nodes` (with direct access links) will be p
 Now we've explored how to launch a network, let's add a test file to ensure that it works as expected. 
 In Zombienet the tests are defined in the `*.feature` file, which uses a *simple* [DSL](./test-dsl-definition-spec.md) to write test assertions.
 
-[0001-small-network.feature](../examples/0001-small-network.feature)
+[0001-small-network.feature](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.feature)
 
 ```
 Description: Small Network test
@@ -90,7 +89,6 @@ Now, run the tests with the following command to get both the *launching* output
 
 ![test report](./imgs/small-network-test-report.png)
 
-
 ### Example 2 - Small network with replacements
 
 In Example 1, we used some *hardcoded* default values but sometimes it's more useful to be able to change them dynamically. 
@@ -98,7 +96,8 @@ For example, if you are building images in your `CI` and those images have an un
 
 Following the previous example, we will replace the *images* with variables that will read the value from the environment:
 
-[0002-small-network-env-vars.toml](../examples/0002-small-network-env-vars.toml)
+[0002-small-network-env-vars.toml](https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml)
+
 ```toml
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
@@ -147,7 +146,7 @@ Continuing with our `small network` example, this time we will be *overriding* s
 
 As an example, this config will use different `images` and `dbs` between the nodes.
 
-[small network custom](../examples/0003-small-network-custom.toml)
+[small network custom](https://github.com/paritytech/zombienet/blob/main/examples/0003-small-network-custom.toml)
 
 ```toml
 [relaychain]
@@ -198,7 +197,7 @@ Until now we've been using the *parachain tests collators* that are built from t
 
 Continuing with the example we are using, we need to change the `image` and `command` of the collator, and also set the config key `cumulus_based` to true.
 
-[small network cumulus](../examples/0004-small-network-cumulus.toml)
+[small network cumulus](https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml)
 
 ```toml
 [relaychain]
@@ -228,7 +227,7 @@ cumulus_based = true
   command = "polkadot-parachain"
 ```
 
-And again, we just *launch* the network using the following command:
+And again, we just _launch_ the network using the following command:
 
 ```bash
 ./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml
@@ -237,7 +236,6 @@ And again, we just *launch* the network using the following command:
 And get the network information but this time using a `cumulus based` collator.
 
 ![cumulus launch](./imgs/cumulus-launch.png)
-
 
 ### Example 5 - Big networks with groups
 
@@ -362,7 +360,6 @@ For example:
                 tail -f /var/folders/rz/1cyx7hfj31qgb98d8_cg7jwh0000gn/T/zombie-22eaa5159aca78ff41e0249c3931b472_-91504-Ea3rT0YgKH2Y/alice.log
 ```
 
-
 #### Troubleshooting
 
 Zombienet provides an easy way to follow the spawning process by enabling the debug logs using the `DEBUG` environment variable to manage the output.
@@ -375,7 +372,7 @@ DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-networ
 
 ## Podman infra
 
-`Zombienet` will automatically spawn some infrastructure *pods* to give the users a monitoring stack when the `podman` provider is used.
+`Zombienet` will automatically spawn some infrastructure _pods_ to give the users a monitoring stack when the `podman` provider is used.
 
 ![podman infra](./imgs/podman-infra.png)
 

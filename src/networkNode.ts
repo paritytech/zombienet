@@ -9,7 +9,12 @@ import {
   getHistogramBuckets,
   BucketHash,
 } from "./metrics";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT, PROMETHEUS_PORT } from "./constants";
+import {
+  DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  LOCALHOST,
+  RPC_WS_PORT,
+  WS_URI_PATTERN,
+} from "./constants";
 import { getClient } from "./providers/client";
 
 import {
@@ -18,7 +23,6 @@ import {
   validateRuntimeCode,
 } from "./jsapi-helpers";
 import { decorators } from "./utils/colors";
-import { resolve } from "path";
 
 const debug = require("debug")("zombie::network-node");
 
@@ -65,6 +69,8 @@ export class NetworkNode implements NetworkNodeInterface {
       provider,
       types: this.userDefinedTypes,
     });
+
+    await this.apiInstance.isReady;
     debug(`Connected to ${this.name}`);
   }
 
@@ -77,7 +83,21 @@ export class NetworkNode implements NetworkNodeInterface {
     args.push(cmd);
 
     const result = await client.runCommand(args, undefined, true);
-    return result.exitCode === 0;
+    if (result.exitCode !== 0) return false;
+    // restart the port-fw if needed
+    const url = new URL(this.wsUri);
+    if (parseInt(url.port, 10) !== RPC_WS_PORT) {
+      const fwdPort = await client.startPortForwarding(RPC_WS_PORT, this.name);
+
+      this.wsUri = WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+        "{{PORT}}",
+        fwdPort.toString(),
+      );
+
+      this.apiInstance = undefined;
+    }
+
+    return true;
   }
 
   async pause() {
@@ -203,7 +223,7 @@ export class NetworkNode implements NetworkNodeInterface {
   }
 
   async getMetric(
-    rawmetricName: string,
+    rawMetricName: string,
     comparator: string,
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -211,12 +231,17 @@ export class NetworkNode implements NetworkNodeInterface {
     let value;
     let timedout = false;
     try {
-      if (desiredMetricValue === null || !this.cachedMetrics) {
+      // process_start_time_seconds metric is used by `is up`, and we don't want to use cached values.
+      if (
+        desiredMetricValue === null ||
+        !this.cachedMetrics ||
+        rawMetricName === "process_start_time_seconds"
+      ) {
         debug("reloading cache");
         this.cachedMetrics = await fetchMetrics(this.prometheusUri);
       }
 
-      const metricName = getMetricName(rawmetricName);
+      const metricName = getMetricName(rawMetricName);
       value = this._getMetric(metricName, desiredMetricValue === null);
       if (value !== undefined) {
         if (
@@ -246,7 +271,7 @@ export class NetworkNode implements NetworkNodeInterface {
             done = true;
           } else {
             debug(
-              `current value: ${value} for metric ${rawmetricName}, keep trying...`,
+              `current value: ${value} for metric ${rawMetricName}, keep trying...`,
             );
           }
         }

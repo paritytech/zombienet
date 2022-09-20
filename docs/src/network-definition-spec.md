@@ -1,6 +1,6 @@
 # Network definition spec
 
-**NOTE**: Final config spec is TBD, check [examples](../examples) for use cases.
+**NOTE**: Final config spec is TBD, check [examples](https://github.com/paritytech/zombienet/blob/main/examples) for use cases.
 
 The network config can be provided both in `json` or `toml` format and each section can contain `provider` specific _keys_ that are ignored by others, e.g. when you use the `native` provider all references to `image/s` for nodes are ignored.
 
