@@ -14,7 +14,7 @@ Roadmap Zombienet v2
 ## UI
 - Create UI to create `feature` and `network` file.
 - Create script to translate from polkadot launch config to zombienet network file.
-- Improve vscode extension (grammap/snippets)
+- Improve vscode extension (grammar/snippets)
 
 ## Registry
 - Create decorators registry and allow override by paras (wip)
