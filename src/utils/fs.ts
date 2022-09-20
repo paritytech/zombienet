@@ -1,6 +1,7 @@
 import fs from "fs";
 import toml from "toml";
 import path from "path";
+import readline from "readline";
 import { LaunchConfig } from "../types";
 import { RelativeLoader } from "./nunjucks-relative-loader";
 import { Environment } from "nunjucks";
@@ -12,6 +13,25 @@ export function writeLocalJsonFile(
 ) {
   fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
+
+/**
+ * askQuestion: ask for user's Input
+ * @param query : The string of the "question"
+ * @returns
+ */
+export const askQuestion = async (query: string): Promise<string> => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) =>
+    rl.question(query, (ans) => {
+      rl.close();
+      resolve(ans);
+    }),
+  );
+};
 
 export function loadTypeDef(types: string | object): object {
   if (typeof types === "string") {

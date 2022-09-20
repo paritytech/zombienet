@@ -4,7 +4,7 @@ import {
   DEFAULT_REMOTE_DIR,
   P2P_PORT,
 } from "../../constants";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
+import { writeLocalJsonFile } from "../../utils/fs";
 const fs = require("fs");
 import { copy as fseCopy } from "fs-extra";
 import { fileMap } from "../../types";
@@ -13,7 +13,7 @@ import { decorators } from "../../utils/colors";
 import YAML from "yaml";
 import { spawn } from "child_process";
 import path from "path";
-import { CreateLogTable } from "../../utils/logger";
+import { CreateLogTable } from "../../utils/tableCli";
 
 const debug = require("debug")("zombie::native::client");
 

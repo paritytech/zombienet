@@ -4,14 +4,13 @@ import { start } from "./orchestrator";
 import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
-import { getCredsFilePath, readNetworkConfig } from "./utils/fs-utils";
+import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 import { LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
 import axios from "axios";
 import progress from "progress";
 import path from "path";
-import readline from "readline";
 import {
   AVAILABLE_PROVIDERS,
   DEFAULT_GLOBAL_TIMEOUT,
@@ -22,7 +21,7 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
-import { getFilePathNameExt } from "./utils/misc-utils";
+import { getFilePathNameExt, convertBytes } from "./utils/misc";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -48,25 +47,9 @@ const program = new Command("zombienet");
 
 let network: Network;
 
-const dec = (color: string, msg: string): string => decorators[color](msg);
-
-const askQuestion = async (query: string): Promise<string> => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise((resolve) =>
-    rl.question(query, (ans) => {
-      rl.close();
-      resolve(ans);
-    }),
-  );
-};
-
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
-  console.log(`${dec("yellow", "\nStart download...\n")}`);
+  console.log(`${decorators.yellow("\nStart download...\n")}`);
   const promises = [];
   let count = 0;
   for (let binary of binaries) {
@@ -96,9 +79,9 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
         data.on("data", (chunk: any) => progressBar.tick(chunk.length));
         data.pipe(writer);
         data.on("end", () => {
-          console.log(dec("yellow", `Binary "${name}" downloaded`));
+          console.log(decorators.yellow(`Binary "${name}" downloaded`));
           // Add permissions to the binary
-          console.log(dec("cyan", `Giving permissions to "${name}"`));
+          console.log(decorators.cyan(`Giving permissions to "${name}"`));
           fs.chmodSync(path.resolve(__dirname, name), 0o755);
           resolve();
         });
@@ -107,17 +90,12 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
   }
   await Promise.all(promises);
   console.log(
-    dec("cyan", `Please add the dir to your $PATH by running the command:`),
-    "\n",
-    dec("blue", `export PATH=${__dirname}:$PATH`),
+    decorators.cyan(`Please add the dir to your $PATH by running the command:`),
+    decorators.blue(`export PATH=${__dirname}:$PATH`),
   );
 };
 
-const convertBytes = (bytes: number) =>
-  (
-    bytes / Math.pow(1024, Math.floor(Math.log(bytes) / Math.log(1024)))
-  ).toFixed(0);
-
+// Retrieve the latest release for polkadot
 const latestPolkadotReleaseURL = async (
   repo: string,
   name: string,
@@ -238,8 +216,7 @@ program
   )
   .argument(
     "<binaries...>",
-    `the binaries that you want to be downloaded, provided in a row without any separators;\nThey are downloaded in current directory and appropriate executable permissions are assigned.\nPossible options: 'polkadot', 'polkadot-parachain'\n${dec(
-      "blue",
+    `the binaries that you want to be downloaded, provided in a row without any separators;\nThey are downloaded in current directory and appropriate executable permissions are assigned.\nPossible options: 'polkadot', 'polkadot-parachain'\n${decorators.blue(
       "zombienet setup polkadot polkadot-parachain",
     )}`,
   )
@@ -265,7 +242,15 @@ program
     process.exit(0);
   });
 
-// spawn
+/**
+ * Spawn - spawns ephemeral networks, providing a simple but poweful cli that allow you to declare
+ * the desired network in toml or json format.
+ * Read more here: https://paritytech.github.io/zombienet/cli/spawn.html
+ * @param configFile: config file, supported both json and toml formats
+ * @param credsFile: Credentials file name or path> to use (Only> with kubernetes provider), we look
+ *  in the current directory or in $HOME/.kube/ if a filename is passed.
+ * @param _opts
+ */
 async function spawn(
   configFile: string,
   credsFile: string | undefined,
@@ -317,7 +302,15 @@ async function spawn(
   network.showNetworkInfo(config.settings?.provider);
 }
 
-// test
+/**
+ * Test - performs test/assertions agins the spawned network, using a set of natural
+ * language expressions that allow to make assertions based on metrics, logs and some
+ * built-in function that query the network using polkadot.js
+ * Read more here: https://paritytech.github.io/zombienet/cli/testing.html
+ * @param testFile
+ * @param runningNetworkSpec
+ * @param _opts
+ */
 async function test(
   testFile: string,
   runningNetworkSpec: string | undefined,
@@ -340,7 +333,22 @@ async function test(
   );
 }
 
+/**
+ * Setup - easily download latest artifacts and make them executablein order to use them with zombienet
+ * Read more here: https://paritytech.github.io/zombienet/cli/setup.html
+ * @param params binaries that willbe downloaded and set up. Possible values: `polkadot` `polkadot-parachain`
+ * @returns
+ */
 async function setup(params: any) {
+  console.log(`${decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n")}`);
+  if (
+    ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
+  ) {
+    console.log(
+      "Zombienet currently supports linux and MacOS. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
+    );
+    return;
+  }
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL("polkadot", "polkadot").then(
       (res: [string, string]) => {
@@ -353,6 +361,29 @@ async function setup(params: any) {
       },
     );
   });
+
+  // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
+  // as polkadot do not release a binary for MacOS
+  if (process.platform === "darwin" && params.includes("polkadot")) {
+    console.log(
+      `${decorators.yellow(
+        "Note: ",
+      )} You are using MacOS. Please, clone the polkadot repo ` +
+        `${decorators.cyan("(https://github.com/paritytech/polkadot)")}` +
+        ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
+    );
+    const index = params.indexOf("polkadot");
+    if (index !== -1) {
+      params.splice(index, 1);
+    }
+  }
+
+  if (params.length === 0) {
+    console.log(
+      `${decorators.green("No more binaries to download. Exiting...")}`,
+    );
+    return;
+  }
   let count = 0;
   console.log("Setup will start to download binaries:");
   params.forEach((a: any) => {
@@ -361,7 +392,9 @@ async function setup(params: any) {
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
   console.log("Total approx. size: ", count, "MB");
-  const response = await askQuestion("Do you want to continue? (y/n)");
+  const response = await askQuestion(
+    `${decorators.yellow("\nDo you want to continue? (y/n)")}`,
+  );
   if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
     console.log("Invalid input. Exiting...");
     return;

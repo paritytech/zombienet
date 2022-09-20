@@ -1,9 +1,9 @@
 import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
-import { readDataFile } from "./utils/fs-utils";
-import { convertExponentials } from "./utils/misc-utils";
-const fs = require("fs");
+import { readDataFile } from "./utils/fs";
+import { convertExponentials } from "./utils/misc";
+import fs from "fs";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -309,18 +309,18 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
 
 export async function addHrmpChannelsToGenesis(
   specPath: string,
-  hrmpChannels: HrmpChannelsConfig[],
+  hrmp_channels: HrmpChannelsConfig[],
 ) {
   console.log(`\n\t\t ⛓  ${decorators.green("Adding Genesis HRMP Channels")}`);
 
   const chainSpec = readAndParseChainSpec(specPath);
 
-  for (const hrmpChannel of hrmpChannels) {
+  for (const h of hrmp_channels) {
     let newHrmpChannel = [
-      hrmpChannel.sender,
-      hrmpChannel.recipient,
-      hrmpChannel.maxCapacity,
-      hrmpChannel.maxMessageSize,
+      h.sender,
+      h.recipient,
+      h.max_capacity,
+      h.max_message_size,
     ];
 
     const runtimeConfig = getRuntimeConfig(chainSpec);
@@ -340,7 +340,7 @@ export async function addHrmpChannelsToGenesis(
 
       console.log(
         decorators.green(
-          `\t\t\t  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`,
+          `\t\t\t  ✓ Added HRMP channel ${h.sender} -> ${h.recipient}`,
         ),
       );
     } else {
@@ -354,12 +354,12 @@ export async function addHrmpChannelsToGenesis(
 
 // Look at the key + values from `obj1` and try to replace them in `obj2`.
 function findAndReplaceConfig(obj1: any, obj2: any) {
-  // create new Object without  null prototype
-  obj2 = { ...obj2 };
+  // create new Object without null prototype
+  const tempObj = { ...obj2 };
   // Look at keys of obj1
   Object.keys(obj1).forEach((key) => {
     // See if obj2 also has this key
-    if (obj2.hasOwnProperty(key)) {
+    if (tempObj.hasOwnProperty(key)) {
       // If it goes deeper, recurse...
       if (
         obj1[key] !== null &&
