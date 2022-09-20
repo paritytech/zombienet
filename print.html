@@ -136,21 +136,22 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="what-is-zombienet"><a class="header" href="#what-is-zombienet">What is ZombieNet?</a></h1>
-<p>ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral networks. The assertions using in the tests can include on-chain storage, metrics, logs and custom javascript scripts that interact with the chain. To make easy to define those zombienet has a set of natural languaje built-in allowing to write test as smooth as posible.</p>
-<p>Internally is a javascript library, designed to run on NodeJS and support different backend providers to run the nodes, at this moment kubernetes, podman and native are supported.</p>
+<p>ZombieNet aims to be a testing framework for Substrate based blockchains, providing a simple CLI tool that allowS users to spawn and test ephemeral networks. The assertions used in the tests can include on-chain storage, metrics, logs and custom JS scripts that interact with the chain. To make these easy to define, Zombienet uses a built-in natural language tool to write tests as smoothly as possible.</p>
+<p>Internally, it's a JS library designed to run on NodeJS and support different backend providers to run the various blockchain nodes. Currently, Kubernetes, Podman and native are the supported providers.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>ZombieNet releases are available in <code>github</code>. Each one provide an executable for both <code>linux</code> and <code>macos</code> crated with <a href="https://github.com/vercel/pkg">pkg</a> and allow to run <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed <strong>but</strong> each <code>provider</code> define it's own requirements (e.g. k8s, podman).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="kubernetes-requirements"><a class="header" href="#kubernetes-requirements">Kubernetes requirements</a></h1>
-<p>Zombienet should works with any k8s cluster (e.g <a href="https://cloud.google.com/kubernetes-engine">GKE</a>, <a href="https://docs.docker.com/desktop/kubernetes/">docker-desktop</a>, <a href="https://kind.sigs.k8s.io/">kind</a>) <strong>but</strong> you need to have <code>kubectl</code> installed to interact with your cluster.</p>
+<p>Zombienet should work with any k8s cluster (e.g <a href="https://cloud.google.com/kubernetes-engine">GKE</a>, <a href="https://docs.docker.com/desktop/kubernetes/">docker-desktop</a>, <a href="https://kind.sigs.k8s.io/">kind</a>) <strong>but</strong> you need to have <code>kubectl</code> installed to interact with your cluster.</p>
 <p>Also, you need <em>permission</em> to create resources (e.g <code>namespaces</code>, <code>pods</code> and <code>cronJobs</code>) in the target cluster.</p>
 <h2 id="using-zombienet-gke-cluster-internally"><a class="header" href="#using-zombienet-gke-cluster-internally">Using <code>Zombienet</code> GKE cluster (internally).</a></h2>
-<p>Zombienet project has it's own k8s cluster in GCP, to use it please ping <em>Javier</em> (@javier:matrix.parity.io) in element to gain access and steps to use.</p>
+<p>The Zombienet project has it's own k8s cluster in GCP, to use it please ping <em>Javier</em> (@javier:matrix.parity.io) in Element to get access and learn how to use it.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="podman-requirements"><a class="header" href="#podman-requirements">Podman requirements</a></h1>
-<p>ZombieNet support <a href="https://podman.io/">Podman</a> <em>rootless</em> as provider, you only need to have <code>podman</code> installed in your environment to use and either set in the <em>network</em> file or with the <code>--provider</code> flag in the cli.</p>
+<p>Zombienet supports <a href="https://podman.io/">Podman</a> <em>rootless</em> as provider.
+You only need to have <code>podman</code> installed in your environment to use it and either set it in the <em>network</em> file or with the <code>--provider</code> flag in the CLI.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="native-requirements"><a class="header" href="#native-requirements">Native requirements</a></h1>
-<p>ZombieNet <code>Native</code> provider allow to run the nodes as local process in your environments. You only need to have the <code>binaries</code> used in your <code>network</code> (e.g polkador, adder-collator).
-To use it either set in the <em>network</em> file or with the <code>--provider</code> flag in the cli.</p>
-<p><strong>NOTE:</strong> The <code>native</code> provider <strong>only</strong> use the <code>command</code> config for nodes/collators, both relative and absolute paths are supported. You can use <code>default_command</code> config to set the binary to spawn all the <code>nodes</code> in the relay chain.</p>
+<p>The Zombienet <code>Native</code> provider allows running the nodes as local process in your environments. You only need to have the <code>binaries</code> used in your <code>network</code> (e.g polkadot, adder-collator).
+To use it either configure your <em>network</em> file or with the <code>--provider</code> flag in the CLI.</p>
+<p><strong>NOTE:</strong> The <code>native</code> provider <strong>only</strong> uses the <code>command</code> config for nodes/collators, both relative and absolute paths are supported. You can use the <code>default_command</code> config to set the binary to spawn all the <code>nodes</code> in the relay chain.</p>
 <p><em>Alternative:</em> You can set the <code>command</code> to the binary directly if is available in your <code>PATH</code>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="features-by-providers"><a class="header" href="#features-by-providers">Features by providers</a></h1>
 <p>Each of the supported providers define a set of <code>features</code> beside the <em>spawning</em> and <em>testing</em>, at the moment those features are related to the monitoring side infra available for each one <strong>but</strong> will be expanded to support a set of <em>companions</em>.</p>
@@ -205,7 +206,7 @@ You can use the following arguments:
 </code></pre>
 <p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
 <p>e.g.</p>
-<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/current_directory:$PATH
+<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/&lt;current_directory&gt;/dist:$PATH
 </code></pre>
 <p>Command example:</p>
 <pre><code class="language-bash">➜ zombienet setup polkadot polkadot-parachain
@@ -347,8 +348,8 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 <p>Another examples are provided in the <a href="https://github.com/paritytech/zombienet/tree/main/examples">examples</a> directory.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="zombienet-guide"><a class="header" href="#zombienet-guide">Zombienet guide</a></h1>
 <h2 id="intro"><a class="header" href="#intro">Intro</a></h2>
-<p>Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that works across the suppored <code>providers</code> (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create an smooth experiencie for developers, giving confidense and simplicity to build and ship.</p>
-<p>In this guide we will walkthrough from simple use cases to more complex, describing the trade-offs made and the <em>current</em> constraints for both netwrok configruations and test specifications.</p>
+<p>Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that work across supported <code>providers</code> (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create a smooth experience for parachain developers, giving them the confidence and simplicity to build and ship.</p>
+<p>In this guide we will go through simple use cases as well as more complex ones, describing the trade-offs made and the <em>current</em> constraints for both network configurations and test specifications.</p>
 <h3 id="example-1---small-network-2-validators-1-parachain"><a class="header" href="#example-1---small-network-2-validators-1-parachain">Example 1 - Small network (2 validators/ 1 parachain)</a></h3>
 <p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
@@ -373,21 +374,23 @@ id = 100
   image = &quot;docker.io/paritypr/colander:master&quot;
   command = &quot;adder-collator&quot;
 </code></pre>
-<p>Then we can just spawn this network by running (by kubernetes as provider)</p>
+<p>Using kubernetes as provider we can simply spawn this network by running:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
 </code></pre>
-<p>And you will see how <code>zombienet</code> start creating the needded resources and launch the network, at the end of the process a list of <code>nodes</code> (with direct access links) will be printed. So, you can now connect to one of the <code>nodes</code></p>
+<p>You will see how <code>zombienet</code> starts creating the needed resources to launch the network.
+At the end of the process a list of <code>nodes</code> (with direct access links) will be printed. So, you can now connect to one of the <code>nodes</code>.</p>
 <p><img src="./imgs/small-network-banner.png" alt="small network banner" /></p>
 <p><img src="./imgs/small-network-web.png" alt="small network node" /></p>
 <hr />
-<p>Now we've explored how to launch a network lets add a test file to ensure that works as expected. In zombienet the test are defined in the <code>*.feature</code> file and we have a <em>simple</em> <a href="./test-dsl-definition-spec.html">DSL</a> to write the assertions to make.</p>
+<p>Now we've explored how to launch a network, let's add a test file to ensure that it works as expected. 
+In Zombienet the tests are defined in the <code>*.feature</code> file, which uses a <em>simple</em> <a href="./test-dsl-definition-spec.html">DSL</a> to write test assertions.</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.feature">0001-small-network.feature</a></p>
 <pre><code>Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
 
 
-# well know functions
+# well known functions
 alice: is up
 bob: is up
 alice: parachain 100 is registered within 225 seconds
@@ -407,14 +410,14 @@ bob: log line matches &quot;Imported #[0-9]+&quot; within 10 seconds
 bob: system event contains &quot;A candidate was included&quot; within 20 seconds
 alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
 </code></pre>
-<p>Now this time we run the tests with the following command</p>
+<p>Now, run the tests with the following command to get both the <em>launching</em> output and the test reports:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes test examples/0001-small-network.feature
 </code></pre>
-<p>And we get both, the <em>launching</em> output and the test reports.</p>
 <p><img src="./imgs/small-network-test-report.png" alt="test report" /></p>
 <h3 id="example-2---small-network-with-replacements"><a class="header" href="#example-2---small-network-with-replacements">Example 2 - Small network with replacements</a></h3>
-<p>In the <em>first</em> example we use some <em>hardcoded</em> default values, that works but sometimes is more useful to set those dynamically. For example, this is useful if you are building images in your <code>CI</code> and those images have an unique tag. For cover those cases, zombienet use a templating languaje (<a href="https://mozilla.github.io/nunjucks/">nunjucks</a>) allowing to use <em>variables</em> and replace those in <em>runtime</em> from the environment variables.</p>
-<p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment.</p>
+<p>In Example 1, we used some <em>hardcoded</em> default values but sometimes it's more useful to be able to change them dynamically. 
+For example, if you are building images in your <code>CI</code> and those images have an unique tag. To address these cases, Zombienet uses a templating language called <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a> that allows defining environment variables which then can get updated at <em>runtime</em>.</p>
+<p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment:</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
@@ -438,16 +441,18 @@ id = 100
   image = &quot;{{ZOMBIENET_COL_IMAGE}}&quot;
   command = &quot;adder-collator&quot;
 </code></pre>
-<p>To spawn this network now we need to define both <code>ZOMBIENET_INTEGRATION_TEST_IMAGE</code> and <code>ZOMBIENET_COL_IMAGE</code> environment variables and zombienet will replace at runtime.</p>
+<p>To spawn this network now we need to define the <code>ZOMBIENET_INTEGRATION_TEST_IMAGE</code> and <code>ZOMBIENET_COL_IMAGE</code> environment variables.
+For example:</p>
 <pre><code class="language-bash">export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
 export ZOMBIENET_COL_IMAGE=docker.io/paritypr/colander:master
-
-./zombienet-linux -p kubernetes spawn examples/0002-small-network-env-vars.toml
 </code></pre>
-<p>And again we get the network info with direct links</p>
+<p>Now we can run this command to spawn the network:</p>
+<pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0002-small-network-env-vars.toml
+</code></pre>
+<p>And again we get the network info with direct links:</p>
 <p><img src="./imgs/small-network-envs-launch.png" alt="network info" /></p>
 <h3 id="example-3---small-network-with-custom-images-per-node"><a class="header" href="#example-3---small-network-with-custom-images-per-node">Example 3 - Small network with custom images per node</a></h3>
-<p>Continue with out <code>small network</code> example, this time will be <em>overriding</em> some of the default methods to allow developers to use and test different configurations. For example different <code>images</code> or <code>arguments</code>.</p>
+<p>Continuing with our <code>small network</code> example, this time we will be <em>overriding</em> some of the default methods to allow developers to use and test different configurations, such as different <code>images</code> or <code>arguments</code>.</p>
 <p>As an example, this config will use different <code>images</code> and <code>dbs</code> between the nodes.</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0003-small-network-custom.toml">small network custom</a></p>
 <pre><code class="language-toml">[relaychain]
@@ -475,16 +480,17 @@ id = 100
   image = &quot;docker.io/paritypr/colander:master&quot;
   command = &quot;adder-collator&quot;
 </code></pre>
-<p>Again, we <em>launch</em> our network using <code>zombienet</code></p>
+<p>We start by launching our simulated network using <code>zombienet</code>:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0003-small-network-custom.toml
 </code></pre>
-<p>And we get the <em>information</em> about the network
-<img src="./imgs/small-network-custom-launch.png" alt="network info" /></p>
+<p>And we get the <em>information</em> about the network.</p>
+<p><img src="./imgs/small-network-custom-launch.png" alt="network info" /></p>
 <p><strong>But</strong> if we scroll up the output we can see that <code>bob</code> is using the custom image and argument we set.</p>
 <p><img src="./imgs/bob-custom.png" alt="bob custom image and command" /></p>
-<p>In general all the config fields that start with <code>default_</code> can we overrided in the <code>nodes</code> or <code>collators</code> config.</p>
+<p>In general all the config fields that start with <code>default_*</code> can be overridden in the <code>nodes</code> or <code>collators</code> config.</p>
 <h3 id="example-4---small-network-with-cumulus-based-collator"><a class="header" href="#example-4---small-network-with-cumulus-based-collator">Example 4 - Small network with cumulus based collator</a></h3>
-<p>Until now we use the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator. Continuing with the example we are using, we need first to change the <code>image</code> and <code>command</code> of the collator, and also add the config key <code>cumulus_based</code> set to true</p>
+<p>Until now we've been using the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator. </p>
+<p>Continuing with the example we are using, we need to change the <code>image</code> and <code>command</code> of the collator, and also set the config key <code>cumulus_based</code> to true.</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
@@ -515,10 +521,10 @@ cumulus_based = true
 <p>And again, we just <em>launch</em> the network using the following command:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml
 </code></pre>
-<p>Anf get the network information but this time using a <code>cumulus based</code> collator.</p>
+<p>And get the network information but this time using a <code>cumulus based</code> collator.</p>
 <p><img src="./imgs/cumulus-launch.png" alt="cumulus launch" /></p>
 <h3 id="example-5---big-networks-with-groups"><a class="header" href="#example-5---big-networks-with-groups">Example 5 - Big networks with groups</a></h3>
-<p>Some times you need to launch and test bigger networks and define nodes one by one is a very <em>manual</em> and error prone way. For this use cases zombienet allow to define <code>groups</code> of nodes, for both <code>validators</code> and <code>collators</code>.</p>
+<p>Sometimes you need to launch and test bigger networks and defining nodes one by one is a very <em>manual</em> and error prone task. For this use cases Zombienet allows to define <code>groups</code> of nodes, for both <code>validators</code> and <code>collators</code>.</p>
 <p>Using the <code>small network</code> example as base, we can add <code>groups</code> to spawn a bigger network.</p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
@@ -546,20 +552,21 @@ id = 100
     command = &quot;adder-collator&quot;
     image = &quot;docker.io/paritypr/colander:master&quot;
 </code></pre>
-<p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>). Again, the groups use the <code>default_*</code> fields if they are not overrided in the group definition.</p>
-<p>This time for <code>spawning</code> the network we will use the <em>concurrency</em> (<code>-c</code>) flag to spawn the nodes in batches and speed the process.</p>
+<p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, then Zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>). 
+Again, the groups use the <code>default_*</code> fields if they are not overridden in the group definition.</p>
+<p>This time for <code>spawning</code> the network we will use the <em>concurrency</em> (<code>-c</code>) flag to spawn the nodes in batches and speed up the process.</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 spawn examples/0005-big-network.toml
 </code></pre>
 <p>And this time we get also a bigger output...</p>
 <p><img src="./imgs/big-launch.png" alt="big network" /></p>
-<p>Also, you can use the <em>group name</em> in the testing definition to make the same assertion on all the <code>nodes</code>/<code>collators</code> of the group.</p>
-<p>For example</p>
+<p>You can use the <em>group name</em> in the testing definition to make the same assertion on all the <code>nodes</code>/<code>collators</code> of the group.
+For example:</p>
 <pre><code>Description: Big Network test
 Network: ./0005-big-network.toml
 Creds: config
 
 
-# well know functions using groups
+# well known functions using groups
 a: is up
 b: is up
 
@@ -574,18 +581,20 @@ b: reports sub_libp2p_is_major_syncing is 0
 <hr />
 <h2 id="logs-and-troubleshooting"><a class="header" href="#logs-and-troubleshooting">Logs and troubleshooting</a></h2>
 <h3 id="node-logs"><a class="header" href="#node-logs">Node logs</a></h3>
-<p>Logs are always a great resource for troubleshooting, zombienet give you an easy way to access <code>node's</code> logs in all the supported providers.</p>
-<h4 id="logs-in-kubernetes"><a class="header" href="#logs-in-kubernetes">Logs in kubernetes</a></h4>
-<p>With <code>kubernetes</code> provider you have a couple of options to follow the logs, the first one is using the command that <code>zombienet</code> suggest in the output of the running nodes</p>
+<p>Logs are always a great resource for troubleshooting. 
+Zombienet gives you an easy way to access a node's logs in all the supported providers.</p>
+<h4 id="logs-in-kubernetes"><a class="header" href="#logs-in-kubernetes">Logs in Kubernetes</a></h4>
+<p>Using the <code>kubernetes</code> provider you have a couple of options to follow the logs.
+The first is using the command that <code>zombienet</code> suggests in the output of the running nodes:</p>
 <pre><code>	a-0 running
 
 		 You can follow the logs of the node by running this command:
 
 			 kubectl logs -f a-0
 </code></pre>
-<p>Or if you have <a href="https://prometheus-operator.dev/">prometheus operator</a> installed in your cluster zombienet will create a <code>PodMonitor</code> to collect all the <code>node's</code> logs and make it available in your grafana dashboard.</p>
-<h4 id="logs-in-podman"><a class="header" href="#logs-in-podman">Logs in podman</a></h4>
-<p>When you use <code>podman</code> you can follow the logs of the pods with the command suggestion that <code>zombienet</code> give you when spawn each pod.</p>
+<p>If you have a <a href="https://prometheus-operator.dev/">prometheus operator</a> installed in your cluster, Zombienet will create a <code>PodMonitor</code> to collect all the node's logs and make it available in your Grafana dashboard which you can also use.</p>
+<h4 id="logs-in-podman"><a class="header" href="#logs-in-podman">Logs in Podman</a></h4>
+<p>When you use <code>podman</code> you can follow the logs of the pods with the command suggestion that <code>zombienet</code> gives you when it spawns each pod.</p>
 <pre><code>    alice running
 
         You can follow the logs of the node by running this command:
@@ -593,7 +602,8 @@ b: reports sub_libp2p_is_major_syncing is 0
                 podman logs -f alice_pod-alice
 </code></pre>
 <h4 id="logs-in-native"><a class="header" href="#logs-in-native">Logs in native</a></h4>
-<p>With the <code>native</code> provider you can follow the logs of the pods with the command suggestion that <code>zombienet</code> give you when spawn process.</p>
+<p>With the <code>native</code> provider you can follow the logs of the pods with the command suggestion that <code>zombienet</code> gives you when it spawn a new process.
+For example:</p>
 <pre><code>    alice running
 
         You can follow the logs of the node by running this command:
@@ -608,7 +618,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 <h2 id="podman-infra"><a class="header" href="#podman-infra">Podman infra</a></h2>
 <p><code>Zombienet</code> will automatically spawn some infrastructure <em>pods</em> to give the users a monitoring stack when the <code>podman</code> provider is used.</p>
 <p><img src="./imgs/podman-infra.png" alt="podman infra" /></p>
-<p>The <code>grafana</code> pod is running under the default user configuration and have <code>prometheus</code> and <code>tempo</code> already configured as datasources.</p>
+<p>The <code>grafana</code> pod is running under the default user configuration and has <code>prometheus</code> and <code>tempo</code> already configured as datasources.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="network-definition-spec"><a class="header" href="#network-definition-spec">Network definition spec</a></h1>
 <p><strong>NOTE</strong>: Final config spec is TBD, check <a href="https://github.com/paritytech/zombienet/blob/main/examples">examples</a> for use cases.</p>
 <p>The network config can be provided both in <code>json</code> or <code>toml</code> format and each section can contain <code>provider</code> specific <em>keys</em> that are ignored by others, e.g. when you use the <code>native</code> provider all references to <code>image/s</code> for nodes are ignored.</p>
@@ -771,34 +781,33 @@ b: reports sub_libp2p_is_major_syncing is 0
 <li>Podman</li>
 </ul>
 <h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
-<p>You need first to <em>clone</em> this repository and run:</p>
+<p>You need to first <em>clone</em> this repository and run:</p>
 <pre><code class="language-bash">cd zombienet
 npm install
 npm run build
 </code></pre>
-<h3 id="download-and-install-needed-artifacts-optional"><a class="header" href="#download-and-install-needed-artifacts-optional">Download and install needed artifacts (Optional)</a></h3>
-<p>For easier and faster setup of local environment, upi can run:</p>
-<pre><code class="language-bash">❯ node dist/cli.js setup &lt;binaries&gt;
-
-Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
-
-You can use the following arguments:
-
---help shows this message;
---binaries or -b: the binaries that you want to be downloaded and installed during the setup, provided in a row without any separators;
-	possible options: 'polkadot', 'polkadot-parachain'
-	example: node dist/cli.js setup polkadot polkadot-parachain
+<h3 id="download-and-install-needed-artifacts-optional"><a class="header" href="#download-and-install-needed-artifacts-optional">Download and install needed artifacts (optional)</a></h3>
+<p>For an easier and faster setup of your local environment, run:</p>
+<pre><code class="language-bash">node dist/cli.js setup &lt;binaries&gt;
+</code></pre>
+<p>This allows to use the <code>setup</code> script, making everything ready for a ZombieNet dev environment.</p>
+<p>You can use the following arguments:</p>
+<p><code>--help</code> shows the different options and commands for using the Zombienet CLI.
+<code>--binaries</code> or <code>-b</code>: enables providing the binaries that you want to be downloaded and installed during the setup. Possible options: <code>polkadot</code>, <code>polkadot-parachain</code>.</p>
+<p>For example:</p>
+<pre><code class="language-bash">node dist/cli.js setup polkadot polkadot-parachain
 </code></pre>
 <blockquote>
-<p>Note: If you are using MacOS. Please, clone the polkadot repo (https://github.com/paritytech/polkadot) and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
+<p>Note: If you are using macOS please clone the <a href="https://github.com/paritytech/polkadot">Polkadot repo</a> and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
 </blockquote>
-<p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
-<p>e.g.</p>
-<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/current_directory:$PATH
+<p>The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
+At the end of the download, the <code>setup</code> script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:</p>
+<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/&lt;current_directory&gt;/dist:$PATH
 </code></pre>
 <h3 id="using-zombienet"><a class="header" href="#using-zombienet">Using Zombienet</a></h3>
-<p>Then <code>zombienet</code> cli is ready to run:</p>
+<p>With the above steps completed, the <code>zombienet</code> CLI is ready to run:</p>
 <pre><code class="language-bash">❯ node dist/cli.js
+
 Usage: zombienet [options] [command]
 
 Options:
