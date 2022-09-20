@@ -2,8 +2,8 @@ Roadmap Zombienet v2
 
 ## Infra
 - Chaos testing, add examples and explore possibilities in `native` and `podman` provider
-- Add docker provider
-- Add nomad provider
+- Add `docker` provider
+- Add `nomad` provider
 - Create helm chart to allow other use zombienet in k8s
 - Auth system to not use k8s users
 - Create GitHub Action and publish in marketplace
