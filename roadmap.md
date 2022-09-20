@@ -23,7 +23,7 @@ Roadmap Zombienet v2
 ## Functional tasks
 - Add subxt integration, allow to compile/run on the fly
 - Move parser to pest (wip)
-- Dettach phases and use json to communicate instead of `paths`
+- Detach phases and use JSON to communicate instead of `paths`
 - Add relative values assertions (for metrics/scripts)
 - Allow to define nodes that are not started in the launching phase and can be started by the test-runner
 - Allow to define `race` assertions
