@@ -8,7 +8,7 @@ Roadmap Zombienet v2
 - Auth system to not use k8s users
 - Create GitHub Action and publish in marketplace
 
-## Intenal teams
+## Internal teams
 - Add more teams (wip)
 
 ## UI
