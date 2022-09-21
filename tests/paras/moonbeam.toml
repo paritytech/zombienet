@@ -24,7 +24,7 @@ cumulus_based = true
 
   [parachains.collator]
   name = "alith"
-  image = "docker.io/purestake/moonbeam:v0.26"
+  image = "{{COL_IMAGE}}"
   command = "/moonbeam/moonbeam"
   args = ["-lparachain=debug"]
 
