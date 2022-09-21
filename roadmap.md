@@ -34,3 +34,4 @@ Roadmap Zombienet v2
 - Add more CLI subcommands
 - Add js/subxt snippets ready to use in assertions (e.g transfers)
 - Add XCM support in built-in assertions
+- Add support to start from a live network (fork-off) [check subalfred]
