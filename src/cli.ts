@@ -423,25 +423,26 @@ const startStream = (filePath: string): fs.WriteStream => {
 
 async function convert(filePath: string) {
   try {
-    const { path, fileName, extension } = getFilePathNameExt(filePath);
+    const { newpath, fileName, extension } = getFilePathNameExt(filePath);
     let jsonConfig: object;
     if (extension === "json") {
       // If JSON then read file else if JS just import dynamically
       jsonConfig = JSON.parse(fs.readFileSync(`${filePath}`, "utf8"));
-
-      const stream = startStream(`${path}/${fileName}-zombie.${extension}`);
-
-      stream.write(`[relaychain]
-      default_image = "docker.io/paritypr/polkadot-debug:master"
-      default_command = "polkadot"
-      default_args = [ "-lparachain=debug" ])`);
-      stream.end();
+    } else if (extension === "js") {
+      const resolvedJsFilePath = path.resolve(filePath);
+      jsonConfig = await import(resolvedJsFilePath);
     } else {
       throw Error("No valid extension was found.");
     }
 
-    // Read through the
-    console.log("j", jsonConfig);
+    // Read through the JSON and write to stream sample
+    const stream = startStream(`${newpath}/${fileName}-zombie.${extension}`);
+
+    stream.write(`[relaychain]
+      default_image = "docker.io/paritypr/polkadot-debug:master"
+      default_command = "polkadot"
+      default_args = [ "-lparachain=debug" ])`);
+    stream.end();
   } catch (err) {
     console.log("error", err);
   }
