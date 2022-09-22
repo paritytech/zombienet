@@ -40,7 +40,7 @@ node dist/cli.js setup polkadot polkadot-parachain
 
 > Note: If you are using macOS please clone the [Polkadot repo](https://github.com/paritytech/polkadot) and run it locally. At the moment there is no `polkadot` binary for MacOs.
 
-The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
+The command above will retrieve the binaries provided and try to download and prepare those binaries for usage.
 At the end of the download, the `setup` script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:
 
 ```bash
@@ -65,5 +65,6 @@ Commands:
   spawn <networkConfig> [creds] [monitor]  Spawn the network defined in the config
   test <testFile>                          Run tests on the network defined
   version                                  Prints zombienet version
+  setup                                    Runs the setup of local environment
   help [command]                           display help for command
 ```
