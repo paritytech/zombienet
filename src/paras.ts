@@ -22,8 +22,8 @@ export async function generateParachainFiles(
   chainName: string,
   parachain: Parachain,
 ): Promise<void> {
-
-  let [ addAuraAuthority,
+  let [
+    addAuraAuthority,
     addAuthority,
     changeGenesisConfig,
     clearAuthorities,
@@ -32,17 +32,18 @@ export async function generateParachainFiles(
     getNodeKey,
     addParaCustom,
     addCollatorSelection,
-    writeChainSpec ] = decorate(parachain.para, [
-      chainSpecFns.addAuraAuthority,
-      chainSpecFns.addAuthority,
-      chainSpecFns.changeGenesisConfig,
-      chainSpecFns.clearAuthorities,
-      chainSpecFns.readAndParseChainSpec,
-      chainSpecFns.specHaveSessionsKeys,
-      chainSpecFns.getNodeKey,
-      chainSpecFns.addParaCustom,
-      chainSpecFns.addCollatorSelection,
-      chainSpecFns.writeChainSpec
+    writeChainSpec,
+  ] = decorate(parachain.para, [
+    chainSpecFns.addAuraAuthority,
+    chainSpecFns.addAuthority,
+    chainSpecFns.changeGenesisConfig,
+    chainSpecFns.clearAuthorities,
+    chainSpecFns.readAndParseChainSpec,
+    chainSpecFns.specHaveSessionsKeys,
+    chainSpecFns.getNodeKey,
+    chainSpecFns.addParaCustom,
+    chainSpecFns.addCollatorSelection,
+    chainSpecFns.writeChainSpec,
   ]);
 
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
@@ -95,25 +96,19 @@ export async function generateParachainFiles(
     // Chain spec customization logic
     const addToSession = async (node: Node) => {
       const key = getNodeKey(node, false);
-      await addAuthority(
-        chainSpecFullPathPlain,
-        node,
-        key
-      );
-    }
+      await addAuthority(chainSpecFullPathPlain, node, key);
+    };
 
     const addToAura = async (node: Node) => {
-      await addAuraAuthority(
-        chainSpecFullPathPlain,
-        node.name,
-        node.accounts!,
-      );
-    }
+      await addAuraAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+    };
 
-    const addAuthFn = specHaveSessionsKeys(plainData) ? addToSession : addToAura;
+    const addAuthFn = specHaveSessionsKeys(plainData)
+      ? addToSession
+      : addToAura;
 
     for (const node of parachain.collators) {
-      if(node.validator) {
+      if (node.validator) {
         await addAuthFn(node);
         await addCollatorSelection(chainSpecFullPathPlain, node);
         await addParaCustom(chainSpecFullPathPlain, node);

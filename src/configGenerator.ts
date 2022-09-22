@@ -287,7 +287,6 @@ export async function generateNetworkSpec(
         computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
-
       let parachainSetup: Parachain = {
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),

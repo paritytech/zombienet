@@ -12,8 +12,7 @@ let stakingBond: number | undefined;
 
 export type KeyType = "session" | "aura" | "grandpa";
 
-export type GenesisNodeKey = [ string, string, {[key: string]: string}];
-
+export type GenesisNodeKey = [string, string, { [key: string]: string }];
 
 // Check if the chainSpec have session keys
 export function specHaveSessionsKeys(chainSpec: ChainSpec): boolean {
@@ -102,26 +101,29 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   writeChainSpec(specPath, chainSpec);
 }
 
-export function getNodeKey(node: Node, useStash: boolean = true): GenesisNodeKey {
+export function getNodeKey(
+  node: Node,
+  useStash: boolean = true,
+): GenesisNodeKey {
   const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
 
-    const key: GenesisNodeKey = [
-          useStash ? sr_stash.address : sr_account.address,
-          useStash ? sr_stash.address : sr_account.address,
-          {
-            grandpa: ed_account.address,
-            babe: sr_account.address,
-            im_online: sr_account.address,
-            parachain_validator: sr_account.address,
-            authority_discovery: sr_account.address,
-            para_validator: sr_account.address,
-            para_assignment: sr_account.address,
-            beefy: encodeAddress(ec_account.publicKey),
-            aura: sr_account.address
-          },
-        ];
+  const key: GenesisNodeKey = [
+    useStash ? sr_stash.address : sr_account.address,
+    useStash ? sr_stash.address : sr_account.address,
+    {
+      grandpa: ed_account.address,
+      babe: sr_account.address,
+      im_online: sr_account.address,
+      parachain_validator: sr_account.address,
+      authority_discovery: sr_account.address,
+      para_validator: sr_account.address,
+      para_assignment: sr_account.address,
+      beefy: encodeAddress(ec_account.publicKey),
+      aura: sr_account.address,
+    },
+  ];
 
-    return key;
+  return key;
 }
 
 // Add additional authorities to chain spec in `session.keys`
@@ -133,7 +135,6 @@ export async function addAuthority(
   const chainSpec = readAndParseChainSpec(specPath);
 
   const { sr_stash } = node.accounts;
-
 
   let keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
@@ -150,13 +151,10 @@ export async function addAuthority(
 }
 
 /// Add node to staking
-export async function addStaking(
-  specPath: string,
-  node: Node,
-) {
+export async function addStaking(specPath: string, node: Node) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
-  if (! runtimeConfig?.staking) return;
+  if (!runtimeConfig?.staking) return;
 
   const { sr_stash, sr_account } = node.accounts;
   runtimeConfig.staking.stakers.push([
@@ -173,19 +171,19 @@ export async function addStaking(
     runtimeConfig.staking.invulnerables.push(sr_stash.address);
 
   console.log(
-    `\t👤 Added Staking  ${decorators.green(
-      node.name,
-    )} - ${decorators.magenta(sr_stash.address)} - ${stakingBond}`,
+    `\t👤 Added Staking  ${decorators.green(node.name)} - ${decorators.magenta(
+      sr_stash.address,
+    )} - ${stakingBond}`,
   );
 
   writeChainSpec(specPath, chainSpec);
 }
 
 /// Add collators
-export async function addCollatorSelection(specPath: string,node: Node) {
+export async function addCollatorSelection(specPath: string, node: Node) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
-  if (! runtimeConfig?.collatorSelection?.invulnerables) return;
+  if (!runtimeConfig?.collatorSelection?.invulnerables) return;
 
   const { sr_account } = node.accounts;
 
@@ -201,10 +199,7 @@ export async function addCollatorSelection(specPath: string,node: Node) {
 }
 
 /// Add node to staking
-export async function addParaCustom(
-  specPath: string,
-  node: Node,
-) {
+export async function addParaCustom(specPath: string, node: Node) {
   /// nop
 }
 
@@ -446,5 +441,5 @@ export default {
   writeChainSpec,
   getNodeKey,
   addParaCustom,
-  addCollatorSelection
+  addCollatorSelection,
 };

@@ -247,8 +247,7 @@ export async function start(
           if (keyType === "session") {
             const key = getNodeKey(node);
             await addAuthority(chainSpecFullPathPlain, node, key);
-          }
-          else {
+          } else {
             await addAuraAuthority(
               chainSpecFullPathPlain,
               node.name,
