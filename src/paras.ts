@@ -74,17 +74,18 @@ export async function generateParachainFiles(
 
     writeChainSpec(chainSpecFullPathPlain, plainData);
 
-    const chainSessionType = parachain.chain?.includes("statemint")
-      ? "statemint"
-      : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
-          parachain.chain?.includes(prefix),
-        )
-      ? "moonbeam"
-      : undefined;
-    if (chainSessionType) clearAuthorities(chainSpecFullPathPlain);
+    // clear auths
+    clearAuthorities(chainSpecFullPathPlain);
 
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
+      const chainSessionType = parachain.chain?.includes("statemint")
+        ? "statemint"
+        : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
+            parachain.chain?.includes(prefix),
+          )
+        ? "moonbeam"
+        : undefined;
       for (const node of parachain.collators) {
         if (node.validator)
           await addAuthority(
