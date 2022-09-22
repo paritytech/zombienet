@@ -9,6 +9,7 @@ interface ParaDecorator { [fn: string] : Function };
 
 // imports
 import moonbeam from "./moonbeam";
+import statemint from "./statemint";
 
 
 function whichPara(chain: string): PARA {
@@ -24,9 +25,14 @@ const moonbeamDecorators: ParaDecorator = Object.keys(moonbeam).reduce((memo, fn
     return memo;
 },Object.create({}));
 
+const statemintDecorators: ParaDecorator = Object.keys(statemint).reduce((memo, fn) => {
+    memo[fn] = (statemint as ParaDecorator)[fn];
+    return memo;
+},Object.create({}));
+
 const decorators : {[para in PARA]: { [fn: string]: Function}} = {
     moonbeam : moonbeamDecorators,
-    statemint: {},
+    statemint: statemintDecorators,
     generic: {}
 };
 
