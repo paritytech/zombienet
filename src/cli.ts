@@ -5,7 +5,7 @@ import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
 import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
-import { LaunchConfig } from "./types";
+import { ConfigType, LaunchConfig } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
 import axios from "axios";
@@ -228,8 +228,8 @@ program
     "Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration",
   )
   .argument(
-    "<filepath>",
-    `the filepath of the polkadot-lauch name. It could be either a .js or .json file`,
+    "<params...>",
+    `Expecting 1 mandatory param which is the path of the polkadot-lauch configuration file (could be either a .js or .json file). The expected output format (could be either "toml" or "json" - defaults to "toml").`,
   )
   .action(convert);
 
@@ -406,22 +406,7 @@ async function setup(params: any) {
   return;
 }
 
-const startStream = (filePath: string): fs.WriteStream => {
-  const writableStream = fs.createWriteStream(filePath);
-
-  writableStream.on("error", (error) => {
-    console.log(
-      `An error occured while writing to the file. Error: ${error.message}`,
-    );
-  });
-  writableStream.on("finish", () => {
-    console.log(`Converted config exists now under: ${filePath}`);
-  });
-
-  return writableStream;
-};
-
-async function readInputFile(ext: string, fPath: string): Promise<object> {
+async function readInputFile(ext: string, fPath: string): Promise<ConfigType> {
   let json: object;
   if (ext === "json" || ext === "js") {
     json =
@@ -434,17 +419,103 @@ async function readInputFile(ext: string, fPath: string): Promise<object> {
   return json;
 }
 
-async function convert(filePath: string) {
-  try {
-    const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
-    const inpFileJson = readInputFile(extension, filePath);
-    // Read through the JSON and write to stream sample
-    const stream = startStream(`${fullPath}/${fileName}-zombie.${extension}`);
+// Stream Functions
+let stream: fs.WriteStream;
 
-    stream.write(`[relaychain]
-      default_image = "docker.io/paritypr/polkadot-debug:master"
-      default_command = "polkadot"
-      default_args = [ "-lparachain=debug" ])`);
+function streamWrite(str: string) {
+  stream.write(str + `\n`);
+}
+
+function startStream(filePath: string): fs.WriteStream {
+  const writableStream = fs.createWriteStream(filePath);
+
+  writableStream.on("error", (error) => {
+    console.log(
+      `An error occured while writing to the file. Error: ${error.message}`,
+    );
+  });
+  writableStream.on("finish", () => {
+    console.log(`Converted config exists now under: ${filePath}`);
+  });
+
+  return writableStream;
+}
+
+function convertInput(convertedJson: ConfigType, outFormat: "toml" | "json") {
+  const { relaychain, parachains, simpleParachains } = convertedJson;
+
+  if (outFormat === "toml") {
+    if (relaychain) {
+      streamWrite(`[relaychain]`);
+      streamWrite(`default_image = "docker.io/paritypr/polkadot-debug:master"`);
+      streamWrite(`default_command = "polkadot"`);
+      streamWrite(`default_args = [ "-lparachain=debug" ])`);
+
+      if (relaychain?.chain) {
+        streamWrite("");
+        streamWrite(`chain = "${relaychain?.chain}"`);
+      }
+
+      if (relaychain?.nodes) {
+        relaychain.nodes.forEach((n) => {
+          streamWrite("");
+          streamWrite(`\t[[relaychain.nodes]]`);
+          streamWrite(`\tname = "${n.name}"`);
+          streamWrite(`\tvalidator = true`);
+        });
+      }
+    }
+
+    if (parachains) {
+      parachains.forEach((parachain) => {
+        streamWrite(`\n[[parachains]]`);
+        streamWrite(`id = "${parachain.id}"`);
+
+        parachain.nodes.forEach((n) => {
+          streamWrite("");
+          streamWrite(`\t[parachains.collator]`);
+          streamWrite(`\tname = "${n.name}"`);
+          streamWrite(`\tcommand = "adder-collator"`);
+        });
+      });
+    }
+
+    if (simpleParachains) {
+      simpleParachains.forEach((sp) => {
+        streamWrite(`\n[[parachains]]`);
+        streamWrite(`id = "${sp.id}"`);
+        streamWrite("");
+        streamWrite(`\t[parachains.collator]`);
+        streamWrite(`\tname = "${sp.name}"`);
+        streamWrite(`\tcommand = "adder-collator"`);
+      });
+    }
+  }
+}
+
+async function convert(params: string[]) {
+  try {
+    const filePath = params[0];
+    const outFormat = params[1] || "toml";
+
+    if (!filePath) {
+      throw Error("Path of configuration file was not provided");
+    }
+
+    if (outFormat !== "json" && outFormat !== "toml") {
+      throw Error(
+        "Output format provided is wrong. This can only be either 'toml' or 'json'",
+      );
+    }
+
+    const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
+    const convertedJson = await readInputFile(extension, filePath);
+
+    // Read through the JSON and write to stream sample
+    stream = startStream(`${fullPath}/${fileName}-zombie.${extension}`);
+
+    convertInput(convertedJson, outFormat);
+
     stream.end();
   } catch (err) {
     console.log("error", err);

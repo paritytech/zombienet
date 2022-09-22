@@ -255,3 +255,53 @@ export interface Resources {
 export interface MultiAddressByNode {
   [key: string]: string;
 }
+
+// Config interfaces
+interface NodesConfig {
+  name: string;
+  wsPort: number;
+  port: number;
+  flags?: [strings];
+}
+
+interface RelayChainConfig {
+  bin?: string;
+  chain: string;
+  nodes: [NodesConfig];
+  genesis: {
+    runtime: {
+      runtime_genesis_config: {
+        configuration: {
+          config: {
+            validation_upgrade_frequency: number;
+            validation_upgrade_delay: number;
+          };
+        };
+      };
+    };
+  };
+}
+
+interface ParaChainConfig {
+  bin?: string;
+  id?: string;
+  port?: string;
+  balance?: string;
+  nodes: [NodesConfig];
+}
+
+interface HrmpChannels {
+  sender: number;
+  recipient: number;
+  maxCapacity: number;
+  maxMessageSize: number;
+}
+
+export interface ConfigType {
+  relaychain?: RelayChainConfig;
+  parachains?: [ParaChainConfig];
+  simpleParachains?: [NodesConfig & { id: string }];
+  hrmpChannels?: [HrmpChannels];
+  types?: object;
+  finalization?: boolean;
+}
