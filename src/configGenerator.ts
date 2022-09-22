@@ -32,6 +32,7 @@ import {
 } from "./constants";
 import { generateKeyForNode } from "./keys";
 import { getRandomPort } from "./utils/net";
+import { decorate, PARA, whichPara } from "./paras-decorators";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -162,6 +163,8 @@ export async function generateNetworkSpec(
 
   if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
+      const para: PARA = whichPara(parachain.chain || "");
+
       let computedStatePath,
         computedStateCommand,
         computedWasmPath,
@@ -178,6 +181,7 @@ export async function generateNetworkSpec(
             parachain.collator,
             parachain.id,
             chainName,
+            para,
             bootnodes,
             Boolean(parachain.cumulus_based),
           ),
@@ -189,6 +193,7 @@ export async function generateNetworkSpec(
             collatorConfig,
             parachain.id,
             chainName,
+            para,
             bootnodes,
             Boolean(parachain.cumulus_based),
           ),
@@ -217,6 +222,7 @@ export async function generateNetworkSpec(
               node,
               parachain.id,
               chainName,
+              para,
               bootnodes,
               Boolean(parachain.cumulus_based),
             ),
@@ -281,9 +287,11 @@ export async function generateNetworkSpec(
         computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
+
       let parachainSetup: Parachain = {
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),
+        para,
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
           parachain.add_to_genesis === undefined
@@ -417,6 +425,7 @@ async function getCollatorNodeFromConfig(
   collatorConfig: NodeConfig,
   para_id: number,
   chain: string, // relay-chain
+  para: PARA,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
 ): Promise<Node> {
@@ -437,7 +446,8 @@ async function getCollatorNodeFromConfig(
     : DEFAULT_ADDER_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
-  const accountsForNode = await generateKeyForNode(collatorName);
+  const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
+  const accountsForNode = await decoratedKeysGenerator(collatorName);
 
   const ports =
     networkSpec.settings.provider !== "native"

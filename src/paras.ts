@@ -9,17 +9,8 @@ import { getClient } from "./providers/client";
 import { Providers } from "./providers";
 import { fileMap, Node, Parachain } from "./types";
 import fs from "fs";
-// import {
-//   addAuraAuthority,
-//   addAuthority,
-//   changeGenesisConfig,
-//   clearAuthorities,
-//   readAndParseChainSpec,
-//   specHaveSessionsKeys,
-//   writeChainSpec,
-// } from "./chain-spec";
 import chainSpecFns from "./chain-spec";
-import { decorate, PARA, whichPara } from "./paras-decorators";
+import { decorate } from "./paras-decorators";
 import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
@@ -32,7 +23,6 @@ export async function generateParachainFiles(
   parachain: Parachain,
 ): Promise<void> {
 
-  let para: PARA = whichPara(parachain.chain || "");
   let [ addAuraAuthority,
     addAuthority,
     changeGenesisConfig,
@@ -42,7 +32,7 @@ export async function generateParachainFiles(
     getNodeKey,
     addParaCustom,
     addCollatorSelection,
-    writeChainSpec ] = decorate(para, [
+    writeChainSpec ] = decorate(parachain.para, [
       chainSpecFns.addAuraAuthority,
       chainSpecFns.addAuthority,
       chainSpecFns.changeGenesisConfig,
