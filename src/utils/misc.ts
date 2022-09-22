@@ -102,16 +102,16 @@ export function getLokiUrl(
 }
 
 export function getFilePathNameExt(filePath: string): {
-  newpath: string;
+  fullPath: string;
   fileName: string;
   extension: string;
 } {
   // Get path, fileName and extension
   const index = filePath.lastIndexOf("/");
-  const newpath = filePath.slice(0, index);
+  const fullPath = filePath.slice(0, index);
   const fileNameWithExt = filePath.slice(index + 1);
   const extension = fileNameWithExt.split(".").pop() || "";
   const [fileName] = fileNameWithExt.split(".");
 
-  return { newpath, fileName, extension };
+  return { fullPath, fileName, extension };
 }

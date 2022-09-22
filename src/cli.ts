@@ -415,28 +415,31 @@ const startStream = (filePath: string): fs.WriteStream => {
     );
   });
   writableStream.on("finish", () => {
-    console.log(`All your sentences have been written to ${filePath}`);
+    console.log(`Converted config exists now under: ${filePath}`);
   });
 
   return writableStream;
 };
 
+async function readInputFile(ext: string, fPath: string): Promise<object> {
+  let json: object;
+  if (ext === "json" || ext === "js") {
+    json =
+      ext === "json"
+        ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
+        : await import(path.resolve(fPath));
+  } else {
+    throw Error("No valid extension was found.");
+  }
+  return json;
+}
+
 async function convert(filePath: string) {
   try {
-    const { newpath, fileName, extension } = getFilePathNameExt(filePath);
-    let jsonConfig: object;
-    if (extension === "json") {
-      // If JSON then read file else if JS just import dynamically
-      jsonConfig = JSON.parse(fs.readFileSync(`${filePath}`, "utf8"));
-    } else if (extension === "js") {
-      const resolvedJsFilePath = path.resolve(filePath);
-      jsonConfig = await import(resolvedJsFilePath);
-    } else {
-      throw Error("No valid extension was found.");
-    }
-
+    const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
+    const inpFileJson = readInputFile(extension, filePath);
     // Read through the JSON and write to stream sample
-    const stream = startStream(`${newpath}/${fileName}-zombie.${extension}`);
+    const stream = startStream(`${fullPath}/${fileName}-zombie.${extension}`);
 
     stream.write(`[relaychain]
       default_image = "docker.io/paritypr/polkadot-debug:master"
