@@ -82,7 +82,7 @@ export async function generateParachainFiles(
       ? "moonbeam"
       : undefined;
     if (chainSessionType) clearAuthorities(chainSpecFullPathPlain);
-  
+
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
       for (const node of parachain.collators) {
