@@ -172,33 +172,42 @@ Then you can spawn the network by running the following command:
 You can follow the output of the `steps` to spawn the network and once the network is launched a
 message with the `node`s information like this one is shown
 
+
 ```bash
-	 Network launched 🚀🚀
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                       Network launched 🚀🚀                                                  │
+├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Namespace               │ zombie-72a1e2ffad0ad73167061bbd560e0766                                                            │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Provider                │ native                                                                                             │
+├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                         Node Information                                                     │
+├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Name                    │ alice                                                                                              │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Direct Link             │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:45589#/explorer                                   │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Prometheus Link         │ http://127.0.0.1:44107/metrics                                                                     │
+├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                         Node Information                                                     │
+├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Name                    │ bob                                                                                                │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Direct Link             │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:46459#/explorer                                   │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Prometheus Link         │ http://127.0.0.1:43831/metrics                                                                     │
+├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                         Node Information                                                     │
+├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Name                    │ collator01                                                                                         │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Direct Link             │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:42607#/explorer                                   │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Prometheus Link         │ http://127.0.0.1:38281/metrics                                                                     │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Parachain ID            │ 100                                                                                                │
+└─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
-		 In namespace zombie-1b0ad798d89c9f7f9c610bc46849970f with kubernetes provider
-
-		 Node name: bootnode
-		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52562#/explorer
-		 Node prometheus link: http://127.0.0.1:52567/metrics
-
----
-
-		 Node name: alice
-		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52642#/explorer
-		 Node prometheus link: http://127.0.0.1:52647/metrics
-
----
-
-		 Node name: bob
-		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52694#/explorer
-		 Node prometheus link: http://127.0.0.1:52699/metrics
-
----
-
-	 Parachain ID: 100
-
-		 Node name: collator01-1
-		 Node direct link: https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A52742#/explorer
 ```
 
 Both the `prometheus` and the `node` links are accessible in your local machine to get the `metrics`
@@ -295,48 +304,55 @@ npm install
 npm run build
 ```
 
-### Download and install needed artifacts (`Optional`)
+### Download and install needed artifacts (optional)
 
-For easier and faster setup of local environment, you can run:
+For an easier and faster setup of your local environment, run:
 
 ```bash
-❯ node dist/cli.js setup <binaries>
+node dist/cli.js setup <binaries>
+```
 
-Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
+This allows to use the `setup` script, making everything ready for a ZombieNet dev environment.
 
 You can use the following arguments:
 
---help shows this message;
---binaries or -b: the binaries that you want to be downloaded and installed during the setup, provided in a row without any separators;
-	possible options: 'polkadot', 'polkadot-parachain'
-	example: node dist/cli.js setup polkadot polkadot-parachain
-```
-> Note: If you are using MacOS. Please, clone the polkadot repo (https://github.com/paritytech/polkadot) and run it locally. At the moment there is no `polkadot` binary for MacOs.
+`--help` shows the different options and commands for using the Zombienet CLI.
+`--binaries` or `-b`: enables providing the binaries that you want to be downloaded and installed during the setup. Possible options: `polkadot`, `polkadot-parachain`.
 
-Script above will retrieve the binaries provided and try to download and prepare those binaries for
-usage. At the end of the download, script will provide a command to run in your local environment in
-order to add the directory where the binaries were downloaded in your $PATH var. E.g.:
+For example:
+
+```bash
+node dist/cli.js setup polkadot polkadot-parachain
+```
+
+> Note: If you are using macOS please clone the [Polkadot repo](https://github.com/paritytech/polkadot) and run it locally. At the moment there is no `polkadot` binary for MacOs.
+
+The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
+At the end of the download, the `setup` script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:
 
 ```bash
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
 ```
 
-### Run ZombieNet
+### Using Zombienet
 
-Then `zombienet` cli is ready to run:
+With the above steps completed, the `zombienet` CLI is ready to run:
 
 ```bash
 ❯ node dist/cli.js
+
 Usage: zombienet [options] [command]
 
 Options:
-  -p, --provider <provider>                Override provider to use (choices: "podman", "kubernetes")
+  -p, --provider <provider>                Override provider to use (choices: "podman",
+                                           "kubernetes", default: kubernetes)
   -h, --help                               display help for command
 
 Commands:
   spawn <networkConfig> [creds] [monitor]  Spawn the network defined in the config
   test <testFile>                          Run tests on the network defined
   version                                  Prints zombienet version
+  setup                                    Runs the setup of local environment
   help [command]                           display help for command
 ```
 
