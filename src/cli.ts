@@ -11,6 +11,9 @@ import { Command, Option } from "commander";
 import axios from "axios";
 import progress from "progress";
 import path from "path";
+import toml from "toml";
+import getStream from "get-stream";
+
 import {
   AVAILABLE_PROVIDERS,
   DEFAULT_GLOBAL_TIMEOUT,
@@ -228,8 +231,8 @@ program
     "Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration",
   )
   .argument(
-    "<params...>",
-    `Expecting 1 mandatory param which is the path of the polkadot-lauch configuration file (could be either a .js or .json file). The expected output format (could be either "toml" or "json" - defaults to "toml").`,
+    "<filePath>",
+    `Expecting 1 mandatory param which is the path of the polkadot-lauch configuration file (could be either a .js or .json file).`,
   )
   .action(convert);
 
@@ -434,89 +437,96 @@ function startStream(filePath: string): fs.WriteStream {
       `An error occured while writing to the file. Error: ${error.message}`,
     );
   });
-  writableStream.on("finish", () => {
-    console.log(`Converted config exists now under: ${filePath}`);
+  writableStream.on("finish", async () => {
+    const { fullPath, fileName } = getFilePathNameExt(filePath);
+    console.log(
+      `Converted toml config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.toml`,
+    );
+    const stream = fs.createReadStream(filePath);
+
+    const outJson = await toml.parse(await getStream(stream));
+    fs.writeFile(
+      `${fullPath}/${fileName}.json`,
+      JSON.stringify(outJson),
+      (error: any) => {
+        if (error) throw error;
+      },
+    );
+    console.log(
+      `Converted JSON config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.json`,
+    );
   });
 
   return writableStream;
 }
 
-function convertInput(convertedJson: ConfigType, outFormat: "toml" | "json") {
+async function convertInput(filePath: string) {
+  const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
+
+  const convertedJson = await readInputFile(extension, filePath);
+
+  stream = startStream(`${fullPath}/${fileName}-zombie.toml`);
+
   const { relaychain, parachains, simpleParachains } = convertedJson;
 
-  if (outFormat === "toml") {
-    if (relaychain) {
-      streamWrite(`[relaychain]`);
-      streamWrite(`default_image = "docker.io/paritypr/polkadot-debug:master"`);
-      streamWrite(`default_command = "polkadot"`);
-      streamWrite(`default_args = [ "-lparachain=debug" ])`);
+  if (relaychain) {
+    streamWrite(`[relaychain]`);
+    streamWrite(`default_image = "docker.io/paritypr/polkadot-debug:master"`);
+    streamWrite(`default_command = "polkadot"`);
+    streamWrite(`default_args = [ "-lparachain=debug" ]`);
 
-      if (relaychain?.chain) {
-        streamWrite("");
-        streamWrite(`chain = "${relaychain?.chain}"`);
-      }
-
-      if (relaychain?.nodes) {
-        relaychain.nodes.forEach((n) => {
-          streamWrite("");
-          streamWrite(`\t[[relaychain.nodes]]`);
-          streamWrite(`\tname = "${n.name}"`);
-          streamWrite(`\tvalidator = true`);
-        });
-      }
+    if (relaychain?.chain) {
+      streamWrite("");
+      streamWrite(`chain = "${relaychain?.chain}"`);
     }
 
-    if (parachains) {
-      parachains.forEach((parachain) => {
-        streamWrite(`\n[[parachains]]`);
-        streamWrite(`id = "${parachain.id}"`);
-
-        parachain.nodes.forEach((n) => {
-          streamWrite("");
-          streamWrite(`\t[parachains.collator]`);
-          streamWrite(`\tname = "${n.name}"`);
-          streamWrite(`\tcommand = "adder-collator"`);
-        });
-      });
-    }
-
-    if (simpleParachains) {
-      simpleParachains.forEach((sp) => {
-        streamWrite(`\n[[parachains]]`);
-        streamWrite(`id = "${sp.id}"`);
+    if (relaychain?.nodes) {
+      relaychain.nodes.forEach((n) => {
         streamWrite("");
-        streamWrite(`\t[parachains.collator]`);
-        streamWrite(`\tname = "${sp.name}"`);
-        streamWrite(`\tcommand = "adder-collator"`);
+        streamWrite(`\t[[relaychain.nodes]]`);
+        streamWrite(`\tname = "${n.name}"`);
+        streamWrite(`\tvalidator = true`);
       });
     }
   }
+
+  if (parachains) {
+    parachains.forEach((parachain) => {
+      streamWrite(`\n[[parachains]]`);
+      streamWrite(`id = "${parachain.id}"`);
+
+      parachain.nodes.forEach((n) => {
+        streamWrite("");
+        streamWrite(`\t[parachains.collator]`);
+        streamWrite(`\tname = "${n.name}"`);
+        streamWrite(`\tcommand = "adder-collator"`);
+      });
+    });
+  }
+
+  if (simpleParachains) {
+    simpleParachains.forEach((sp) => {
+      streamWrite(`\n[[parachains]]`);
+      streamWrite(`id = "${sp.id}"`);
+      streamWrite("");
+      streamWrite(`\t[parachains.collator]`);
+      streamWrite(`\tname = "${sp.name}"`);
+      streamWrite(`\tcommand = "adder-collator"`);
+    });
+  }
+  stream.end();
 }
 
-async function convert(params: string[]) {
+async function convert(param: string) {
   try {
-    const filePath = params[0];
-    const outFormat = params[1] || "toml";
+    const filePath = param;
 
     if (!filePath) {
       throw Error("Path of configuration file was not provided");
     }
 
-    if (outFormat !== "json" && outFormat !== "toml") {
-      throw Error(
-        "Output format provided is wrong. This can only be either 'toml' or 'json'",
-      );
-    }
-
-    const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
-    const convertedJson = await readInputFile(extension, filePath);
-
     // Read through the JSON and write to stream sample
-    stream = startStream(`${fullPath}/${fileName}-zombie.${extension}`);
-
-    convertInput(convertedJson, outFormat);
-
-    stream.end();
+    await convertInput(filePath);
   } catch (err) {
     console.log("error", err);
   }
