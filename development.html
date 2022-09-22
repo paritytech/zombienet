@@ -165,7 +165,7 @@ npm run build
 <blockquote>
 <p>Note: If you are using macOS please clone the <a href="https://github.com/paritytech/polkadot">Polkadot repo</a> and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
 </blockquote>
-<p>The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
+<p>The command above will retrieve the binaries provided and try to download and prepare those binaries for usage.
 At the end of the download, the <code>setup</code> script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:</p>
 <pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/&lt;current_directory&gt;/dist:$PATH
 </code></pre>
@@ -184,6 +184,7 @@ Commands:
   spawn &lt;networkConfig&gt; [creds] [monitor]  Spawn the network defined in the config
   test &lt;testFile&gt;                          Run tests on the network defined
   version                                  Prints zombienet version
+  setup                                    Runs the setup of local environment
   help [command]                           display help for command
 </code></pre>
 
