@@ -3,12 +3,17 @@ import {
     getRuntimeConfig,
     specHaveSessionsKeys as _specHaveSessionsKeys,
     clearAuthorities as _clearAuthorities,
-    KeyType,
+    getNodeKey as _getNodeKey,
     GenesisNodeKey,
     readAndParseChainSpec,
     writeChainSpec
 } from "../chain-spec";
+import { generateKeyForNode as _generateKeyForNode } from "../keys";
 import {  Node } from "../types";
+import { Keyring } from "@polkadot/api";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { u8aToHex } from "@polkadot/util";
+import { decorators } from "../utils/colors";
 
 
 // track 1st staking as default;
@@ -41,13 +46,25 @@ function getAuthorityKeys(chainSpec: ChainSpec) {
     if (runtimeConfig?.authorMapping) return runtimeConfig.authorMapping.mappings;
 }
 
-async function addAuthority(
-    specPath: string,
-    node: Node,
-    key: GenesisNodeKey
-  ) {
+async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
+    const chainSpec = readAndParseChainSpec(specPath);
 
-  }
+    const { sr_stash } = node.accounts;
+
+
+    let keys = getAuthorityKeys(chainSpec);
+    if (!keys) return;
+
+    keys.push(key);
+
+    console.log(
+      `\t👤 Added Genesis Authority ${decorators.green(
+        node.name,
+      )} - ${decorators.magenta(sr_stash.address)}`,
+    );
+
+    writeChainSpec(specPath, chainSpec);
+}
 
 async function clearAuthorities(specPath: string) {
   await _clearAuthorities(specPath);
@@ -71,9 +88,35 @@ async function clearAuthorities(specPath: string) {
 
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
+  let keys = await _generateKeyForNode(nodeName);
 
+  await cryptoWaitReady();
+
+  const eth_keyring = new Keyring({ type: "ethereum" });
+  const eth_account = eth_keyring.createFromUri(
+    nodeName && nodeName.toLocaleLowerCase() in KNOWN_MOONBEAM_KEYS
+      ? KNOWN_MOONBEAM_KEYS[nodeName.toLocaleLowerCase()]
+      : `${keys.mnemonic}/m/44'/60'/0'/0/0`,
+  );
+
+  keys.eth_account = {
+    address: eth_account.address,
+    publicKey: u8aToHex(eth_account.publicKey),
+  }
+
+  return keys;
 }
 
+
+export function getNodeKey(node: Node, useStash: boolean = true): GenesisNodeKey {
+  const { sr_stash, sr_account, ed_account, ec_account, eth_account } = node.accounts;
+
+  let key = _getNodeKey(node, useStash);
+  key[0] = sr_account.address;
+  key[1] = eth_account.address;
+
+  return key;
+}
 
 async function addParaCustom( specPath: string, node: Node) {
   const chainSpec = readAndParseChainSpec(specPath);
@@ -91,11 +134,13 @@ async function addParaCustom( specPath: string, node: Node) {
 
   writeChainSpec(specPath, chainSpec);
 }
+
 export default {
     specHaveSessionsKeys,
     addAuthority,
     clearAuthorities,
     generateKeyForNode,
     addParaCustom,
-    getAuthorityKeys
+    getAuthorityKeys,
+    getNodeKey
 }
