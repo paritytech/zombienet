@@ -53,6 +53,7 @@ export async function generateParachainFiles(
     await setupChainSpec(
       namespace,
       {
+        chainSpecPath: parachain.chainSpecPath,
         chainSpecCommand: `${parachain.collators[0].command} build-spec ${
           parachain.chain ? "--chain " + parachain.chain : ""
         } --disable-default-bootnode`,
@@ -73,18 +74,17 @@ export async function generateParachainFiles(
 
     writeChainSpec(chainSpecFullPathPlain, plainData);
 
-    // clear auths
-    clearAuthorities(chainSpecFullPathPlain);
-
+    const chainSessionType = parachain.chain?.includes("statemint")
+      ? "statemint"
+      : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
+          parachain.chain?.includes(prefix),
+        )
+      ? "moonbeam"
+      : undefined;
+    if (chainSessionType) clearAuthorities(chainSpecFullPathPlain);
+  
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
-      const chainSessionType = parachain.chain?.includes("statemint")
-        ? "statemint"
-        : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
-            parachain.chain?.includes(prefix),
-          )
-        ? "moonbeam"
-        : undefined;
       for (const node of parachain.collators) {
         if (node.validator)
           await addAuthority(
