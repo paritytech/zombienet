@@ -4,7 +4,6 @@ import {
     specHaveSessionsKeys as _specHaveSessionsKeys,
     clearAuthorities as _clearAuthorities,
     getNodeKey as _getNodeKey,
-    GenesisNodeKey,
     readAndParseChainSpec,
     writeChainSpec
 } from "../chain-spec";
@@ -18,6 +17,8 @@ import { decorators } from "../utils/colors";
 
 // track 1st staking as default;
 let paraStakingBond: number | undefined;
+
+export type GenesisNodeKey = [string, string];
 
 const KNOWN_MOONBEAM_KEYS: { [name: string]: string } = {
     alith: "0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133",
@@ -47,22 +48,27 @@ function getAuthorityKeys(chainSpec: ChainSpec) {
 }
 
 async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
+    console.log(key);
     const chainSpec = readAndParseChainSpec(specPath);
 
-    const { sr_stash } = node.accounts;
+    const { sr_account } = node.accounts;
 
 
     let keys = getAuthorityKeys(chainSpec);
+    console.log(keys);
     if (!keys) return;
 
+
     keys.push(key);
+    console.log(keys);
 
     console.log(
       `\t👤 Added Genesis Authority ${decorators.green(
         node.name,
-      )} - ${decorators.magenta(sr_stash.address)}`,
+      )} - ${decorators.magenta(sr_account.address)}`,
     );
 
+    console.log(chainSpec.genesis.runtime.authorMapping);
     writeChainSpec(specPath, chainSpec);
 }
 
@@ -109,13 +115,9 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
 
 
 export function getNodeKey(node: Node, useStash: boolean = true): GenesisNodeKey {
-  const { sr_stash, sr_account, ed_account, ec_account, eth_account } = node.accounts;
+  const {  sr_account, eth_account } = node.accounts;
 
-  let key = _getNodeKey(node, useStash);
-  key[0] = sr_account.address;
-  key[1] = eth_account.address;
-
-  return key;
+  return [sr_account.address, eth_account.address];
 }
 
 async function addParaCustom( specPath: string, node: Node) {

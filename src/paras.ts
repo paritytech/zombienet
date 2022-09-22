@@ -90,7 +90,7 @@ export async function generateParachainFiles(
     writeChainSpec(chainSpecFullPathPlain, plainData);
 
     // clear auths
-    clearAuthorities(chainSpecFullPathPlain);
+    await clearAuthorities(chainSpecFullPathPlain);
 
     // Chain spec customization logic
     const addToSession = async (node: Node) => {
