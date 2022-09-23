@@ -122,6 +122,117 @@ const latestPolkadotReleaseURL = async (
   }
 };
 
+// Convert functions
+// Read the input file
+async function readInputFile(ext: string, fPath: string): Promise<ConfigType> {
+  let json: object;
+  if (ext === "json" || ext === "js") {
+    json =
+      ext === "json"
+        ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
+        : await import(path.resolve(fPath));
+  } else {
+    throw Error("No valid extension was found.");
+  }
+  return json;
+}
+
+// Stream Functions
+let stream: fs.WriteStream;
+
+function streamWrite(str: string) {
+  stream.write(str + `\n`);
+}
+
+function startStream(filePath: string): fs.WriteStream {
+  const writableStream = fs.createWriteStream(filePath);
+
+  writableStream.on("error", (error) => {
+    console.log(
+      `An error occured while writing to the file. Error: ${error.message}`,
+    );
+  });
+  writableStream.on("finish", async () => {
+    const { fullPath, fileName } = getFilePathNameExt(filePath);
+    console.log(
+      `Converted toml config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.toml`,
+    );
+    const stream = fs.createReadStream(filePath);
+
+    const outJson = await toml.parse(await getStream(stream));
+    fs.writeFile(
+      `${fullPath}/${fileName}.json`,
+      JSON.stringify(outJson),
+      (error: any) => {
+        if (error) throw error;
+      },
+    );
+    console.log(
+      `Converted JSON config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.json`,
+    );
+  });
+
+  return writableStream;
+}
+
+// TODO: Add support coonvertion for genesis customization / hrmpChannels and types
+async function convertInput(filePath: string) {
+  const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
+
+  const convertedJson = await readInputFile(extension, filePath);
+
+  stream = startStream(`${fullPath}/${fileName}-zombie.toml`);
+
+  const { relaychain, parachains, simpleParachains } = convertedJson;
+
+  if (relaychain) {
+    streamWrite(`[relaychain]`);
+    streamWrite(`default_image = "docker.io/paritypr/polkadot-debug:master"`);
+    streamWrite(`default_command = "polkadot"`);
+    streamWrite(`default_args = [ "-lparachain=debug" ]`);
+
+    if (relaychain?.chain) {
+      streamWrite("");
+      streamWrite(`chain = "${relaychain?.chain}"`);
+    }
+
+    if (relaychain?.nodes) {
+      relaychain.nodes.forEach((n) => {
+        streamWrite("");
+        streamWrite(`\t[[relaychain.nodes]]`);
+        streamWrite(`\tname = "${n.name}"`);
+        streamWrite(`\tvalidator = true`);
+      });
+    }
+  }
+
+  if (parachains) {
+    parachains.forEach((parachain) => {
+      streamWrite(`\n[[parachains]]`);
+      streamWrite(`id = "${parachain.id}"`);
+
+      parachain.nodes.forEach((n) => {
+        streamWrite("");
+        streamWrite(`\t[parachains.collator]`);
+        streamWrite(`\tname = "${n.name}"`);
+        streamWrite(`\tcommand = "adder-collator"`);
+      });
+    });
+  }
+
+  if (simpleParachains) {
+    simpleParachains.forEach((sp) => {
+      streamWrite(`\n[[parachains]]`);
+      streamWrite(`id = "${sp.id}"`);
+      streamWrite("");
+      streamWrite(`\t[parachains.collator]`);
+      streamWrite(`\tname = "${sp.name}"`);
+      streamWrite(`\tcommand = "adder-collator"`);
+    });
+  }
+  stream.end();
+}
+
 // Ensure to log the uncaught exceptions
 // to debug the problem, also exit because we don't know
 // what happens there.
@@ -407,114 +518,6 @@ async function setup(params: any) {
   }
   downloadBinaries(params);
   return;
-}
-
-async function readInputFile(ext: string, fPath: string): Promise<ConfigType> {
-  let json: object;
-  if (ext === "json" || ext === "js") {
-    json =
-      ext === "json"
-        ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
-        : await import(path.resolve(fPath));
-  } else {
-    throw Error("No valid extension was found.");
-  }
-  return json;
-}
-
-// Stream Functions
-let stream: fs.WriteStream;
-
-function streamWrite(str: string) {
-  stream.write(str + `\n`);
-}
-
-function startStream(filePath: string): fs.WriteStream {
-  const writableStream = fs.createWriteStream(filePath);
-
-  writableStream.on("error", (error) => {
-    console.log(
-      `An error occured while writing to the file. Error: ${error.message}`,
-    );
-  });
-  writableStream.on("finish", async () => {
-    const { fullPath, fileName } = getFilePathNameExt(filePath);
-    console.log(
-      `Converted toml config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.toml`,
-    );
-    const stream = fs.createReadStream(filePath);
-
-    const outJson = await toml.parse(await getStream(stream));
-    fs.writeFile(
-      `${fullPath}/${fileName}.json`,
-      JSON.stringify(outJson),
-      (error: any) => {
-        if (error) throw error;
-      },
-    );
-    console.log(
-      `Converted JSON config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.json`,
-    );
-  });
-
-  return writableStream;
-}
-
-async function convertInput(filePath: string) {
-  const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
-
-  const convertedJson = await readInputFile(extension, filePath);
-
-  stream = startStream(`${fullPath}/${fileName}-zombie.toml`);
-
-  const { relaychain, parachains, simpleParachains } = convertedJson;
-
-  if (relaychain) {
-    streamWrite(`[relaychain]`);
-    streamWrite(`default_image = "docker.io/paritypr/polkadot-debug:master"`);
-    streamWrite(`default_command = "polkadot"`);
-    streamWrite(`default_args = [ "-lparachain=debug" ]`);
-
-    if (relaychain?.chain) {
-      streamWrite("");
-      streamWrite(`chain = "${relaychain?.chain}"`);
-    }
-
-    if (relaychain?.nodes) {
-      relaychain.nodes.forEach((n) => {
-        streamWrite("");
-        streamWrite(`\t[[relaychain.nodes]]`);
-        streamWrite(`\tname = "${n.name}"`);
-        streamWrite(`\tvalidator = true`);
-      });
-    }
-  }
-
-  if (parachains) {
-    parachains.forEach((parachain) => {
-      streamWrite(`\n[[parachains]]`);
-      streamWrite(`id = "${parachain.id}"`);
-
-      parachain.nodes.forEach((n) => {
-        streamWrite("");
-        streamWrite(`\t[parachains.collator]`);
-        streamWrite(`\tname = "${n.name}"`);
-        streamWrite(`\tcommand = "adder-collator"`);
-      });
-    });
-  }
-
-  if (simpleParachains) {
-    simpleParachains.forEach((sp) => {
-      streamWrite(`\n[[parachains]]`);
-      streamWrite(`id = "${sp.id}"`);
-      streamWrite("");
-      streamWrite(`\t[parachains.collator]`);
-      streamWrite(`\tname = "${sp.name}"`);
-      streamWrite(`\tcommand = "adder-collator"`);
-    });
-  }
-  stream.end();
 }
 
 async function convert(param: string) {
