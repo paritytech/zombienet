@@ -80,6 +80,9 @@ export const DEV_ACCOUNTS = [
   "two",
 ];
 
+// TODO: make this default less 0s if possible
+export const DEFAULT_BALANCE = 2000000000000;
+
 export const ARGS_TO_REMOVE: { [key: string]: number } = {
   alice: 1,
   bob: 1,

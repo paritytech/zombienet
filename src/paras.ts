@@ -14,9 +14,11 @@ import {
   addAuthority,
   changeGenesisConfig,
   clearAuthorities,
+  readAndParseChainSpec,
   specHaveSessionsKeys,
+  writeChainSpec,
 } from "./chain-spec";
-import { getRandomPort } from "./utils/net-utils";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
 
@@ -37,18 +39,21 @@ export async function generateParachainFiles(
 
   let chainSpecFullPath;
   if (parachain.cumulusBased) {
-    // need to create the parachain spec
-    const chainSpecFullPathPlain = `${tmpDir}/${chainName}-${parachain.name}-plain.json`;
+    // need to create the parachain spec parachain file name is [para chain-]<para name>-<relay chain>
+    const chainSpecFullPathPlain = `${tmpDir}/${
+      parachain.chain ? parachain.chain + "-" : ""
+    }${parachain.name}-${chainName}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
-    const chainSpecFileName = `${
-      parachain.chain ? parachain.chain : chainName
-    }-${parachain.name}.json`;
+    const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
+      parachain.name
+    }-${chainName}.json`;
 
     debug("creating chain spec plain");
     // create or copy chain spec
     await setupChainSpec(
       namespace,
       {
+        chainSpecPath: parachain.chainSpecPath,
         chainSpecCommand: `${parachain.collators[0].command} build-spec ${
           parachain.chain ? "--chain " + parachain.chain : ""
         } --disable-default-bootnode`,
@@ -58,39 +63,42 @@ export async function generateParachainFiles(
       chainSpecFullPathPlain,
     );
 
-    const plainData = JSON.parse(
-      fs.readFileSync(chainSpecFullPathPlain).toString(),
-    );
+    const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
 
-    const relayChainSpec = JSON.parse(
-      fs.readFileSync(relayChainSpecFullPathPlain).toString(),
-    );
-    plainData.para_id = parachain.id;
+    const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
+    if (plainData.para_id) plainData.para_id = parachain.id;
+    if (plainData.paraId) plainData.paraId = parachain.id;
     if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
     if (plainData.genesis.runtime.parachainInfo?.parachainId)
       plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
-    const data = JSON.stringify(plainData, null, 2);
-    fs.writeFileSync(chainSpecFullPathPlain, data);
+
+    writeChainSpec(chainSpecFullPathPlain, plainData);
+
+    // clear auths
+    clearAuthorities(chainSpecFullPathPlain);
 
     // Chain spec customization logic
     if (specHaveSessionsKeys(plainData)) {
-      clearAuthorities(chainSpecFullPathPlain);
-      const isStatemint = parachain.chain?.includes("statemint");
+      const chainSessionType = parachain.chain?.includes("statemint")
+        ? "statemint"
+        : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
+            parachain.chain?.includes(prefix),
+          )
+        ? "moonbeam"
+        : undefined;
       for (const node of parachain.collators) {
         if (node.validator)
           await addAuthority(
             chainSpecFullPathPlain,
-            node.name,
-            node.accounts!,
+            node,
             false,
-            isStatemint,
+            chainSessionType,
           );
         // Add some extra space until next log
         console.log("\n");
       }
     } else {
       // use `aura` keys
-      clearAuthorities(chainSpecFullPathPlain, "aura");
       for (const node of parachain.collators) {
         if (node.validator)
           await addAuraAuthority(
@@ -119,17 +127,18 @@ export async function generateParachainFiles(
     await getChainSpecRaw(
       namespace,
       parachain.collators[0].image,
-      `${chainName}-${parachain.name}`,
+      `${parachain.chain ? parachain.chain + "-" : ""}${
+        parachain.name
+      }-${chainName}`,
       parachain.collators[0].command!,
       chainSpecFullPath,
     );
 
     // ensure the correct para_id
-    const paraSpecRaw = JSON.parse(
-      fs.readFileSync(chainSpecFullPath).toString(),
-    );
-    paraSpecRaw.para_id = parachain.id;
-    fs.writeFileSync(chainSpecFullPath, JSON.stringify(paraSpecRaw, null, 2));
+    const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
+    if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
+    if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
+    writeChainSpec(chainSpecFullPath, paraSpecRaw);
 
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;
@@ -195,6 +204,7 @@ export async function generateParachainFiles(
     let node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,
+      invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
       chain: chainName,

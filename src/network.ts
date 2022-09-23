@@ -2,7 +2,7 @@ import { Client } from "./providers/client";
 import { cryptoWaitReady, sortAddresses } from "@polkadot/util-crypto";
 import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
-import { readDataFile } from "./utils/fs-utils";
+import { readDataFile } from "./utils/fs";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
@@ -14,7 +14,7 @@ import { NetworkNode } from "./networkNode";
 import fs from "fs";
 import axios from "axios";
 import { decorators } from "./utils/colors";
-import { CreateLogTable } from "./utils/logger";
+import { CreateLogTable } from "./utils/tableCli";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -43,7 +43,7 @@ export function rebuildNetwork(
     backchannel,
     chainSpecFullPath,
     nodesByName,
-    tracingCollatorUrl,
+    tracing_collator_url,
   } = runningNetworkSpec;
   const network: Network = new Network(client, namespace, tmpDir);
   Object.assign(network, {
@@ -51,7 +51,7 @@ export function rebuildNetwork(
     launched,
     backchannel,
     chainSpecFullPath,
-    tracingCollatorUrl,
+    tracing_collator_url,
   });
 
   for (const nodeName of Object.keys(nodesByName)) {
@@ -99,7 +99,7 @@ export class Network {
   tmpDir: string;
   backchannelUri: string = "";
   chainSpecFullPath?: string;
-  tracingCollatorUrl?: string;
+  tracing_collator_url?: string;
   networkStartTime?: number;
 
   constructor(client: Client, namespace: string, tmpDir: string) {
@@ -140,6 +140,9 @@ export class Network {
   }
 
   async stop() {
+    // Cleanup all api instances
+    for (const node of Object.values(this.nodesByName))
+      node.apiInstance?.disconnect();
     await this.client.destroyNamespace();
   }
 
@@ -360,16 +363,16 @@ export class Network {
     }
 
     for (const [paraId, parachain] of Object.entries(this.paras)) {
+      for (const node of parachain.nodes) {
+        this.showNodeInfo(node, provider, logTable);
+      }
+
       logTable.pushTo([[decorators.cyan("Parachain ID"), paraId]]);
 
       if (parachain.chainSpecPath)
         logTable.pushTo([
           [decorators.cyan("ChainSpec Path"), parachain.chainSpecPath],
         ]);
-
-      for (const node of parachain.nodes) {
-        this.showNodeInfo(node, provider, logTable);
-      }
     }
 
     if (this.companions.length) {

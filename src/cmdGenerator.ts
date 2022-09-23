@@ -8,8 +8,7 @@ import {
   RPC_WS_PORT,
 } from "./constants";
 import { Node } from "./types";
-import { getRandomPort } from "./utils/net-utils";
-import { node } from "execa";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::cmdGenerator");
 

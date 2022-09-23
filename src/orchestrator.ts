@@ -38,15 +38,21 @@ import {
   addParachainToGenesis,
   addHrmpChannelsToGenesis,
   addBootNodes,
+  addBalances,
+  specHaveSessionsKeys,
+  readAndParseChainSpec,
+  addAuraAuthority,
+  addGrandpaAuthority,
 } from "./chain-spec";
 import {
   generateNamespace,
   sleep,
   filterConsole,
   getLokiUrl,
-} from "./utils/misc-utils";
+  getSha256,
+} from "./utils/misc";
 import { series } from "./utils/promise-series";
-import { loadTypeDef } from "./utils/fs-utils";
+import { loadTypeDef } from "./utils/fs";
 import tmp from "tmp-promise";
 import fs from "fs";
 import { generateParachainFiles } from "./paras";
@@ -55,7 +61,7 @@ import { generateBootnodeString } from "./bootnode";
 import { generateKeystoreFiles } from "./keys";
 import path from "path";
 
-import { CreateLogTable } from "./utils/logger";
+import { CreateLogTable } from "./utils/tableCli";
 
 const debug = require("debug")("zombie");
 
@@ -66,7 +72,7 @@ filterConsole([
   `API-WS: disconnected`,
 ]);
 
-export interface orchestratorOptions {
+export interface OrcOptionsInterface {
   monitor?: boolean;
   spawnConcurrency?: number;
   inCI?: boolean;
@@ -75,7 +81,7 @@ export interface orchestratorOptions {
 export async function start(
   credentials: string,
   launchConfig: LaunchConfig,
-  options?: orchestratorOptions,
+  options?: OrcOptionsInterface,
 ) {
   const opts = {
     ...{ monitor: false, spawnConcurrency: 1, inCI: false },
@@ -93,7 +99,7 @@ export async function start(
     debug(JSON.stringify(networkSpec, null, 4));
 
     // global timeout to spin the network
-    setTimeout(() => {
+    const timeoutTimer = setTimeout(() => {
       if (network && !network.launched) {
         throw new Error(
           `GLOBAL TIMEOUT (${networkSpec.settings.timeout} secs) `,
@@ -224,10 +230,32 @@ export async function start(
 
     if (!chainSpecContent.genesis.raw) {
       // Chain spec customization logic
+      const relayChainSpec = readAndParseChainSpec(chainSpecFullPathPlain);
+      const keyType = specHaveSessionsKeys(relayChainSpec) ? "session" : "aura";
+
+      // Clear all defaults
       clearAuthorities(chainSpecFullPathPlain);
+
+      // add balances for nodes
+      await addBalances(chainSpecFullPathPlain, networkSpec.relaychain.nodes);
+
+      // add authorities for nodes
       for (const node of networkSpec.relaychain.nodes) {
         if (node.validator)
-          await addAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+          if (keyType === "session")
+            await addAuthority(chainSpecFullPathPlain, node);
+          else {
+            await addAuraAuthority(
+              chainSpecFullPathPlain,
+              node.name,
+              node.accounts!,
+            );
+            await addGrandpaAuthority(
+              chainSpecFullPathPlain,
+              node.name,
+              node.accounts!,
+            );
+          }
         // Add some extra space until next log
         console.log("\n");
       }
@@ -270,10 +298,10 @@ export async function start(
           );
       }
 
-      if (networkSpec.hrmpChannels) {
+      if (networkSpec.hrmp_channels) {
         await addHrmpChannelsToGenesis(
           chainSpecFullPathPlain,
-          networkSpec.hrmpChannels,
+          networkSpec.hrmp_channels,
         );
       }
 
@@ -546,6 +574,15 @@ export async function start(
       await addBootNodes(chainSpecFullPath, bootnodes);
       // flush require cache since we change the chain-spec
       delete require.cache[require.resolve(chainSpecFullPath)];
+
+      if (client.providerName === "kubernetes") {
+        // cache the chainSpec with bootnodes
+        const fileBuffer = await fs.promises.readFile(chainSpecFullPath);
+        const fileHash = getSha256(fileBuffer.toString());
+        const parts = chainSpecFullPath.split("/");
+        const fileName = parts[parts.length - 1];
+        await client.uploadToFileserver(chainSpecFullPath, fileName, fileHash);
+      }
     }
 
     const promiseGenerators = networkSpec.relaychain.nodes.map((node: Node) => {
@@ -656,7 +693,7 @@ export async function start(
 
     // Add span collator if is available
     if (networkSpec.settings.tracing_collator_url) {
-      network.tracingCollatorUrl = networkSpec.settings.tracing_collator_url;
+      network.tracing_collator_url = networkSpec.settings.tracing_collator_url;
     } else {
       const servicePort =
         networkSpec.settings.tracing_collator_service_port ||
@@ -696,7 +733,7 @@ export async function start(
                 `service/${serviceName}`,
                 serviceNamespace,
               );
-              network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
+              network.tracing_collator_url = `http://localhost:${tracingPort}`;
             } catch (_) {
               console.log(
                 decorators.yellow(
@@ -711,13 +748,14 @@ export async function start(
             servicePort,
             TRACING_COLLATOR_PODNAME,
           );
-          network.tracingCollatorUrl = `http://localhost:${tracingPort}`;
+          network.tracing_collator_url = `http://localhost:${tracingPort}`;
           break;
       }
     }
 
-    // prevent global timeout
+    // cleanup global timeout
     network.launched = true;
+    clearTimeout(timeoutTimer);
     debug(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );

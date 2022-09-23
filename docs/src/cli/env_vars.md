@@ -1,6 +1,6 @@
 # Using env vars
 
-ZombieNet can also make *replacements* in the network config using `env` variables. To define a replacement yo need to use the `{{ENV_VAR_NAME}}` syntax.
+ZombieNet can also make _replacements_ in the network config using `env` variables. To define a replacement yo need to use the `{{ENV_VAR_NAME}}` syntax.
 
 For example, from the previous example but using `env` variables could be:
 
@@ -17,7 +17,7 @@ chain = "rococo-local"
 
 [[parachains]]
 id = 100
-addToGenesis = false
+add_to_genesis = false
 
   [parachains.collator]
   name = "collator01"

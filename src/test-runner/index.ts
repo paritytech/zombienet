@@ -5,8 +5,8 @@ import path from "path";
 import { ApiPromise, Keyring } from "@polkadot/api";
 const utilCrypto = require("@polkadot/util-crypto");
 import { LaunchConfig } from "../types";
-import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc-utils";
-import { readNetworkConfig } from "../utils/fs-utils";
+import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc";
+import { readNetworkConfig } from "../utils/fs";
 import { Network, rebuildNetwork } from "../network";
 import { decorators } from "../utils/colors";
 import {
@@ -334,7 +334,7 @@ const assertCustomJsRegex = new RegExp(
 
 // Run command in the node
 const assertCustomShInNode = new RegExp(
-  /^([\w-]+): run (\.{0,2}\/.*\.[\w]+)( with \"[\w \,\-/]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i,
+  /^([\w-]+): run (\.{0,2}\/.*\.[\w]+)( with \"[\w \,\-\/:.]+\")?( return is (equal to|equals|=|==|greater than|>|at least|>=|lower than|<)? *(\d+))?( within (\d+) (seconds|secs|s))?$/i,
 );
 
 // Backchannel
@@ -461,7 +461,7 @@ function parseAssertionLine(assertion: string) {
       const nodes = network.getNodes(nodeName);
       const results = await Promise.all(
         nodes.map((node) =>
-          node.getSpansByTraceId(traceId, network.tracingCollatorUrl!),
+          node.getSpansByTraceId(traceId, network.tracing_collator_url!),
         ),
       );
 

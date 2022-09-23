@@ -3,7 +3,7 @@ Network: ./0001-small-network.toml
 Creds: config
 
 
-# well know functions
+# well known functions
 alice: is up
 bob: is up
 alice: parachain 100 is registered within 225 seconds

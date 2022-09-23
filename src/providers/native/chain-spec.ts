@@ -6,7 +6,7 @@ import {
   DEFAULT_CHAIN_SPEC_RAW,
 } from "../../constants";
 import { ComputedNetwork } from "../../types";
-import { sleep } from "../../utils/misc-utils";
+import { sleep } from "../../utils/misc";
 const debug = require("debug")("zombie::native::chain-spec");
 
 const fs = require("fs").promises;
@@ -18,32 +18,31 @@ export async function setupChainSpec(
   chainFullPath: string,
 ): Promise<any> {
   // We have two options to get the chain-spec file, neither should use the `raw` file/argument
-  // 1: User provide the chainSpecCommand (without the --raw option)
-  // 2: User provide the file (we DON'T expect the raw file)
+  // 1: User provide the file (we DON'T expect the raw file)
+  // 2: User provide the chainSpecCommand (without the --raw option)
   const client = getClient();
-  if (chaninConfig.chainSpecCommand) {
-    const { defaultImage, chainSpecCommand } = chaninConfig;
-    const plainChainSpecOutputFilePath =
-      client.remoteDir +
-      "/" +
-      DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
-    // set output of command
-    const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
-    const node = await createTempNodeDef(
-      "temp",
-      defaultImage,
-      chainName,
-      fullCommand,
-    );
-
-    const podDef = await genNodeDef(namespace, node);
-    await client.spawnFromDef(podDef);
-
-    await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);
+  if (chaninConfig.chainSpecPath) {
+    // copy file to temp to use
+    await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
   } else {
-    if (chaninConfig.chainSpecPath) {
-      // copy file to temp to use
-      await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
+    if (chaninConfig.chainSpecCommand) {
+      const { defaultImage, chainSpecCommand } = chaninConfig;
+      const plainChainSpecOutputFilePath =
+        client.remoteDir +
+        "/" +
+        DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
+      // set output of command
+      const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
+      const node = await createTempNodeDef(
+        "temp",
+        defaultImage,
+        chainName,
+        fullCommand,
+      );
+
+      const podDef = await genNodeDef(namespace, node);
+      await client.spawnFromDef(podDef);
+      await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);
     }
   }
 }
@@ -55,7 +54,6 @@ export async function getChainSpecRaw(
   chainCommand: string,
   chainFullPath: string,
 ): Promise<any> {
-  const plainPath = chainFullPath.replace(".json", "-plain.json");
   const client = getClient();
 
   const remoteChainSpecFullPath =
@@ -95,7 +93,9 @@ export async function getChainSpecRaw(
   try {
     require(chainFullPath);
     isValid = true;
-  } catch (_) {}
+  } catch (e) {
+    debug(e);
+  }
 
   if (!isValid) throw new Error(`Invalid chain spec raw file generated.`);
 

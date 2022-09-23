@@ -10,10 +10,11 @@ import {
   NodeConfig,
   envVars,
 } from "./types";
-import { getSha256 } from "./utils/misc-utils";
+import { getSha256 } from "./utils/misc";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
+  DEFAULT_BALANCE,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
@@ -30,7 +31,7 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { getRandomPort } from "./utils/net-utils";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -137,6 +138,8 @@ export async function generateNetworkSpec(
         command: nodeGroup.command,
         args: sanitizeArgs(nodeGroup.args || []),
         validator: true, // groups are always validators
+        invulnerable: false,
+        balance: DEFAULT_BALANCE,
         env: nodeGroup.env,
         overrides: nodeGroup.overrides,
         resources:
@@ -200,6 +203,8 @@ export async function generateNetworkSpec(
             command: collatorGroup.command,
             args: sanitizeArgs(collatorGroup.args || []),
             validator: true, // groups are always validators
+            invulnerable: false,
+            balance: DEFAULT_BALANCE,
             env: collatorGroup.env,
             overrides: collatorGroup.overrides,
             resources:
@@ -325,7 +330,7 @@ export async function generateNetworkSpec(
   }
 
   networkSpec.types = config.types ? config.types : {};
-  if (config.hrmpChannels) networkSpec.hrmpChannels = config.hrmpChannels;
+  if (config.hrmp_channels) networkSpec.hrmp_channels = config.hrmp_channels;
 
   return networkSpec as ComputedNetwork;
 }
@@ -351,6 +356,7 @@ export async function generateBootnodeSpec(
     image: config.relaychain.defaultImage || DEFAULT_IMAGE,
     chain: config.relaychain.chain,
     validator: false,
+    invulnerable: false,
     args: [
       "--ws-external",
       "--rpc-external",
@@ -424,8 +430,8 @@ async function getCollatorNodeFromConfig(
   ];
   if (collatorConfig.env) env.push(...collatorConfig.env);
 
-  const collatorBinary = collatorConfig.commandWithArgs
-    ? collatorConfig.commandWithArgs.split(" ")[0]
+  const collatorBinary = collatorConfig.command_with_args
+    ? collatorConfig.command_with_args.split(" ")[0]
     : collatorConfig.command
     ? collatorConfig.command
     : DEFAULT_ADDER_COLLATOR_BIN;
@@ -449,9 +455,11 @@ async function getCollatorNodeFromConfig(
     key: getSha256(collatorName),
     accounts: accountsForNode,
     validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
+    invulnerable: collatorConfig.invulnerable,
+    balance: collatorConfig.balance,
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
-    commandWithArgs: collatorConfig.commandWithArgs,
+    commandWithArgs: collatorConfig.command_with_args,
     args: collatorConfig.args || [],
     chain,
     bootnodes,
@@ -528,10 +536,12 @@ async function getNodeFromConfig(
     key: getSha256(nodeName),
     accounts: accountsForNode,
     command: command || DEFAULT_COMMAND,
-    commandWithArgs: node.commandWithArgs,
+    commandWithArgs: node.command_with_args,
     image: image || DEFAULT_IMAGE,
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
+    invulnerable: node.invulnerable,
+    balance: node.balance,
     args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,
@@ -556,21 +566,23 @@ function sanitizeArgs(args: string[]): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
 
   let removeNext = false;
-  const separatorIndex =  args.indexOf("--");
-  const filteredArgs = args.slice(0, separatorIndex >= 0 ? separatorIndex : args.length).filter((arg) => {
-    if (removeNext) {
-      removeNext = false;
-      return false;
-    }
+  const separatorIndex = args.indexOf("--");
+  const filteredArgs = args
+    .slice(0, separatorIndex >= 0 ? separatorIndex : args.length)
+    .filter((arg) => {
+      if (removeNext) {
+        removeNext = false;
+        return false;
+      }
 
-    const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "");
-    if (ARGS_TO_REMOVE[argParsed]) {
-      if (ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
-      return false;
-    } else {
-      return true;
-    }
-  });
+      const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "");
+      if (ARGS_TO_REMOVE[argParsed]) {
+        if (ARGS_TO_REMOVE[argParsed] === 2) removeNext = true;
+        return false;
+      } else {
+        return true;
+      }
+    });
 
   return filteredArgs;
 }

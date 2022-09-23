@@ -1,57 +1,87 @@
 import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
-import { ChainSpec, HrmpChannelsConfig } from "./types";
-import { readDataFile } from "./utils/fs-utils";
-import { convertExponentials } from "./utils/misc-utils";
-const fs = require("fs");
+import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
+import { readDataFile } from "./utils/fs";
+import { convertExponentials } from "./utils/misc";
+import fs from "fs";
+const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
-export type KeyType = "session" | "aura";
+// track 1st staking as default;
+let stakingBond: number | undefined;
+
+export type KeyType = "session" | "aura" | "grandpa";
 
 // Check if the chainSpec have session keys
-export function specHaveSessionsKeys(chainSpec: ChainSpec) {
+export function specHaveSessionsKeys(chainSpec: ChainSpec): boolean {
   // Check runtime_genesis_config key for rococo compatibility.
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
   return (
-    (runtimeConfig && runtimeConfig.session) ||
-    (runtimeConfig && runtimeConfig.palletSession)
+    runtimeConfig?.session ||
+    runtimeConfig?.authorMapping ||
+    runtimeConfig?.session ||
+    runtimeConfig?.palletSession ||
+    runtimeConfig?.authorMapping
   );
 }
 
 // Get authority keys from within chainSpec data
 function getAuthorityKeys(chainSpec: ChainSpec, keyType: KeyType = "session") {
   const runtimeConfig = getRuntimeConfig(chainSpec);
-  if (keyType === "session") {
-    if (runtimeConfig && runtimeConfig.session) {
-      return runtimeConfig.session.keys;
-    }
-  } else {
-    if (runtimeConfig && runtimeConfig.aura) {
-      return runtimeConfig.aura.authorities;
-    }
+
+  switch (keyType) {
+    case "session":
+      if (runtimeConfig?.session) return runtimeConfig.session.keys;
+      if (runtimeConfig?.authorMapping)
+        return runtimeConfig.authorMapping.mappings;
+      break;
+    case "aura":
+      if (runtimeConfig?.aura) return runtimeConfig.aura.authorities;
+      break;
+    case "grandpa":
+      if (runtimeConfig?.grandpa) return runtimeConfig.grandpa.authorities;
+      break;
   }
 
   const errorMsg = `⚠ ${keyType} keys not found in runtimeConfig`;
   console.error(`\n\t\t  ${decorators.yellow(errorMsg)}`);
 }
 
-// Remove all existing keys from `session.keys`
-export function clearAuthorities(
-  specPath: string,
-  keyType: KeyType = "session",
-) {
+// Remove all existing keys from `session.keys` / aura.authorities / grandpa.authorities
+export function clearAuthorities(specPath: string) {
   const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  let keys = getAuthorityKeys(chainSpec, keyType);
-  if (!keys) return;
+  // clear keys
+  if (runtimeConfig?.session) runtimeConfig.session.keys.length = 0;
+  // clear aura
+  if (runtimeConfig?.aura) runtimeConfig.aura.authorities.length = 0;
+  // clear grandpa
+  if (runtimeConfig?.grandpa) runtimeConfig.grandpa.authorities.length = 0;
 
-  keys.length = 0;
+  // clear collatorSelection
+  if (runtimeConfig?.collatorSelection)
+    runtimeConfig.collatorSelection.invulnerables = [];
 
-  if (keyType === "session") {
-    const runtime = getRuntimeConfig(chainSpec);
-    if (runtime.collatorSelection && runtime.collatorSelection.invulnerables)
-      runtime.collatorSelection.invulnerables.length = 0;
+  // Clear staking
+  if (runtimeConfig?.staking) {
+    stakingBond = runtimeConfig.staking.stakers[0][2];
+    runtimeConfig.staking.stakers = [];
+    runtimeConfig.staking.invulnerables = [];
+    runtimeConfig.staking.validatorCount = 0;
+  }
+
+  // TODO: Fix parachain specific code with decorator pattern
+  // Moonbeam Specific
+  // clear authorMapping
+  if (runtimeConfig?.authorMapping)
+    runtimeConfig.authorMapping.mappings.length = 0;
+  // clear parachainStaking
+  if (runtimeConfig?.parachainStaking) {
+    stakingBond = runtimeConfig.parachainStaking.candidates[0][1];
+    runtimeConfig.parachainStaking.candidates.length = 0;
+    runtimeConfig.parachainStaking.delegations.length = 0;
   }
 
   writeChainSpec(specPath, chainSpec);
@@ -60,50 +90,108 @@ export function clearAuthorities(
   );
 }
 
+export async function addBalances(specPath: string, nodes: Node[]) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtime = getRuntimeConfig(chainSpec);
+  for (const node of nodes) {
+    if (node.balance) {
+      const stash_key = node.accounts.sr_stash.address;
+
+      const balanceToAdd = stakingBond
+        ? node.validator && node.balance > stakingBond
+          ? node.balance
+          : stakingBond! + 1
+        : node.balance;
+      runtime.balances.balances.push([stash_key, balanceToAdd]);
+
+      console.log(
+        `\t👤 Added Balance ${node.balance} for ${decorators.green(
+          node.name,
+        )} - ${decorators.magenta(stash_key)}`,
+      );
+    }
+  }
+
+  writeChainSpec(specPath, chainSpec);
+}
 // Add additional authorities to chain spec in `session.keys`
 export async function addAuthority(
   specPath: string,
-  name: string,
-  accounts: any,
+  node: Node,
   useStash: boolean = true,
-  isStatemint: boolean = false,
+  chainSessionType?: "statemint" | "moonbeam",
 ) {
-  const { sr_stash, sr_account, ed_account, ec_account } = accounts;
-
-  const key = [
-    useStash ? sr_stash.address : sr_account.address,
-    useStash ? sr_stash.address : sr_account.address,
-    {
-      grandpa: ed_account.address,
-      babe: sr_account.address,
-      im_online: sr_account.address,
-      parachain_validator: sr_account.address,
-      authority_discovery: sr_account.address,
-      para_validator: sr_account.address,
-      para_assignment: sr_account.address,
-      beefy: encodeAddress(ec_account.publicKey),
-      aura: isStatemint ? ed_account.address : sr_account.address,
-    },
-  ];
-
   const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+
+  const { sr_stash, sr_account, ed_account, ec_account, eth_account } =
+    node.accounts;
+
+  const key =
+    chainSessionType == "moonbeam"
+      ? [sr_account.address, eth_account.address]
+      : [
+          useStash ? sr_stash.address : sr_account.address,
+          useStash ? sr_stash.address : sr_account.address,
+          {
+            grandpa: ed_account.address,
+            babe: sr_account.address,
+            im_online: sr_account.address,
+            parachain_validator: sr_account.address,
+            authority_discovery: sr_account.address,
+            para_validator: sr_account.address,
+            para_assignment: sr_account.address,
+            beefy: encodeAddress(ec_account.publicKey),
+            aura:
+              chainSessionType == "statemint"
+                ? ed_account.address
+                : sr_account.address,
+          },
+        ];
 
   let keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
 
-  // Collators
-  const runtime = getRuntimeConfig(chainSpec);
-  if (runtime.collatorSelection && runtime.collatorSelection.invulnerables)
-    runtime.collatorSelection.invulnerables.push(sr_account.address);
+  // staking
+  if (runtimeConfig?.staking) {
+    runtimeConfig.staking.stakers.push([
+      sr_stash.address,
+      sr_account.address,
+      stakingBond || 1000000000000,
+      "Validator",
+    ]);
 
-  writeChainSpec(specPath, chainSpec);
+    runtimeConfig.staking.validatorCount += 1;
+
+    // add to invulnerables
+    if (node.invulnerable)
+      runtimeConfig.staking.invulnerables.push(sr_stash.address);
+  }
+
+  // parachainStaking
+  if (runtimeConfig?.parachainStaking) {
+    runtimeConfig.parachainStaking.candidates.push([
+      eth_account.address,
+      stakingBond || 1000000000000,
+    ]);
+  }
+
+  // Collators
+  if (
+    runtimeConfig.collatorSelection &&
+    runtimeConfig.collatorSelection.invulnerables
+  )
+    runtimeConfig.collatorSelection.invulnerables.push(sr_account.address);
+
   console.log(
     `\t👤 Added Genesis Authority ${decorators.green(
-      name,
+      node.name,
     )} - ${decorators.magenta(sr_stash.address)}`,
   );
+
+  writeChainSpec(specPath, chainSpec);
 }
 
 export async function addAuraAuthority(
@@ -125,6 +213,28 @@ export async function addAuraAuthority(
     `\t👤 Added Genesis Authority (AURA) ${decorators.green(
       name,
     )} - ${decorators.magenta(sr_account.address)}`,
+  );
+}
+
+export async function addGrandpaAuthority(
+  specPath: string,
+  name: string,
+  accounts: any,
+) {
+  const { ed_account } = accounts;
+
+  const chainSpec = readAndParseChainSpec(specPath);
+
+  const keys = getAuthorityKeys(chainSpec, "grandpa");
+  if (!keys) return;
+
+  keys.push([ed_account.address, 1]);
+
+  writeChainSpec(specPath, chainSpec);
+  console.log(
+    `\t👤 Added Genesis Authority (GRANDPA) ${decorators.green(
+      name,
+    )} - ${decorators.magenta(ed_account.address)}`,
   );
 }
 
@@ -199,18 +309,18 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
 
 export async function addHrmpChannelsToGenesis(
   specPath: string,
-  hrmpChannels: HrmpChannelsConfig[],
+  hrmp_channels: HrmpChannelsConfig[],
 ) {
   console.log(`\n\t\t ⛓  ${decorators.green("Adding Genesis HRMP Channels")}`);
 
   const chainSpec = readAndParseChainSpec(specPath);
 
-  for (const hrmpChannel of hrmpChannels) {
+  for (const h of hrmp_channels) {
     let newHrmpChannel = [
-      hrmpChannel.sender,
-      hrmpChannel.recipient,
-      hrmpChannel.maxCapacity,
-      hrmpChannel.maxMessageSize,
+      h.sender,
+      h.recipient,
+      h.max_capacity,
+      h.max_message_size,
     ];
 
     const runtimeConfig = getRuntimeConfig(chainSpec);
@@ -230,7 +340,7 @@ export async function addHrmpChannelsToGenesis(
 
       console.log(
         decorators.green(
-          `\t\t\t  ✓ Added HRMP channel ${hrmpChannel.sender} -> ${hrmpChannel.recipient}`,
+          `\t\t\t  ✓ Added HRMP channel ${h.sender} -> ${h.recipient}`,
         ),
       );
     } else {
@@ -244,10 +354,12 @@ export async function addHrmpChannelsToGenesis(
 
 // Look at the key + values from `obj1` and try to replace them in `obj2`.
 function findAndReplaceConfig(obj1: any, obj2: any) {
+  // create new Object without null prototype
+  const tempObj = { ...obj2 };
   // Look at keys of obj1
   Object.keys(obj1).forEach((key) => {
     // See if obj2 also has this key
-    if (obj2.hasOwnProperty(key)) {
+    if (tempObj.hasOwnProperty(key)) {
       // If it goes deeper, recurse...
       if (
         obj1[key] !== null &&
@@ -262,7 +374,7 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
             "✓ Updated Genesis Configuration",
           )} [ key : ${key} ]`,
         );
-        debug(`[ ${key}: ${JSON.parse(JSON.stringify(obj2))[key]} ]`);
+        debug(`[ ${key}: ${obj2[key]} ]`);
       }
     } else {
       console.error(
@@ -282,11 +394,11 @@ function getRuntimeConfig(chainSpec: any) {
   return runtimeConfig;
 }
 
-function readAndParseChainSpec(specPath: string) {
+export function readAndParseChainSpec(specPath: string) {
   let rawdata = fs.readFileSync(specPath);
   let chainSpec;
   try {
-    chainSpec = JSON.parse(rawdata);
+    chainSpec = JSONbig.parse(rawdata);
     return chainSpec;
   } catch {
     console.error(
@@ -296,9 +408,9 @@ function readAndParseChainSpec(specPath: string) {
   }
 }
 
-function writeChainSpec(specPath: string, chainSpec: any) {
+export function writeChainSpec(specPath: string, chainSpec: any) {
   try {
-    let data = JSON.stringify(chainSpec, null, 2);
+    let data = JSONbig.stringify(chainSpec, null, 2);
     fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(

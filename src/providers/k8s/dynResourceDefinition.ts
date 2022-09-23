@@ -10,9 +10,9 @@ import {
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getSha256 } from "../../utils/misc-utils";
+import { getSha256 } from "../../utils/misc";
 import { Network } from "../../network";
-import { getRandomPort } from "../../utils/net-utils";
+import { getRandomPort } from "../../utils/net";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -237,6 +237,7 @@ export async function createTempNodeDef(
     fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,
     validator: false,
+    invulnerable: false,
     bootnodes: [],
     args: [],
     env: [],

@@ -7,14 +7,14 @@ import {
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
-import { addMinutes, getSha256 } from "../../utils/misc-utils";
-import { writeLocalJsonFile } from "../../utils/fs-utils";
+import { addMinutes, getSha256 } from "../../utils/misc";
+import { writeLocalJsonFile } from "../../utils/fs";
 const fs = require("fs").promises;
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types";
 import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
-import { CreateLogTable } from "../../utils/logger";
+import { CreateLogTable } from "../../utils/tableCli";
 
 const debug = require("debug")("zombie::kube::client");
 
@@ -338,19 +338,7 @@ export class KubeClient extends Client {
       const parts = localFilePath.split("/");
       const fileName = parts[parts.length - 1];
       if (!fileUploadCache[fileHash]) {
-        console.log(
-          "uploading to fileserver: " + localFilePath + " as:" + fileHash,
-        );
-        const args = [
-          "cp",
-          localFilePath,
-          `fileserver:/usr/share/nginx/html/${fileHash}`,
-        ];
-
-        debug("copyFileToPod", args);
-        const result = await this.runCommand(args, undefined, true);
-        debug(result);
-        fileUploadCache[fileHash] = fileName;
+        await this.uploadToFileserver(localFilePath, fileName, fileHash);
       }
 
       // download the file in the container
@@ -663,7 +651,7 @@ export class KubeClient extends Client {
 
       // exec
       const result = await this.runCommand(
-        [...baseArgs, "bash", "-c", scriptPathInPod, ...args],
+        [...baseArgs, "bash", scriptPathInPod, ...args],
         undefined,
         true,
       );
@@ -703,5 +691,25 @@ export class KubeClient extends Client {
     );
 
     await this.wait_pod_ready("introspector");
+  }
+
+  async uploadToFileserver(
+    localFilePath: string,
+    fileName: string,
+    fileHash: string,
+  ) {
+    console.log(
+      "uploading to fileserver: " + localFilePath + " as:" + fileHash,
+    );
+    const args = [
+      "cp",
+      localFilePath,
+      `fileserver:/usr/share/nginx/html/${fileHash}`,
+    ];
+
+    debug("copyFileToPod", args);
+    const result = await this.runCommand(args, undefined, true);
+    debug(result);
+    fileUploadCache[fileHash] = fileName;
   }
 }

@@ -11,7 +11,7 @@ import {
 } from "../../constants";
 import { getUniqueName } from "../../configGenerator";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils/net-utils";
+import { getRandomPort } from "../../utils/net";
 import { getClient } from "../client";
 import { resolve } from "path";
 import { Network } from "../../network";
@@ -473,6 +473,7 @@ export async function createTempNodeDef(
     fullCommand: fullCommand,
     chain,
     validator: false,
+    invulnerable: false,
     bootnodes: [],
     args: [],
     env: [],
