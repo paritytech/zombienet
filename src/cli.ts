@@ -155,7 +155,7 @@ function startStream(filePath: string): fs.WriteStream {
   writableStream.on("finish", async () => {
     const { fullPath, fileName } = getFilePathNameExt(filePath);
     console.log(
-      `Converted toml config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.toml`,
+      `Converted toml config exists now under:${fullPath}/${fileName}.toml`,
     );
     const stream = fs.createReadStream(filePath);
 
@@ -168,7 +168,7 @@ function startStream(filePath: string): fs.WriteStream {
       },
     );
     console.log(
-      `Converted JSON config exists now under: ${filePath} with the name: ${fullPath}/${fileName}.json`,
+      `Converted JSON config exists now under: ${fullPath}/${fileName}.json`,
     );
   });
 
