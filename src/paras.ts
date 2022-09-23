@@ -70,6 +70,7 @@ export async function generateParachainFiles(
     await setupChainSpec(
       namespace,
       {
+        chainSpecPath: parachain.chainSpecPath,
         chainSpecCommand: `${parachain.collators[0].command} build-spec ${
           parachain.chain ? "--chain " + parachain.chain : ""
         } --disable-default-bootnode`,
