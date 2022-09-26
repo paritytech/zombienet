@@ -45,17 +45,14 @@ function getAuthorityKeys(chainSpec: ChainSpec) {
 }
 
 async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
-  console.log(key);
   const chainSpec = readAndParseChainSpec(specPath);
 
   const { sr_account } = node.accounts;
 
   let keys = getAuthorityKeys(chainSpec);
-  console.log(keys);
   if (!keys) return;
 
   keys.push(key);
-  console.log(keys);
 
   console.log(
     `\t👤 Added Genesis Authority ${decorators.green(
