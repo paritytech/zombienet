@@ -107,9 +107,11 @@ export function getNodeKey(
 ): GenesisNodeKey {
   const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
 
+const address =  useStash ? sr_stash.address : sr_account.address
+
   const key: GenesisNodeKey = [
-    useStash ? sr_stash.address : sr_account.address,
-    useStash ? sr_stash.address : sr_account.address,
+    address,
+    address,
     {
       grandpa: ed_account.address,
       babe: sr_account.address,
