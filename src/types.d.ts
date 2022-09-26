@@ -260,32 +260,32 @@ export interface MultiAddressByNode {
 }
 
 // Config interfaces
-interface PLNodesConfig {
+interface PL_NodesConfig {
   name: string;
   wsPort: number;
   port: number;
   flags?: [strings];
 }
 
-interface PLRelayChainConfig {
+interface PL_RelayChainConfig {
   bin?: string;
   chain: string;
   nodes: [NodesConfig];
   genesis?: JSON | ObjectJSON;
 }
 
-interface PLParaChainConfig {
+interface PL_ParaChainConfig {
   bin?: string;
   id: number;
   port?: string;
   balance?: string;
-  nodes: [PLNodesConfig];
+  nodes: [PL_NodesConfig];
 }
 
-export interface PLConfigType {
-  relaychain?: PLRelayChainConfig;
-  parachains?: [PLParaChainConfig];
-  simpleParachains?: [PLNodesConfig & { id: number }];
+export interface PL_ConfigType {
+  relaychain?: PL_RelayChainConfig;
+  parachains?: [PL_ParaChainConfig];
+  simpleParachains?: [PL_NodesConfig & { id: number }];
   hrmpChannels?: HrmpChannelsConfig[];
   types?: any;
   finalization?: boolean;

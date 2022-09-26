@@ -6,7 +6,7 @@ import fs from "fs";
 import { Network } from "./network";
 import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 import {
-  PLConfigType,
+  PL_ConfigType,
   LaunchConfig,
   NodeConfig,
   ParachainConfig,
@@ -132,7 +132,7 @@ const latestPolkadotReleaseURL = async (
 async function readInputFile(
   ext: string,
   fPath: string,
-): Promise<PLConfigType> {
+): Promise<PL_ConfigType> {
   let json: object;
   if (ext === "json" || ext === "js") {
     json =
