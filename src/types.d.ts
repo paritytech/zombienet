@@ -1,14 +1,17 @@
 // Launch Config, there are used user-input
 // mapped from the json/toml to compute the
 // network config to spawn.
-export interface LaunchConfig {
+interface LaunchConfig extends PolkadotLaunchConfig {
   config: { provider: string };
   settings: Settings;
+  configBasePath: string;
+}
+
+export interface PolkadotLaunchConfig {
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;
   hrmp_channels?: HrmpChannelsConfig[];
-  configBasePath: string;
 }
 
 export interface Settings {
@@ -257,51 +260,33 @@ export interface MultiAddressByNode {
 }
 
 // Config interfaces
-interface NodesConfig {
+interface PLNodesConfig {
   name: string;
   wsPort: number;
   port: number;
   flags?: [strings];
 }
 
-interface RelayChainConfig {
+interface PLRelayChainConfig {
   bin?: string;
   chain: string;
   nodes: [NodesConfig];
-  genesis: {
-    runtime: {
-      runtime_genesis_config: {
-        configuration: {
-          config: {
-            validation_upgrade_frequency: number;
-            validation_upgrade_delay: number;
-          };
-        };
-      };
-    };
-  };
+  genesis?: JSON | ObjectJSON;
 }
 
-interface ParaChainConfig {
+interface PLParaChainConfig {
   bin?: string;
-  id?: string;
+  id: number;
   port?: string;
   balance?: string;
-  nodes: [NodesConfig];
+  nodes: [PLNodesConfig];
 }
 
-interface HrmpChannels {
-  sender: number;
-  recipient: number;
-  maxCapacity: number;
-  maxMessageSize: number;
-}
-
-export interface ConfigType {
-  relaychain?: RelayChainConfig;
-  parachains?: [ParaChainConfig];
-  simpleParachains?: [NodesConfig & { id: string }];
-  hrmpChannels?: [HrmpChannels];
-  types?: object;
+export interface PLConfigType {
+  relaychain?: PLRelayChainConfig;
+  parachains?: [PLParaChainConfig];
+  simpleParachains?: [PLNodesConfig & { id: number }];
+  hrmpChannels?: HrmpChannelsConfig[];
+  types?: any;
   finalization?: boolean;
 }
