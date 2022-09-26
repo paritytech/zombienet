@@ -37,8 +37,7 @@ const KNOWN_MOONBEAM_KEYS: { [name: string]: string } = {
 function specHaveSessionsKeys(chainSpec: ChainSpec) {
   let keys = _specHaveSessionsKeys(chainSpec);
 
-  const runtimeConfig = getRuntimeConfig(chainSpec);
-  return keys || runtimeConfig?.authorMapping;
+  return keys || getRuntimeConfig(chainSpec)?.authorMapping;
 }
 
 function getAuthorityKeys(chainSpec: ChainSpec) {
