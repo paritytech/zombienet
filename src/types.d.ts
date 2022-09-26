@@ -1,5 +1,8 @@
 // Launch Config, there are used user-input
 // mapped from the json/toml to compute the
+
+import { PARA } from "./paras-decorators";
+
 // network config to spawn.
 interface LaunchConfig extends PolkadotLaunchConfig {
   config: { provider: string };
@@ -179,6 +182,7 @@ export interface Parachain {
   id: number;
   name: string;
   chain?: string;
+  para: PARA;
   addToGenesis: boolean;
   registerPara: boolean;
   cumulusBased: boolean;
