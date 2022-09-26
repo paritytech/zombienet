@@ -41,8 +41,7 @@ function specHaveSessionsKeys(chainSpec: ChainSpec) {
 }
 
 function getAuthorityKeys(chainSpec: ChainSpec) {
-  const runtimeConfig = getRuntimeConfig(chainSpec);
-  if (runtimeConfig?.authorMapping) return runtimeConfig.authorMapping.mappings;
+  return getRuntimeConfig(chainSpec)?.authorMapping?.mappings;
 }
 
 async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
