@@ -13,7 +13,7 @@ const fs = require("fs").promises;
 
 export async function setupChainSpec(
   namespace: string,
-  chaninConfig: any,
+  chainConfig: any,
   chainName: string,
   chainFullPath: string,
 ): Promise<any> {
@@ -21,12 +21,12 @@ export async function setupChainSpec(
   // 1: User provide the file (we DON'T expect the raw file)
   // 2: User provide the chainSpecCommand (without the --raw option)
   const client = getClient();
-  if (chaninConfig.chainSpecPath) {
+  if (chainConfig.chainSpecPath) {
     // copy file to temp to use
-    await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
+    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
-    if (chaninConfig.chainSpecCommand) {
-      const { defaultImage, chainSpecCommand } = chaninConfig;
+    if (chainConfig.chainSpecCommand) {
+      const { defaultImage, chainSpecCommand } = chainConfig;
       const plainChainSpecOutputFilePath =
         client.remoteDir +
         "/" +
