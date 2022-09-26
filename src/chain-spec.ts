@@ -202,7 +202,7 @@ export async function addCollatorSelection(specPath: string, node: Node) {
 
 /// Add node to staking
 export async function addParaCustom(specPath: string, node: Node) {
-  /// nop
+  /// noop
 }
 
 export async function addAuraAuthority(
