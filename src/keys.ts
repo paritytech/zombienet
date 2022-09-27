@@ -12,6 +12,13 @@ function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export async function generateKeyFromSeed(seed: string): Promise<any> {
+  await cryptoWaitReady();
+
+  const sr_keyring = new Keyring({ type: "sr25519" });
+  return sr_keyring.createFromUri(`//${seed}`);
+}
+
 export async function generateKeyForNode(nodeName?: string): Promise<any> {
   await cryptoWaitReady();
 

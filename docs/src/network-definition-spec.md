@@ -31,6 +31,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `local_path`: string;
   - `remote_name`: string;
 - `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
+- `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `nodes`:
   - `*name`: (String) Name of the node.
   - `image`: (String) Override default docker image to use for this node.
