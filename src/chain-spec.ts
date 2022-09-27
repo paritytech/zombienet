@@ -3,7 +3,9 @@ import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { readDataFile } from "./utils/fs";
 import { convertExponentials } from "./utils/misc";
+import { generateKeyFromSeed } from "./keys";
 import fs from "fs";
+import crypto from 'crypto';
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -78,7 +80,7 @@ export function clearAuthorities(specPath: string) {
 
 export async function addBalances(specPath: string, nodes: Node[]) {
   const chainSpec = readAndParseChainSpec(specPath);
-  const runtime = getRuntimeConfig(chainSpec);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
   for (const node of nodes) {
     if (node.balance) {
       const stash_key = node.accounts.sr_stash.address;
@@ -88,7 +90,7 @@ export async function addBalances(specPath: string, nodes: Node[]) {
           ? node.balance
           : stakingBond! + 1
         : node.balance;
-      runtime.balances.balances.push([stash_key, balanceToAdd]);
+      runtimeConfig.balances.balances.push([stash_key, balanceToAdd]);
 
       console.log(
         `\t👤 Added Balance ${node.balance} for ${decorators.green(
@@ -200,7 +202,6 @@ export async function addCollatorSelection(specPath: string, node: Node) {
   writeChainSpec(specPath, chainSpec);
 }
 
-/// Add node to staking
 export async function addParaCustom(specPath: string, node: Node) {
   /// noop
 }
@@ -246,6 +247,39 @@ export async function addGrandpaAuthority(
     `\t👤 Added Genesis Authority (GRANDPA) ${decorators.green(
       name,
     )} - ${decorators.magenta(ed_account.address)}`,
+  );
+}
+
+export async function generateNominators(specPath: string, randomNominatorsCount: number, validators: string[]) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+  if (!runtimeConfig?.staking) return;
+
+  const limit = runtimeConfig.staking.validatorCount;
+  const maxForRandom = 2**48 - 1;
+  for( let i=0;i<randomNominatorsCount;i++) {
+    // create account
+    const nom = await generateKeyFromSeed(`nom-${i}`);
+    // add to balances
+    const balanceToAdd = stakingBond! + 1;
+    runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
+    // random nominations
+    let count = crypto.randomInt(maxForRandom) % limit;
+    const nominations = getRandom(validators, count || count++ );
+    // push to stakers
+    runtimeConfig.staking.stakers.push([
+      nom.address,
+      nom.address,
+      stakingBond,
+      {
+        "Nominator": nominations
+      }
+    ]);
+  }
+
+  writeChainSpec(specPath, chainSpec);
+  console.log(
+    `\t👤 Added random Nominators (${decorators.green(randomNominatorsCount)}`
   );
 }
 
@@ -431,6 +465,19 @@ export function writeChainSpec(specPath: string, chainSpec: any) {
     );
     process.exit(1);
   }
+}
+
+// helper
+function getRandom(arr: string[], n: number) {
+  let result = new Array(n),
+      len = arr.length,
+      taken = new Array(len);
+  while (n--) {
+      let x = Math.floor(Math.random() * len);
+      result[n] = arr[x in taken ? taken[x] : x];
+      taken[x] = --len in taken ? taken[len] : len;
+  }
+  return result;
 }
 
 export default {
