@@ -132,7 +132,7 @@ function run_test {
       EXIT_STATUS=1
     fi;
   else
-    for i in $(find ${OUTPUT_DIR} -name *.feature | sort); do
+    for i in $(find ${OUTPUT_DIR} -name *.zndsl | sort); do
       echo "running test: ${i}"
       zombie test $i
       TEST_EXIT_STATUS=$?
