@@ -13,8 +13,7 @@ export async function generateKeyFromSeed(seed: string): Promise<any> {
   await cryptoWaitReady();
 
   const sr_keyring = new Keyring({ type: "sr25519" });
-  const sr_account = sr_keyring.createFromUri(`//${seed}`);
-  return sr_account;
+  return sr_keyring.createFromUri(`//${seed}`);
 }
 
 export async function generateKeyForNode(nodeName?: string): Promise<any> {
