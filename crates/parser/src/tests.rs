@@ -200,6 +200,34 @@ fn log_match_parse_ok() {
 }
 
 #[test]
+fn log_match_parse_glob_ok() {
+    let line: &str = r#"alice: log line contains glob "Imported #12" within 20 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: log line contains glob \"Imported #12\" within 20 seconds",
+                "parsed": {
+                  "fn": "LogMatch",
+                  "args": {
+                    "node_name": "alice",
+                    "match_type": "glob",
+                    "pattern": "\"Imported #12\"",
+                    "timeout": 20
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn log_match_glob_parse_ok() {
     let line: &str = r#"alice: log line matches glob "*rted #1*" within 10 seconds"#;
     let data = r#"{

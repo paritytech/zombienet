@@ -388,6 +388,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs-err"
+version = "2.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64db3e262960f0662f43a6366788d5f10f7f244b8f7d7d987f560baf5ded5c50"
+
+[[package]]
 name = "funty"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -899,6 +905,7 @@ name = "parser"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "fs-err",
  "pest",
  "pest_derive",
  "serde",
