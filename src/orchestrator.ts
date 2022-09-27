@@ -45,6 +45,7 @@ import {
   addGrandpaAuthority,
   getNodeKey,
   addStaking,
+  generateNominators,
 } from "./chain-spec";
 import {
   generateNamespace,
@@ -242,8 +243,11 @@ export async function start(
       await addBalances(chainSpecFullPathPlain, networkSpec.relaychain.nodes);
 
       // add authorities for nodes
+      const validatorKeys = [];
       for (const node of networkSpec.relaychain.nodes) {
         if (node.validator) {
+          validatorKeys.push(node.accounts.sr_stash.address);
+
           if (keyType === "session") {
             const key = getNodeKey(node);
             await addAuthority(chainSpecFullPathPlain, node, key);
@@ -264,6 +268,14 @@ export async function start(
         }
         // Add some extra space until next log
         console.log("\n");
+      }
+
+      if (networkSpec.relaychain.randomNominatorsCount) {
+        await generateNominators(
+          chainSpecFullPathPlain,
+          networkSpec.relaychain.randomNominatorsCount,
+          validatorKeys,
+        );
       }
 
       if (networkSpec.relaychain.genesis) {
