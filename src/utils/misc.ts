@@ -101,7 +101,6 @@ export function getLokiUrl(
   return loki_url;
 }
 
-
 export function getRandom(arr: string[], n: number) {
   let result = new Array(n),
     len = arr.length,
@@ -128,4 +127,3 @@ export function getFilePathNameExt(filePath: string): {
 
   return { fullPath, fileName, extension };
 }
-
