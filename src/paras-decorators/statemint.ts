@@ -1,5 +1,5 @@
-import { Node } from "../types";
 import { GenesisNodeKey, getNodeKey as _getNodeKey } from "../chain-spec";
+import { Node } from "../types";
 
 export function getNodeKey(
   node: Node,
