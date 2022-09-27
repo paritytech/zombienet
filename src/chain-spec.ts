@@ -269,7 +269,7 @@ export async function generateNominators(
     runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
     // random nominations
     let count = crypto.randomInt(maxForRandom) % limit;
-    const nominations = getRandom(validators, count || count++);
+    const nominations = getRandom(validators, count || count + 1);
     // push to stakers
     runtimeConfig.staking.stakers.push([
       nom.address,
