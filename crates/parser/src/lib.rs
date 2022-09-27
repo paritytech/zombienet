@@ -64,8 +64,7 @@ fn parse_comparison(pair: Pair<Rule>) -> ast::Comparison {
         Rule::op_eq => ast::Operator::Equal,
         Rule::op_ineq => ast::Operator::NotEqual,
         _ => {
-            println!("{:?}", op_rule);
-            unreachable!()
+            unreachable!("{:?}", op_rule)
         }
     };
 
