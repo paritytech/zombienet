@@ -270,8 +270,12 @@ export async function start(
         console.log("\n");
       }
 
-      if(networkSpec.relaychain.randomNominatorsCount) {
-        await generateNominators(chainSpecFullPathPlain, networkSpec.relaychain.randomNominatorsCount, validatorKeys);
+      if (networkSpec.relaychain.randomNominatorsCount) {
+        await generateNominators(
+          chainSpecFullPathPlain,
+          networkSpec.relaychain.randomNominatorsCount,
+          validatorKeys,
+        );
       }
 
       if (networkSpec.relaychain.genesis) {

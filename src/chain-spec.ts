@@ -5,7 +5,7 @@ import { readDataFile } from "./utils/fs";
 import { convertExponentials } from "./utils/misc";
 import { generateKeyFromSeed } from "./keys";
 import fs from "fs";
-import crypto from 'crypto';
+import crypto from "crypto";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -250,14 +250,18 @@ export async function addGrandpaAuthority(
   );
 }
 
-export async function generateNominators(specPath: string, randomNominatorsCount: number, validators: string[]) {
+export async function generateNominators(
+  specPath: string,
+  randomNominatorsCount: number,
+  validators: string[],
+) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
   if (!runtimeConfig?.staking) return;
 
   const limit = runtimeConfig.staking.validatorCount;
-  const maxForRandom = 2**48 - 1;
-  for( let i=0;i<randomNominatorsCount;i++) {
+  const maxForRandom = 2 ** 48 - 1;
+  for (let i = 0; i < randomNominatorsCount; i++) {
     // create account
     const nom = await generateKeyFromSeed(`nom-${i}`);
     // add to balances
@@ -265,21 +269,21 @@ export async function generateNominators(specPath: string, randomNominatorsCount
     runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
     // random nominations
     let count = crypto.randomInt(maxForRandom) % limit;
-    const nominations = getRandom(validators, count || count++ );
+    const nominations = getRandom(validators, count || count++);
     // push to stakers
     runtimeConfig.staking.stakers.push([
       nom.address,
       nom.address,
       stakingBond,
       {
-        "Nominator": nominations
-      }
+        Nominator: nominations,
+      },
     ]);
   }
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\t👤 Added random Nominators (${decorators.green(randomNominatorsCount)}`
+    `\t👤 Added random Nominators (${decorators.green(randomNominatorsCount)}`,
   );
 }
 
@@ -470,12 +474,12 @@ export function writeChainSpec(specPath: string, chainSpec: any) {
 // helper
 function getRandom(arr: string[], n: number) {
   let result = new Array(n),
-      len = arr.length,
-      taken = new Array(len);
+    len = arr.length,
+    taken = new Array(len);
   while (n--) {
-      let x = Math.floor(Math.random() * len);
-      result[n] = arr[x in taken ? taken[x] : x];
-      taken[x] = --len in taken ? taken[len] : len;
+    let x = Math.floor(Math.random() * len);
+    result[n] = arr[x in taken ? taken[x] : x];
+    taken[x] = --len in taken ? taken[len] : len;
   }
   return result;
 }
