@@ -1,21 +1,20 @@
 #!/usr/bin/env node
 
-import { start } from "./orchestrator";
-import { resolve } from "path";
-import fs from "fs";
-import { Network } from "./network";
-import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
-import { LaunchConfig } from "./types";
-import { run } from "./test-runner";
-import { Command, Option } from "commander";
 import axios from "axios";
+import { Command, Option } from "commander";
+import fs from "fs";
+import path, { resolve } from "path";
 import progress from "progress";
-import path from "path";
 import {
   AVAILABLE_PROVIDERS,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_PROVIDER,
 } from "./constants";
+import { Network } from "./network";
+import { start } from "./orchestrator";
+import { run } from "./test-runner";
+import { LaunchConfig } from "./types";
+import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 const DEFAULT_CUMULUS_COLLATOR_URL =
   "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
 // const DEFAULT_ADDER_COLLATOR_URL =

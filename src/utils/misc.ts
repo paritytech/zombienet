@@ -1,6 +1,5 @@
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { format } from "util";
-import { createHash } from "crypto";
 import { LOKI_URL_FOR_NODE } from "../constants";
 
 export async function sleep(ms: number) {

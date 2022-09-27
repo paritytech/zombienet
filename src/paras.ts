@@ -1,16 +1,16 @@
+import fs from "fs";
+import chainSpecFns from "./chain-spec";
+import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
-import { getUniqueName } from "./configGenerator";
-import { getClient } from "./providers/client";
-import { Providers } from "./providers";
-import { fileMap, Node, Parachain } from "./types";
-import fs from "fs";
-import chainSpecFns from "./chain-spec";
 import { decorate } from "./paras-decorators";
+import { Providers } from "./providers";
+import { getClient } from "./providers/client";
+import { fileMap, Node, Parachain } from "./types";
 import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
