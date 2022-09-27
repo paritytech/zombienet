@@ -1,22 +1,21 @@
 #!/usr/bin/env node
 
-import { start } from "./orchestrator";
-import { resolve } from "path";
+import axios from "axios";
+import { Command, Option } from "commander";
 import fs from "fs";
+import path, { resolve } from "path";
+import progress from "progress";
 import { Network } from "./network";
-import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
+import { start } from "./orchestrator";
+import { run } from "./test-runner";
 import {
-  PL_ConfigType,
   LaunchConfig,
   NodeConfig,
   ParachainConfig,
+  PL_ConfigType,
   PolkadotLaunchConfig,
 } from "./types";
-import { run } from "./test-runner";
-import { Command, Option } from "commander";
-import axios from "axios";
-import progress from "progress";
-import path from "path";
+import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 
 import {
   AVAILABLE_PROVIDERS,
@@ -29,7 +28,7 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
-import { getFilePathNameExt, convertBytes } from "./utils/misc";
+import { convertBytes, getFilePathNameExt } from "./utils/misc";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };

@@ -1,9 +1,9 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
-import { cryptoWaitReady, blake2AsHex } from "@polkadot/util-crypto";
-import { promises as fsPromises } from "fs";
-import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
-import { compress, decompress } from "napi-maybe-compressed-blob";
+import { blake2AsHex, cryptoWaitReady } from "@polkadot/util-crypto";
 import axios from "axios";
+import { promises as fsPromises } from "fs";
+import { compress, decompress } from "napi-maybe-compressed-blob";
+import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
 export async function chainUpgradeFromUrl(

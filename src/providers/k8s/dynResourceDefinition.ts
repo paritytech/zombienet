@@ -1,17 +1,17 @@
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
+import { getUniqueName } from "../../configGenerator";
 import {
-  PROMETHEUS_PORT,
   FINISH_MAGIC_FILE,
-  TRANSFER_CONTAINER_NAME,
-  WAIT_UNTIL_SCRIPT_SUFIX,
+  P2P_PORT,
+  PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-  P2P_PORT,
+  TRANSFER_CONTAINER_NAME,
+  WAIT_UNTIL_SCRIPT_SUFIX,
 } from "../../constants";
-import { getUniqueName } from "../../configGenerator";
+import { Network } from "../../network";
 import { Node } from "../../types";
 import { getSha256 } from "../../utils/misc";
-import { Network } from "../../network";
 import { getRandomPort } from "../../utils/net";
 
 export async function genBootnodeDef(

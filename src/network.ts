@@ -1,8 +1,8 @@
-import { Client } from "./providers/client";
-import { cryptoWaitReady, sortAddresses } from "@polkadot/util-crypto";
-import { Keyring } from "@polkadot/keyring";
 import { ApiPromise } from "@polkadot/api";
-import { readDataFile } from "./utils/fs";
+import { Keyring } from "@polkadot/keyring";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
+import axios from "axios";
+import fs from "fs";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
@@ -11,9 +11,9 @@ import {
 } from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
-import fs from "fs";
-import axios from "axios";
+import { Client } from "./providers/client";
 import { decorators } from "./utils/colors";
+import { readDataFile } from "./utils/fs";
 import { CreateLogTable } from "./utils/tableCli";
 const debug = require("debug")("zombie::network");
 
