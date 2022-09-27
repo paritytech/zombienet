@@ -2,7 +2,7 @@ import { encodeAddress } from "@polkadot/util-crypto";
 import { decorators } from "./utils/colors";
 import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { readDataFile } from "./utils/fs";
-import { convertExponentials } from "./utils/misc";
+import { convertExponentials, getRandom } from "./utils/misc";
 import { generateKeyFromSeed } from "./keys";
 import fs from "fs";
 import crypto from "crypto";
@@ -469,19 +469,6 @@ export function writeChainSpec(specPath: string, chainSpec: any) {
     );
     process.exit(1);
   }
-}
-
-// helper
-function getRandom(arr: string[], n: number) {
-  let result = new Array(n),
-    len = arr.length,
-    taken = new Array(len);
-  while (n--) {
-    let x = Math.floor(Math.random() * len);
-    result[n] = arr[x in taken ? taken[x] : x];
-    taken[x] = --len in taken ? taken[len] : len;
-  }
-  return result;
 }
 
 export default {
