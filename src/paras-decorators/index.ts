@@ -2,6 +2,7 @@ enum PARA {
   Statemint = "statemint",
   Moonbeam = "moonbeam",
   Efinity = "efinity",
+  Acala = "acala",
   Generic = "generic",
 }
 
@@ -10,15 +11,16 @@ interface ParaDecorator {
 }
 
 // imports
+import acala from "./acala";
 import efinity from "./efinity";
 import moonbeam from "./moonbeam";
 import statemint from "./statemint";
-import efinity from "./efinity";
 
 function whichPara(chain: string): PARA {
   if (chain.includes("statemint")) return PARA.Statemint;
   if (/moonbase|moonriver|moonbeam/.test(chain)) return PARA.Moonbeam;
   if (/efinity|rocfinity/.test(chain)) return PARA.Efinity;
+  if (/acala|karura|mandala/.test(chain)) return PARA.Acala;
 
   return PARA.Generic;
 }
@@ -47,10 +49,16 @@ const efinityDecorators: ParaDecorator = Object.keys(efinity).reduce(
   Object.create({}),
 );
 
+const acalaDecorators: ParaDecorator = Object.keys(acala).reduce((memo, fn) => {
+  memo[fn] = (acala as ParaDecorator)[fn];
+  return memo;
+}, Object.create({}));
+
 const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
   statemint: statemintDecorators,
   efinity: efinityDecorators,
+  acala: acalaDecorators,
   generic: {},
 };
 
