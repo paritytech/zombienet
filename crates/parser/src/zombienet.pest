@@ -78,11 +78,13 @@ restart = { node_name ~ "restart" ~ ("after" ~ int+ ~ seconds)? }
 /// COMMENTS
 comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)+ }
 
+
 file = { SOI ~ (
+    description? ~
+    network ~
+    creds
+    ) ~ (
     comment |
-    description |
-    network |
-    creds |
     is_up |
     para_is_registered |
     para_block_height |

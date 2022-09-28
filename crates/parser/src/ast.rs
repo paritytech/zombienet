@@ -18,8 +18,8 @@ pub struct Comparison {
     pub target_value: u64,
 }
 
-type ParaId = u16;
-type NodeName = String;
+pub type ParaId = u16;
+pub type NodeName = String;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "fn", content = "args")]

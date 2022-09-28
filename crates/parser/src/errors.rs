@@ -9,4 +9,8 @@ pub enum ParserError {
     MissingFields(String),
     #[error("Serialization Error")]
     SerializationError,
+    #[error("Unexpected rule: \n {0}")]
+    Unexpected(String),
+    #[error("Unreachable rule: \n {0}")]
+    UnreachableRule(String),
 }
