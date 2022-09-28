@@ -39,10 +39,8 @@ Zombienet releases are available in `github`. Each one provides an executable fo
 *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g.
 `k8s`, `podman`).
 
-**Note:** `Podman` is supported in MacOS as an app but this is happening through an
-internal vm. The provider's code in zombienet supports `podman` running native - thus `podman` for
-`zombienet` can be used only on linux. This is related, mostly, to paths and directories used by
-store configuration (chain-spec) and the data directory.
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Status
 
