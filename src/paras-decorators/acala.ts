@@ -1,6 +1,6 @@
 import { Node } from "../types";
 
-// Efinity genesis node key type
+// Acala genesis node key type
 export type GenesisNodeKey = [string, string, { [key: string]: string }];
 
 export function getNodeKey(
