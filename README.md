@@ -261,7 +261,7 @@ You can teardown the network (and cleanup the used resources) by terminating the
 The other goal of `zombienet` is to provide a way to perform test/assertions against the spawned
 network, using a set of `natural language expressions` that allow you to make assertions based on
 metrics, logs and some `built-in` function that query the network using `polkadot.js`. Those
-assertions should be defined in a *feature test*, and the `dsl` and format is documented in
+assertions should be defined in a *.zndsl test*, and the `dsl` (**D**omain **S**pecific **L**anguage) and format is documented in
 [here](/docs/src/test-dsl-definition-spec.md).
 
 The following is an small example to spawn a network (using the previous `simple network
