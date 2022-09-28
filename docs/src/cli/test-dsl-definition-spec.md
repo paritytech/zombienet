@@ -13,7 +13,7 @@ One of the goals of Zombienet it to provide a simple way to create tests, for th
 - Custom api calls (through polkadot.js)
 - Commands
 
-Each of this abstractions are expresed by sentences defined in a **natural languaje style**, so each test line will be mapped to a test tu run.
+Each of this abstractions are expresed by sentences defined in a **natural language style**, so each test line will be mapped to a test tu run.
 
 Also, the test file (\*.zndsl) includes a pre-defined **header fields** used to define information about the suite (e.g. `network configuration` and `credentials` location)
 
