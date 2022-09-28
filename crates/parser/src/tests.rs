@@ -376,18 +376,18 @@ fn is_up_parse_err() {
 /// Header test
 #[test]
 fn parse_header_ok() {
-    let result = parse(&[NETWORK, CREDS,  "alice: is up"].join("\n"));
+    let result = parse(&[NETWORK, CREDS, "alice: is up"].join("\n"));
     assert!(result.is_ok());
 }
 
 #[test]
 fn parse_header_with_description_ok() {
-    let result = parse(&["Description: Some", NETWORK, CREDS,  "alice: is up"].join("\n"));
+    let result = parse(&["Description: Some", NETWORK, CREDS, "alice: is up"].join("\n"));
     assert!(result.is_ok());
 }
 
 #[test]
 fn parse_header_err() {
-    let result = parse(&[CREDS,NETWORK, "alice: is up"].join("\n"));
+    let result = parse(&[CREDS, NETWORK, "alice: is up"].join("\n"));
     assert!(result.is_err());
 }

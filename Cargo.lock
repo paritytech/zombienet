@@ -911,6 +911,14 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "parser-wrapper"
+version = "0.1.0"
+dependencies = [
+ "parser",
+ "serde_json",
  "wasm-bindgen",
 ]
 

@@ -1,3 +1,3 @@
 [workspace]
 
-members = [ "crates/parser", "backchannel", "backchannel-cli" ]
+members = [ "crates/*", "backchannel", "backchannel-cli" ]

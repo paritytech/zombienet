@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Operator {
     Equal,
     NotEqual,
@@ -12,7 +12,7 @@ pub enum Operator {
     IsAtMost,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Comparison {
     pub op: Operator,
     pub target_value: u64,
@@ -21,7 +21,7 @@ pub struct Comparison {
 pub type ParaId = u16;
 pub type NodeName = String;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(tag = "fn", content = "args")]
 pub enum AssertionKind {
     IsUp {
@@ -129,13 +129,13 @@ pub enum AssertionKind {
     },
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Assertion {
     pub original_line: String,
     pub parsed: AssertionKind,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TestDefinition {
     pub description: Option<String>,
     pub network: String,
@@ -164,11 +164,8 @@ pub mod optional_timeout {
     where
         D: Deserializer<'de>,
     {
-
         match u64::deserialize(deserializer) {
-            Ok(s) => {
-                Ok(Some(Duration::from_secs(s)))
-            }
+            Ok(s) => Ok(Some(Duration::from_secs(s))),
             Err(_) => {
                 // If we can deserialize to an u64 deserialize to None
                 Ok(None)

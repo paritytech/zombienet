@@ -1,15 +1,16 @@
 use std::time::Duration;
 
-use pest::{iterators::{Pair, Pairs}, Parser};
+use pest::{
+    iterators::{Pair, Pairs},
+    Parser,
+};
 use pest_derive::Parser;
 
 pub mod ast;
 mod errors;
 use errors::ParserError;
 
-use ast::{Assertion, AssertionKind, Comparison, TestDefinition, NodeName, ParaId};
-
-use wasm_bindgen::prelude::*;
+use ast::{Assertion, AssertionKind, Comparison, NodeName, ParaId, TestDefinition};
 
 #[cfg(test)]
 mod tests;
@@ -22,31 +23,35 @@ const _GRAMMAR: &str = include_str!("zombienet.pest");
 #[grammar = "zombienet.pest"]
 pub struct ZombieNetParser;
 
-fn parse_name(pair: Pair<Rule>) -> Result<NodeName, ParserError>{
+fn parse_name(pair: Pair<Rule>) -> Result<NodeName, ParserError> {
     // get the first inner pair, since we don't want the `:`
     match pair.into_inner().next() {
         Some(p) => Ok(p.as_str().to_string()),
-        None => Err(ParserError::Unexpected(String::from("Rule should have an inner rule")))
+        None => Err(ParserError::Unexpected(String::from(
+            "Rule should have an inner rule",
+        ))),
     }
 }
 
-fn parse_within(pair: Pair<Rule>) -> Result<Duration,ParserError> {
+fn parse_within(pair: Pair<Rule>) -> Result<Duration, ParserError> {
     let within = pair.into_inner().as_str();
-    Ok(Duration::from_secs(
-        within.parse::<u64>().map_err(|_| {ParserError::ParseError(format!("Can't parse {} as u64", within))})?)
-    )
+    Ok(Duration::from_secs(within.parse::<u64>().map_err(
+        |_| ParserError::ParseError(format!("Can't parse {} as u64", within)),
+    )?))
 }
 
 fn parse_para_id(pair: Pair<Rule>) -> Result<ParaId, ParserError> {
     let para_id_str = pair.into_inner().as_str();
-    Ok(para_id_str.parse::<u16>().map_err(|_| {ParserError::ParseError(format!("Can't parse {} as u16", para_id_str))})?)
+    para_id_str
+        .parse::<u16>()
+        .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u16", para_id_str)))
 }
 
 fn parse_taget_value(pair: Pair<Rule>) -> Result<u64, ParserError> {
     let target_str = pair.into_inner().as_str();
-    Ok(
-        target_str.parse::<u64>().map_err(|_| {ParserError::ParseError(format!("Can't parse {} as u64", target_str))})?
-    )
+    target_str
+        .parse::<u64>()
+        .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u64", target_str)))
 }
 
 fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
@@ -64,12 +69,17 @@ fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
         }
     };
 
-    let target_value =  get_pair(&mut inner_pairs, "target_value")?.as_str().parse::<u64>().map_err(|_| {ParserError::ParseError(format!("Can't parse as u64"))})?;
+    let target_value = get_pair(&mut inner_pairs, "target_value")?
+        .as_str()
+        .parse::<u64>()
+        .map_err(|_| ParserError::ParseError("Can't parse as u64".to_string()))?;
 
     Ok(ast::Comparison { op, target_value })
 }
 
-fn parse_match_pattern_rule(record: Pair<Rule>) -> Result<(String, String, String, Option<Duration>), ParserError> {
+fn parse_match_pattern_rule(
+    record: Pair<Rule>,
+) -> Result<(String, String, String, Option<Duration>), ParserError> {
     let mut pairs = record.into_inner();
     let name = parse_name(get_pair(&mut pairs, "name")?)?;
 
@@ -99,7 +109,7 @@ fn parse_match_pattern_rule(record: Pair<Rule>) -> Result<(String, String, Strin
     Ok((name, match_type, pattern, timeout))
 }
 
-fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<AssertionKind,ParserError> {
+fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<AssertionKind, ParserError> {
     let mut pairs = record.into_inner();
     let node_name = parse_name(get_pair(&mut pairs, "name")?)?;
     let file_path = get_pair(&mut pairs, "file_path")?.as_str().to_owned();
@@ -120,7 +130,9 @@ fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<Assertion
                 timeout = Some(parse_within(inner_record)?);
             }
             _ => {
-                return Err(ParserError::UnreachableRule(inner_record.as_str().to_string()));
+                return Err(ParserError::UnreachableRule(
+                    inner_record.as_str().to_string(),
+                ));
             }
         }
     }
@@ -159,7 +171,9 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
     let top_level_rule = if let Some(p) = pairs.next() {
         p
     } else {
-        return Err(ParserError::Unexpected(String::from("Invalid top level rule")));
+        return Err(ParserError::Unexpected(String::from(
+            "Invalid top level rule",
+        )));
     };
 
     for record in top_level_rule.into_inner() {
@@ -315,7 +329,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                     },
                     Rule::comparison => parse_comparison(cmp_rule)?,
                     _ => {
-                        return Err( ParserError::UnreachableRule(pairs.as_str().to_string()));
+                        return Err(ParserError::UnreachableRule(pairs.as_str().to_string()));
                     }
                 };
                 let buckets = get_pair(&mut pairs, "buckets")?.as_str().to_string();
@@ -444,7 +458,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 // Pairs should be in order:
                 // timeout
                 let mut pairs = record.into_inner();
-                let seconds = get_pair(&mut pairs, "seconds")?.as_str().parse::<u64>().map_err(|_| errors::ParserError::ParseError(String::from("Invalid secs value")))?;
+                let seconds = get_pair(&mut pairs, "seconds")?
+                    .as_str()
+                    .parse::<u64>()
+                    .map_err(|_| {
+                        errors::ParserError::ParseError(String::from("Invalid secs value"))
+                    })?;
 
                 let assertion = Assertion {
                     parsed: AssertionKind::Sleep {
@@ -462,9 +481,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 let name = parse_name(get_pair(&mut pairs, "name")?)?;
 
                 let assertion = Assertion {
-                    parsed: AssertionKind::Pause {
-                        node_name: name,
-                    },
+                    parsed: AssertionKind::Pause { node_name: name },
                     original_line,
                 };
 
@@ -477,9 +494,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 let name = parse_name(get_pair(&mut pairs, "name")?)?;
 
                 let assertion = Assertion {
-                    parsed: AssertionKind::Resume {
-                        node_name: name,
-                    },
+                    parsed: AssertionKind::Resume { node_name: name },
                     original_line,
                 };
 
@@ -493,17 +508,19 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
 
                 let after: Option<Duration> = if let Some(after_rule) = pairs.next() {
                     Some(Duration::from_secs(
-                        after_rule
-                            .into_inner()
-                            .as_str()
-                            .parse().map_err(|_|{ ParserError::ParseError(String::from("Invalid after value"))})?
+                        after_rule.into_inner().as_str().parse().map_err(|_| {
+                            ParserError::ParseError(String::from("Invalid after value"))
+                        })?,
                     ))
                 } else {
                     None
                 };
 
                 let assertion = Assertion {
-                    parsed: AssertionKind::Restart { node_name: name, after },
+                    parsed: AssertionKind::Restart {
+                        node_name: name,
+                        after,
+                    },
                     original_line,
                 };
 
@@ -530,25 +547,19 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
         assertions,
     };
 
-    return Ok(test_def);
+    Ok(test_def)
 }
-
-#[wasm_bindgen]
-pub fn parse_to_json(unparsed_file: &str) -> Result<String, String> {
-    if unparsed_file == "" {
-        return Err("error".to_string());
-    }
-    let ast = parse(&unparsed_file).map_err(|e| e.to_string())?;
-    let ast_json =
-        serde_json::to_string_pretty(&ast).map_err(|_| "Serializing error".to_string())?;
-    Ok(ast_json)
-}
-
 
 /// helper
-fn get_pair<'a>(pairs: &mut Pairs<'a, Rule>, rule_name: &'a str) -> Result<Pair<'a, Rule>,ParserError> {
+fn get_pair<'a>(
+    pairs: &mut Pairs<'a, Rule>,
+    rule_name: &'a str,
+) -> Result<Pair<'a, Rule>, ParserError> {
     match pairs.next() {
         Some(p) => Ok(p),
-        None => Err(ParserError::Unexpected(format!("Pair {} should exists", rule_name)))
+        None => Err(ParserError::Unexpected(format!(
+            "Pair {} should exists",
+            rule_name
+        ))),
     }
 }
