@@ -270,7 +270,7 @@ The other goal of `zombienet` is to provide a way to perform test/assertions aga
 network, using a set of `natural language expressions` that allow you to make assertions based on
 metrics, logs and some `built-in` function that query the network using `polkadot.js`. Those
 assertions should be defined in a *.zndsl test*, and the `dsl` (**D**omain **S**pecific **L**anguage) and format is documented in
-[here](/docs/src/test-dsl-definition-spec.md).
+[here](/docs/book/cli/test-dsl-definition-spec.md).
 
 The following is an small example to spawn a network (using the previous `simple network
 definition`) and assert that:

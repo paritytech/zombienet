@@ -50,7 +50,7 @@ At the end of the process a list of `nodes` (with direct access links) will be p
 ---
 
 Now we've explored how to launch a network, let's add a test file to ensure that it works as expected.
-In Zombienet the tests are defined in the `*.zndsl` file, which uses a _simple_ [DSL](./test-dsl-definition-spec.md) to write test assertions.
+In Zombienet the tests are defined in the `*.zndsl` file, which uses a _simple_ [DSL](./cli/test-dsl-definition-spec.md) to write test assertions.
 
 [0001-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.zndsl)
 
