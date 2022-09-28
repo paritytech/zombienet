@@ -27,10 +27,8 @@ Internally zombienet is a `javascript` library, designed to run on `Node.js` and
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
 supported. 
 
-**Note:** `Podman` is supported in MacOS as an app but this is happening through an
-internal vm. The provider's code in zombienet supports `podman` running native - thus `podman` for
-`zombienet` can be used only on linux. This is related, mostly, to paths and directories used by
-store configuration (chain-spec) and the data directory.
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Usage
 
