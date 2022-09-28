@@ -382,9 +382,9 @@ At the end of the process a list of <code>nodes</code> (with direct access links
 <p><img src="./imgs/small-network-banner.png" alt="small network banner" /></p>
 <p><img src="./imgs/small-network-web.png" alt="small network node" /></p>
 <hr />
-<p>Now we've explored how to launch a network, let's add a test file to ensure that it works as expected. 
-In Zombienet the tests are defined in the <code>*.feature</code> file, which uses a <em>simple</em> <a href="./test-dsl-definition-spec.html">DSL</a> to write test assertions.</p>
-<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.feature">0001-small-network.feature</a></p>
+<p>Now we've explored how to launch a network, let's add a test file to ensure that it works as expected.
+In Zombienet the tests are defined in the <code>*.zndsl</code> file, which uses a <em>simple</em> <a href="./test-dsl-definition-spec.html">DSL</a> to write test assertions.</p>
+<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.zndsl">0001-small-network.zndsl</a></p>
 <pre><code>Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
@@ -411,11 +411,11 @@ bob: system event contains &quot;A candidate was included&quot; within 20 second
 alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
 </code></pre>
 <p>Now, run the tests with the following command to get both the <em>launching</em> output and the test reports:</p>
-<pre><code class="language-bash">./zombienet-linux -p kubernetes test examples/0001-small-network.feature
+<pre><code class="language-bash">./zombienet-linux -p kubernetes test examples/0001-small-network.zndsl
 </code></pre>
 <p><img src="./imgs/small-network-test-report.png" alt="test report" /></p>
 <h3 id="example-2---small-network-with-replacements"><a class="header" href="#example-2---small-network-with-replacements">Example 2 - Small network with replacements</a></h3>
-<p>In Example 1, we used some <em>hardcoded</em> default values but sometimes it's more useful to be able to change them dynamically. 
+<p>In Example 1, we used some <em>hardcoded</em> default values but sometimes it's more useful to be able to change them dynamically.
 For example, if you are building images in your <code>CI</code> and those images have an unique tag. To address these cases, Zombienet uses a templating language called <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a> that allows defining environment variables which then can get updated at <em>runtime</em>.</p>
 <p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment:</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
@@ -489,7 +489,7 @@ id = 100
 <p><img src="./imgs/bob-custom.png" alt="bob custom image and command" /></p>
 <p>In general all the config fields that start with <code>default_*</code> can be overridden in the <code>nodes</code> or <code>collators</code> config.</p>
 <h3 id="example-4---small-network-with-cumulus-based-collator"><a class="header" href="#example-4---small-network-with-cumulus-based-collator">Example 4 - Small network with cumulus based collator</a></h3>
-<p>Until now we've been using the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator. </p>
+<p>Until now we've been using the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator.</p>
 <p>Continuing with the example we are using, we need to change the <code>image</code> and <code>command</code> of the collator, and also set the config key <code>cumulus_based</code> to true.</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
 <pre><code class="language-toml">[relaychain]
@@ -552,7 +552,7 @@ id = 100
     command = &quot;adder-collator&quot;
     image = &quot;docker.io/paritypr/colander:master&quot;
 </code></pre>
-<p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, then Zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>). 
+<p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, then Zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>).
 Again, the groups use the <code>default_*</code> fields if they are not overridden in the group definition.</p>
 <p>This time for <code>spawning</code> the network we will use the <em>concurrency</em> (<code>-c</code>) flag to spawn the nodes in batches and speed up the process.</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 spawn examples/0005-big-network.toml
@@ -575,13 +575,13 @@ a: reports node_roles is 4
 b: reports sub_libp2p_is_major_syncing is 0
 </code></pre>
 <p>And now we can run the test and get the report</p>
-<pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.feature
+<pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.zndsl
 </code></pre>
 <p><img src="./imgs/big-test.png" alt="big network test" /></p>
 <hr />
 <h2 id="logs-and-troubleshooting"><a class="header" href="#logs-and-troubleshooting">Logs and troubleshooting</a></h2>
 <h3 id="node-logs"><a class="header" href="#node-logs">Node logs</a></h3>
-<p>Logs are always a great resource for troubleshooting. 
+<p>Logs are always a great resource for troubleshooting.
 Zombienet gives you an easy way to access a node's logs in all the supported providers.</p>
 <h4 id="logs-in-kubernetes"><a class="header" href="#logs-in-kubernetes">Logs in Kubernetes</a></h4>
 <p>Using the <code>kubernetes</code> provider you have a couple of options to follow the logs.
@@ -612,7 +612,7 @@ For example:</p>
 </code></pre>
 <h4 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h4>
 <p>Zombienet provides an easy way to follow the spawning process by enabling the debug logs using the <code>DEBUG</code> environment variable to manage the output.</p>
-<pre><code class="language-bash">DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.feature
+<pre><code class="language-bash">DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.zndsl
 </code></pre>
 <hr />
 <h2 id="podman-infra"><a class="header" href="#podman-infra">Podman infra</a></h2>
