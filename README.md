@@ -64,8 +64,8 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 
 Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
-`--provider` flag in the cli. `Podman` for `zombienet` can be used only on linux even though `podman`
-is an app supported also on MacOS. This is related, mostly, to paths and directories used by 
+`--provider` flag in the cli. `Podman` for `zombienet` is currently only supported for Linux machines.
+This is mostly related to paths and directories used by 
 store configuration (chain-spec) and the data directory.
 
 ### With Native
