@@ -312,7 +312,7 @@ program
 program
   .command("test")
   .description("Run tests on the network defined")
-  .argument("<testFile>", "Feature file describing the tests")
+  .argument("<testFile>", "ZNDSL file (.zndsl) describing the tests")
   .argument(
     "[runningNetworkSpec]",
     "Path to the network spec json, for using a running network for running the test",
