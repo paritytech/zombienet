@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use pest::{iterators::Pair, Parser};
+use pest::{iterators::{Pair, Pairs}, Parser};
 use pest_derive::Parser;
 
 pub mod ast;
@@ -51,7 +51,7 @@ fn parse_taget_value(pair: Pair<Rule>) -> Result<u64, ParserError> {
 
 fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
     let mut inner_pairs = pair.into_inner();
-    let op_rule = inner_pairs.next().unwrap();
+    let op_rule = get_pair(&mut inner_pairs, "op_rule")?;
     let op = match op_rule.as_rule() {
         Rule::op_lte => ast::Operator::IsAtMost,
         Rule::op_gte => ast::Operator::IsAtLeast,
@@ -64,18 +64,18 @@ fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
         }
     };
 
-    let target_value = inner_pairs.next().unwrap().as_str().parse::<u64>().map_err(|_| {ParserError::ParseError(format!("Can't parse as u64"))})?;
+    let target_value =  get_pair(&mut inner_pairs, "target_value")?.as_str().parse::<u64>().map_err(|_| {ParserError::ParseError(format!("Can't parse as u64"))})?;
 
     Ok(ast::Comparison { op, target_value })
 }
 
 fn parse_match_pattern_rule(record: Pair<Rule>) -> Result<(String, String, String, Option<Duration>), ParserError> {
     let mut pairs = record.into_inner();
-    let name = parse_name(pairs.next().unwrap())?;
+    let name = parse_name(get_pair(&mut pairs, "name")?)?;
 
     let mut explicit_match_type = false;
 
-    let pair = pairs.next().unwrap();
+    let pair = get_pair(&mut pairs, "match_type")?;
     let match_type = if let Rule::match_type = pair.as_rule() {
         explicit_match_type = true;
         pair.as_str().to_owned()
@@ -84,7 +84,7 @@ fn parse_match_pattern_rule(record: Pair<Rule>) -> Result<(String, String, Strin
     };
 
     let pattern_pair = if explicit_match_type {
-        pairs.next().unwrap()
+        get_pair(&mut pairs, "pattern")?
     } else {
         pair
     };
@@ -101,8 +101,8 @@ fn parse_match_pattern_rule(record: Pair<Rule>) -> Result<(String, String, Strin
 
 fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<AssertionKind,ParserError> {
     let mut pairs = record.into_inner();
-    let node_name = parse_name(pairs.next().unwrap())?;
-    let file_path = pairs.next().unwrap().as_str().to_owned();
+    let node_name = parse_name(get_pair(&mut pairs, "name")?)?;
+    let file_path = get_pair(&mut pairs, "file_path")?.as_str().to_owned();
 
     let mut args: Option<String> = None;
     let mut cmp: Option<Comparison> = None;
@@ -156,14 +156,20 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
     let mut description: Option<String> = None;
     let mut assertions: Vec<Assertion> = vec![];
 
-    for record in pairs.next().unwrap().into_inner() {
+    let top_level_rule = if let Some(p) = pairs.next() {
+        p
+    } else {
+        return Err(ParserError::Unexpected(String::from("Invalid top level rule")));
+    };
+
+    for record in top_level_rule.into_inner() {
         let original_line = record.as_str().to_owned();
         match record.as_rule() {
             Rule::description => {
-                description = Some(record.into_inner().next().unwrap().as_str().to_owned());
+                description = Some(record.into_inner().as_str().to_owned());
             }
             Rule::network => {
-                network = Some(record.into_inner().next().unwrap().as_str().to_owned());
+                network = Some(record.into_inner().as_str().to_owned());
             }
             Rule::creds => {
                 let mut pairs = record.into_inner();
@@ -174,8 +180,11 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 };
             }
             Rule::is_up => {
+                // Pairs should be in order:
+                // name, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -193,9 +202,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::para_is_registered => {
+                // Pairs should be in order:
+                // name, para_id, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
-                let para_id = parse_para_id(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let para_id = parse_para_id(get_pair(&mut pairs, "para_id")?)?;
+
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -214,10 +226,13 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::para_block_height => {
+                // Pairs should be in order:
+                // name, para_id, comparison, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
-                let para_id = parse_para_id(pairs.next().unwrap())?;
-                let comparison = parse_comparison(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let para_id = parse_para_id(get_pair(&mut pairs, "para_id")?)?;
+                let comparison = parse_comparison(get_pair(&mut pairs, "comparison")?)?;
+
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -238,10 +253,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::para_runtime_upgrade => {
+                // Pairs should be in order:
+                // name, para_id, file_or_uri, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
-                let para_id = parse_para_id(pairs.next().unwrap())?;
-                let file_or_uri = pairs.next().unwrap().as_str().to_owned();
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let para_id = parse_para_id(get_pair(&mut pairs, "para_id")?)?;
+                let file_or_uri = get_pair(&mut pairs, "file_or_uri")?.as_str().to_string();
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -261,9 +278,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::para_runtime_dummy_upgrade => {
+                // Pairs should be in order:
+                // name, para_id, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
-                let para_id = parse_para_id(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let para_id = parse_para_id(get_pair(&mut pairs, "para_id")?)?;
+
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -282,10 +302,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::histogram => {
+                // Pairs should be in order:
+                // name, metric_name, cmp, buckets, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
-                let metric_name = pairs.next().unwrap().as_str().to_owned();
-                let cmp_rule = pairs.next().unwrap();
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let metric_name = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
+                let cmp_rule = get_pair(&mut pairs, "cmp_rule")?;
                 let cmp: ast::Comparison = match cmp_rule.as_rule() {
                     Rule::int => ast::Comparison {
                         op: ast::Operator::Equal,
@@ -296,8 +318,8 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                         return Err( ParserError::UnreachableRule(pairs.as_str().to_string()));
                     }
                 };
+                let buckets = get_pair(&mut pairs, "buckets")?.as_str().to_string();
 
-                let buckets = pairs.next().unwrap().as_str().to_owned();
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -306,7 +328,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
 
                 let assertion = Assertion {
                     parsed: AssertionKind::Histogram {
-                        node_name: name.to_owned(),
+                        node_name: name,
                         metric_name,
                         op: cmp.op,
                         target_value: cmp.target_value,
@@ -319,10 +341,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::report => {
+                // Pairs should be in order:
+                // name, metric_name, cmp, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
-                let metric_name = pairs.next().unwrap().as_str().to_owned();
-                let cmp = parse_comparison(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let metric_name = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
+                let cmp = parse_comparison(get_pair(&mut pairs, "cmp_rule")?)?;
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -358,11 +382,13 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::trace => {
+                // Pairs should be in order:
+                // name, span_id, pattern, [timeout]
                 let mut pairs = record.into_inner();
-                let name = parse_name(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let span_id = get_pair(&mut pairs, "span_id")?.as_str().to_string();
+                let pattern = get_pair(&mut pairs, "pattern")?.as_str().to_string();
 
-                let span_id = pairs.next().unwrap().as_str().to_owned();
-                let pattern = pairs.next().unwrap().as_str().to_owned();
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
                 } else {
@@ -415,12 +441,14 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::sleep => {
+                // Pairs should be in order:
+                // timeout
                 let mut pairs = record.into_inner();
+                let seconds = get_pair(&mut pairs, "seconds")?.as_str().parse::<u64>().map_err(|_| errors::ParserError::ParseError(String::from("Invalid secs value")))?;
+
                 let assertion = Assertion {
                     parsed: AssertionKind::Sleep {
-                        seconds: Some(Duration::from_secs(
-                            pairs.next().unwrap().as_str().parse().map_err(|_| errors::ParserError::ParseError(String::from("Invalid secs value")))?,
-                        )),
+                        seconds: Some(Duration::from_secs(seconds)),
                     },
                     original_line,
                 };
@@ -428,10 +456,14 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::pause => {
+                // Pairs should be in order:
+                // name
                 let mut pairs = record.into_inner();
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+
                 let assertion = Assertion {
                     parsed: AssertionKind::Pause {
-                        node_name: parse_name(pairs.next().unwrap())?,
+                        node_name: name,
                     },
                     original_line,
                 };
@@ -439,10 +471,14 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::resume => {
+                // Pairs should be in order:
+                // name
                 let mut pairs = record.into_inner();
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+
                 let assertion = Assertion {
                     parsed: AssertionKind::Resume {
-                        node_name: parse_name(pairs.next().unwrap())?,
+                        node_name: name,
                     },
                     original_line,
                 };
@@ -450,22 +486,24 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::restart => {
+                // Pairs should be in order:
+                // name
                 let mut pairs = record.into_inner();
-                let node_name = parse_name(pairs.next().unwrap())?;
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+
                 let after: Option<Duration> = if let Some(after_rule) = pairs.next() {
                     Some(Duration::from_secs(
                         after_rule
                             .into_inner()
                             .as_str()
-                            .parse()
-                            .unwrap(),
+                            .parse().map_err(|_|{ ParserError::ParseError(String::from("Invalid after value"))})?
                     ))
                 } else {
                     None
                 };
 
                 let assertion = Assertion {
-                    parsed: AssertionKind::Restart { node_name, after },
+                    parsed: AssertionKind::Restart { node_name: name, after },
                     original_line,
                 };
 
@@ -484,6 +522,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
         )));
     }
 
+    // unwrap here should be face because of the above test.
     let test_def = TestDefinition {
         description,
         network: network.unwrap(),
@@ -503,4 +542,13 @@ pub fn parse_to_json(unparsed_file: &str) -> Result<String, String> {
     let ast_json =
         serde_json::to_string_pretty(&ast).map_err(|_| "Serializing error".to_string())?;
     Ok(ast_json)
+}
+
+
+/// helper
+fn get_pair<'a>(pairs: &mut Pairs<'a, Rule>, rule_name: &'a str) -> Result<Pair<'a, Rule>,ParserError> {
+    match pairs.next() {
+        Some(p) => Ok(p),
+        None => Err(ParserError::Unexpected(format!("Pair {} should exists", rule_name)))
+    }
 }
