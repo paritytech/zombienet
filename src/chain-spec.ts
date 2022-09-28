@@ -259,6 +259,12 @@ export async function generateNominators(
   const runtimeConfig = getRuntimeConfig(chainSpec);
   if (!runtimeConfig?.staking) return;
 
+  console.log(
+    `\t👤 Generating random Nominators (${decorators.green(
+      randomNominatorsCount,
+    )})`,
+  );
+
   const limit = runtimeConfig.staking.validatorCount;
   const maxForRandom = 2 ** 48 - 1;
   for (let i = 0; i < randomNominatorsCount; i++) {
@@ -283,7 +289,7 @@ export async function generateNominators(
 
   writeChainSpec(specPath, chainSpec);
   console.log(
-    `\t👤 Added random Nominators (${decorators.green(randomNominatorsCount)}`,
+    `\t👤 Added random Nominators (${decorators.green(randomNominatorsCount)})`,
   );
 }
 
