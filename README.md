@@ -25,7 +25,12 @@ write tests as smooth as posible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
-supported.
+supported. 
+
+**Note:** `Podman` is supported in MacOS as an app but this is happening through an
+internal vm. The provider's code in zombienet supports `podman` running native - thus `podman` for
+`zombienet` can be used only on linux. This is related, mostly, to paths and directories used by
+store configuration (chain-spec) and the data directory.
 
 ## Usage
 
@@ -33,6 +38,11 @@ Zombienet releases are available in `github`. Each one provides an executable fo
 `macos` created with [pkg](https://github.com/vercel/pkg) and allows to run `zombienet` cli
 *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g.
 `k8s`, `podman`).
+
+**Note:** `Podman` is supported in MacOS as an app but this is happening through an
+internal vm. The provider's code in zombienet supports `podman` running native - thus `podman` for
+`zombienet` can be used only on linux. This is related, mostly, to paths and directories used by
+store configuration (chain-spec) and the data directory.
 
 ## Status
 
@@ -58,7 +68,9 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 
 Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
-`--provider` flag in the cli.
+`--provider` flag in the cli. `Podman` for `zombienet` can be used only on linux even though `podman`
+is an app supported also on MacOS. This is related, mostly, to paths and directories used by 
+store configuration (chain-spec) and the data directory.
 
 ### With Native
 
