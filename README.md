@@ -25,7 +25,10 @@ write tests as smooth as posible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
-supported.
+supported. 
+
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Usage
 
@@ -33,6 +36,9 @@ Zombienet releases are available in `github`. Each one provides an executable fo
 `macos` created with [pkg](https://github.com/vercel/pkg) and allows to run `zombienet` cli
 *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g.
 `k8s`, `podman`).
+
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Status
 
@@ -58,7 +64,9 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 
 Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
-`--provider` flag in the cli.
+`--provider` flag in the cli. `Podman` for `zombienet` is currently only supported for Linux machines.
+This is mostly related to paths and directories used by 
+store configuration (chain-spec) and the data directory.
 
 ### With Native
 
