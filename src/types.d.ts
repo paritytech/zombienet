@@ -4,14 +4,17 @@
 import { PARA } from "./paras-decorators";
 
 // network config to spawn.
-export interface LaunchConfig {
+interface LaunchConfig extends PolkadotLaunchConfig {
   config: { provider: string };
   settings: Settings;
+  configBasePath: string;
+}
+
+export interface PolkadotLaunchConfig {
   relaychain: RelayChainConfig;
   parachains: ParachainConfig[];
   types: any;
   hrmp_channels?: HrmpChannelsConfig[];
-  configBasePath: string;
 }
 
 export interface Settings {
@@ -44,6 +47,7 @@ export interface RelayChainConfig {
   chain_spec_command?: string;
   default_args?: string[];
   default_overrides?: Override[];
+  random_nominators_count?: number;
   nodes?: NodeConfig[];
   node_groups?: NodeGroupConfig[];
   total_node_in_groups?: number;
@@ -118,6 +122,7 @@ export interface ComputedNetwork {
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
+    randomNominatorsCount: number;
     nodes: Node[];
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
@@ -258,4 +263,36 @@ export interface Resources {
 
 export interface MultiAddressByNode {
   [key: string]: string;
+}
+
+// Config interfaces
+interface PL_NodesConfig {
+  name: string;
+  wsPort: number;
+  port: number;
+  flags?: [strings];
+}
+
+interface PL_RelayChainConfig {
+  bin?: string;
+  chain: string;
+  nodes: [NodesConfig];
+  genesis?: JSON | ObjectJSON;
+}
+
+interface PL_ParaChainConfig {
+  bin?: string;
+  id: number;
+  port?: string;
+  balance?: string;
+  nodes: [PL_NodesConfig];
+}
+
+export interface PL_ConfigType {
+  relaychain?: PL_RelayChainConfig;
+  parachains?: [PL_ParaChainConfig];
+  simpleParachains?: [PL_NodesConfig & { id: number }];
+  hrmpChannels?: HrmpChannelsConfig[];
+  types?: any;
+  finalization?: boolean;
 }

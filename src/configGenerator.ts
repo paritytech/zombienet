@@ -1,16 +1,6 @@
-import path, { resolve } from "path";
 import fs from "fs";
+import path, { resolve } from "path";
 
-import {
-  LaunchConfig,
-  ComputedNetwork,
-  Node,
-  Parachain,
-  Override,
-  NodeConfig,
-  envVars,
-} from "./types";
-import { getSha256 } from "./utils/misc";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -24,15 +14,23 @@ import {
   DEFAULT_IMAGE,
   DEFAULT_PORTS,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
-  DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  RPC_WS_PORT,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { getRandomPort } from "./utils/net";
 import { decorate, PARA, whichPara } from "./paras-decorators";
+import {
+  ComputedNetwork,
+  envVars,
+  LaunchConfig,
+  Node,
+  NodeConfig,
+  Override,
+  Parachain,
+} from "./types";
+import { getSha256 } from "./utils/misc";
+import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -72,6 +70,7 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,

@@ -1,6 +1,6 @@
 {
   "name": "@parity/zombienet",
-  "version": "1.2.69",
+  "version": "1.2.71",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Parity Technologies <admin@parity.io>",
@@ -82,6 +82,7 @@
     "@types/tmp": "^0.2.1",
     "pkg": "~5.8.0",
     "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.1.1",
     "typescript": "^4.8.2",
     "yarn": "^1.22.10"
   }

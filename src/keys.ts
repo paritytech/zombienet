@@ -1,12 +1,22 @@
-import fs from "fs";
 import { Keyring } from "@polkadot/api";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
-import { mnemonicGenerate, mnemonicToMiniSecret } from "@polkadot/util-crypto";
+import {
+  cryptoWaitReady,
+  mnemonicGenerate,
+  mnemonicToMiniSecret,
+} from "@polkadot/util-crypto";
+import fs from "fs";
 import { Node } from "./types";
 
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export async function generateKeyFromSeed(seed: string): Promise<any> {
+  await cryptoWaitReady();
+
+  const sr_keyring = new Keyring({ type: "sr25519" });
+  return sr_keyring.createFromUri(`//${seed}`);
 }
 
 export async function generateKeyForNode(nodeName?: string): Promise<any> {

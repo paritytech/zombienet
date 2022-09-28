@@ -1,3 +1,4 @@
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import execa from "execa";
 import path, { resolve } from "path";
 import {
@@ -7,14 +8,13 @@ import {
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
-import { addMinutes, getSha256 } from "../../utils/misc";
-import { writeLocalJsonFile } from "../../utils/fs";
-const fs = require("fs").promises;
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
+import { writeLocalJsonFile } from "../../utils/fs";
+import { addMinutes, getSha256 } from "../../utils/misc";
 import { CreateLogTable } from "../../utils/tableCli";
+import { Client, RunCommandResponse, setClient } from "../client";
+const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
 

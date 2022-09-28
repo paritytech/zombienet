@@ -1,8 +1,8 @@
 import Table, {
+  CrossTableRow,
   GenericTable,
   HorizontalTableRow,
   VerticalTableRow,
-  CrossTableRow,
 } from "cli-table3";
 
 type CharsObj = {

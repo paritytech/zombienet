@@ -1,20 +1,19 @@
+import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import {
-  PROMETHEUS_PORT,
-  FINISH_MAGIC_FILE,
-  TRANSFER_CONTAINER_NAME,
-  RPC_HTTP_PORT,
-  P2P_PORT,
-  DEFAULT_COMMAND,
-  INTROSPECTOR_POD_NAME,
-  RPC_WS_PORT,
-} from "../../constants";
 import { getUniqueName } from "../../configGenerator";
+import {
+  FINISH_MAGIC_FILE,
+  INTROSPECTOR_POD_NAME,
+  P2P_PORT,
+  PROMETHEUS_PORT,
+  RPC_HTTP_PORT,
+  RPC_WS_PORT,
+  TRANSFER_CONTAINER_NAME,
+} from "../../constants";
+import { Network } from "../../network";
 import { Node } from "../../types";
 import { getRandomPort } from "../../utils/net";
 import { getClient } from "../client";
-import { resolve } from "path";
-import { Network } from "../../network";
 
 const fs = require("fs").promises;
 

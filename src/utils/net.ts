@@ -1,5 +1,5 @@
-import { AddressInfo, createServer } from "net";
 import dns from "dns";
+import { AddressInfo, createServer } from "net";
 import os from "os";
 
 export async function getRandomPort(): Promise<number> {

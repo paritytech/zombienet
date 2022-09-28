@@ -1,17 +1,15 @@
-import { ChainSpec } from "../types";
+import { Keyring } from "@polkadot/api";
+import { u8aToHex } from "@polkadot/util";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
 import {
-  getRuntimeConfig,
-  specHaveSessionsKeys as _specHaveSessionsKeys,
   clearAuthorities as _clearAuthorities,
-  getNodeKey as _getNodeKey,
+  getRuntimeConfig,
   readAndParseChainSpec,
+  specHaveSessionsKeys as _specHaveSessionsKeys,
   writeChainSpec,
 } from "../chain-spec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
-import { Node } from "../types";
-import { Keyring } from "@polkadot/api";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { u8aToHex } from "@polkadot/util";
+import { ChainSpec, Node } from "../types";
 import { decorators } from "../utils/colors";
 
 // track 1st staking as default;

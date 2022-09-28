@@ -10,6 +10,7 @@ interface ParaDecorator {
 }
 
 // imports
+import efinity from "./efinity";
 import moonbeam from "./moonbeam";
 import statemint from "./statemint";
 import efinity from "./efinity";
