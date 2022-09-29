@@ -14,7 +14,7 @@ Roadmap Zombienet v2
 ## UI
 - Create UI to create `.feature` (`.zndls`) and `network` files.
 - Create script to translate from polkadot launch config to zombienet network file. [Open PR](https://github.com/paritytech/zombienet/tree/nik-convert-polkadot-launch-config-to-zombienet) (once merged we can remove from roadmap)
-- Improve VSCode extension (grammar/snippets/syntax highlighting) ([repo](https://github.com/paritytech/zombienet-vscode-extension))
+- Improve VSCode extension (grammar/snippets/syntax highlighting/file validations) ([repo](https://github.com/paritytech/zombienet-vscode-extension))
 - Create UI app (desktop) to run zombienet without the need of terminal.
 
 ## Registry
