@@ -5,7 +5,7 @@ import { resolve } from "path";
 import fs from "fs";
 import { Network } from "./network";
 import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
-import { LaunchConfig } from "./types";
+import { LaunchConfig, TestDefinition } from "./types";
 import { run } from "./test-runner";
 import { Command, Option } from "commander";
 import axios from "axios";
@@ -22,6 +22,10 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
 import { convertBytes } from "./utils/misc";
+import { Environment } from "nunjucks";
+import { RelativeLoader } from "./utils/nunjucks-relative-loader";
+import parser from "../crates/parser-wrapper/pkg";
+
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -118,6 +122,16 @@ const latestPolkadotReleaseURL = async (
     throw new Error(err);
   }
 };
+
+function getTestNameFromFileName(testFile: string): string {
+  const fileWithOutExt = testFile.split(".")[0];
+  const fileName: string = fileWithOutExt.split("/").pop() || "";
+  const parts = fileName.split("-");
+  const name = parts[0].match(/\d/)
+    ? parts.slice(1).join(" ")
+    : parts.join(" ");
+  return name;
+}
 
 // Ensure to log the uncaught exceptions
 // to debug the problem, also exit because we don't know
@@ -313,8 +327,26 @@ async function test(
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
+
+  const configBasePath = path.dirname(testFile);
+  const env = new Environment(new RelativeLoader([configBasePath]));
+  const temmplateContent = fs.readFileSync(testFile).toString();
+  const content = env.renderString(temmplateContent, process.env);
+
+  const testName = getTestNameFromFileName(testFile);
+
+  let testDef: TestDefinition;
+  try {
+    testDef = JSON.parse(parser.parse_to_json(content));
+  } catch(e) {
+    console.log(e);
+    process.exit(1);
+  }
+
   await run(
-    testFile,
+    configBasePath,
+    testName,
+    testDef,
     providerToUse,
     inCI,
     opts.spawnConcurrency,
