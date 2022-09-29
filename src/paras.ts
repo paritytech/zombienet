@@ -1,23 +1,16 @@
+import fs from "fs";
+import chainSpecFns from "./chain-spec";
+import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
-import { getUniqueName } from "./configGenerator";
-import { getClient } from "./providers/client";
+import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
+import { getClient } from "./providers/client";
 import { fileMap, Node, Parachain } from "./types";
-import fs from "fs";
-import {
-  addAuraAuthority,
-  addAuthority,
-  changeGenesisConfig,
-  clearAuthorities,
-  readAndParseChainSpec,
-  specHaveSessionsKeys,
-  writeChainSpec,
-} from "./chain-spec";
 import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
@@ -29,6 +22,30 @@ export async function generateParachainFiles(
   chainName: string,
   parachain: Parachain,
 ): Promise<void> {
+  let [
+    addAuraAuthority,
+    addAuthority,
+    changeGenesisConfig,
+    clearAuthorities,
+    readAndParseChainSpec,
+    specHaveSessionsKeys,
+    getNodeKey,
+    addParaCustom,
+    addCollatorSelection,
+    writeChainSpec,
+  ] = decorate(parachain.para, [
+    chainSpecFns.addAuraAuthority,
+    chainSpecFns.addAuthority,
+    chainSpecFns.changeGenesisConfig,
+    chainSpecFns.clearAuthorities,
+    chainSpecFns.readAndParseChainSpec,
+    chainSpecFns.specHaveSessionsKeys,
+    chainSpecFns.getNodeKey,
+    chainSpecFns.addParaCustom,
+    chainSpecFns.addCollatorSelection,
+    chainSpecFns.writeChainSpec,
+  ]);
+
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
   const client = getClient();
@@ -75,37 +92,27 @@ export async function generateParachainFiles(
     writeChainSpec(chainSpecFullPathPlain, plainData);
 
     // clear auths
-    clearAuthorities(chainSpecFullPathPlain);
+    await clearAuthorities(chainSpecFullPathPlain);
 
     // Chain spec customization logic
-    if (specHaveSessionsKeys(plainData)) {
-      const chainSessionType = parachain.chain?.includes("statemint")
-        ? "statemint"
-        : !!["moonbase", "moonriver", "moonbeam"].find((prefix) =>
-            parachain.chain?.includes(prefix),
-          )
-        ? "moonbeam"
-        : undefined;
-      for (const node of parachain.collators) {
-        if (node.validator)
-          await addAuthority(
-            chainSpecFullPathPlain,
-            node,
-            false,
-            chainSessionType,
-          );
-        // Add some extra space until next log
-        console.log("\n");
-      }
-    } else {
-      // use `aura` keys
-      for (const node of parachain.collators) {
-        if (node.validator)
-          await addAuraAuthority(
-            chainSpecFullPathPlain,
-            node.name,
-            node.accounts!,
-          );
+    const addToSession = async (node: Node) => {
+      const key = getNodeKey(node, false);
+      await addAuthority(chainSpecFullPathPlain, node, key);
+    };
+
+    const addToAura = async (node: Node) => {
+      await addAuraAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+    };
+
+    const addAuthFn = specHaveSessionsKeys(plainData)
+      ? addToSession
+      : addToAura;
+
+    for (const node of parachain.collators) {
+      if (node.validator) {
+        await addAuthFn(node);
+        await addCollatorSelection(chainSpecFullPathPlain, node);
+        await addParaCustom(chainSpecFullPathPlain, node);
         // Add some extra space until next log
         console.log("\n");
       }

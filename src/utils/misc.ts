@@ -1,6 +1,5 @@
-import { randomBytes } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { format } from "util";
-import { createHash } from "crypto";
 import { LOKI_URL_FOR_NODE } from "../constants";
 
 export async function sleep(ms: number) {
@@ -99,4 +98,31 @@ export function getLokiUrl(
     .replace(/{{to}}/, to?.toString() || "now");
 
   return loki_url;
+}
+
+export function getRandom(arr: string[], n: number) {
+  let result = new Array(n),
+    len = arr.length,
+    taken = new Array(len);
+  while (n--) {
+    let x = Math.floor(Math.random() * len);
+    result[n] = arr[x in taken ? taken[x] : x];
+    taken[x] = --len in taken ? taken[len] : len;
+  }
+  return result;
+}
+
+export function getFilePathNameExt(filePath: string): {
+  fullPath: string;
+  fileName: string;
+  extension: string;
+} {
+  // Get path, fileName and extension
+  const index = filePath.lastIndexOf("/");
+  const fullPath = filePath.slice(0, index);
+  const fileNameWithExt = filePath.slice(index + 1);
+  const extension = fileNameWithExt.split(".").pop() || "";
+  const [fileName] = fileNameWithExt.split(".");
+
+  return { fullPath, fileName, extension };
 }

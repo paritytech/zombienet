@@ -1,19 +1,18 @@
-import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-import { getClient } from "../client";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
 } from "../../constants";
-import { ComputedNetwork } from "../../types";
 import { sleep } from "../../utils/misc";
+import { getClient } from "../client";
+import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 const debug = require("debug")("zombie::podman::chain-spec");
 
 const fs = require("fs").promises;
 
 export async function setupChainSpec(
   namespace: string,
-  chaninConfig: any,
+  chainConfig: any,
   chainName: string,
   chainFullPath: string,
 ): Promise<any> {
@@ -21,12 +20,12 @@ export async function setupChainSpec(
   // 1: User provide the file (we DON'T expect the raw file)
   // 2: User provide the chainSpecCommand (without the --raw option)
   const client = getClient();
-  if (chaninConfig.chainSpecPath) {
+  if (chainConfig.chainSpecPath) {
     // copy file to temp to use
-    await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
+    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
-    if (chaninConfig.chainSpecCommand) {
-      const { defaultImage, chainSpecCommand } = chaninConfig;
+    if (chainConfig.chainSpecCommand) {
+      const { defaultImage, chainSpecCommand } = chainConfig;
       const plainChainSpecOutputFilePath =
         client.remoteDir +
         "/" +

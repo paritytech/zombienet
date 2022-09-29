@@ -1,10 +1,10 @@
 import fs from "fs";
-import toml from "toml";
+import { Environment } from "nunjucks";
 import path from "path";
 import readline from "readline";
+import toml from "toml";
 import { LaunchConfig } from "../types";
 import { RelativeLoader } from "./nunjucks-relative-loader";
-import { Environment } from "nunjucks";
 
 export function writeLocalJsonFile(
   path: string,

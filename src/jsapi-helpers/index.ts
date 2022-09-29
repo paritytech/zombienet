@@ -1,12 +1,12 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import {
+  chainCustomSectionUpgrade,
   chainUpgradeFromLocalFile,
   chainUpgradeFromUrl,
-  chainCustomSectionUpgrade,
   validateRuntimeCode,
 } from "./chain-upgrade";
-import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
 import { findPatternInSystemEventSubscription } from "./events";
+import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
 
 async function connect(apiUrl: string, types?: any): Promise<ApiPromise> {
   const provider = new WsProvider(apiUrl);

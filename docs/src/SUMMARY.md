@@ -17,6 +17,6 @@
   - [Testing](./cli/testing.md)
 - [Guide](./guide.md)
 - [Network definition spec](./network-definition-spec.md)
-- [Testing DSL spec](./test-dsl-definition-spec.md)
+- [Testing DSL spec](./cli/test-dsl-definition-spec.md)
 - [Development](./development.md)
 - [Acknowledgement](./acknowledgement.md)

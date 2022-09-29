@@ -1,16 +1,6 @@
-import path, { resolve } from "path";
 import fs from "fs";
+import path, { resolve } from "path";
 
-import {
-  LaunchConfig,
-  ComputedNetwork,
-  Node,
-  Parachain,
-  Override,
-  NodeConfig,
-  envVars,
-} from "./types";
-import { getSha256 } from "./utils/misc";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -24,13 +14,22 @@ import {
   DEFAULT_IMAGE,
   DEFAULT_PORTS,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
-  DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
-  RPC_WS_PORT,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
+import { decorate, PARA, whichPara } from "./paras-decorators";
+import {
+  ComputedNetwork,
+  envVars,
+  LaunchConfig,
+  Node,
+  NodeConfig,
+  Override,
+  Parachain,
+} from "./types";
+import { getSha256 } from "./utils/misc";
 import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::config-manager");
@@ -71,6 +70,7 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
@@ -162,6 +162,8 @@ export async function generateNetworkSpec(
 
   if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
+      const para: PARA = whichPara(parachain.chain || "");
+
       let computedStatePath,
         computedStateCommand,
         computedWasmPath,
@@ -178,6 +180,7 @@ export async function generateNetworkSpec(
             parachain.collator,
             parachain.id,
             chainName,
+            para,
             bootnodes,
             Boolean(parachain.cumulus_based),
           ),
@@ -189,6 +192,7 @@ export async function generateNetworkSpec(
             collatorConfig,
             parachain.id,
             chainName,
+            para,
             bootnodes,
             Boolean(parachain.cumulus_based),
           ),
@@ -217,6 +221,7 @@ export async function generateNetworkSpec(
               node,
               parachain.id,
               chainName,
+              para,
               bootnodes,
               Boolean(parachain.cumulus_based),
             ),
@@ -284,6 +289,7 @@ export async function generateNetworkSpec(
       let parachainSetup: Parachain = {
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),
+        para,
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
           parachain.add_to_genesis === undefined
@@ -417,6 +423,7 @@ async function getCollatorNodeFromConfig(
   collatorConfig: NodeConfig,
   para_id: number,
   chain: string, // relay-chain
+  para: PARA,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
 ): Promise<Node> {
@@ -437,7 +444,8 @@ async function getCollatorNodeFromConfig(
     : DEFAULT_ADDER_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
-  const accountsForNode = await generateKeyForNode(collatorName);
+  const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
+  const accountsForNode = await decoratedKeysGenerator(collatorName);
 
   const ports =
     networkSpec.settings.provider !== "native"

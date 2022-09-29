@@ -25,7 +25,10 @@ write tests as smooth as posible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
-supported.
+supported. 
+
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Usage
 
@@ -33,6 +36,9 @@ Zombienet releases are available in `github`. Each one provides an executable fo
 `macos` created with [pkg](https://github.com/vercel/pkg) and allows to run `zombienet` cli
 *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g.
 `k8s`, `podman`).
+
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Status
 
@@ -58,7 +64,9 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 
 Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
-`--provider` flag in the cli.
+`--provider` flag in the cli. `Podman` for `zombienet` is currently only supported for Linux machines.
+This is mostly related to paths and directories used by 
+store configuration (chain-spec) and the data directory.
 
 ### With Native
 
@@ -261,8 +269,8 @@ You can teardown the network (and cleanup the used resources) by terminating the
 The other goal of `zombienet` is to provide a way to perform test/assertions against the spawned
 network, using a set of `natural language expressions` that allow you to make assertions based on
 metrics, logs and some `built-in` function that query the network using `polkadot.js`. Those
-assertions should be defined in a *feature test*, and the `dsl` and format is documented in
-[here](/docs/src/test-dsl-definition-spec.md).
+assertions should be defined in a *.zndsl test*, and the `dsl` (**D**omain **S**pecific **L**anguage) and format is documented in
+[here](/docs/book/cli/test-dsl-definition-spec.md).
 
 The following is an small example to spawn a network (using the previous `simple network
 definition`) and assert that:

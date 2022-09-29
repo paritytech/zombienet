@@ -1,19 +1,19 @@
+import { spawn } from "child_process";
 import execa from "execa";
+import { copy as fseCopy } from "fs-extra";
+import path from "path";
+import YAML from "yaml";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
   P2P_PORT,
 } from "../../constants";
-import { writeLocalJsonFile } from "../../utils/fs";
-const fs = require("fs");
-import { copy as fseCopy } from "fs-extra";
 import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
 import { decorators } from "../../utils/colors";
-import YAML from "yaml";
-import { spawn } from "child_process";
-import path from "path";
+import { writeLocalJsonFile } from "../../utils/fs";
 import { CreateLogTable } from "../../utils/tableCli";
+import { Client, RunCommandResponse, setClient } from "../client";
+const fs = require("fs");
 
 const debug = require("debug")("zombie::native::client");
 
