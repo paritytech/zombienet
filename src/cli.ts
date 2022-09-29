@@ -24,7 +24,8 @@ import { decorators } from "./utils/colors";
 import { convertBytes } from "./utils/misc";
 import { Environment } from "nunjucks";
 import { RelativeLoader } from "./utils/nunjucks-relative-loader";
-import parser from "../crates/parser-wrapper/pkg";
+
+import parser from "@parity/zombienet-dsl-parser-wrapper";
 
 
 interface OptIf {

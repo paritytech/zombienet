@@ -914,15 +914,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "parser-wrapper"
-version = "0.1.0"
-dependencies = [
- "parser",
- "serde_json",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1976,4 +1967,13 @@ dependencies = [
  "tokio-tungstenite 0.16.1",
  "tracing",
  "url",
+]
+
+[[package]]
+name = "zombienet-dsl-parser-wrapper"
+version = "0.1.0"
+dependencies = [
+ "parser",
+ "serde_json",
+ "wasm-bindgen",
 ]
