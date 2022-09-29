@@ -1,27 +1,23 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import minimatch from "minimatch";
 import axios from "axios";
+import minimatch from "minimatch";
 
-import {
-  Metrics,
-  fetchMetrics,
-  getMetricName,
-  getHistogramBuckets,
-  BucketHash,
-} from "./metrics";
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   LOCALHOST,
   RPC_WS_PORT,
   WS_URI_PATTERN,
 } from "./constants";
+import {
+  BucketHash,
+  fetchMetrics,
+  getHistogramBuckets,
+  getMetricName,
+  Metrics,
+} from "./metrics";
 import { getClient } from "./providers/client";
 
-import {
-  paraGetBlockHeight,
-  paraIsRegistered,
-  validateRuntimeCode,
-} from "./jsapi-helpers";
+import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
 import { decorators } from "./utils/colors";
 
 const debug = require("debug")("zombie::network-node");

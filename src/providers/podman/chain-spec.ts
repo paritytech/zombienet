@@ -1,53 +1,52 @@
-import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-import { getClient } from "../client";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
 } from "../../constants";
-import { ComputedNetwork } from "../../types";
 import { sleep } from "../../utils/misc";
+import { getClient } from "../client";
+import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 const debug = require("debug")("zombie::podman::chain-spec");
 
 const fs = require("fs").promises;
 
 export async function setupChainSpec(
   namespace: string,
-  chaninConfig: any,
+  chainConfig: any,
   chainName: string,
   chainFullPath: string,
 ): Promise<any> {
   // We have two options to get the chain-spec file, neither should use the `raw` file/argument
-  // 1: User provide the chainSpecCommand (without the --raw option)
-  // 2: User provide the file (we DON'T expect the raw file)
+  // 1: User provide the file (we DON'T expect the raw file)
+  // 2: User provide the chainSpecCommand (without the --raw option)
   const client = getClient();
-  if (chaninConfig.chainSpecCommand) {
-    const { defaultImage, chainSpecCommand } = chaninConfig;
-    const plainChainSpecOutputFilePath =
-      client.remoteDir +
-      "/" +
-      DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
-    // set output of command
-    const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
-    const node = await createTempNodeDef(
-      "temp",
-      defaultImage,
-      chainName,
-      fullCommand,
-    );
-
-    const podDef = await genNodeDef(namespace, node);
-    const podName = podDef.metadata.name;
-    await client.spawnFromDef(podDef);
-
-    debug("copy file from pod");
-
-    const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
-    await fs.copyFile(podChainPath, chainFullPath);
+  if (chainConfig.chainSpecPath) {
+    // copy file to temp to use
+    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
-    if (chaninConfig.chainSpecPath) {
-      // copy file to temp to use
-      await fs.copyFile(chaninConfig.chainSpecPath, chainFullPath);
+    if (chainConfig.chainSpecCommand) {
+      const { defaultImage, chainSpecCommand } = chainConfig;
+      const plainChainSpecOutputFilePath =
+        client.remoteDir +
+        "/" +
+        DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
+      // set output of command
+      const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
+      const node = await createTempNodeDef(
+        "temp",
+        defaultImage,
+        chainName,
+        fullCommand,
+      );
+
+      const podDef = await genNodeDef(namespace, node);
+      const podName = podDef.metadata.name;
+      await client.spawnFromDef(podDef);
+
+      debug("copy file from pod");
+
+      const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
+      await fs.copyFile(podChainPath, chainFullPath);
     }
   }
 }

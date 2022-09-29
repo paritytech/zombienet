@@ -1,10 +1,10 @@
-import { NativeClient, initClient } from "./nativeClient";
+import { getChainSpecRaw, setupChainSpec } from "./chain-spec";
 import {
   genBootnodeDef,
   genNodeDef,
   replaceNetworkRef,
 } from "./dynResourceDefinition";
-import { setupChainSpec, getChainSpecRaw } from "./chain-spec";
+import { initClient, NativeClient } from "./nativeClient";
 
 export const provider = {
   NativeClient,

@@ -1,18 +1,25 @@
 #!/usr/bin/env node
 
-import { start } from "./orchestrator";
-import { resolve } from "path";
-import fs from "fs";
-import { Network } from "./network";
-import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
-import { LaunchConfig } from "./types";
-import { run } from "./test-runner";
-import { Command, Option } from "commander";
 import axios from "axios";
+import { Command, Option } from "commander";
+import fs from "fs";
+import path, { resolve } from "path";
 import progress from "progress";
-import path from "path";
+import { Network } from "./network";
+import { start } from "./orchestrator";
+import { run } from "./test-runner";
+import {
+  LaunchConfig,
+  NodeConfig,
+  ParachainConfig,
+  PL_ConfigType,
+  PolkadotLaunchConfig,
+} from "./types";
+import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
+
 import {
   AVAILABLE_PROVIDERS,
+  DEFAULT_BALANCE,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_PROVIDER,
 } from "./constants";
@@ -21,7 +28,7 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
-import { convertBytes } from "./utils/misc";
+import { convertBytes, getFilePathNameExt } from "./utils/misc";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -119,6 +126,109 @@ const latestPolkadotReleaseURL = async (
   }
 };
 
+// Convert functions
+// Read the input file
+async function readInputFile(
+  ext: string,
+  fPath: string,
+): Promise<PL_ConfigType> {
+  let json: object;
+  if (ext === "json" || ext === "js") {
+    json =
+      ext === "json"
+        ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
+        : await import(path.resolve(fPath));
+  } else {
+    throw Error("No valid extension was found.");
+  }
+  return json;
+}
+
+async function convertInput(filePath: string) {
+  const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
+
+  const convertedJson = await readInputFile(extension, filePath);
+
+  const { relaychain, parachains, simpleParachains, hrmpChannels, types } =
+    convertedJson;
+
+  let jsonOutput: PolkadotLaunchConfig;
+  const nodes: NodeConfig[] = [];
+  const paras: ParachainConfig[] = [];
+  let collators: NodeConfig[] = [];
+
+  const DEFAULT_NODE_VALUES = {
+    validator: true,
+    invulnerable: true,
+    balance: DEFAULT_BALANCE,
+  };
+
+  parachains &&
+    parachains.forEach((parachain) => {
+      collators = [];
+      parachain.nodes.forEach((n) => {
+        collators.push({
+          name: n.name,
+          command: "adder-collator",
+          ...DEFAULT_NODE_VALUES,
+        });
+      });
+      paras.push({
+        id: parachain.id,
+        collators,
+      });
+    });
+
+  collators = [];
+
+  simpleParachains &&
+    simpleParachains.forEach((sp) => {
+      collators.push({
+        name: sp.name,
+        command: "adder-collator",
+        ...DEFAULT_NODE_VALUES,
+      });
+      paras.push({
+        id: sp.id,
+        collators,
+      });
+    });
+
+  if (relaychain?.nodes) {
+    relaychain.nodes.forEach((n) => {
+      nodes.push({
+        name: `"${n.name}"`,
+        ...DEFAULT_NODE_VALUES,
+      });
+    });
+  }
+
+  jsonOutput = {
+    relaychain: {
+      default_image: "docker.io/paritypr/polkadot-debug:master",
+      default_command: "polkadot",
+      default_args: ["-lparachain=debug"],
+      chain: relaychain?.chain || "",
+      nodes,
+      genesis: relaychain?.genesis,
+    },
+    types,
+    hrmp_channels: hrmpChannels || [],
+    parachains: paras,
+  };
+
+  fs.writeFile(
+    `${fullPath}/${fileName}-zombienet.json`,
+    JSON.stringify(jsonOutput),
+    (error: any) => {
+      if (error) throw error;
+    },
+  );
+  console.log(
+    `Converted JSON config exists now under: ${fullPath}/${fileName}-zombienet.json`,
+  );
+}
+
 // Ensure to log the uncaught exceptions
 // to debug the problem, also exit because we don't know
 // what happens there.
@@ -202,7 +312,7 @@ program
 program
   .command("test")
   .description("Run tests on the network defined")
-  .argument("<testFile>", "Feature file describing the tests")
+  .argument("<testFile>", "ZNDSL file (.zndsl) describing the tests")
   .argument(
     "[runningNetworkSpec]",
     "Path to the network spec json, for using a running network for running the test",
@@ -221,6 +331,17 @@ program
     )}`,
   )
   .action(setup);
+
+program
+  .command("convert")
+  .description(
+    "Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration",
+  )
+  .argument(
+    "<filePath>",
+    `Expecting 1 mandatory param which is the path of the polkadot-lauch configuration file (could be either a .js or .json file).`,
+  )
+  .action(convert);
 
 program
   .command("version")
@@ -393,6 +514,21 @@ async function setup(params: any) {
   }
   downloadBinaries(params);
   return;
+}
+
+async function convert(param: string) {
+  try {
+    const filePath = param;
+
+    if (!filePath) {
+      throw Error("Path of configuration file was not provided");
+    }
+
+    // Read through the JSON and write to stream sample
+    await convertInput(filePath);
+  } catch (err) {
+    console.log("error", err);
+  }
 }
 
 program.parse(process.argv);

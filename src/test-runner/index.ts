@@ -1,20 +1,20 @@
 const chai = require("chai");
-import Mocha from "mocha";
-import fs from "fs";
-import path from "path";
 import { ApiPromise, Keyring } from "@polkadot/api";
-const utilCrypto = require("@polkadot/util-crypto");
-import { LaunchConfig } from "../types";
-import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc";
-import { readNetworkConfig } from "../utils/fs";
-import { Network, rebuildNetwork } from "../network";
-import { decorators } from "../utils/colors";
+import fs from "fs";
+import minimatch from "minimatch";
+import Mocha from "mocha";
+import path from "path";
 import {
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
 } from "../constants";
-import minimatch from "minimatch";
+import { Network, rebuildNetwork } from "../network";
 import { Providers } from "../providers/";
+import { LaunchConfig } from "../types";
+import { decorators } from "../utils/colors";
+import { readNetworkConfig } from "../utils/fs";
+import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc";
+const utilCrypto = require("@polkadot/util-crypto");
 
 import zombie from "../";
 const {
