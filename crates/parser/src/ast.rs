@@ -1,8 +1,8 @@
 use std::time::Duration;
-
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Copy, Clone)]
 pub enum Operator {
     Equal,
     NotEqual,

@@ -99,7 +99,7 @@ fn parse_match_pattern_rule(
         pair
     };
 
-    let pattern = pattern_pair.as_str().to_owned();
+    let pattern = pattern_pair.as_str().trim_matches('"').to_owned();
     let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
         Some(parse_within(within_rule)?)
     } else {
@@ -177,7 +177,8 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
     };
 
     for record in top_level_rule.into_inner() {
-        let original_line = record.as_str().to_owned();
+        let original_line = record.as_str().trim_end().to_string();
+
         match record.as_rule() {
             Rule::description => {
                 description = Some(record.into_inner().as_str().to_owned());
