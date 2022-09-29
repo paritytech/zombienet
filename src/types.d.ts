@@ -273,27 +273,27 @@ export interface TestDefinition {
 }
 
 export interface Assertion {
-  original_line: string,
+  original_line: string;
   parsed: {
-    fn: string,
-    args: FnArgs
-  }
+    fn: string;
+    args: FnArgs;
+  };
 }
 
 export interface FnArgs {
-  node_name?: string,
-  para_id?: number,
-  timeout?: number,
-  target_value?: number,
-  metric_name?: string,
-  buckets?: string,
-  span_id?: string,
-  op?: string,
-  pattern?: string,
-  match_type?: string,
-  file_path?: string,
-  custom_args?: string,
-  file_or_uri?: string,
+  node_name?: string;
+  para_id?: number;
+  timeout?: number;
+  target_value?: number;
+  metric_name?: string;
+  buckets?: string;
+  span_id?: string;
+  op?: string;
+  pattern?: string;
+  match_type?: string;
+  file_path?: string;
+  custom_args?: string;
+  file_or_uri?: string;
 }
 
 // Config interfaces

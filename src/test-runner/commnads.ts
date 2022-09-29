@@ -8,7 +8,7 @@ import { sleep } from "../utils/misc";
 const { expect } = chai;
 
 const Pause = (args: FnArgs) => {
-  const {node_name} = args;
+  const { node_name } = args;
   return async (network: Network, backchannelMap: BackchannelMap) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(nodes.map((node) => node.pause()));
@@ -17,10 +17,10 @@ const Pause = (args: FnArgs) => {
       expect(value).to.be.ok;
     }
   };
-}
+};
 
 const Resume = (args: FnArgs) => {
-  const {node_name} = args;
+  const { node_name } = args;
   return async (network: Network, backchannelMap: BackchannelMap) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(nodes.map((node) => node.resume()));
@@ -29,10 +29,9 @@ const Resume = (args: FnArgs) => {
       expect(value).to.be.ok;
     }
   };
-
-}
+};
 const Restart = (args: FnArgs) => {
-  const {node_name, timeout} = args;
+  const { node_name, timeout } = args;
   return async (network: Network, backchannelMap: BackchannelMap) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
@@ -43,18 +42,18 @@ const Restart = (args: FnArgs) => {
       expect(value).to.be.ok;
     }
   };
-}
+};
 const Sleep = (args: FnArgs) => {
-  const {timeout} = args;
+  const { timeout } = args;
   return async () => {
     await sleep(timeout! * 1000);
     expect(true).to.be.ok;
   };
-}
+};
 
 export default {
-    Pause,
-    Restart,
-    Resume,
-    Sleep
-}
+  Pause,
+  Restart,
+  Resume,
+  Sleep,
+};

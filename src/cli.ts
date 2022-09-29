@@ -131,7 +131,6 @@ const latestPolkadotReleaseURL = async (
   }
 };
 
-
 function getTestNameFromFileName(testFile: string): string {
   const fileWithOutExt = testFile.split(".")[0];
   const fileName: string = fileWithOutExt.split("/").pop() || "";
@@ -461,7 +460,7 @@ async function test(
   let testDef: TestDefinition;
   try {
     testDef = JSON.parse(parser.parse_to_json(content));
-  } catch(e) {
+  } catch (e) {
     console.log(e);
     process.exit(1);
   }

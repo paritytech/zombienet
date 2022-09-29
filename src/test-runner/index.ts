@@ -9,14 +9,10 @@ import { getLokiUrl, isValidHttpUrl, sleep } from "../utils/misc";
 import { readNetworkConfig } from "../utils/fs";
 import { Network, rebuildNetwork } from "../network";
 import { decorators } from "../utils/colors";
-import {
-  DEFAULT_GLOBAL_TIMEOUT,
-} from "../constants";
+import { DEFAULT_GLOBAL_TIMEOUT } from "../constants";
 import { Providers } from "../providers/";
 import assertions from "./assertions";
 import commnads from "./commnads";
-
-
 
 import zombie from "../";
 
@@ -24,7 +20,6 @@ const debug = require("debug")("zombie::test-runner");
 
 const { Test, Suite } = Mocha;
 const mocha = new Mocha();
-
 
 export interface BackchannelMap {
   [propertyName: string]: any;
@@ -46,7 +41,9 @@ export async function run(
   if (testDef.description) suiteName += `( ${testDef.description} )`;
 
   // read network file
-  let networkConfigFilePath = fs.existsSync(testDef.network) ? testDef.network : path.resolve(configBasePath, testDef.network);
+  let networkConfigFilePath = fs.existsSync(testDef.network)
+    ? testDef.network
+    : path.resolve(configBasePath, testDef.network);
   const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
 
   // set the provider
@@ -215,8 +212,10 @@ export async function run(
     let generator = fns[assertion.parsed.fn as keyof Fns];
     debug(generator);
 
-    if(! generator) {
-      console.log(`\n\t ${decorators.red("Invalid fn generator:" + assertion.parsed.fn)}`);
+    if (!generator) {
+      console.log(
+        `\n\t ${decorators.red("Invalid fn generator:" + assertion.parsed.fn)}`,
+      );
       process.exit(1);
     }
 
@@ -264,8 +263,8 @@ const exitMocha = (code: number) => {
 };
 
 // Generators registry
-type Fns = { [key:string]: Function };
+type Fns = { [key: string]: Function };
 const fns: Fns = {
   ...assertions,
-  ...commnads
-}
+  ...commnads,
+};
