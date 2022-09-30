@@ -1,6 +1,5 @@
-use std::time::Duration;
 use serde::{Deserialize, Serialize};
-
+use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Copy, Clone)]
 pub enum Operator {
