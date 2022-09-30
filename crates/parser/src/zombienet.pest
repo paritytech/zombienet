@@ -39,7 +39,7 @@ op_lte       = { "<=" }
 op_gte       = { ">=" | "is at least" | "at least" }
 op_lt        = { "<" | "is lower than" }
 op_gt        = { ">" | "is greater than" | "greater than" }
-op_eq        = { "==" | "=" | "is equals" | "is equals to" | "is" }
+op_eq        = { "==" | "=" | "equals" | "is equal to" | "is" }
 op_ineq      = { "!=" }
 comparison = { (op_lte | op_gte | op_gt | op_lt | op_eq | op_ineq) ~ int+ }
 

@@ -1,4 +1,3 @@
-import chai from "chai";
 import { ApiPromise, Keyring } from "@polkadot/api";
 const utilCrypto = require("@polkadot/util-crypto");
 import minimatch from "minimatch";
@@ -25,8 +24,16 @@ function toChaiComparator(op: string): string {
   return op.charAt(0).toLocaleLowerCase() + op.slice(1);
 }
 
-const IsUp = (args: FnArgs) => {
-  const { node_name, timeout } = args;
+const comparators: {[key:string] : Function} = {
+  Equal: assert.equal,
+  NotEqual: assert.notEqual,
+  IsAbove: assert.isAbove,
+  IsAtLeast: assert.isAtLeast,
+  IsBelow: assert.isBelow,
+  IsAtMost: assert.isAtMost
+}
+
+const IsUp = ({ node_name, timeout }: FnArgs) => {
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
@@ -39,26 +46,24 @@ const IsUp = (args: FnArgs) => {
   };
 };
 
-const Report = (args: FnArgs) => {
-  const { node_name, metric_name, target_value, op, timeout } = args;
-  const comparatorFn = toChaiComparator(op!);
+const Report = ({ node_name, metric_name, target_value, op, timeout }: FnArgs) => {
+  const comparatorFn = comparators[op!]
   return async (network: Network, backchannelMap: BackchannelMap) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
       nodes.map((node) =>
-        node.getMetric(metric_name!, comparatorFn, target_value!, timeout),
+        node.getMetric(metric_name!, toChaiComparator(op!), target_value!, timeout),
       ),
     );
 
     for (const value of results) {
-      assert[comparatorFn](value, target_value!);
+      comparatorFn(value as number, target_value as number);
     }
   };
 };
 
-const Histogram = (args: FnArgs) => {
-  const { node_name, metric_name, target_value, buckets, op, timeout } = args;
-  const comparatorFn = toChaiComparator(op!);
+const Histogram = ({ node_name, metric_name, target_value, buckets, op, timeout }: FnArgs) => {
+  const comparatorFn = comparators[op!]
   return async (network: Network, backchannelMap: BackchannelMap) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
@@ -73,14 +78,12 @@ const Histogram = (args: FnArgs) => {
     );
 
     for (const value of results) {
-      assert[comparatorFn](value, target_value);
+      comparatorFn(value, target_value);
     }
   };
 };
 
-const Trace = (args: FnArgs) => {
-  const { node_name, span_id, pattern, target_value, buckets, op, timeout } =
-    args;
+const Trace = ({ node_name, span_id, pattern }: FnArgs) => {
   const spanNames = pattern!
     .split(",")
     .map((x) => x.replaceAll('"', "").trim());
@@ -98,8 +101,7 @@ const Trace = (args: FnArgs) => {
   };
 };
 
-const LogMatch = (args: FnArgs) => {
-  const { node_name, pattern, match_type, timeout } = args;
+const LogMatch = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   const isGlob = (match_type && match_type.trim() === "glob") || false;
 
   return async (network: Network) => {
@@ -113,8 +115,7 @@ const LogMatch = (args: FnArgs) => {
   };
 };
 
-const SystemEvent = (args: FnArgs) => {
-  const { node_name, pattern, match_type, timeout } = args;
+const SystemEvent = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   const isGlob = (match_type && match_type.trim() === "glob") || false;
 
   return async (network: Network) => {
@@ -133,10 +134,9 @@ const SystemEvent = (args: FnArgs) => {
 };
 
 // Customs
-const CustomJs = (args: FnArgs) => {
-  let { node_name, file_path, custom_args, op, target_value, timeout } = args;
+const CustomJs = ({ node_name, file_path, custom_args, op, target_value, timeout }: FnArgs) => {
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
-  const comparatorFn = toChaiComparator(op!);
+  const comparatorFn = comparators[op!];
 
   return async (
     network: Network,
@@ -225,7 +225,7 @@ const CustomJs = (args: FnArgs) => {
 
     if (target_value) {
       for (const value of values) {
-        assert[comparatorFn](value, target_value);
+        comparatorFn(value, target_value);
       }
     } else {
       // test don't have matching output
@@ -234,10 +234,9 @@ const CustomJs = (args: FnArgs) => {
   };
 };
 
-const CustomSh = (args: FnArgs) => {
-  let { node_name, file_path, custom_args, op, target_value, timeout } = args;
+const CustomSh = ({ node_name, file_path, custom_args, op, target_value, timeout }: FnArgs) => {
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
-  const comparatorFn = toChaiComparator(op!);
+  const comparatorFn = comparators[op!];
 
   return async (
     network: Network,
@@ -265,7 +264,7 @@ const CustomSh = (args: FnArgs) => {
 
       if (comparatorFn && target_value !== undefined) {
         for (const value of results) {
-          assert[comparatorFn](value, target_value);
+          comparatorFn(value, target_value);
         }
       }
 
@@ -282,8 +281,7 @@ const CustomSh = (args: FnArgs) => {
 };
 
 // Paras
-const ParaIsRegistered = (args: FnArgs) => {
-  const { node_name, para_id, timeout } = args;
+const ParaIsRegistered = ({ node_name, para_id, timeout }: FnArgs) => {
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
@@ -295,11 +293,10 @@ const ParaIsRegistered = (args: FnArgs) => {
   };
 };
 
-const ParaBlockHeight = (args: FnArgs) => {
-  const { node_name, para_id, target_value, op, timeout } = args;
+const ParaBlockHeight = ({ node_name, para_id, target_value, op, timeout }: FnArgs) => {
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
-    const comparatorFn = toChaiComparator(op!);
+    const comparatorFn = comparators[op!];
 
     const results = await Promise.all(
       nodes.map((node) =>
@@ -307,14 +304,12 @@ const ParaBlockHeight = (args: FnArgs) => {
       ),
     );
     for (const value of results) {
-      assert[comparatorFn](value, target_value!);
+      comparatorFn(value, target_value!);
     }
   };
 };
 
-const ParaRuntimeUpgrade = (args: FnArgs) => {
-  const { node_name, para_id, file_or_uri, timeout } = args;
-
+const ParaRuntimeUpgrade = ({ node_name, para_id, file_or_uri, timeout }: FnArgs) => {
   return async (
     network: Network,
     backchannelMap: BackchannelMap,
@@ -343,9 +338,7 @@ const ParaRuntimeUpgrade = (args: FnArgs) => {
   };
 };
 
-const ParaRuntimeDummyUpgrade = (args: FnArgs) => {
-  const { node_name, para_id, timeout } = args;
-
+const ParaRuntimeDummyUpgrade = ({ node_name, para_id, timeout }: FnArgs) => {
   return async (
     network: Network,
     backchannelMap: BackchannelMap,
