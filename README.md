@@ -174,7 +174,7 @@ id = 100
 Then you can spawn the network by running the following command:
 
 ```bash
-./zombienet-macos spawn examples/0001-small-network.toml --provider native
+./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
 
 You can follow the output of the `steps` to spawn the network and once the network is launched a
