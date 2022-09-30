@@ -1,4 +1,4 @@
-const chai = require("chai");
+import chai from "chai";
 import { ApiPromise, Keyring } from "@polkadot/api";
 const utilCrypto = require("@polkadot/util-crypto");
 import minimatch from "minimatch";
