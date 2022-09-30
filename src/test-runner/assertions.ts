@@ -15,7 +15,7 @@ import {
 } from "../jsapi-helpers";
 import { Network } from "../network";
 import { FnArgs } from "../types";
-const { assert, expect } = chai;
+import { assert, expect } from "chai";
 import { JSDOM } from "jsdom";
 import { decorators } from "../utils/colors";
 import { isValidHttpUrl } from "../utils/misc";
