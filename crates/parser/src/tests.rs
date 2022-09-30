@@ -186,7 +186,7 @@ fn log_match_parse_ok() {
                   "args": {
                     "node_name": "alice",
                     "match_type": "regex",
-                    "pattern": "\"Imported #12\"",
+                    "pattern": "Imported #12",
                     "timeout": 20
                   }
                 }
@@ -214,7 +214,7 @@ fn log_match_parse_glob_ok() {
                   "args": {
                     "node_name": "alice",
                     "match_type": "glob",
-                    "pattern": "\"Imported #12\"",
+                    "pattern": "Imported #12",
                     "timeout": 20
                   }
                 }
@@ -242,7 +242,7 @@ fn log_match_glob_parse_ok() {
                   "args": {
                     "node_name": "alice",
                     "match_type": "glob",
-                    "pattern": "\"*rted #1*\"",
+                    "pattern": "*rted #1*",
                     "timeout": 10
                   }
                 }
@@ -298,7 +298,7 @@ fn system_event_parse_ok() {
                   "args": {
                     "node_name": "alice",
                     "match_type": "regex",
-                    "pattern": "\"A candidate was included\"",
+                    "pattern": "A candidate was included",
                     "timeout": 20
                   }
                 }
