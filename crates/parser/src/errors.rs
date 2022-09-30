@@ -7,7 +7,7 @@ pub enum ParserError {
     InvalidRule(String),
     #[error("Missing fields: {0}")]
     MissingFields(String),
-    #[error("Serialization Error")]
+    #[error("Serialization error")]
     SerializationError,
     #[error("Unexpected rule: \n {0}")]
     Unexpected(String),
