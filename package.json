@@ -1,5 +1,5 @@
 {
-  "name": "@parity/zombienet",
+  "name": "zombienet",
   "version": "1.2.71",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

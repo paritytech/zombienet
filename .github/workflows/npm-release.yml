@@ -1,0 +1,29 @@
+name: Zombienet NPM Release
+on:
+  push:
+    branches: [nik-automate-npm-release]
+jobs:
+  publish:
+    name: Build & Publish to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install
+      - name: Retrieve Version
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get_tag_version
+        run: echo ::set-output name=TAG_VERSION::${GITHUB_REF/refs\/tags\//}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Build NPM Package
+        run: deno run -A --no-check=remote ./_tasks/build_npm_pkg.ts ${{steps.get_tag_version.outputs.TAG_VERSION}}
+      - name: Publish NPM Package
+        if: startsWith(github.ref, 'refs/tags/')
+        # env:
+        #   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: cd dist && npm publish --unsafe-perm --dry-run
