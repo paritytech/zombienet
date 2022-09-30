@@ -1,3 +1,4 @@
 [workspace]
 
-members = [ "crates/*", "backchannel", "backchannel-cli" ]
+members = [ "crates/*", "backchannel" ]
+exclude = ["backchannel-cli"]
