@@ -10,11 +10,11 @@ import { start } from "./orchestrator";
 import { run } from "./test-runner";
 import {
   LaunchConfig,
-  TestDefinition,
   NodeConfig,
   ParachainConfig,
   PL_ConfigType,
   PolkadotLaunchConfig,
+  TestDefinition,
 } from "./types";
 import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 
@@ -30,10 +30,10 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
 
-import { convertBytes, getFilePathNameExt } from "./utils/misc";
-import { Environment } from "nunjucks";
-import { RelativeLoader } from "./utils/nunjucks-relative-loader";
 import parser from "@parity/zombienet-dsl-parser-wrapper";
+import { Environment } from "nunjucks";
+import { convertBytes, getFilePathNameExt } from "./utils/misc";
+import { RelativeLoader } from "./utils/nunjucks-relative-loader";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
