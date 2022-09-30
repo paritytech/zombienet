@@ -1971,7 +1971,7 @@ dependencies = [
 
 [[package]]
 name = "zombienet-dsl-parser-wrapper"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "parser",
  "serde_json",
