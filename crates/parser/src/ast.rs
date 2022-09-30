@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use std::time::Duration;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Copy, Clone)]
@@ -60,7 +61,7 @@ pub enum AssertionKind {
         metric_name: String,
         op: Operator,
         target_value: u64,
-        buckets: String,
+        buckets: Vec<String>,
         #[serde(with = "optional_timeout")]
         timeout: Option<Duration>,
     },
@@ -95,7 +96,7 @@ pub enum AssertionKind {
     },
     CustomJs {
         node_name: NodeName,
-        file_path: String,
+        file_path: PathBuf,
         custom_args: Option<String>,
         #[serde(flatten)]
         cmp: Option<Comparison>,
@@ -104,7 +105,7 @@ pub enum AssertionKind {
     },
     CustomSh {
         node_name: NodeName,
-        file_path: String,
+        file_path: PathBuf,
         custom_args: Option<String>,
         #[serde(flatten)]
         cmp: Option<Comparison>,

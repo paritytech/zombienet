@@ -4,6 +4,32 @@ const NETWORK: &str = "Network: ./a.toml";
 const CREDS: &str = "Creds: config";
 
 #[test]
+fn restart_parse_ok() {
+    let line: &str = "alice: restart after 60 seconds";
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: restart after 60 seconds",
+                "parsed": {
+                    "fn": "Restart",
+                    "args": {
+                        "node_name": "alice",
+                        "after": 60
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn is_up_parse_ok() {
     let line: &str = "alice: is up within 5 secs";
     let data = r#"{
@@ -73,7 +99,7 @@ fn histogram_parse_ok() {
                         "metric_name": "polkadot_pvf_preparation_time",
                         "op": "IsAtLeast",
                         "target_value": 1,
-                        "buckets":  "[\"0.1\", \"0.5\", \"1\", \"2\", \"3\", \"10\"]",
+                        "buckets": ["0.1", "0.5", "1", "2", "3", "10"],
                         "timeout": 10
                     }
                 }

@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::time::Duration;
 
 use pest::{
@@ -112,7 +113,10 @@ fn parse_match_pattern_rule(
 fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<AssertionKind, ParserError> {
     let mut pairs = record.into_inner();
     let node_name = parse_name(get_pair(&mut pairs, "name")?)?;
-    let file_path = get_pair(&mut pairs, "file_path")?.as_str().to_owned();
+    let file_path_str = get_pair(&mut pairs, "file_path")?.as_str();
+    let file_path: PathBuf = file_path_str
+        .try_into()
+        .map_err(|_| errors::ParserError::ParseError(format!("Invalid path: {}", file_path_str)))?;
 
     let mut args: Option<String> = None;
     let mut cmp: Option<Comparison> = None;
@@ -333,7 +337,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                         return Err(ParserError::UnreachableRule(pairs.as_str().to_string()));
                     }
                 };
-                let buckets = get_pair(&mut pairs, "buckets")?.as_str().to_string();
+                let buckets = get_pair(&mut pairs, "buckets")?
+                    .as_str()
+                    .trim_matches(|x| x == '[' || x == ']')
+                    .split(',')
+                    .map(|x| x.trim().trim_matches('"').to_string())
+                    .collect();
 
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
@@ -508,11 +517,9 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 let name = parse_name(get_pair(&mut pairs, "name")?)?;
 
                 let after: Option<Duration> = if let Some(after_rule) = pairs.next() {
-                    Some(Duration::from_secs(
-                        after_rule.into_inner().as_str().parse().map_err(|_| {
-                            ParserError::ParseError(String::from("Invalid after value"))
-                        })?,
-                    ))
+                    Some(Duration::from_secs(after_rule.as_str().parse().map_err(
+                        |_| ParserError::ParseError(format!("Invalid after value, {}", after_rule)),
+                    )?))
                 } else {
                     None
                 };
