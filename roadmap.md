@@ -13,7 +13,7 @@ Roadmap Zombienet v2
 - Add more teams (wip)
 
 ## UI
-- Create UI to create `.feature` (`.zndls`) and `network` files.
+- Create UI to create `.zndls` and `network` files.
 - Improve VSCode extension (grammar/snippets/syntax highlighting/file validations) ([repo](https://github.com/paritytech/zombienet-vscode-extension))
 - Create UI app (desktop) to run zombienet without the need of terminal.
 
