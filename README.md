@@ -177,6 +177,8 @@ Then you can spawn the network by running the following command:
 ./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
 
+Note that the command expects two binaries `polkadot` and `adder-collator` to be installed on your system. See further down for how to get them.
+
 You can follow the output of the `steps` to spawn the network and once the network is launched a
 message with the `node`s information like this one is shown
 
@@ -341,6 +343,18 @@ At the end of the download, the `setup` script will provide a command to run in 
 ```bash
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
 ```
+
+### Build adder-collator (needed for running examples with native provider)
+
+You can build it from source like this
+
+```bash
+git clone git@github.com:paritytech/polkadot
+cd polkadot/parachain/test-parachains/adder/collator/
+cargo build
+mv ../../../../target/debug/adder-collator /home/<user>/zombienet/dist
+```
+
 
 ### Using Zombienet
 
