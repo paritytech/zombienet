@@ -56,6 +56,32 @@ fn is_up_parse_ok() {
 }
 
 #[test]
+fn is_up_without_timeout_parse_ok() {
+    let line: &str = "alice: is up";
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: is up",
+                "parsed": {
+                    "fn": "IsUp",
+                    "args": {
+                        "node_name": "alice",
+                        "timeout": null
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn para_is_registered_parse_ok() {
     let line: &str = "alice: parachain 100 is registered within 225 seconds";
     let data = r#"{

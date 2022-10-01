@@ -34,6 +34,7 @@ const comparators: { [key: string]: Function } = {
 };
 
 const IsUp = ({ node_name, timeout }: FnArgs) => {
+  timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
@@ -62,7 +63,7 @@ const Report = ({
           metric_name!,
           toChaiComparator(op!),
           target_value!,
-          timeout,
+          timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
         ),
       ),
     );
@@ -88,9 +89,9 @@ const Histogram = ({
       nodes.map((node) =>
         node.getHistogramSamplesInBuckets(
           metric_name!,
-          [buckets!],
+          buckets!,
           target_value!,
-          timeout,
+          timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
         ),
       ),
     );
@@ -332,6 +333,7 @@ const ParaBlockHeight = ({
   op,
   timeout,
 }: FnArgs) => {
+  timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const comparatorFn = comparators[op!];
@@ -353,6 +355,7 @@ const ParaRuntimeUpgrade = ({
   file_or_uri,
   timeout,
 }: FnArgs) => {
+  timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   return async (
     network: Network,
     backchannelMap: BackchannelMap,
@@ -382,6 +385,7 @@ const ParaRuntimeUpgrade = ({
 };
 
 const ParaRuntimeDummyUpgrade = ({ node_name, para_id, timeout }: FnArgs) => {
+  timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   return async (
     network: Network,
     backchannelMap: BackchannelMap,

@@ -286,7 +286,7 @@ export interface FnArgs {
   timeout?: number;
   target_value?: number;
   metric_name?: string;
-  buckets?: string;
+  buckets?: string[];
   span_id?: string;
   op?: string;
   pattern?: string;
@@ -294,6 +294,8 @@ export interface FnArgs {
   file_path?: string;
   custom_args?: string;
   file_or_uri?: string;
+  after?: number;
+  seconds?: number;
 }
 
 // Config interfaces
