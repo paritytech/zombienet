@@ -350,9 +350,9 @@ You can build it from source like this
 
 ```bash
 git clone git@github.com:paritytech/polkadot
-cd polkadot/parachain/test-parachains/adder/collator/
-cargo build
-mv ../../../../target/debug/adder-collator /home/<user>/zombienet/dist
+cd polkadot
+cargo build --profile testnet -p test-parachain-adder-collator
+export PATH=$(pwd)/target/testnet:$PATH
 ```
 
 
