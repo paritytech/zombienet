@@ -6,6 +6,7 @@ import {
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
+  TMP_DONE,
   TRANSFER_CONTAINER_NAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "../../constants";
@@ -234,7 +235,8 @@ export async function createTempNodeDef(
     name: nodeName,
     key: getSha256(nodeName),
     image,
-    fullCommand: fullCommand + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+    fullCommand:
+      fullCommand + " && " + TMP_DONE + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
     chain,
     validator: false,
     invulnerable: false,
