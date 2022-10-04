@@ -48,6 +48,7 @@ export interface RelayChainConfig {
   default_args?: string[];
   default_overrides?: Override[];
   random_nominators_count?: number;
+  max_nominations?: number;
   nodes?: NodeConfig[];
   node_groups?: NodeGroupConfig[];
   total_node_in_groups?: number;
@@ -123,6 +124,7 @@ export interface ComputedNetwork {
     chainSpecPath?: string;
     chainSpecCommand?: string;
     randomNominatorsCount: number;
+    maxNominations: number;
     nodes: Node[];
     overrides: Override[];
     genesis?: JSON | ObjectJSON;

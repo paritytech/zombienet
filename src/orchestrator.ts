@@ -274,6 +274,7 @@ export async function start(
         await generateNominators(
           chainSpecFullPathPlain,
           networkSpec.relaychain.randomNominatorsCount,
+          networkSpec.relaychain.maxNominations,
           validatorKeys,
         );
       }
