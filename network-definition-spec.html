@@ -168,6 +168,7 @@
 </li>
 <li><code>default_resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the nodes by default.</li>
 <li><code>random_nominators_count</code>: (number, optional), if is set <em>and the stacking pallet is enabled</em> zombienet will generate <code>x</code> nominators and will be injected in the genesis.</li>
+<li><code>max_nominations</code>: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).</li>
 <li><code>nodes</code>:
 <ul>
 <li><code>*name</code>: (String) Name of the node.</li>
