@@ -28,7 +28,7 @@ export async function findPatternInSystemEventSubscription(
         event.data.forEach((data: any, index: any) => {
           eventString += `${types[index].type};${data.toString()}`;
         });
-
+        debug(eventString);
         return re.test(eventString);
       });
 
