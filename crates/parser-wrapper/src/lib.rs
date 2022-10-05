@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub fn parse_to_json(unparsed_file: &str) -> Result<String, String> {
     if unparsed_file.is_empty() {
-        return Err("error".to_string());
+        return Err("Provided test specification is empty".to_string());
     }
     let ast = parse(unparsed_file).map_err(|e| e.to_string())?;
     let ast_json =
