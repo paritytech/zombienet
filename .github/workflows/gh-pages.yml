@@ -6,6 +6,14 @@ on:
 permissions:
   contents: write
 jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
@@ -25,3 +33,11 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: docs/book
+
+  all:
+    # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks
+    # are successful.
+    needs: [markdown-link-check, build-and-deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo Success
