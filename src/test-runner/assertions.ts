@@ -202,7 +202,6 @@ const CustomJs = ({
         : custom_args.split("with ").slice(1)[0].replaceAll('"', "").split(",")
       : [];
 
-    // const fileTestPath = path.dirname(testFile);
     const resolvedJsFilePath = path.resolve(configBasePath, file_path!);
 
     // shim with jsdom
@@ -277,7 +276,6 @@ const CustomSh = ({
     configBasePath: string,
   ) => {
     try {
-      // const fileTestPath = path.dirname(testFile);
       const resolvedShFilePath = path.resolve(configBasePath, file_path!);
 
       const nodes = network.getNodes(node_name!);
@@ -368,7 +366,6 @@ const ParaRuntimeUpgrade = ({
     if (isValidHttpUrl(file_or_uri!)) {
       hash = await chainUpgradeFromUrl(api, file_or_uri!);
     } else {
-      // const fileTestPath = path.dirname(testFile);
       const resolvedJsFilePath = path.resolve(configBasePath, file_or_uri!);
       hash = await chainUpgradeFromLocalFile(api, resolvedJsFilePath);
     }
