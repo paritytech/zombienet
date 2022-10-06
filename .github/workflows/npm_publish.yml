@@ -1,0 +1,28 @@
+name: NPM Publish
+
+on:
+  push:
+    branches: [nik-add-publish-script]
+
+jobs:
+  npm-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm install --immutable
+      - run: npm run build
+      - name: Publish Dry Run
+        working-directory: "."
+        run: npm publish --unsafe-perm --dry-run
+      # - name: Publish
+      #   id: publish
+      #   uses: JS-DevTools/npm-publish@v1
+      #   # Warning: this GitHub action doesn't seem to run prepublish scripts, hence
+      #   # the `npm publish --dry-run` done right above is important to ensure this.
+      #   with:
+      #     token: ${{ secrets.NPM_TOKEN }}
+      #     package: ./package.json
+      #     access: public
