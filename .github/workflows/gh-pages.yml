@@ -3,43 +3,25 @@ name: Deploy on gh-pages
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 permissions:
   contents: write
 jobs:
-  markdown-link-check:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: gaurav-nelson/github-action-markdown-link-check@v1
+      - uses: actions/checkout@v3
+
+      - name: Install
+        run: npm install
+
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v1
         with:
-          use-quiet-mode: "yes"
+          mdbook-version: "latest"
 
-  # build-and-deploy:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
+      - run: mdbook build docs
 
-  #     - name: Install
-  #       run: npm install
-
-  #     - name: Setup mdBook
-  #       uses: peaceiris/actions-mdbook@v1
-  #       with:
-  #         mdbook-version: "latest"
-
-  #     - run: mdbook build docs
-
-  #     - name: Deploy to GitHub Pages
-  #       uses: JamesIves/github-pages-deploy-action@v4
-  #       with:
-  #         folder: docs/book
-
-  all:
-    # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks
-    # are successful.
-    needs: [markdown-link-check]
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo Success
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: docs/book
