@@ -24,7 +24,7 @@ jobs:
           ref: main
           inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
         env:
-          GITHUB_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
       # - name: Publish NPM Package
       # env:
       #   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
