@@ -1,23 +1,18 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "target": "es6",
     "module": "commonjs",
     "lib": ["esnext"],
-    "outDir": "dist",
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "strict": true,
     "declaration": true,
-    "rootDir": "./src"
-  },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests",
-    "local-utils",
-    "artifacts",
-    "javsacript"
-  ]
+    "paths": {
+      "zombienet": ["./packages/cli"],
+      "@zombienet/orchestrator": ["./packages/orchestrator"]
+    }
+  }
 }

@@ -1,0 +1,8 @@
+node_modules
+dist
+log.md
+.env
+bins
+**/target/
+*.swp
+.vscode
