@@ -253,6 +253,7 @@ export async function addGrandpaAuthority(
 export async function generateNominators(
   specPath: string,
   randomNominatorsCount: number,
+  maxNominations: number,
   validators: string[],
 ) {
   const chainSpec = readAndParseChainSpec(specPath);
@@ -265,7 +266,6 @@ export async function generateNominators(
     )})`,
   );
 
-  const limit = runtimeConfig.staking.validatorCount;
   const maxForRandom = 2 ** 48 - 1;
   for (let i = 0; i < randomNominatorsCount; i++) {
     // create account
@@ -274,7 +274,7 @@ export async function generateNominators(
     const balanceToAdd = stakingBond! + 1;
     runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
     // random nominations
-    let count = crypto.randomInt(maxForRandom) % limit;
+    let count = crypto.randomInt(maxForRandom) % maxNominations;
     const nominations = getRandom(validators, count || count + 1);
     // push to stakers
     runtimeConfig.staking.stakers.push([

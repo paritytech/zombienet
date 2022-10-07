@@ -48,6 +48,7 @@ export interface RelayChainConfig {
   default_args?: string[];
   default_overrides?: Override[];
   random_nominators_count?: number;
+  max_nominations?: number;
   nodes?: NodeConfig[];
   node_groups?: NodeGroupConfig[];
   total_node_in_groups?: number;
@@ -123,6 +124,7 @@ export interface ComputedNetwork {
     chainSpecPath?: string;
     chainSpecCommand?: string;
     randomNominatorsCount: number;
+    maxNominations: number;
     nodes: Node[];
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
@@ -263,6 +265,39 @@ export interface Resources {
 
 export interface MultiAddressByNode {
   [key: string]: string;
+}
+
+export interface TestDefinition {
+  network: string;
+  creds: string;
+  description?: string;
+  assertions: Assertion[];
+}
+
+export interface Assertion {
+  original_line: string;
+  parsed: {
+    fn: string;
+    args: FnArgs;
+  };
+}
+
+export interface FnArgs {
+  node_name?: string;
+  para_id?: number;
+  timeout?: number;
+  target_value?: number;
+  metric_name?: string;
+  buckets?: string[];
+  span_id?: string;
+  op?: string;
+  pattern?: string;
+  match_type?: string;
+  file_path?: string;
+  custom_args?: string;
+  file_or_uri?: string;
+  after?: number;
+  seconds?: number;
 }
 
 // Config interfaces
