@@ -10,7 +10,6 @@ import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import { Client } from "./providers/client";
 import { decorators } from "./utils/colors";
-import { readDataFile } from "./utils/fs";
 import { CreateLogTable } from "./utils/tableCli";
 const debug = require("debug")("zombie::network");
 
