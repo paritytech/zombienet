@@ -6,6 +6,7 @@ import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
 import { decorators } from "./utils/colors";
 import { readDataFile } from "./utils/fs";
 import { convertExponentials, getRandom } from "./utils/misc";
+import { CreateLogTable } from "./utils/tableCli";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -73,9 +74,12 @@ export function clearAuthorities(specPath: string) {
   }
 
   writeChainSpec(specPath, chainSpec);
-  console.log(
-    `\n🧹 ${decorators.green("Starting with a fresh authority set...")}`,
-  );
+  let logTable = new CreateLogTable({
+    colWidths: [120],
+  });
+  logTable.pushToPrint([
+    [decorators.green("🧹 Starting with a fresh authority set...")],
+  ]);
 }
 
 export async function addBalances(specPath: string, nodes: Node[]) {
@@ -145,11 +149,15 @@ export async function addAuthority(
 
   keys.push(key);
 
-  console.log(
-    `\t👤 Added Genesis Authority ${decorators.green(
-      node.name,
-    )} - ${decorators.magenta(sr_stash.address)}`,
-  );
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added Genesis Authority"),
+      decorators.green(node.name),
+      decorators.magenta(sr_stash.address),
+    ],
+  ]);
 
   writeChainSpec(specPath, chainSpec);
 }
@@ -174,11 +182,15 @@ export async function addStaking(specPath: string, node: Node) {
   if (node.invulnerable)
     runtimeConfig.staking.invulnerables.push(sr_stash.address);
 
-  console.log(
-    `\t👤 Added Staking  ${decorators.green(node.name)} - ${decorators.magenta(
-      sr_stash.address,
-    )} - ${stakingBond}`,
-  );
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added Staking"),
+      decorators.green(node.name),
+      decorators.magenta(sr_stash.address),
+    ],
+  ]);
 
   writeChainSpec(specPath, chainSpec);
 }
@@ -193,11 +205,15 @@ export async function addCollatorSelection(specPath: string, node: Node) {
 
   runtimeConfig.collatorSelection.invulnerables.push(sr_account.address);
 
-  console.log(
-    `\t👤 Added CollatorSelection  ${decorators.green(
-      node.name,
-    )} - ${decorators.magenta(sr_account.address)}`,
-  );
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added CollatorSelection "),
+      decorators.green(node.name),
+      decorators.magenta(sr_account.address),
+    ],
+  ]);
 
   writeChainSpec(specPath, chainSpec);
 }
@@ -221,11 +237,16 @@ export async function addAuraAuthority(
   keys.push(sr_account.address);
 
   writeChainSpec(specPath, chainSpec);
-  console.log(
-    `\t👤 Added Genesis Authority (AURA) ${decorators.green(
-      name,
-    )} - ${decorators.magenta(sr_account.address)}`,
-  );
+
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added Genesis Authority"),
+      decorators.green(name),
+      decorators.magenta(sr_account.address),
+    ],
+  ]);
 }
 
 export async function addGrandpaAuthority(
@@ -322,11 +343,11 @@ export async function addParachainToGenesis(
 
     writeChainSpec(specPath, chainSpec);
     console.log(
-      `\n\t\t  ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`,
+      `\n ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`,
     );
   } else {
     console.error(
-      `\n\t\t  ${decorators.red("  ⚠ paras not found in runtimeConfig")}`,
+      `\n${decorators.red("  ⚠ paras not found in runtimeConfig")}`,
     );
     process.exit(1);
   }
@@ -352,13 +373,16 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
   // prevent dups bootnodes
   chainSpec.bootNodes = [...new Set(addresses)];
   writeChainSpec(specPath, chainSpec);
-
+  const logTable = new CreateLogTable({ colWidths: [120] });
   if (addresses.length) {
-    console.log(
-      `\n\t\t ${decorators.green("⚙ Added Boot Nodes: ")} ${addresses}`,
-    );
+    logTable.pushToPrint([
+      [`${decorators.green(chainSpec.name)} ⚙ Added Boot Nodes`],
+      [addresses.join("\n")],
+    ]);
   } else {
-    console.log(`\n\t\t ${decorators.green("⚙ Clear Boot Nodes")}`);
+    logTable.pushToPrint([
+      [`${decorators.green(chainSpec.name)} ⚙ Clear Boot Nodes`],
+    ]);
   }
 }
 

@@ -113,8 +113,6 @@ export async function generateParachainFiles(
         await addAuthFn(node);
         await addCollatorSelection(chainSpecFullPathPlain, node);
         await addParaCustom(chainSpecFullPathPlain, node);
-        // Add some extra space until next log
-        console.log("\n");
       }
     }
 
