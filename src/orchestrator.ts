@@ -62,6 +62,8 @@ import {
   getSha256,
   sleep,
 } from "./utils/misc";
+import { registerParachain } from "./jsapi-helpers";
+
 import { series } from "./utils/promise-series";
 
 import { CreateLogTable } from "./utils/tableCli";
@@ -617,10 +619,11 @@ export async function start(
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
-        await network.registerParachain(
+        await registerParachain(
           parachain.id,
           `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
           `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`,
+          network.relay[0].wsUri
         );
       }
 
