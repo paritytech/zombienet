@@ -144,7 +144,7 @@ Commands:
 
 One of the goals of `zombienet` is to easily spawn ephemeral networks, providing a simple but
 powerful *cli* that allows you to declare the desired network in `toml` or `json` format. You can
-check the [definition spec](/docs/src/network-definition-spec.md) to view the available options.
+check the [definition spec](https://paritytech.github.io/zombienet/network-definition-spec.html) to view the available options.
 
 A **minimal** configuration example with two validators and one parachain:
 
@@ -272,7 +272,7 @@ The other goal of `zombienet` is to provide a way to perform test/assertions aga
 network, using a set of `natural language expressions` that allow you to make assertions based on
 metrics, logs and some `built-in` function that query the network using `polkadot.js`. Those
 assertions should be defined in a *.zndsl test*, and the `dsl` (**D**omain **S**pecific **L**anguage) and format is documented in
-[here](/docs/book/cli/test-dsl-definition-spec.md).
+[here](https://paritytech.github.io/zombienet/cli/test-dsl-definition-spec.html).
 
 The following is an small example to spawn a network (using the previous `simple network
 definition`) and assert that:
