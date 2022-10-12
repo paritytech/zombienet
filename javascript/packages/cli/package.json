@@ -1,5 +1,5 @@
 {
-  "name": "zombienet",
+  "name": "@zombienet/zombienet",
   "version": "1.2.74",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
@@ -29,7 +29,11 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
-    "@zombienet/orchestrator": "^1.2.74"
+    "@zombienet/orchestrator": "^0.0.1"
   },
-  "homepage": "https://github.com/paritytech/zombienet#readme"
+  "homepage": "https://github.com/paritytech/zombienet#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }
