@@ -73,7 +73,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
           method: "GET",
           responseType: "stream",
         });
-        const totalLength = headers["content-length"];
+        const totalLength = headers["content-length"] as string;
 
         const progressBar = new progress(
           "-> downloading [:bar] :percent :etas",
