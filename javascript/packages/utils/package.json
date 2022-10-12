@@ -1,0 +1,29 @@
+{
+  "name": "@zombienet/utils",
+  "version": "1.0.0",
+  "description": "Useful utilities for ZombieNet Framework",
+  "main": "dist/index.js",
+  "author": "Parity Technologies <admin@parity.io>",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/paritytech/zombienet#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paritytech/zombienet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/paritytech/zombienet/issues"
+  },
+  "keywords": [
+    "utilities",
+    "utils",
+    "zombienet"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "build": "tsc",
+    "lint": "npx prettier --check ./src",
+    "lint:write": "npx prettier --write ./src",
+    "package": "pkg . --out-path ./bins",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

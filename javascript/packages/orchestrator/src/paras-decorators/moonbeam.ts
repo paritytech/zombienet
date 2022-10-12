@@ -1,6 +1,7 @@
 import { Keyring } from "@polkadot/api";
 import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { decorators } from "@zombienet/utils";
 import {
   clearAuthorities as _clearAuthorities,
   getRuntimeConfig,
@@ -10,7 +11,6 @@ import {
 } from "../chain-spec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
 import { ChainSpec, Node } from "../types";
-import { decorators } from "../utils/colors";
 
 // track 1st staking as default;
 let paraStakingBond: number | undefined;

@@ -1,6 +1,6 @@
 const debug = require("debug")("zombie::metrics");
+import { decorators } from "@zombienet/utils";
 import axios from "axios";
-import { decorators } from "../utils/colors";
 import { parseLine } from "./parse-line";
 
 // metrics can have namespace

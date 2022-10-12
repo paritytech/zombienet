@@ -1,3 +1,4 @@
+import { decorators, getRandomPort } from "@zombienet/utils";
 import {
   DEFAULT_COMMAND,
   P2P_PORT,
@@ -6,8 +7,6 @@ import {
   RPC_WS_PORT,
 } from "./constants";
 import { Node } from "./types";
-import { decorators } from "./utils/colors";
-import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::cmdGenerator");
 

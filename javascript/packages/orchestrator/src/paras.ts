@@ -1,3 +1,4 @@
+import { getRandomPort } from "@zombienet/utils";
 import fs from "fs";
 import chainSpecFns from "./chain-spec";
 import { getUniqueName } from "./configGenerator";
@@ -11,7 +12,6 @@ import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
 import { fileMap, Node, Parachain } from "./types";
-import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::paras");
 

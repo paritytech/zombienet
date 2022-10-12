@@ -1,3 +1,4 @@
+import { getRandomPort } from "@zombienet/utils";
 import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
@@ -12,7 +13,6 @@ import {
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";
-import { getRandomPort } from "../../utils/net";
 import { getClient } from "../client";
 
 const fs = require("fs").promises;

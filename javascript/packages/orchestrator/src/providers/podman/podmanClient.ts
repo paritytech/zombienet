@@ -1,3 +1,9 @@
+import {
+  CreateLogTable,
+  decorators,
+  getHostIp,
+  writeLocalJsonFile,
+} from "@zombienet/utils";
 import execa from "execa";
 import { copy as fseCopy } from "fs-extra";
 import path, { resolve } from "path";
@@ -9,10 +15,6 @@ import {
   PROMETHEUS_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { decorators } from "../../utils/colors";
-import { writeLocalJsonFile } from "../../utils/fs";
-import { getHostIp } from "../../utils/net";
-import { CreateLogTable } from "../../utils/tableCli";
 import { Client, RunCommandResponse, setClient } from "../client";
 import {
   genGrafanaDef,

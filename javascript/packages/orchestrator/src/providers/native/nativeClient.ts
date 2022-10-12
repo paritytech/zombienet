@@ -1,3 +1,8 @@
+import {
+  CreateLogTable,
+  decorators,
+  writeLocalJsonFile,
+} from "@zombienet/utils";
 import { spawn } from "child_process";
 import execa from "execa";
 import { copy as fseCopy } from "fs-extra";
@@ -9,9 +14,6 @@ import {
   P2P_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { decorators } from "../../utils/colors";
-import { writeLocalJsonFile } from "../../utils/fs";
-import { CreateLogTable } from "../../utils/tableCli";
 import { Client, RunCommandResponse, setClient } from "../client";
 const fs = require("fs");
 

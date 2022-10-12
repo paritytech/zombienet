@@ -1,3 +1,4 @@
+import { getRandomPort, getSha256 } from "@zombienet/utils";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
 import {
@@ -12,8 +13,6 @@ import {
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";
-import { getSha256 } from "../../utils/misc";
-import { getRandomPort } from "../../utils/net";
 
 export async function genBootnodeDef(
   namespace: string,

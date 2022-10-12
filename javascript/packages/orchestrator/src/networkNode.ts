@@ -17,8 +17,8 @@ import {
 } from "./metrics";
 import { getClient } from "./providers/client";
 
+import { decorators } from "@zombienet/utils";
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
-import { decorators } from "./utils/colors";
 
 const debug = require("debug")("zombie::network-node");
 

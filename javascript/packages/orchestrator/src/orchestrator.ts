@@ -1,3 +1,14 @@
+import {
+  CreateLogTable,
+  decorators,
+  filterConsole,
+  generateNamespace,
+  getLokiUrl,
+  getSha256,
+  loadTypeDef,
+  series,
+  sleep,
+} from "@zombienet/utils";
 import fs from "fs";
 import path from "path";
 import tmp from "tmp-promise";
@@ -53,18 +64,6 @@ import {
   Node,
   Parachain,
 } from "./types";
-import { decorators } from "./utils/colors";
-import { loadTypeDef } from "./utils/fs";
-import {
-  filterConsole,
-  generateNamespace,
-  getLokiUrl,
-  getSha256,
-  sleep,
-} from "./utils/misc";
-import { series } from "./utils/promise-series";
-
-import { CreateLogTable } from "./utils/tableCli";
 
 const debug = require("debug")("zombie");
 

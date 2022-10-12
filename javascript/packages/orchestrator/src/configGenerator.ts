@@ -1,6 +1,7 @@
 import fs from "fs";
 import path, { resolve } from "path";
 
+import { getRandomPort, getSha256 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -30,8 +31,6 @@ import {
   Override,
   Parachain,
 } from "./types";
-import { getSha256 } from "./utils/misc";
-import { getRandomPort } from "./utils/net";
 
 const debug = require("debug")("zombie::config-manager");
 

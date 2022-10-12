@@ -1,11 +1,15 @@
 import { encodeAddress } from "@polkadot/util-crypto";
+import {
+  convertExponentials,
+  decorators,
+  getRandom,
+  readDataFile,
+} from "@zombienet/utils";
 import crypto from "crypto";
 import fs from "fs";
 import { generateKeyFromSeed } from "./keys";
 import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
-import { decorators } from "./utils/colors";
-import { readDataFile } from "./utils/fs";
-import { convertExponentials, getRandom } from "./utils/misc";
+
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 

@@ -1,3 +1,10 @@
+import {
+  addMinutes,
+  CreateLogTable,
+  decorators,
+  getSha256,
+  writeLocalJsonFile,
+} from "@zombienet/utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import execa from "execa";
 import path, { resolve } from "path";
@@ -9,10 +16,6 @@ import {
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { decorators } from "../../utils/colors";
-import { writeLocalJsonFile } from "../../utils/fs";
-import { addMinutes, getSha256 } from "../../utils/misc";
-import { CreateLogTable } from "../../utils/tableCli";
 import { Client, RunCommandResponse, setClient } from "../client";
 const fs = require("fs").promises;
 

@@ -1,39 +1,36 @@
 #!/usr/bin/env node
 
-import { start } from "@zombienet/orchestrator";
+import {
+  AVAILABLE_PROVIDERS,
+  default as start,
+  default as test,
+  DEFAULT_BALANCE,
+  DEFAULT_GLOBAL_TIMEOUT,
+  DEFAULT_PROVIDER,
+  Network,
+} from "@zombienet/orchestrator";
+import {
+  askQuestion,
+  convertBytes,
+  decorators,
+  getCredsFilePath,
+  getFilePathNameExt,
+  readNetworkConfig,
+  RelativeLoader,
+} from "@zombienet/utils";
 import axios from "axios";
 import { Command, Option } from "commander";
 import fs from "fs";
 import path, { resolve } from "path";
 import progress from "progress";
-import { Network } from "./network";
-import { run } from "./test-runner";
-import {
-  LaunchConfig,
-  NodeConfig,
-  ParachainConfig,
-  PL_ConfigType,
-  PolkadotLaunchConfig,
-  TestDefinition,
-} from "./types";
-import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 
-import {
-  AVAILABLE_PROVIDERS,
-  DEFAULT_BALANCE,
-  DEFAULT_GLOBAL_TIMEOUT,
-  DEFAULT_PROVIDER,
-} from "./constants";
 const DEFAULT_CUMULUS_COLLATOR_URL =
   "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
-import { decorators } from "./utils/colors";
 
 import parser from "@parity/zombienet-dsl-parser-wrapper";
 import { Environment } from "nunjucks";
-import { convertBytes, getFilePathNameExt } from "./utils/misc";
-import { RelativeLoader } from "./utils/nunjucks-relative-loader";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -57,7 +54,7 @@ const debug = require("debug")("zombie-cli");
 
 const program = new Command("zombienet");
 
-let network: Network;
+let network: typeof Network;
 
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {

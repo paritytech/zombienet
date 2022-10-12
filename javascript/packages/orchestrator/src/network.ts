@@ -1,6 +1,7 @@
 import { ApiPromise } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { CreateLogTable, decorators, readDataFile } from "@zombienet/utils";
 import axios from "axios";
 import fs from "fs";
 import {
@@ -12,9 +13,6 @@ import {
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import { Client } from "./providers/client";
-import { decorators } from "./utils/colors";
-import { readDataFile } from "./utils/fs";
-import { CreateLogTable } from "./utils/tableCli";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {

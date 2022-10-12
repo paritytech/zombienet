@@ -282,7 +282,7 @@ export interface Assertion {
   };
 }
 
-export interface FnArgs {
+interface FnArgs {
   node_name?: string;
   para_id?: number;
   timeout?: number;

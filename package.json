@@ -13,16 +13,16 @@
     "registry": "https://registry.npmjs.org"
   },
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
-  "scripts": {
-    "clean": "rm -rf ./dist/*",
-    "build": "tsc",
-    "lint": "npx prettier --check ./src",
-    "lint:write": "npx prettier --write ./src",
-    "package": "pkg . --out-path ./bins",
-    "docs:build": "mdbook build docs",
-    "docs:deploy": "gh-pages -d docs/book",
-    "docs": "npm run docs:build && npm run docs:deploy"
-  },
+  // "scripts": {
+  //   "clean": "rm -rf ./dist/*",
+  //   "build": "tsc",
+  //   "lint": "npx prettier --check ./src",
+  //   "lint:write": "npx prettier --write ./src",
+  //   "package": "pkg . --out-path ./bins",
+  //   "docs:build": "mdbook build docs",
+  //   "docs:deploy": "gh-pages -d docs/book",
+  //   "docs": "npm run docs:build && npm run docs:deploy"
+  // },
   "dependencies": {
     "@parity/zombienet-dsl-parser-wrapper": "^0.1.3",
     "@polkadot/api": "^9.2.4",
