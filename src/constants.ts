@@ -38,10 +38,12 @@ export const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 export const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
 export const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-parachain";
 export const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
+export const DEFAULT_MAX_NOMINATIONS = 24; // kusama value is 24
 export const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 export const GENESIS_STATE_FILENAME = "genesis-state";
 export const GENESIS_WASM_FILENAME = "genesis-wasm";
 
+export const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
 export const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
 export const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 export const ZOMBIE_BUCKET = "zombienet-logs";

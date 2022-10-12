@@ -98,7 +98,7 @@ async fn kv_set(
 ) {
     let item: DbItem = DbItem {
         key: key.clone(),
-        value: String::from_utf8(bytes.to_vec()).unwrap()
+        value: String::from_utf8(bytes.to_vec()).unwrap(),
     };
     state.db.write().unwrap().insert(key, bytes);
     let _ = state.tx.send(serde_json::to_string(&item).unwrap());

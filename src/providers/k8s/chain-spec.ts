@@ -91,6 +91,26 @@ export async function getChainSpecRaw(
     },
   ]);
 
+  // let's just wait 2 secs before download
+  // Creating the raw version can take a couple of seconds, loop until the `build-spec` command is done
+  // or timedout (20 seconds) and fallback to the validation.
+  for (let i = 0; i < 10; i++) {
+    try {
+      await client.runCommand([
+        "exec",
+        podName,
+        "--",
+        "ls",
+        "/tmp/zombie-tmp-done",
+      ]);
+      // we can go ahead
+      break;
+    } catch (_) {
+      debug("waiting for raw chain-spec");
+      await sleep(2000);
+    }
+  }
+
   debug("Getting the raw chain spec file from pod to the local environment.");
   await client.copyFileFromPod(
     podName,
@@ -98,9 +118,6 @@ export async function getChainSpecRaw(
     chainFullPath,
     podName,
   );
-
-  // let's just wait 2 secs before download
-  await sleep(2000);
 
   // We had some issues where the `raw` file is empty
   // let's add some extra checks here to ensure we are ok.
