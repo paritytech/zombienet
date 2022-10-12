@@ -1,19 +1,20 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
-import Network, {
-  chainCustomSectionUpgrade,
-  chainUpgradeFromLocalFile,
-  chainUpgradeFromUrl,
-  connect,
-  findPatternInSystemEventSubscription,
-  validateRuntimeCode,
-} from "@zombienet/orchestrator";
 import { decorators, isValidHttpUrl } from "@zombienet/utils";
 import { assert, expect } from "chai";
 import { JSDOM } from "jsdom";
 import minimatch from "minimatch";
 import path from "path";
 import { BackchannelMap } from ".";
-import { FnArgs } from "./types";
+import {
+  chainCustomSectionUpgrade,
+  chainUpgradeFromLocalFile,
+  chainUpgradeFromUrl,
+  connect,
+  findPatternInSystemEventSubscription,
+  validateRuntimeCode,
+} from "../jsapi-helpers";
+import { Network } from "../network";
+import { FnArgs } from "../types";
 const utilCrypto = require("@polkadot/util-crypto");
 
 const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds

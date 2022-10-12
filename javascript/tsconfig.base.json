@@ -4,7 +4,6 @@
     "paths": {
       "@zombienet/utils": ["./packages/utils"],
       "@zombienet/orchestrator": ["./packages/orchestrator"],
-      "@zombienet/test-runner": ["./packages/test-runner"],
       "zombienet": ["./packages/cli"]
     }
   }

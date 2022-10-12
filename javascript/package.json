@@ -77,7 +77,6 @@
   "workspaces": [
     "packages/utils",
     "packages/orchestrator",
-    "packages/test-runner",
     "packages/cli"
   ]
 }

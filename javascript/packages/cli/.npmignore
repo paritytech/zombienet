@@ -1,0 +1,9 @@
+yarn-error.log*
+.nyc_output/
+.eslintrc.cjs
+.eslintignore
+/coverage
+tsconfig.*
+jest.config*
+
+src/**/*

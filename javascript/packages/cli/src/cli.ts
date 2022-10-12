@@ -1,14 +1,8 @@
 #!/usr/bin/env node
-
-import {
-  AVAILABLE_PROVIDERS,
-  default as start,
-  default as test,
-  DEFAULT_BALANCE,
-  DEFAULT_GLOBAL_TIMEOUT,
-  DEFAULT_PROVIDER,
-  Network,
-} from "@zombienet/orchestrator";
+import parser from "@parity/zombienet-dsl-parser-wrapper";
+import { start } from "@zombienet/orchestrator/dist/index";
+import { Network } from "@zombienet/orchestrator/dist/network";
+import { run } from "@zombienet/orchestrator/dist/test-runner";
 import {
   askQuestion,
   convertBytes,
@@ -21,16 +15,28 @@ import {
 import axios from "axios";
 import { Command, Option } from "commander";
 import fs from "fs";
+import { Environment } from "nunjucks";
 import path, { resolve } from "path";
 import progress from "progress";
+import {
+  AVAILABLE_PROVIDERS,
+  DEFAULT_BALANCE,
+  DEFAULT_GLOBAL_TIMEOUT,
+  DEFAULT_PROVIDER,
+} from "./constants";
+import {
+  LaunchConfig,
+  NodeConfig,
+  ParachainConfig,
+  PL_ConfigType,
+  PolkadotLaunchConfig,
+  TestDefinition,
+} from "./types";
 
 const DEFAULT_CUMULUS_COLLATOR_URL =
   "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
-
-import parser from "@parity/zombienet-dsl-parser-wrapper";
-import { Environment } from "nunjucks";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -54,7 +60,7 @@ const debug = require("debug")("zombie-cli");
 
 const program = new Command("zombienet");
 
-let network: typeof Network;
+let network: Network | undefined;
 
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
@@ -176,9 +182,9 @@ async function convertInput(filePath: string) {
   };
 
   parachains &&
-    parachains.forEach((parachain) => {
+    parachains.forEach((parachain: any) => {
       collators = [];
-      parachain.nodes.forEach((n) => {
+      parachain.nodes.forEach((n: any) => {
         collators.push({
           name: n.name,
           command: "adder-collator",
@@ -194,7 +200,7 @@ async function convertInput(filePath: string) {
   collators = [];
 
   simpleParachains &&
-    simpleParachains.forEach((sp) => {
+    simpleParachains.forEach((sp: any) => {
       collators.push({
         name: sp.name,
         command: "adder-collator",

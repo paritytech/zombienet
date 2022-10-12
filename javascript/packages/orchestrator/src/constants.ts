@@ -65,7 +65,6 @@ const TRACING_COLLATOR_PORT = 3100;
 
 const ZOMBIE_WRAPPER = "zombie-wrapper.sh";
 
-const AVAILABLE_PROVIDERS = ["podman", "kubernetes", "native"];
 const DEFAULT_PROVIDER = "kubernetes";
 const DEV_ACCOUNTS = [
   "alice",
@@ -148,7 +147,6 @@ export {
   TRACING_COLLATOR_PODNAME,
   TRACING_COLLATOR_PORT,
   ZOMBIE_WRAPPER,
-  AVAILABLE_PROVIDERS,
   DEFAULT_PROVIDER,
   DEV_ACCOUNTS,
   DEFAULT_BALANCE,

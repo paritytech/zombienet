@@ -1,5 +1,4 @@
 const chai = require("chai");
-import { Network, Providers, rebuildNetwork } from "@zombienet/orchestrator";
 import {
   decorators,
   getLokiUrl,
@@ -9,11 +8,12 @@ import {
 import fs from "fs";
 import Mocha from "mocha";
 import path from "path";
+import { Network, rebuildNetwork } from "../network";
+import { start } from "../orchestrator";
+import { Providers } from "../providers";
+import { LaunchConfig, TestDefinition } from "../types";
 import assertions from "./assertions";
 import commands from "./commands";
-import { LaunchConfig, TestDefinition } from "./types";
-
-import zombie from "../";
 
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 
@@ -35,7 +35,7 @@ export async function run(
   concurrency: number = 1,
   runningNetworkSpecPath: string | undefined,
 ) {
-  let network: typeof Network;
+  let network: Network;
   let backchannelMap: BackchannelMap = {};
 
   let suiteName: string = testName;
@@ -86,7 +86,7 @@ export async function run(
         console.log("runningNetworkSpecPath", runningNetworkSpecPath);
       if (!runningNetworkSpecPath) {
         console.log(`\t Launching network... this can take a while.`);
-        network = await zombie.start(creds!, config, {
+        network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
         });
@@ -162,7 +162,7 @@ export async function run(
                   network.paras,
                 )) {
                   console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                  for (const node of parachain.nodes) {
+                  for (const node of parachain?.nodes) {
                     const loki_url = getLokiUrl(
                       network.namespace,
                       node.name,
