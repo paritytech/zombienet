@@ -393,7 +393,8 @@ fn custom_js_parse_ok() {
 
 #[test]
 fn custom_js_with_args_parse_ok() {
-    let line: &str = r#"alice: js-script ./0008-custom.js with "dave,2000-1,eve" within 200 seconds"#;
+    let line: &str =
+        r#"alice: js-script ./0008-custom.js with "dave,2000-1,eve" within 200 seconds"#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",
