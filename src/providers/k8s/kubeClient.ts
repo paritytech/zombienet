@@ -333,6 +333,7 @@ export class KubeClient extends Client {
     if (unique) {
       const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
       if (container) args.push("-c", container);
+      await this.runCommand(args, undefined, true);
       debug("copyFileToPod", args);
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
