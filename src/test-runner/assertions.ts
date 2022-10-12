@@ -199,7 +199,7 @@ const CustomJs = ({
     const call_args = custom_args
       ? custom_args === ""
         ? []
-        : custom_args.split("with ").slice(1)[0].replaceAll('"', "").split(",")
+        : custom_args.split(",")
       : [];
 
     const resolvedJsFilePath = path.resolve(configBasePath, file_path!);
