@@ -49,7 +49,7 @@ type CreatedTable = GenericTable<
 interface TableCreationProps {
   colWidths: number[];
   head?: any[];
-  main?: boolean;
+  doubleBorder?: boolean;
   chars?: CharsObj;
 }
 
@@ -57,13 +57,13 @@ export class CreateLogTable {
   table: CreatedTable | undefined;
   colWidths: number[];
 
-  constructor({ head, colWidths, main }: TableCreationProps) {
+  constructor({ head, colWidths, doubleBorder }: TableCreationProps) {
     this.colWidths = colWidths;
     const params: TableCreationProps = { colWidths };
 
     if (head?.length) params.head = head;
 
-    if (main) {
+    if (doubleBorder) {
       params.chars = chars;
     }
     this.table = new Table(params);
@@ -92,5 +92,12 @@ export class CreateLogTable {
 
   print = () => {
     console.log(this.table!.toString());
+  };
+
+  // This function makes the process of creating a table, pushing data and printing it faster
+  // It is meant to exist in order to reduce the log lines in the code
+  pushToPrint = (inputs: any[][]) => {
+    this.pushTo(inputs);
+    this.print();
   };
 }
