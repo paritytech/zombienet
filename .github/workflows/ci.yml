@@ -20,10 +20,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          working-directory: "./javascript"
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run lint
+        working-directory: "./javascript"
 
   build-rust:
     runs-on: ubuntu-latest

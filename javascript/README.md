@@ -291,8 +291,6 @@ alice: parachain 100 is registered within 225 seconds
 alice: parachain 100 block height is at least 10 within 200 seconds
 ```
 
-Other examples are provided in the [examples](examples) directory.
-
 ---
 
 ## Development
