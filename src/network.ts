@@ -1,6 +1,3 @@
-import { ApiPromise } from "@polkadot/api";
-import { Keyring } from "@polkadot/keyring";
-import { cryptoWaitReady } from "@polkadot/util-crypto";
 import axios from "axios";
 import fs from "fs";
 import {
@@ -13,7 +10,6 @@ import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import { Client } from "./providers/client";
 import { decorators } from "./utils/colors";
-import { readDataFile } from "./utils/fs";
 import { CreateLogTable } from "./utils/tableCli";
 const debug = require("debug")("zombie::network");
 
@@ -175,74 +171,6 @@ export class Network {
 
   async upsertCronJob(minutes = 10) {
     await this.client.upsertCronJob(minutes);
-  }
-
-  async registerParachain(
-    id: number,
-    wasmPath: string,
-    statePath: string,
-    apiInstance = null,
-    finalization = false,
-  ) {
-    return new Promise<void>(async (resolve, reject) => {
-      await cryptoWaitReady();
-
-      const keyring = new Keyring({ type: "sr25519" });
-      const alice = keyring.addFromUri("//Alice");
-      let api: ApiPromise;
-      if (apiInstance) api = apiInstance;
-      else {
-        if (!this.relay[0].apiInstance) await this.relay[0].connectApi();
-        // now should be connected
-        api = this.relay[0].apiInstance as ApiPromise;
-      }
-
-      let nonce = (
-        (await api.query.system.account(alice.address)) as any
-      ).nonce.toNumber();
-      const wasm_data = readDataFile(wasmPath);
-      const genesis_state = readDataFile(statePath);
-
-      const parachainGenesisArgs = {
-        genesis_head: genesis_state,
-        validation_code: wasm_data,
-        parachain: true,
-      };
-
-      const genesis = api.createType("ParaGenesisArgs", parachainGenesisArgs);
-
-      console.log(
-        `Submitting extrinsic to register parachain ${id}. nonce: ${nonce}`,
-      );
-
-      const unsub = await api.tx.sudo
-        .sudo(api.tx.parasSudoWrapper.sudoScheduleParaInitialize(id, genesis))
-        .signAndSend(alice, { nonce: nonce, era: 0 }, (result) => {
-          console.log(`Current status is ${result.status}`);
-          if (result.status.isInBlock) {
-            console.log(
-              `Transaction included at blockhash ${result.status.asInBlock}`,
-            );
-            if (finalization) {
-              console.log("Waiting for finalization...");
-            } else {
-              unsub();
-              return resolve();
-            }
-          } else if (result.status.isFinalized) {
-            console.log(
-              `Transaction finalized at blockHash ${result.status.asFinalized}`,
-            );
-            unsub();
-            return resolve();
-          } else if (result.isError) {
-            console.log(`Transaction error`);
-            reject(`Transaction error`);
-          }
-        });
-
-      nonce += 1;
-    });
   }
 
   async getBackchannelValue(
