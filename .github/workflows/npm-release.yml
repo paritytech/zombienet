@@ -1,7 +1,7 @@
 name: Zombienet NPM Automated Release
 on:
   push:
-    branches: [main]
+    branches: [nik-automate-npm-release]
 jobs:
   publish:
     name: Build & Publish to NPM
@@ -14,13 +14,11 @@ jobs:
           node-version: "16.x"
       - name: Build NPM Package
         run: npm run build ${{steps.get_tag_version.outputs.TAG_VERSION}}
+      - run: npm pack
       - uses: actions/upload-artifact@v3
         with:
           name: package
-          path: |
-            dist/**/*
-            package.json
-            README.md
+          path: *.tgz
       - uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
