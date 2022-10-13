@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import parser from "@parity/zombienet-dsl-parser-wrapper";
-import { Network, run, start } from "@zombienet/orchestrator/dist";
+import { Network, run, start } from "@zombienet/orchestrator";
 
 import type {
   LaunchConfig,
