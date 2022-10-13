@@ -25,4 +25,5 @@ jobs:
           ref: main
           inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
         env:
+          # TODO: Once token named NPM_PUBLISH_AUTOMATION_TOKEN is added in org-level then it should replace the ZOMBIENET_GITHUB_TOKEN
           GITHUB_TOKEN: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
