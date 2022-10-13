@@ -9,7 +9,7 @@ import type {
   PL_ConfigType,
   PolkadotLaunchConfig,
   TestDefinition,
-} from "@zombienet/orchestrator/dist";
+} from "@zombienet/orchestrator";
 import {
   askQuestion,
   convertBytes,
