@@ -284,11 +284,7 @@ const CustomSh = ({
       const call_args = custom_args
         ? custom_args === ""
           ? []
-          : custom_args
-              .split("with ")
-              .slice(1)[0]
-              .replaceAll('"', "")
-              .split(",")
+          : custom_args.split(",")
         : [];
 
       const results = await Promise.all(

@@ -49,7 +49,7 @@ fn parse_para_id(pair: Pair<Rule>) -> Result<ParaId, ParserError> {
 }
 
 fn parse_taget_value(pair: Pair<Rule>) -> Result<u64, ParserError> {
-    let target_str = pair.into_inner().as_str();
+    let target_str = pair.as_str();
     target_str
         .parse::<u64>()
         .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u64", target_str)))
@@ -70,10 +70,10 @@ fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
         }
     };
 
-    let target_value = get_pair(&mut inner_pairs, "target_value")?
-        .as_str()
+    let target_value_str = get_pair(&mut inner_pairs, "target_value")?.as_str();
+    let target_value = target_value_str
         .parse::<u64>()
-        .map_err(|_| ParserError::ParseError("Can't parse as u64".to_string()))?;
+        .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u64", target_value_str)))?;
 
     Ok(ast::Comparison { op, target_value })
 }
