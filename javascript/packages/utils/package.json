@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/utils",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Useful utilities for ZombieNet Framework",
   "main": "dist/index.js",
   "author": "Parity Technologies <admin@parity.io>",
@@ -25,5 +25,10 @@
     "lint:write": "npx prettier --write ./src",
     "package": "pkg . --out-path ./bins",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

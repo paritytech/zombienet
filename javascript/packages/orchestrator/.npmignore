@@ -8,3 +8,4 @@ tsconfig.*
 jest.config*
 
 src/**/*
+scripts/*
