@@ -37,7 +37,7 @@ const debug = require("debug")("zombie::config-manager");
 // get the path of the zombie wrapper
 export const zombieWrapperPath = resolve(
   __dirname,
-  `../scripts/${ZOMBIE_WRAPPER}`,
+  `../${ZOMBIE_WRAPPER}`,
 );
 
 const DEFAULT_ENV: envVars[] = [
