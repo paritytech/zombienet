@@ -17,7 +17,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: package
-          path: dist
+          path: |
+            **/*
       - uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
