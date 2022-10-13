@@ -51,6 +51,7 @@ import {
   WS_URI_PATTERN,
   ZOMBIE_WRAPPER,
 } from "./constants";
+import { registerParachain } from "./jsapi-helpers";
 import { generateKeystoreFiles } from "./keys";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -643,10 +644,11 @@ export async function start(
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
-        await network.registerParachain(
+        await registerParachain(
           parachain.id,
           `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
           `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`,
+          network.relay[0].wsUri,
         );
       }
 
