@@ -46,7 +46,7 @@ jobs:
           args: --all-features
 
       - name: Build
-        run: cargo build --verbose
+        run: cargo build
 
       - name: Run tests
         run: cargo test --verbose --all-targets --all-features
