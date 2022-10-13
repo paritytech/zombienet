@@ -18,7 +18,9 @@ jobs:
         with:
           name: package
           path: |
-            **/*
+            dist/**/*
+            package.json
+            README.md
       - uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
