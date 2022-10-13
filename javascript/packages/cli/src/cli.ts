@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 import parser from "@parity/zombienet-dsl-parser-wrapper";
-import { start } from "@zombienet/orchestrator/dist/index";
-import { Network } from "@zombienet/orchestrator/dist/network";
-import { run } from "@zombienet/orchestrator/dist/test-runner";
+import { Network, run, start } from "@zombienet/orchestrator/dist";
+
+import type {
+  LaunchConfig,
+  NodeConfig,
+  ParachainConfig,
+  PL_ConfigType,
+  PolkadotLaunchConfig,
+  TestDefinition,
+} from "@zombienet/orchestrator/dist";
 import {
   askQuestion,
   convertBytes,
@@ -24,14 +31,6 @@ import {
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_PROVIDER,
 } from "./constants";
-import {
-  LaunchConfig,
-  NodeConfig,
-  ParachainConfig,
-  PL_ConfigType,
-  PolkadotLaunchConfig,
-  TestDefinition,
-} from "./types";
 
 const DEFAULT_CUMULUS_COLLATOR_URL =
   "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
@@ -213,7 +212,7 @@ async function convertInput(filePath: string) {
     });
 
   if (relaychain?.nodes) {
-    relaychain.nodes.forEach((n) => {
+    relaychain.nodes.forEach((n: any) => {
       nodes.push({
         name: `"${n.name}"`,
         ...DEFAULT_NODE_VALUES,

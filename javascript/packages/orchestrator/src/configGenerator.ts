@@ -51,7 +51,7 @@ export async function generateNetworkSpec(
   let globalOverrides: Override[] = [];
   if (config.relaychain.default_overrides) {
     globalOverrides = await Promise.all(
-      config.relaychain.default_overrides.map(async (override) => {
+      config.relaychain.default_overrides.map(async (override: Override) => {
         const valid_local_path = await getLocalOverridePath(
           config.configBasePath,
           override.local_path,

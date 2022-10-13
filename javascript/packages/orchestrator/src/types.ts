@@ -1,5 +1,10 @@
+// Launch Config, there are used user-input
+// mapped from the json/toml to compute the
+
+import { PARA } from "./paras-decorators";
+
 // network config to spawn.
-interface LaunchConfig extends PolkadotLaunchConfig {
+export interface LaunchConfig extends PolkadotLaunchConfig {
   config: { provider: string };
   settings: Settings;
   configBasePath: string;
@@ -277,7 +282,7 @@ export interface Assertion {
   };
 }
 
-interface FnArgs {
+export interface FnArgs {
   node_name?: string;
   para_id?: number;
   timeout?: number;
@@ -300,13 +305,13 @@ interface PL_NodesConfig {
   name: string;
   wsPort: number;
   port: number;
-  flags?: [strings];
+  flags?: [string];
 }
 
 interface PL_RelayChainConfig {
   bin?: string;
   chain: string;
-  nodes: [NodesConfig];
+  nodes: [NodeConfig];
   genesis?: JSON | ObjectJSON;
 }
 

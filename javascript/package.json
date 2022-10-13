@@ -16,9 +16,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "lint:write": "npm run lint:write --workspaces --if-present"
   },
-  "bin": {
-    "zombienet": "dist/cli.js"
-  },
+  "bin": "dist/cli.js",
   "pkg": {
     "assets": [
       "node_modules/@polkadot/**/*",
