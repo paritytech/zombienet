@@ -28,7 +28,3 @@ jobs:
           inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
         env:
           GITHUB_TOKEN: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
-      # - name: Publish NPM Package
-      # env:
-      #   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # run: cd dist && npm publish --unsafe-perm --dry-run
