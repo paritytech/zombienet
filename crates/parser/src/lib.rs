@@ -124,8 +124,8 @@ fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<Assertion
 
     for inner_record in pairs {
         match inner_record.as_rule() {
-            Rule::square_brackets_strings => {
-                args = Some(inner_record.as_str().to_owned());
+            Rule::double_quoted_string => {
+                args = Some(inner_record.as_str().trim_matches('"').to_owned());
             }
             Rule::comparison => {
                 cmp = Some(parse_comparison(inner_record)?);
