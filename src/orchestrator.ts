@@ -569,8 +569,7 @@ export async function start(
           network.networkStartTime!,
         );
         logTable.pushTo([
-          decorators.green("Grafana logs url"),
-          decorators.magenta(loki_url),
+          [decorators.green("Grafana logs url"), decorators.magenta(loki_url)],
         ]);
       } else {
         logTable.pushTo([
