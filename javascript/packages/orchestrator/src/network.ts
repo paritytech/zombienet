@@ -163,11 +163,10 @@ export class Network {
     await Promise.all(dumpsPromises);
 
     if (showLogPath)
-      console.log(
-        `\n\t ${decorators.green(
-          "Node's logs are available in",
-        )} ${decorators.magenta(logsPath)}`,
-      );
+      new CreateLogTable({ colWidths: [20, 100] }).pushToPrint([
+        decorators.green("Node's logs:"),
+        decorators.magenta(logsPath),
+      ]);
 
     return logsPath;
   }

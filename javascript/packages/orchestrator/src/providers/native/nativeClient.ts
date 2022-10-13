@@ -239,15 +239,16 @@ export class NativeClient extends Client {
       }, {}),
     };
 
-    const logTable = new CreateLogTable({
+    let logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
 
-    logTable.pushTo([
-      [`${decorators.cyan("Launching")}`, `${decorators.green(name)}`],
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(name)],
+      [decorators.cyan("Status"), decorators.green("Launching")],
       [
-        `${decorators.cyan("Command")}`,
-        `${decorators.magenta(podDef.spec.command.join(" "))}`,
+        decorators.cyan("Command"),
+        decorators.white(podDef.spec.command.join(" ")),
       ],
     ]);
 
@@ -275,10 +276,13 @@ export class NativeClient extends Client {
     }
 
     await this.createResource(podDef);
-    logTable.pushTo([
-      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+    logTable = new CreateLogTable({
+      colWidths: [40, 80],
+    });
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(name)],
+      [decorators.cyan("Status"), decorators.green("Ready")],
     ]);
-    logTable.print();
   }
 
   async copyFileFromPod(

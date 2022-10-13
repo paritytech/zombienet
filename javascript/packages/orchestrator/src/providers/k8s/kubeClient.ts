@@ -95,24 +95,24 @@ export class KubeClient extends Client {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
 
-    const logTable = new CreateLogTable({
+    let logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
 
     logTable.pushTo([
+      [decorators.cyan("Pod"), decorators.green(name)],
+      [decorators.cyan("Status"), decorators.green("Launching")],
       [
-        `${decorators.cyan("Launching")}`,
-        `${decorators.green(podDef.metadata.name)}`,
+        decorators.cyan("Image"),
+        decorators.green(podDef.spec.containers[0].image),
       ],
       [
-        `${decorators.cyan("Image")}`,
-        `${decorators.green(podDef.spec.containers[0].image)}`,
-      ],
-      [
-        `${decorators.cyan("Command")}`,
-        `${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`,
+        decorators.cyan("Command"),
+        decorators.white(podDef.spec.containers[0].command.join(" ")),
       ],
     ]);
+
+    logTable.print();
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
@@ -157,10 +157,13 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.wait_pod_ready(name);
-    logTable.pushTo([
-      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+    logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(name)],
+      [decorators.cyan("Status"), decorators.green("Ready")],
     ]);
-    logTable.print();
   }
 
   async putLocalMagicFile(name: string, container?: string) {
@@ -333,7 +336,7 @@ export class KubeClient extends Client {
     if (unique) {
       const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
       if (container) args.push("-c", container);
-      const result = await this.runCommand(args, undefined, true);
+      await this.runCommand(args, undefined, true);
       debug("copyFileToPod", args);
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
@@ -701,9 +704,14 @@ export class KubeClient extends Client {
     fileName: string,
     fileHash: string,
   ) {
-    console.log(
-      "uploading to fileserver: " + localFilePath + " as:" + fileHash,
-    );
+    let logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+    logTable.pushTo([
+      [decorators.cyan("Uploading:"), decorators.green(localFilePath)],
+      [`${decorators.cyan("as:")}`, decorators.green(fileHash)],
+    ]);
+    logTable.print();
     const args = [
       "cp",
       localFilePath,

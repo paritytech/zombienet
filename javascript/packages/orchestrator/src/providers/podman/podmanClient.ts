@@ -343,18 +343,16 @@ export class PodmanClient extends Client {
   ): Promise<void> {
     const name = podDef.metadata.name;
 
-    const logTable = new CreateLogTable({
+    let logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
 
-    logTable.pushTo([
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(podDef.metadata.name)],
+      [decorators.cyan("Status"), decorators.green("Launching")],
       [
-        `${decorators.cyan("Launching")}`,
-        `${decorators.green(podDef.metadata.name)}`,
-      ],
-      [
-        `${decorators.cyan("Command")}`,
-        `${decorators.magenta(podDef.spec.containers[0].command.join(" "))}`,
+        decorators.cyan("Command"),
+        decorators.white(podDef.spec.containers[0].command.join(" ")),
       ],
     ]);
 
@@ -385,10 +383,14 @@ export class PodmanClient extends Client {
 
     await this.wait_pod_ready(name);
     await this.addNodeToPrometheus(name);
-    logTable.pushTo([
-      [`${decorators.cyan("Status")}`, decorators.green("Ready")],
+
+    logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(name)],
+      [decorators.cyan("Status"), decorators.green("Ready")],
     ]);
-    logTable.print();
   }
   async copyFileFromPod(
     identifier: string,
