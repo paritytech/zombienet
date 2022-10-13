@@ -1,7 +1,7 @@
-name: Zombienet NPM Release
+name: Zombienet NPM Automated Release
 on:
   push:
-    branches: [nik-automate-npm-release]
+    branches: [main]
 jobs:
   publish:
     name: Build & Publish to NPM
