@@ -178,9 +178,8 @@ const CustomJs = ({
         return { name, wsUri, prometheusUri, userDefinedTypes };
       }),
       paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
-        const { chainSpecPath, wasmPath, statePath } = network.paras[paraId]
-        memo[paraId] = { chainSpecPath, wasmPath, statePath }
-        };
+        const { chainSpecPath, wasmPath, statePath } = network.paras[paraId];
+        memo[paraId] = { chainSpecPath, wasmPath, statePath };
         memo[paraId].nodes = network.paras[paraId].nodes.map((node) => {
           return { ...node };
         });
