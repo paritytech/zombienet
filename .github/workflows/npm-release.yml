@@ -15,13 +15,13 @@ jobs:
           node-version: "16.x"
       - name: Build NPM Package
         run: npm run build
-        working-directory: "./javascript"
+        working-directory: "./javascript/packages/cli"
       - run: npm pack
-        working-directory: "./javascript"
+        working-directory: "./javascript/packages/cli"
       - uses: actions/upload-artifact@v3
         with:
           name: package
-          path: "*.tgz"
+          path: "./javascript/packages/cli/*.tgz"
       - uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
