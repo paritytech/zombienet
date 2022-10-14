@@ -17,39 +17,10 @@ jobs:
         run: npm run build
         working-directory: "./javascript"
       - run: npm pack
-        working-directory: "./javascript/packages/cli"
       - uses: actions/upload-artifact@v3
         with:
           name: package
-          path: "javascript/packages/cli/*.tgz"
-      - uses: octokit/request-action@v2.x
-        with:
-          route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
-          ref: main
-          inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
-        env:
-          # TODO: Once token named NPM_PUBLISH_AUTOMATION_TOKEN is added in org-level then it should replace the ZOMBIENET_GITHUB_TOKEN
-          GITHUB_TOKEN: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
-      - run: npm pack
-        working-directory: "./javascript/packages/orchestrator"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: package
-          path: "javascript/packages/orchestrator/*.tgz"
-      - uses: octokit/request-action@v2.x
-        with:
-          route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
-          ref: main
-          inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
-        env:
-          # TODO: Once token named NPM_PUBLISH_AUTOMATION_TOKEN is added in org-level then it should replace the ZOMBIENET_GITHUB_TOKEN
-          GITHUB_TOKEN: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
-      - run: npm pack
-        working-directory: "./javascript/packages/utils"
-      - uses: actions/upload-artifact@v3
-        with:
-          name: package
-          path: "javascript/packages/utils/*.tgz"
+          path: "*.tgz"
       - uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
