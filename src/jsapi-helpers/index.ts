@@ -23,17 +23,18 @@ async function registerParachain(
   wasmPath: string,
   statePath: string,
   apiUrl: string,
+  seed: string = "//Alice",
   finalization = false,
 ) {
   return new Promise<void>(async (resolve, reject) => {
     await cryptoWaitReady();
 
     const keyring = new Keyring({ type: "sr25519" });
-    const alice = keyring.addFromUri("//Alice");
+    const sudo = keyring.addFromUri(seed);
     let api: ApiPromise = await connect(apiUrl);
 
     let nonce = (
-      (await api.query.system.account(alice.address)) as any
+      (await api.query.system.account(sudo.address)) as any
     ).nonce.toNumber();
     const wasm_data = readDataFile(wasmPath);
     const genesis_state = readDataFile(statePath);
@@ -52,7 +53,7 @@ async function registerParachain(
 
     const unsub = await api.tx.sudo
       .sudo(api.tx.parasSudoWrapper.sudoScheduleParaInitialize(id, genesis))
-      .signAndSend(alice, { nonce: nonce, era: 0 }, (result) => {
+      .signAndSend(sudo, { nonce: nonce, era: 0 }, (result) => {
         console.log(`Current status is ${result.status}`);
         if (result.status.isInBlock) {
           console.log(

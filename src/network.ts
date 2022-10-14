@@ -80,6 +80,8 @@ export class Network {
   paras: {
     [id: number]: {
       chainSpecPath?: string;
+      wasmPath?: string;
+      statePath?: string;
       nodes: NetworkNode[];
     };
   } = {};
@@ -106,11 +108,13 @@ export class Network {
     this.tmpDir = tmpDir;
   }
 
-  addPara(parachainId: number, chainSpecPath?: string) {
+  addPara(parachainId: number, chainSpecPath?: string, wasmPath?:string, statePath?:string) {
     if (!this.paras[parachainId]) {
       this.paras[parachainId] = {
         nodes: [],
         chainSpecPath,
+        wasmPath,
+        statePath
       };
     }
   }

@@ -258,5 +258,9 @@ export async function generateParachainFiles(
     fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
 
+  // add paths to para files
+  parachain.wasmPath = wasmLocalFilePath;
+  parachain.statePath = stateLocalFilePath;
+
   return;
 }
