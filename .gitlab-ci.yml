@@ -65,6 +65,7 @@ lint:
   <<: *kubernetes-env
   <<: *common-refs
   script:
+    - cd javascript
     - npm install
     - npm run lint
 
@@ -73,6 +74,7 @@ test:
   <<: *kubernetes-env
   <<: *common-refs
   script:
+    - cd javascript
     - npm install
     # - npm run test
     - echo testme
@@ -84,11 +86,13 @@ build:
   <<: *collect-artifacts
   script:
     - mkdir -p artifacts
+    - cd javascript
     - npm install
     - npm run clean
     - npm run build
-    - cp -r dist/ artifacts/
-    - cp package* artifacts/
+    # We are not using artifacts now
+    # - cp -r packages/cli/dist/ artifacts/
+    # - cp package* artifacts/
 
 package:
   stage: package
