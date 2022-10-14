@@ -11,6 +11,7 @@ import {
   chainUpgradeFromUrl,
   connect,
   findPatternInSystemEventSubscription,
+  registerParachain,
   validateRuntimeCode,
 } from "../jsapi-helpers";
 import { Network } from "../network";
@@ -177,7 +178,8 @@ const CustomJs = ({
         return { name, wsUri, prometheusUri, userDefinedTypes };
       }),
       paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
-        memo[paraId] = { chainSpecPath: network.paras[paraId].chainSpecPath };
+        const { chainSpecPath, wasmPath, statePath } = network.paras[paraId];
+        memo[paraId] = { chainSpecPath, wasmPath, statePath };
         memo[paraId].nodes = network.paras[paraId].nodes.map((node) => {
           return { ...node };
         });
@@ -215,6 +217,7 @@ const CustomJs = ({
       Keyring,
       util: utilCrypto,
       connect,
+      registerParachain,
     };
     const jsScript = await import(resolvedJsFilePath);
 
