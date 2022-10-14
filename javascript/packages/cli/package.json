@@ -8,12 +8,28 @@
     "build": "tsc",
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
-    "package": "pkg . --out-path ./bins",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "pkg packages/cli/."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/paritytech/zombienet.git"
+  },
+  "pkg": {
+    "assets": [
+      "../../node_modules/@polkadot/**/*",
+      "../../node_modules/@babel/**/*",
+      "../../../static-configs/*",
+      "../../../scripts/*"
+    ],
+    "targets": [
+      "node16-macos-x64",
+      "node16-linux-x64"
+    ],
+    "outputPath": "../../../bins"
+  },
+  "bin": {
+    "zombienet": "./dist/cli.js"
   },
   "keywords": [
     "testing",
@@ -23,27 +39,6 @@
     "cli",
     "tool"
   ],
-  "files": [
-    "dist",
-    "static-configs",
-    "scripts"
-  ],
-  "bin": {
-    "zombienet": "dist/cli.js"
-  },
-  "pkg": {
-    "assets": [
-      "../../node_modules/@polkadot/**/*",
-      "../../node_modules/@babel/**/*",
-      "../../../static-configs/*",
-      "../../../scripts/*",
-      "a"
-    ],
-    "targets": [
-      "node16-macos-x64",
-      "node16-linux-x64"
-    ]
-  },
   "engines": {
     "node": ">=16"
   },

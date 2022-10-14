@@ -14,23 +14,27 @@
     "clean": "npm run clean --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "lint:write": "npm run lint:write --workspaces --if-present"
+    "lint:write": "npm run lint:write --workspaces --if-present",
+    "package": "pkg packages/cli/."
   },
-  "bin": "dist/cli.js",
   "pkg": {
     "assets": [
       "node_modules/@polkadot/**/*",
       "node_modules/@babel/**/*",
-      "static-configs/*",
-      "scripts/*"
+      "../static-configs/*",
+      "../scripts/*"
     ],
     "targets": [
       "node16-macos-x64",
       "node16-linux-x64"
-    ]
+    ],
+    "outputPath": "../bins"
   },
   "engines": {
     "node": ">=16"
+  },
+  "bin": {
+    "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
     "@parity/zombienet-dsl-parser-wrapper": "^0.1.5",
