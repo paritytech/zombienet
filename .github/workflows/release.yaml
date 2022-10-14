@@ -1,4 +1,4 @@
-name: release
+name: Zombienet Packages Release
 
 on:
   push:

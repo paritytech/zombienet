@@ -196,6 +196,8 @@ export interface Parachain {
   genesisStateGenerator?: string;
   chainSpecPath?: string;
   specPath?: string;
+  wasmPath?: string;
+  statePath?: string;
   balance?: number;
   collators: Node[];
   genesis?: JSON | ObjectJSON;

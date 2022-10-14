@@ -529,7 +529,13 @@ export async function start(
       networkNode.group = node.group;
 
       if (paraId) {
-        if (!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
+        if (!network.paras[paraId])
+          network.addPara(
+            paraId,
+            parachainSpecPath,
+            parachain?.wasmPath,
+            parachain?.statePath,
+          );
         networkNode.parachainId = paraId;
         network.addNode(networkNode, Scope.PARA);
       } else {
