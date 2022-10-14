@@ -23,6 +23,30 @@
     "cli",
     "tool"
   ],
+  "files": [
+    "dist",
+    "static-configs",
+    "scripts"
+  ],
+  "bin": {
+    "zombienet": "dist/cli.js"
+  },
+  "pkg": {
+    "assets": [
+      "../../node_modules/@polkadot/**/*",
+      "../../node_modules/@babel/**/*",
+      "../../../static-configs/*",
+      "../../../scripts/*",
+      "a"
+    ],
+    "targets": [
+      "node16-macos-x64",
+      "node16-linux-x64"
+    ]
+  },
+  "engines": {
+    "node": ">=16"
+  },
   "author": "Parity Technologies <admin@parity.io>",
   "license": "GPL-3.0-or-later",
   "bugs": {
