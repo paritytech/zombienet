@@ -10,8 +10,8 @@ import {
   chainUpgradeFromLocalFile,
   chainUpgradeFromUrl,
   connect,
-  registerParachain,
   findPatternInSystemEventSubscription,
+  registerParachain,
   validateRuntimeCode,
 } from "../jsapi-helpers";
 import { Network } from "../network";
@@ -220,7 +220,7 @@ const CustomJs = ({
       Keyring,
       util: utilCrypto,
       connect,
-      registerParachain
+      registerParachain,
     };
     const jsScript = await import(resolvedJsFilePath);
 

@@ -108,13 +108,18 @@ export class Network {
     this.tmpDir = tmpDir;
   }
 
-  addPara(parachainId: number, chainSpecPath?: string, wasmPath?:string, statePath?:string) {
+  addPara(
+    parachainId: number,
+    chainSpecPath?: string,
+    wasmPath?: string,
+    statePath?: string,
+  ) {
     if (!this.paras[parachainId]) {
       this.paras[parachainId] = {
         nodes: [],
         chainSpecPath,
         wasmPath,
-        statePath
+        statePath,
       };
     }
   }
