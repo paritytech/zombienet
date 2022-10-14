@@ -17,6 +17,7 @@ jobs:
         run: npm run build
         working-directory: "./javascript"
       - run: npm pack
+        working-directory: "./javascript"
       - uses: actions/upload-artifact@v3
         with:
           name: package
