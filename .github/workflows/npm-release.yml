@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: "16.x"
       - name: Build NPM Package
-        run: npm run build ${{steps.get_tag_version.outputs.TAG_VERSION}}
+        run: npm run build
       - run: npm pack
       - uses: actions/upload-artifact@v3
         with:
