@@ -15,7 +15,7 @@ jobs:
           node-version: "16.x"
       - name: Build NPM Package
         run: npm run build
-        working-directory: "./javascript/packages/cli"
+        working-directory: "./javascript"
       - run: npm pack
         working-directory: "./javascript/packages/cli"
       - uses: actions/upload-artifact@v3
