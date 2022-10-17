@@ -16,7 +16,7 @@ stages:
   - deploy
 
 variables:
-  CI_IMAGE: "node:16.10"
+  CI_IMAGE: "node:16.18"
   DOCKERFILE: scripts/ci/docker/zombienet_injected.Dockerfile
   DOCKERHUB_REPO: paritytech
   IMAGE_NAME: $DOCKERHUB_REPO/zombienet
@@ -77,7 +77,6 @@ build:
   script:
     - mkdir -p artifacts
     - cd javascript
-    - npm cache clean --force # TODO: remove this line
     - npm install
     - npm run clean
     - npm run build
