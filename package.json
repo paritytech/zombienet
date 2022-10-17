@@ -1,6 +1,6 @@
 {
   "name": "@parity/zombienet",
-  "version": "1.2.79",
+  "version": "1.2.80",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Parity Technologies <admin@parity.io>",
