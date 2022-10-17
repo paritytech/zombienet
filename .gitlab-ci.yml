@@ -77,12 +77,10 @@ build:
   script:
     - mkdir -p artifacts
     - cd javascript
+    - npm cache clean # TODO: remove this line
     - npm install
     - npm run clean
     - npm run build
-    # We are not using artifacts now
-    # - cp -r packages/cli/dist/ artifacts/
-    # - cp package* artifacts/
 
 package:
   stage: package
