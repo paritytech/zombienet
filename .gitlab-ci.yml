@@ -77,7 +77,7 @@ build:
   script:
     - mkdir -p artifacts
     - cd javascript
-    - npm cache clean # TODO: remove this line
+    - npm cache clean --force # TODO: remove this line
     - npm install
     - npm run clean
     - npm run build
