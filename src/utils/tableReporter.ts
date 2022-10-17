@@ -1,7 +1,7 @@
 import Mocha from "mocha";
 
-import { CreateLogTable } from "../utils/tableCli";
 import { decorators } from "../utils/colors";
+import { CreateLogTable } from "../utils/tableCli";
 
 const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS } =
   Mocha.Runner.constants;
