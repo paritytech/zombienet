@@ -8,7 +8,6 @@ default:
   interruptible: true
 
 stages:
-  - lint
   - build
   - test
   - package
@@ -59,15 +58,6 @@ variables:
     expire_in: 2 days
     paths:
       - artifacts/
-
-lint:
-  stage: lint
-  <<: *kubernetes-env
-  <<: *common-refs
-  script:
-    - cd javascript
-    - npm install
-    - npm run lint
 
 test:
   stage: test
