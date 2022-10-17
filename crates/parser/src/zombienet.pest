@@ -17,7 +17,7 @@ colon = { ":" }
 /// matches uri
 uri = @{ "http" ~ "s"? ~ "://" ~ (ASCII_ALPHANUMERIC| "/" | "-" | "_" | ".")+ }
 /// matches any file path
-file_path = @{ "."{0,2} ~ "/" ~ (ASCII_ALPHANUMERIC | "-" | "_" | "." )+ }
+file_path = @{ "."{0,2} ~ "/" ~ (ASCII_ALPHANUMERIC | "/" |"-" | "_" | ".")+ }
 /// matches prometheus metrics labels
 metric_key_value = @{ (ASCII_ALPHANUMERIC | "_" | "-")+ ~ "=" ~ double_quoted_string }
 /// matches Jaeger span ids
