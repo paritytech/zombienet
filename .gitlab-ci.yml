@@ -10,7 +10,6 @@ default:
 stages:
   - build
   - test
-  - package
   - check
   - publish
   - deploy
@@ -80,21 +79,6 @@ build:
     - npm install
     - npm run clean
     - npm run build
-
-package:
-  stage: package
-  <<: *kubernetes-env
-  <<: *common-refs
-  <<: *collect-artifacts
-  needs:
-    - job: build
-  script:
-    - mkdir -p artifacts
-    - npm install
-    - npm run clean
-    - npm run build
-    - npm run package
-    - cp bins/zombienet-* artifacts/
 
 # template task for building and pushing an image
 .build-push-docker-image: &build-push-docker-image
