@@ -14,6 +14,7 @@ import {
   ParachainConfig,
   PL_ConfigType,
   PolkadotLaunchConfig,
+  TestDefinition,
 } from "./types";
 import { askQuestion, getCredsFilePath, readNetworkConfig } from "./utils/fs";
 
@@ -28,7 +29,11 @@ const DEFAULT_CUMULUS_COLLATOR_URL =
 // const DEFAULT_ADDER_COLLATOR_URL =
 //   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
 import { decorators } from "./utils/colors";
+
+import parser from "@parity/zombienet-dsl-parser-wrapper";
+import { Environment } from "nunjucks";
 import { convertBytes, getFilePathNameExt } from "./utils/misc";
+import { RelativeLoader } from "./utils/nunjucks-relative-loader";
 
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
@@ -68,7 +73,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
           method: "GET",
           responseType: "stream",
         });
-        const totalLength = headers["content-length"];
+        const totalLength = headers["content-length"] as string;
 
         const progressBar = new progress(
           "-> downloading [:bar] :percent :etas",
@@ -125,6 +130,16 @@ const latestPolkadotReleaseURL = async (
     throw new Error(err);
   }
 };
+
+function getTestNameFromFileName(testFile: string): string {
+  const fileWithOutExt = testFile.split(".")[0];
+  const fileName: string = fileWithOutExt.split("/").pop() || "";
+  const parts = fileName.split("-");
+  const name = parts[0].match(/\d/)
+    ? parts.slice(1).join(" ")
+    : parts.join(" ");
+  return name;
+}
 
 // Convert functions
 // Read the input file
@@ -434,8 +449,26 @@ async function test(
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
       ? opts.provider
       : "kubernetes";
+
+  const configBasePath = path.dirname(testFile);
+  const env = new Environment(new RelativeLoader([configBasePath]));
+  const temmplateContent = fs.readFileSync(testFile).toString();
+  const content = env.renderString(temmplateContent, process.env);
+
+  const testName = getTestNameFromFileName(testFile);
+
+  let testDef: TestDefinition;
+  try {
+    testDef = JSON.parse(parser.parse_to_json(content));
+  } catch (e) {
+    console.log(e);
+    process.exit(1);
+  }
+
   await run(
-    testFile,
+    configBasePath,
+    testName,
+    testDef,
     providerToUse,
     inCI,
     opts.spawnConcurrency,

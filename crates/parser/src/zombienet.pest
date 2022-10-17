@@ -1,0 +1,104 @@
+/// Helpers
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+/// matches permited node's names
+name = @{ (ASCII_ALPHANUMERIC | "-")+ }
+/// matched any integer
+int   = @{ "-" ? ~ ("0" | '1'..'9' ~ '0'..'9' * ) }
+/// matches any char
+char = @{  'a'..'z' | 'A'..'Z' | "." | "_" | "/" }
+/// matches anything between 2 double quotes
+double_quoted_string  = @{ "\"" ~ (!("\"") ~ ANY)* ~ "\""}
+/// matches anything between 2 single quotes
+single_quoted_string  = @{ "\'" ~ (!("\'") ~ ANY)* ~ "\'"}
+/// matches anything between 2 backquotes\backticks
+backquoted_quoted_string  = @{ "`" ~ (!("`") ~ ANY)* ~ "`"}
+/// matches a single colon
+colon = { ":" }
+/// matches uri
+uri = @{ "http" ~ "s"? ~ "://" ~ (ASCII_ALPHANUMERIC| "/" | "-" | "_" | ".")+ }
+/// matches any file path
+file_path = @{ "."{0,2} ~ "/" ~ (ASCII_ALPHANUMERIC | "-" | "_" | "." )+ }
+/// matches prometheus metrics labels
+metric_key_value = @{ (ASCII_ALPHANUMERIC | "_" | "-")+ ~ "=" ~ double_quoted_string }
+/// matches Jaeger span ids
+span_id = { ASCII_HEX_DIGIT{32} }
+
+/// METRICS
+block_height = { "blockheight" | "block height" | "best block" }
+finalized_height = { "finalised height" | "finalised block" }
+peers_count = { "peers count" | "peers" }
+
+metric_name = @{ (block_height | finalized_height | peers_count | (ASCII_ALPHANUMERIC | "_" )+) ~ ("{" ~ metric_key_value ~ "}")? }
+square_brackets_strings = {
+    "[" ~ double_quoted_string ~ ("," ~ double_quoted_string)* ~ "]"
+}
+match_type = { "regex" | "glob" }
+
+/// OPERATORS
+op_lte       = { "<=" }
+op_gte       = { ">=" | "is at least" | "at least" }
+op_lt        = { "<" | "is lower than" }
+op_gt        = { ">" | "is greater than" | "greater than" }
+op_eq        = { "==" | "=" | "equals" | "is equal to" | "is" }
+op_ineq      = { "!=" }
+comparison = { (op_lte | op_gte | op_gt | op_lt | op_eq | op_ineq) ~ int+ }
+
+// commons
+node_name = { name ~ colon }
+seconds = _{ "seconds"|"secs"|"s" }
+within = { "within" ~ int+ ~ seconds }
+parachain = { "parachain" ~ int+ }
+
+// CONFIG
+inner_description = @{(!NEWLINE ~ ANY)+}
+description = { "Description:" ~ inner_description  }
+network = { "Network:" ~ file_path }
+creds = { "Creds:" ~ ("config" | file_path) }
+
+// ASSERTIONS
+is_up = { node_name ~ "is up" ~ within? }
+para_is_registered = { node_name ~ parachain ~ "is registered" ~ within? }
+para_block_height = { node_name ~ parachain ~ "block height" ~ comparison ~ within? }
+para_runtime_upgrade = { node_name ~ parachain ~ "perform upgrade with" ~ ( uri | file_path ) ~ within? }
+para_runtime_dummy_upgrade = { node_name ~ parachain ~ "perform dummy upgrade" ~ within? }
+histogram = { node_name ~ "reports histogram" ~ metric_name ~ "has" ~ (comparison | int+) ~ "samples in buckets" ~ square_brackets_strings ~ within? }
+report = { node_name ~ "reports" ~ metric_name ~ comparison ~ within? }
+log_match = { node_name ~ "log line" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
+trace = { node_name ~ "trace with traceID" ~ span_id ~ "contains" ~ square_brackets_strings ~ within? }
+system_event = { node_name ~ "system event" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
+custom_js = { node_name ~ "js-script" ~ file_path ~ ("with" ~ double_quoted_string)? ~ ( "return" ~ comparison )? ~ within? }
+custom_sh = { node_name ~ "run" ~ file_path ~ ("with" ~ double_quoted_string)? ~ ( "return" ~ comparison )? ~ within? }
+
+/// COMMANDS
+sleep = { "sleep" ~ int+ ~ seconds }
+pause = { node_name ~ "pause" }
+resume = { node_name ~ "resume" }
+restart = { node_name ~ "restart" ~ ("after" ~ int+ ~ seconds)? }
+
+/// COMMENTS
+comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)+ }
+
+
+file = { SOI ~ (
+    description? ~
+    network ~
+    creds
+    ) ~ (
+    comment |
+    is_up |
+    para_is_registered |
+    para_block_height |
+    para_runtime_upgrade |
+    para_runtime_dummy_upgrade |
+    histogram |
+    report |
+    log_match |
+    trace |
+    system_event |
+    custom_js |
+    custom_sh |
+    sleep |
+    pause |
+    resume |
+    restart
+    )* ~ NEWLINE* ~ EOI }

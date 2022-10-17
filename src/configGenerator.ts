@@ -12,6 +12,7 @@ import {
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
+  DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
@@ -71,6 +72,8 @@ export async function generateNetworkSpec(
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
+      maxNominations:
+        config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,

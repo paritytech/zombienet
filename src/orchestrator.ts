@@ -40,6 +40,7 @@ import {
   WS_URI_PATTERN,
   ZOMBIE_WRAPPER,
 } from "./constants";
+import { registerParachain } from "./jsapi-helpers";
 import { generateKeystoreFiles } from "./keys";
 import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
@@ -62,6 +63,7 @@ import {
   getSha256,
   sleep,
 } from "./utils/misc";
+
 import { series } from "./utils/promise-series";
 
 import { CreateLogTable } from "./utils/tableCli";
@@ -157,17 +159,20 @@ export async function start(
 
     const zombieTable = new CreateLogTable({
       head: [
-        `${decorators.green("🧟 Zombienet")}`,
+        `${decorators.green("🧟 Zombienet 🧟")}`,
         `${decorators.green("Initiation")}`,
       ],
       colWidths: [20, 100],
-      main: true,
+      doubleBorder: true,
     });
 
     zombieTable.pushTo([
-      ["Provider", `${decorators.magenta(networkSpec.settings.provider)}`],
-      ["Namespace", `${decorators.magenta(namespace)}`],
-      ["Temp Dir", `${decorators.magenta(tmpDir.path)}`],
+      [
+        decorators.green("Provider"),
+        decorators.red(networkSpec.settings.provider),
+      ],
+      [decorators.green("Namespace"), namespace],
+      [decorators.green("Temp Dir"), tmpDir.path],
     ]);
 
     zombieTable.print();
@@ -266,14 +271,13 @@ export async function start(
 
           await addStaking(chainSpecFullPathPlain, node);
         }
-        // Add some extra space until next log
-        console.log("\n");
       }
 
       if (networkSpec.relaychain.randomNominatorsCount) {
         await generateNominators(
           chainSpecFullPathPlain,
           networkSpec.relaychain.randomNominatorsCount,
+          networkSpec.relaychain.maxNominations,
           validatorKeys,
         );
       }
@@ -344,9 +348,10 @@ export async function start(
     try {
       const chainRawContent = require(chainSpecFullPath);
       debug(`Chain name: ${chainRawContent.name}`);
-      console.log(
-        `\n\t\t Chain name: ${decorators.green(chainRawContent.name)}`,
-      );
+
+      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        [`Chain name: ${decorators.green(chainRawContent.name)}`],
+      ]);
     } catch (err) {
       throw new Error(
         `Error: chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`,
@@ -526,7 +531,13 @@ export async function start(
       networkNode.group = node.group;
 
       if (paraId) {
-        if (!network.paras[paraId]) network.addPara(paraId, parachainSpecPath);
+        if (!network.paras[paraId])
+          network.addPara(
+            paraId,
+            parachainSpecPath,
+            parachain?.wasmPath,
+            parachain?.statePath,
+          );
         networkNode.parachainId = paraId;
         network.addNode(networkNode, Scope.PARA);
       } else {
@@ -534,47 +545,72 @@ export async function start(
       }
 
       // Display info about the current node
-      let msg = `\t${decorators.green(node.name)} running`;
+      let logTable = new CreateLogTable({
+        colWidths: [20, 100],
+        doubleBorder: true,
+      });
+      logTable.pushTo([
+        ["Pod", decorators.green(node.name)],
+        ["Status", decorators.green("Running")],
+      ]);
       if (node.overrides && node.overrides.length > 0) {
-        msg += `\n\t\t with ${decorators.yellow("Overrides")}...\n`;
+        logTable.pushTo([
+          [
+            {
+              colSpan: 2,
+              content: `with ${decorators.yellow("Overrides")}...`,
+            },
+          ],
+        ]);
+
         for (const override of node.overrides) {
-          msg += `\t\t local_path: ${override.local_path}\n`;
-          msg += `\t\t remote name: ${override.remote_name}`;
+          logTable.pushTo([
+            ["local_path", override.local_path],
+            ["remote name", override.remote_name],
+          ]);
         }
       }
-
-      console.log(msg);
       if (monitorIsAvailable) {
         const loki_url = getLokiUrl(
           namespace,
           podDef.metadata.name,
           network.networkStartTime!,
         );
-        console.log(`\t${decorators.green("Grafana logs url:")}`);
-        console.log(`\t\t${decorators.magenta(loki_url)}`);
+        logTable.pushTo([
+          [decorators.green("Grafana logs url"), decorators.magenta(loki_url)],
+        ]);
       } else {
-        console.log(
-          `\n\t\t ${decorators.magenta(
-            "You can follow the logs of the node by running this command: ",
-          )}`,
-        );
+        logTable.pushTo([
+          [
+            {
+              colSpan: 2,
+              content: decorators.magenta(
+                "You can follow the logs of the node by running this command: ",
+              ),
+            },
+          ],
+        ]);
+        let logCommand;
         switch (networkSpec.settings.provider) {
           case "podman":
-            console.log(
-              `\n\t\t\t podman logs -f ${podDef.metadata.name}_pod-${podDef.metadata.name}`,
-            );
+            logCommand = `podman logs -f ${podDef.metadata.name}_pod-${podDef.metadata.name}`;
             break;
           case "kubernetes":
-            console.log(
-              `\n\t\t\t kubectl logs -f ${podDef.metadata.name} -c ${podDef.metadata.name} -n ${namespace}`,
-            );
+            logCommand = `kubectl logs -f ${podDef.metadata.name} -c ${podDef.metadata.name} -n ${namespace}`;
             break;
           case "native":
-            console.log(
-              `\n\t\t\t tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`,
-            );
+            logCommand = `tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`;
             break;
         }
+        logTable.pushTo([
+          [
+            {
+              colSpan: 2,
+              content: logCommand,
+            },
+          ],
+        ]);
+        logTable.print();
       }
     };
 
@@ -616,10 +652,11 @@ export async function start(
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
-        await network.registerParachain(
+        await registerParachain(
           parachain.id,
           `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
           `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`,
+          network.relay[0].wsUri,
         );
       }
 

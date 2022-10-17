@@ -144,7 +144,7 @@ Commands:
 
 One of the goals of `zombienet` is to easily spawn ephemeral networks, providing a simple but
 powerful *cli* that allows you to declare the desired network in `toml` or `json` format. You can
-check the [definition spec](/docs/src/network-definition-spec.md) to view the available options.
+check the [definition spec](https://paritytech.github.io/zombienet/network-definition-spec.html) to view the available options.
 
 A **minimal** configuration example with two validators and one parachain:
 
@@ -174,8 +174,10 @@ id = 100
 Then you can spawn the network by running the following command:
 
 ```bash
-./zombienet-macos spawn examples/0001-small-network.toml
+./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
+
+Note that the command expects two binaries `polkadot` and `adder-collator` to be installed on your system. See further down for how to get them.
 
 You can follow the output of the `steps` to spawn the network and once the network is launched a
 message with the `node`s information like this one is shown
@@ -270,7 +272,7 @@ The other goal of `zombienet` is to provide a way to perform test/assertions aga
 network, using a set of `natural language expressions` that allow you to make assertions based on
 metrics, logs and some `built-in` function that query the network using `polkadot.js`. Those
 assertions should be defined in a *.zndsl test*, and the `dsl` (**D**omain **S**pecific **L**anguage) and format is documented in
-[here](/docs/book/cli/test-dsl-definition-spec.md).
+[here](https://paritytech.github.io/zombienet/cli/test-dsl-definition-spec.html).
 
 The following is an small example to spawn a network (using the previous `simple network
 definition`) and assert that:
@@ -341,6 +343,18 @@ At the end of the download, the `setup` script will provide a command to run in 
 ```bash
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
 ```
+
+### Build adder-collator (needed for running examples with native provider)
+
+You can build it from source like this
+
+```bash
+git clone git@github.com:paritytech/polkadot
+cd polkadot
+cargo build --profile testnet -p test-parachain-adder-collator
+export PATH=$(pwd)/target/testnet:$PATH
+```
+
 
 ### Using Zombienet
 

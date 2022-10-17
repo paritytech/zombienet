@@ -113,8 +113,6 @@ export async function generateParachainFiles(
         await addAuthFn(node);
         await addCollatorSelection(chainSpecFullPathPlain, node);
         await addParaCustom(chainSpecFullPathPlain, node);
-        // Add some extra space until next log
-        console.log("\n");
       }
     }
 
@@ -259,6 +257,10 @@ export async function generateParachainFiles(
   if (parachain.genesisWasmPath) {
     fs.copyFileSync(parachain.genesisWasmPath, wasmLocalFilePath);
   }
+
+  // add paths to para files
+  parachain.wasmPath = wasmLocalFilePath;
+  parachain.statePath = stateLocalFilePath;
 
   return;
 }
