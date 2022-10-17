@@ -223,7 +223,7 @@ export async function run(
   }
 
   // pass the file path, don't load the reporter as a module
-  mocha.reporter("../utils/tableReporter");
+  mocha.reporter(process.cwd() + "/dist/utils/tableReporter");
 
   // run
   mocha.run(exitMocha);
