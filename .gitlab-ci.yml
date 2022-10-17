@@ -62,11 +62,16 @@ test:
   stage: test
   <<: *kubernetes-env
   <<: *common-refs
+  <<: *collect-artifacts
   script:
+    - mkdir -p artifacts
     - cd javascript
     - npm install
     # - npm run test
     - echo testme
+    - cp -r packages/ artifacts/
+    - cp package.json artifacts/
+    - cp package-lock.json artifacts/
 
 build:
   stage: build
