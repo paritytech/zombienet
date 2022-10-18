@@ -11,9 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3.1.0
 
-      - name: Install
-        run: npm install
-
       - name: Setup mdBook
         uses: peaceiris/actions-mdbook@v1
         with:
