@@ -48,7 +48,7 @@ RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
 # Change `cli` permissions and link to easy call
-RUN chmod +x ./dist/cli.js
+RUN chmod +x /home/nonroot/zombie-net/packages/cli/dist/cli.js
 RUN ln -s /home/nonroot/zombie-net/packages/cli/dist/cli.js /usr/local/bin/zombie
 
 # Dependency for run test script when run inside container
