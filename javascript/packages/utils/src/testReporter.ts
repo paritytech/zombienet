@@ -1,6 +1,6 @@
 import Mocha from "mocha";
 
-import { CreateLogTable, decorators } from "..";
+import { CreateLogTable, decorators } from "./index";
 
 const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_RUN_BEGIN } =
   Mocha.Runner.constants;
