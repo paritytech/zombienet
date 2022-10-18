@@ -226,10 +226,7 @@ export async function run(
   }
 
   // pass the file path, don't load the reporter as a module
-  const resolvedReporterPath = path.resolve(
-    __dirname,
-    "../../node_modules/@zombienet/utils/dist/testReporter",
-  );
+  const resolvedReporterPath = path.resolve(__dirname, "./testReporter");
   mocha.reporter(resolvedReporterPath);
 
   // run
