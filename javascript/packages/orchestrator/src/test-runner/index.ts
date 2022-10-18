@@ -225,6 +225,10 @@ export async function run(
     test.timeout(0);
   }
 
+  // pass the file path, don't load the reporter as a module
+  const resolvedReporterPath = path.resolve(__dirname, "../utils/testReporter");
+  mocha.reporter(resolvedReporterPath);
+
   // run
   mocha.run(exitMocha);
 }
