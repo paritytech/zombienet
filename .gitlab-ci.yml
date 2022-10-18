@@ -69,10 +69,10 @@ test:
     - npm install
     # - npm run test
     - echo testme
-    - cp -r packages/ artifacts/
-    - cp package.json artifacts/
-    - cp package-lock.json artifacts/
-    - ls -ltr artifacts/*
+    - cp -r packages/ ../artifacts/
+    - cp package.json ../artifacts/
+    - cp package-lock.json ../artifacts/
+    - ls -ltr ../artifacts/*
 
 build:
   stage: build
@@ -85,9 +85,9 @@ build:
     - npm install
     - npm run clean
     - npm run build
-    - cp -r packages/ artifacts/
-    - cp package.json artifacts/
-    - cp package-lock.json artifacts/
+    - cp -r packages/ ../artifacts/
+    - cp package.json ../artifacts/
+    - cp package-lock.json ../artifacts/
 
 # template task for building and pushing an image
 .build-push-docker-image: &build-push-docker-image
