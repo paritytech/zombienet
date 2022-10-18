@@ -28,16 +28,16 @@ class TestReporter {
       colWidths: [30, 100],
     });
 
-        let announcement = new CreateLogTable({
-          colWidths: [120],
-        });
-        announcement.pushToPrint([
-          [
-            decorators.green(
-              "🛎️ Tests are currently running. Results will appear at the end",
-            ),
-          ],
-        ]);
+    let announcement = new CreateLogTable({
+      colWidths: [120],
+    });
+    announcement.pushToPrint([
+      [
+        decorators.green(
+          "🛎️ Tests are currently running. Results will appear at the end",
+        ),
+      ],
+    ]);
     runner
       .once(EVENT_RUN_BEGIN, () => {
         announcement.print();
