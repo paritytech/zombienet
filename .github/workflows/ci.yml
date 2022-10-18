@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 17.x, 18.x]
+        node-version: [16.x, 17.x, 18.x]
 
     steps:
       - uses: actions/checkout@v3.1.0
@@ -21,36 +21,37 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run lint
-
+        working-directory: "./javascript"
 
   build-rust:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3.1.0
-    - name: Install Rust Stable toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+      - uses: actions/checkout@v3.1.0
+      - name: Install Rust Stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
 
-    - name: Run cargo fmt
-      run: cargo fmt --all -- --check
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
 
-    - uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --all-features
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
 
-    - name: Build
-      run: cargo build --verbose
+      - name: Build
+        run: cargo build
 
-    - name: Run tests
-      run: cargo test --verbose --all-targets --all-features
-
+      - name: Run tests
+        run: cargo test --verbose --all-targets --all-features
 
   all:
     # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks

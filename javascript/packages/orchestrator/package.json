@@ -1,0 +1,40 @@
+{
+  "name": "@zombienet/orchestrator",
+  "version": "0.0.1",
+  "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paritytech/zombienet.git"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "build": "tsc",
+    "lint": "npx prettier --check ./src",
+    "lint:write": "npx prettier --write ./src",
+    "package": "pkg . --out-path ./bins",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "testing",
+    "framework",
+    "substrate",
+    "zombienet",
+    "cli",
+    "tool"
+  ],
+  "author": "Parity Technologies <admin@parity.io>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/paritytech/zombienet/issues"
+  },
+  "devDependencies": {
+    "@zombienet/utils": "^0.0.1"
+  },
+  "homepage": "https://github.com/paritytech/zombienet#readme"
+}

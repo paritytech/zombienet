@@ -1,0 +1,10 @@
+yarn-error.log*
+.nyc_output/
+.eslintrc.cjs
+.eslintignore
+.prettier*
+/coverage
+tsconfig.*
+jest.config*
+
+src/**/*
