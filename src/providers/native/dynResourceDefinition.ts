@@ -64,12 +64,16 @@ export async function genNodeDef(
   const dataPath = `${client.tmpDir}/${name}/data`;
   await fs.mkdir(dataPath, { recursive: true });
 
+  const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
+  await fs.mkdir(relayDataPath, { recursive: true });
+
   let computedCommand;
   if (nodeSetup.zombieRole === "cumulus-collator") {
     computedCommand = await genCumulusCollatorCmd(
       nodeSetup,
       cfgPath,
       dataPath,
+      relayDataPath,
       false,
     );
   } else {

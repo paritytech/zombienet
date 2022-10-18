@@ -40,6 +40,7 @@ export async function genCumulusCollatorCmd(
   nodeSetup: Node,
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
+  relayDataPath: string = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator } = nodeSetup;
@@ -121,7 +122,14 @@ export async function genCumulusCollatorCmd(
     ) {
       // Arguments for the relay chain node part of the collator binary.
       fullCmd.push(
-        ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+        ...[
+          "--",
+          "--base-path",
+          dataPath,
+          "--chain",
+          `${cfgPath}/${chain}.json`,
+          "--execution wasm",
+        ],
       );
 
       if (argsFullNode) {
