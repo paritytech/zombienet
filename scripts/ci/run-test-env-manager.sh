@@ -232,7 +232,7 @@ function run_test {
       EXIT_STATUS=1
     fi;
   else
-    for i in $(find ${OUTPUT_DIR} \(-name *.zndsl -or -name *.feature\)| sort); do
+    for i in $(find ${OUTPUT_DIR} \( -name *.zndsl -or -name *.feature \)| sort); do
       echo "running test: ${i}"
       zombie -c $CONCURRENCY test $i
       TEST_EXIT_STATUS=$?
