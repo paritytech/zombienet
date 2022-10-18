@@ -10,13 +10,12 @@ default:
 stages:
   - build
   - test
-  - package
   - check
   - publish
   - deploy
 
 variables:
-  CI_IMAGE: "node:16.10"
+  CI_IMAGE: "node:16.18"
   DOCKERFILE: scripts/ci/docker/zombienet_injected.Dockerfile
   DOCKERHUB_REPO: paritytech
   IMAGE_NAME: $DOCKERHUB_REPO/zombienet
@@ -63,11 +62,17 @@ test:
   stage: test
   <<: *kubernetes-env
   <<: *common-refs
+  <<: *collect-artifacts
   script:
+    - mkdir -p artifacts
     - cd javascript
     - npm install
     # - npm run test
     - echo testme
+    - cp -r packages/ ../artifacts/
+    - cp package.json ../artifacts/
+    - cp package-lock.json ../artifacts/
+    - ls -ltr ../artifacts/*
 
 build:
   stage: build
@@ -80,24 +85,9 @@ build:
     - npm install
     - npm run clean
     - npm run build
-    # We are not using artifacts now
-    # - cp -r packages/cli/dist/ artifacts/
-    # - cp package* artifacts/
-
-package:
-  stage: package
-  <<: *kubernetes-env
-  <<: *common-refs
-  <<: *collect-artifacts
-  needs:
-    - job: build
-  script:
-    - mkdir -p artifacts
-    - npm install
-    - npm run clean
-    - npm run build
-    - npm run package
-    - cp bins/zombienet-* artifacts/
+    - cp -r packages/ ../artifacts/
+    - cp package.json ../artifacts/
+    - cp package-lock.json ../artifacts/
 
 # template task for building and pushing an image
 .build-push-docker-image: &build-push-docker-image
