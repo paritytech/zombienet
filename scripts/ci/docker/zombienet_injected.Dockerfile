@@ -39,7 +39,6 @@ RUN groupadd --gid 10001 nonroot && \
 
 WORKDIR /home/nonroot/zombie-net
 COPY ./artifacts/packages ./packages
-COPY static-configs ./static-configs
 COPY scripts ./scripts
 COPY tests ./tests
 COPY artifacts/package.json ./
