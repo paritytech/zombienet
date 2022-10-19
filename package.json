@@ -29,7 +29,7 @@
     "@polkadot/keyring": "^10.1.6",
     "@polkadot/util-crypto": "^10.1.6",
     "@types/chai": "^4.3.3",
-    "axios": "^1.1.2",
+    "axios": "^0.27.2",
     "chai": "^4.3.4",
     "cli-table3": "^0.6.2",
     "commander": "^9.4.0",
