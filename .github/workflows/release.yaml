@@ -23,6 +23,8 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run package
+      - name: Test if zombienet-linux runs
+        run: ./bins/zombienet-linux version
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -58,6 +60,8 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run package
+      - name: Test if zombienet-mac runs
+        run: ./bins/zombienet-mac version
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
         env:
