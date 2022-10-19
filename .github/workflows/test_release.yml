@@ -22,19 +22,8 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run package
-      - run: ./bins/zombienet-linux
-      - name: release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
       - name: test zombienet-linux
-        run: ./bins/zombienet-linux
+        run: ./bins/zombienet-linux version
   test_release_for_mac:
     name: build_release_for_mac
     needs: test_release_for_linux
@@ -51,12 +40,5 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npm run package
-      - name: upload macos artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
-          asset_path: ./bins/zombienet-macos
-          asset_name: zombienet-macos
-          asset_content_type: application/octet-stream
+      - name: test zombienet-mac
+        run: ./bins/zombienet-linux version
