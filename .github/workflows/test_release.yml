@@ -37,7 +37,7 @@ jobs:
         run: ./bins/zombienet-linux
   test_release_for_mac:
     name: build_release_for_mac
-    needs: build_release_for_linux
+    needs: test_release_for_linux
     runs-on: macos-latest
     steps:
       - name: checkout
