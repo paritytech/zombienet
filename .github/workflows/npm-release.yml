@@ -18,11 +18,11 @@ jobs:
         # TODO: Add checks if version is same as the one published in order to trigger the flow
         working-directory: "./javascript"
       - run: npm pack
-        working-directory: "./javascript/packages/cli"
+        working-directory: "./javascript/packages/utils"
       - uses: actions/upload-artifact@v3
         with:
           name: package
-          path: "./javascript/packages/cli/*.tgz"
+          path: "./javascript/packages/utils/*.tgz"
       - run: npm pack
         working-directory: "./javascript/packages/orchestrator"
       - uses: actions/upload-artifact@v3
@@ -30,11 +30,11 @@ jobs:
           name: package
           path: "./javascript/packages/orchestrator/*.tgz"
       - run: npm pack
-        working-directory: "./javascript/packages/utils"
+        working-directory: "./javascript/packages/cli"
       - uses: actions/upload-artifact@v3
         with:
           name: package
-          path: "./javascript/packages/utils/*.tgz"
+          path: "./javascript/packages/cli/*.tgz"
       - uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
