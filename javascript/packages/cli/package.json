@@ -48,7 +48,7 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
-    "@zombienet/orchestrator": "^0.0.2"
+    "@zombienet/orchestrator": "^0.0.1"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme",
   "publishConfig": {
