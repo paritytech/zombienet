@@ -26,7 +26,7 @@
       "node16-macos-x64",
       "node16-linux-x64"
     ],
-    "outputPath": "../../../bins"
+    "outputPath": "../bins"
   },
   "bin": {
     "zombienet": "./dist/cli.js"
