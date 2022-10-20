@@ -33,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/paritytech/zombienet/issues"
   },
+  "devDependencies": {
+    "@zombienet/utils": "^0.0.2"
+  },
   "homepage": "https://github.com/paritytech/zombienet#readme"
 }
