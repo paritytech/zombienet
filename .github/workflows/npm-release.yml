@@ -14,7 +14,7 @@ jobs:
         with:
           node-version: "16.x"
       - name: Build NPM Package
-        run: npm run build -w packages/cli
+        run: npm run build
         # TODO: Add checks if version is same as the one published in order to trigger the flow
         working-directory: "./javascript"
       - run: npm pack
@@ -41,7 +41,7 @@ jobs:
         with:
           node-version: "16.x"
       - name: Build NPM Package
-        run: npm run build -w packages/orchestrator
+        run: npm run build
         # TODO: Add checks if version is same as the one published in order to trigger the flow
         working-directory: "./javascript"
       - run: npm pack
