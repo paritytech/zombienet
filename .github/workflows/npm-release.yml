@@ -23,26 +23,12 @@ jobs:
         with:
           name: package
           path: "./javascript/packages/cli/*.tgz"
-      - uses: octokit/request-action@v2.x
-        with:
-          route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
-          ref: main
-          inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.NPM_PUBLISH_AUTOMATION_TOKEN }}
       - run: npm pack
         working-directory: "./javascript/packages/orchestrator"
       - uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/orchestrator/*.tgz"
-      - uses: octokit/request-action@v2.x
-        with:
-          route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
-          ref: main
-          inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.NPM_PUBLISH_AUTOMATION_TOKEN }}
       - run: npm pack
         working-directory: "./javascript/packages/utils"
       - uses: actions/upload-artifact@v3
