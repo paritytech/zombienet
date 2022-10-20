@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+  pull_request:
+    branches: [main]
 
 jobs:
   build_release_for_linux:
@@ -22,29 +24,32 @@ jobs:
           node-version: '16'
           working-directory: './javascript'
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run package
+        working-directory: "./javascript"
       - name: Test if zombienet-linux runs
         run: ./bins/zombienet-linux version
-      - name: release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: upload linux artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bins/zombienet-linux
-          asset_name: zombienet-linux
-          asset_content_type: application/octet-stream
+      # - name: release
+      #   uses: actions/create-release@v1
+      #   id: create_release
+      #   with:
+      #     draft: false
+      #     prerelease: false
+      #     release_name: ${{ github.ref }}
+      #     tag_name: ${{ github.ref }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      # - name: upload linux artifact
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./bins/zombienet-linux
+      #     asset_name: zombienet-linux
+      #     asset_content_type: application/octet-stream
   build_release_for_mac:
     name: build_release_for_mac
     needs: build_release_for_linux
@@ -60,16 +65,19 @@ jobs:
           node-version: '16'
           working-directory: './javascript'
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run package
+        working-directory: "./javascript"
       - name: Test if zombienet-mac runs
         run: ./bins/zombienet-mac version
-      - name: upload macos artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
-          asset_path: ./bins/zombienet-macos
-          asset_name: zombienet-macos
-          asset_content_type: application/octet-stream
+      # - name: upload macos artifact
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   with:
+      #     upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
+      #     asset_path: ./bins/zombienet-macos
+      #     asset_name: zombienet-macos
+      #     asset_content_type: application/octet-stream
