@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@zombienet/orchestrator": "^0.0.1",
-    "@zombienet/utils": "^0.0.1"
+    "@zombienet/utils": "^0.0.2"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme",
   "publishConfig": {
