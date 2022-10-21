@@ -64,7 +64,7 @@ jobs:
         with:
           node-version: '16'
           working-directory: './javascript'
-      - run: npm install
+      - run: npm install && npm update
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
