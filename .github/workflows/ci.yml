@@ -14,11 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3.1.0
       - id: monorepo-package-version
-        run: echo "{version}=`jq .version ./javascript/package.json`" >> $MONOREPO_VERSION
+        run: echo "::set-output name=version::`jq .version ./javascript/package.json`"
       - id: cli-package-version
-        run: echo "{version}=`jq .version ./javascript/packages/cli/package.json`" >> $CLI_VERSION
+        run: echo "::set-output name=version::`jq .version ./javascript/packages/cli/package.json`"
       - run: exit 1
-        if: ${{ env.MONOREPO_VERSION != env.CLI_VERSION }}
+        if: ${{ steps.monorepo-package-version.outputs.version != steps.cli-package-version.outputs.version }}
 
   build:
     runs-on: ubuntu-latest
