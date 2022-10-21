@@ -19,7 +19,9 @@
     "assets": [
       "../../node_modules/@polkadot/**/*",
       "../../node_modules/@babel/**/*",
-      "../../../static-configs/*",
+      "../orchestrator/static-configs/*",
+      "../orchestrator/dist/test-runner/testReporter*",
+      "../orchestrator/zombie-wrapper.sh",
       "../../../scripts/*"
     ],
     "targets": [
