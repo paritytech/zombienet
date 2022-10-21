@@ -22,8 +22,11 @@ jobs:
           node-version: '16'
           working-directory: './javascript'
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run package
+        working-directory: "./javascript"
       - name: Test if zombienet-linux runs
         run: ./bins/zombienet-linux version
       - name: release
@@ -59,11 +62,14 @@ jobs:
         with:
           node-version: '16'
           working-directory: './javascript'
-      - run: npm install
+      - run: npm install && npm update
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run package
+        working-directory: "./javascript"
       - name: Test if zombienet-mac runs
-        run: ./bins/zombienet-mac version
+        run: ./bins/zombienet-macos version
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
         env:
