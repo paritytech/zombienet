@@ -2,7 +2,7 @@ name: ZombieNet Basic CI
 
 on:
   push:
-    branches: [main, nik-add-checks-for-versions-in-CI]
+    branches: [main]
   pull_request:
     branches: [main]
 
