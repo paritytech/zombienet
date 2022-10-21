@@ -3,13 +3,11 @@ import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
 import {
-  FINISH_MAGIC_FILE,
   INTROSPECTOR_POD_NAME,
   P2P_PORT,
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-  TRANSFER_CONTAINER_NAME,
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";
@@ -366,7 +364,6 @@ export async function genNodeDef(
     },
   };
 }
-
 
 async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
