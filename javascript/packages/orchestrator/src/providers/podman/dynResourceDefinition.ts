@@ -3,13 +3,11 @@ import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
 import {
-  FINISH_MAGIC_FILE,
   INTROSPECTOR_POD_NAME,
   P2P_PORT,
   PROMETHEUS_PORT,
   RPC_HTTP_PORT,
   RPC_WS_PORT,
-  TRANSFER_CONTAINER_NAME,
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";
@@ -23,7 +21,6 @@ export async function genBootnodeDef(
 ): Promise<any> {
   const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
   const container = await make_main_container(nodeSetup, volume_mounts);
-  const transferContainter = make_transfer_containter();
   return {
     apiVersion: "v1",
     kind: "Pod",
@@ -41,7 +38,7 @@ export async function genBootnodeDef(
     spec: {
       hostname: "bootnode",
       containers: [container],
-      initContainers: [transferContainter],
+      initContainers: [],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
@@ -339,7 +336,6 @@ export async function genNodeDef(
 ): Promise<any> {
   const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
   const container = await make_main_container(nodeSetup, volume_mounts);
-  const transferContainter = make_transfer_containter();
 
   return {
     apiVersion: "v1",
@@ -362,30 +358,17 @@ export async function genNodeDef(
     spec: {
       hostname: nodeSetup.name,
       containers: [container],
-      initContainers: [transferContainter],
+      initContainers: [],
       restartPolicy: "OnFailure",
       volumes: devices,
     },
   };
 }
 
-function make_transfer_containter(): any {
-  return {
-    name: TRANSFER_CONTAINER_NAME,
-    image: "docker.io/alpine",
-    imagePullPolicy: "Always",
-    volumeMounts: [{ name: "tmp-cfg", mountPath: "/cfg", readOnly: false }],
-    command: [
-      "ash",
-      "-c",
-      `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
-    ],
-  };
-}
 async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
-    { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
-    { name: "tmp-data", mountPath: "/data", readOnly: false },
+    { name: "tmp-cfg", mountPath: "/cfg:U", readOnly: false },
+    { name: "tmp-data", mountPath: "/data:U", readOnly: false },
   ];
 
   const client = getClient();
