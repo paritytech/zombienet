@@ -18,7 +18,7 @@ jobs:
       - id: cli-package-version
         run: echo "{version}=`jq .version ./javascript/packages/cli/package.json`" >> $CLI_VERSION
       - run: exit 1
-        if: $CLI_VERSION != $MONOREPO_VERSION }}
+        if: $CLI_VERSION != $MONOREPO_VERSION
 
   build:
     runs-on: ubuntu-latest
