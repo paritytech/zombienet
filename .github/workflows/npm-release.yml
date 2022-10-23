@@ -1,7 +1,7 @@
 name: Zombienet NPM Automated Release
 on:
   push:
-    branches: [main]
+    branches: [nik-check-version-change-in-ci]
 jobs:
   publish:
     name: Build & Publish to NPM
@@ -15,27 +15,77 @@ jobs:
           node-version: "16.x"
       - name: Build NPM Package
         run: npm run build
-        # TODO: Add checks if version is same as the one published in order to trigger the flow
         working-directory: "./javascript"
-      - run: npm pack
+
+      - name: Check if 'CLI' version has been updated
+        ## using latest from original maintainer (DO NOT CHANGE)
+        uses: Rober19/compare-npm-versions-ci@a38b02a14bbee73badddf83e13ebcb3e674c6df5
+        id: cli_version
+        with:
+          path: "./javascript/packages/cli"
+          npm_package_name: "@parity/zombienet"
+
+      - name: Check if 'Orchestrator' version has been updated
+        ## using latest from original maintainer (DO NOT CHANGE)
+        uses: Rober19/compare-npm-versions-ci@a38b02a14bbee73badddf83e13ebcb3e674c6df5
+        id: orch_version
+        with:
+          path: "./javascript/packages/orchestrator"
+          npm_package_name: "@zombienet/orchestrator"
+
+      - name: Check if 'Utils' version has been updated
+        ## using latest from original maintainer (DO NOT CHANGE)
+        uses: Rober19/compare-npm-versions-ci@a38b02a14bbee73badddf83e13ebcb3e674c6df5
+        id: utils_version
+        with:
+          path: "./javascript/packages/utils"
+          npm_package_name: "@zombienet/utils"
+      - name: CLI Local/NPM versions
+        if: steps.cli_version.outputs.npm_is_greater != 'true'
+        run: |
+          echo "CLI Local version is ${{ steps.cli_version.outputs.version }}. NPM version is ${{ steps.cli_version.outputs.pkg_npm_version }}."
+      - name: ORCH Local/NPM versions
+        if: steps.orch_version.outputs.npm_is_greater != 'true'
+        run: |
+          echo "ORCH Local version is ${{ steps.orch_version.outputs.version }}. NPM version is ${{ steps.orch_version.outputs.pkg_npm_version }}."
+      - name: UTILS Local/NPM versions
+        if: steps.utils_version.outputs.npm_is_greater != 'true'
+        run: |
+          echo "UTILS Local version is ${{ steps.utils_version.outputs.version }}. NPM version is ${{ steps.utils_version.outputs.pkg_npm_version }}."
+
+      - name: Pack Utils
+        if: steps.utils_version.outputs.npm_is_greater != 'true'
+        run: npm pack
         working-directory: "./javascript/packages/utils"
-      - uses: actions/upload-artifact@v3
+      - name: Upload Utils
+        if: steps.utils_version.outputs.npm_is_greater != 'true'
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/utils/*.tgz"
-      - run: npm pack
+      - name: Pack orchestrator
+        if: steps.orch_version.outputs.npm_is_greater != 'true'
+        run: npm pack
         working-directory: "./javascript/packages/orchestrator"
-      - uses: actions/upload-artifact@v3
+      - name: Upload Orchestrator
+        if: steps.orch_version.outputs.npm_is_greater != 'true'
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/orchestrator/*.tgz"
-      - run: npm pack
+      - name: Pack CLI
+        if: steps.cli_version.outputs.npm_is_greater != 'true'
+        run: npm pack
         working-directory: "./javascript/packages/cli"
-      - uses: actions/upload-artifact@v3
+      - name: Upload CLI
+        if: steps.cli_version.outputs.npm_is_greater != 'true'
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/cli/*.tgz"
-      - uses: octokit/request-action@v2.x
+      - name: NPM Publish automation
+        if: steps.utils_version.outputs.npm_is_greater != 'true' || steps.orch_version.outputs.npm_is_greater != 'true' || steps.cli_version.outputs.npm_is_greater != 'true'
+        uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
           ref: main
