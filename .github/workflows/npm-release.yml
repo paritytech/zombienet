@@ -1,7 +1,7 @@
 name: Zombienet NPM Automated Release
 on:
   push:
-    branches: [nik-check-version-change-in-ci]
+    branches: [main]
 jobs:
   publish:
     name: Build & Publish to NPM
@@ -17,55 +17,51 @@ jobs:
         run: npm run build
         working-directory: "./javascript"
 
-        ## using latest from original maintainer (DO NOT CHANGE)
       - name: Check if 'CLI' version has been updated
-        uses: Rober19/compare-npm-versions-ci@a38b02a14bbee73badddf83e13ebcb3e674c6df5
         id: cli_version
+        uses: PostHog/check-package-version@v2
         with:
           path: "./javascript/packages/cli"
-          npm_package_name: "@parity/zombienet"
       - name: Check if 'Orchestrator' version has been updated
-        uses: Rober19/compare-npm-versions-ci@a38b02a14bbee73badddf83e13ebcb3e674c6df5
         id: orch_version
+        uses: PostHog/check-package-version@v2
         with:
           path: "./javascript/packages/orchestrator"
-          npm_package_name: "@zombienet/orchestrator"
       - name: Check if 'Utils' version has been updated
-        uses: Rober19/compare-npm-versions-ci@a38b02a14bbee73badddf83e13ebcb3e674c6df5
         id: utils_version
+        uses: PostHog/check-package-version@v2
         with:
           path: "./javascript/packages/utils"
-          npm_package_name: "@zombienet/utils"
 
       # Pack and upload each package only if version is changed
       - name: Pack Utils
-        if: steps.utils_version.outputs.npm_is_greater != 'true'
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
         run: npm pack
         working-directory: "./javascript/packages/utils"
       - name: Upload Utils
-        if: steps.utils_version.outputs.npm_is_greater != 'true'
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
         uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/utils/*.tgz"
 
       - name: Pack orchestrator
-        if: steps.orch_version.outputs.npm_is_greater != 'true'
+        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
         run: npm pack
         working-directory: "./javascript/packages/orchestrator"
       - name: Upload Orchestrator
-        if: steps.orch_version.outputs.npm_is_greater != 'true'
+        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
         uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/orchestrator/*.tgz"
 
       - name: Pack CLI
-        if: steps.cli_version.outputs.npm_is_greater != 'true'
+        if: steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
         run: npm pack
         working-directory: "./javascript/packages/cli"
       - name: Upload CLI
-        if: steps.cli_version.outputs.npm_is_greater != 'true'
+        if: steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
         uses: actions/upload-artifact@v3
         with:
           name: package
@@ -74,7 +70,7 @@ jobs:
       # Reduce "traffic" between repos by calling NPM publish automation repo only if at least
       # one package's version has changed
       - name: NPM Publish automation
-        if: steps.utils_version.outputs.npm_is_greater != 'true' || steps.orch_version.outputs.npm_is_greater != 'true' || steps.cli_version.outputs.npm_is_greater != 'true'
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version || steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version || steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
         uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
