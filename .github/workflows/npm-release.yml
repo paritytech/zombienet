@@ -15,27 +15,63 @@ jobs:
           node-version: "16.x"
       - name: Build NPM Package
         run: npm run build
-        # TODO: Add checks if version is same as the one published in order to trigger the flow
         working-directory: "./javascript"
-      - run: npm pack
+
+      - name: Check if 'CLI' version has been updated
+        id: cli_version
+        uses: PostHog/check-package-version@v2
+        with:
+          path: "./javascript/packages/cli"
+      - name: Check if 'Orchestrator' version has been updated
+        id: orch_version
+        uses: PostHog/check-package-version@v2
+        with:
+          path: "./javascript/packages/orchestrator"
+      - name: Check if 'Utils' version has been updated
+        id: utils_version
+        uses: PostHog/check-package-version@v2
+        with:
+          path: "./javascript/packages/utils"
+
+      # Pack and upload each package only if version is changed
+      - name: Pack Utils
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
+        run: npm pack
         working-directory: "./javascript/packages/utils"
-      - uses: actions/upload-artifact@v3
+      - name: Upload Utils
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/utils/*.tgz"
-      - run: npm pack
+
+      - name: Pack orchestrator
+        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
+        run: npm pack
         working-directory: "./javascript/packages/orchestrator"
-      - uses: actions/upload-artifact@v3
+      - name: Upload Orchestrator
+        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/orchestrator/*.tgz"
-      - run: npm pack
+
+      - name: Pack CLI
+        if: steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
+        run: npm pack
         working-directory: "./javascript/packages/cli"
-      - uses: actions/upload-artifact@v3
+      - name: Upload CLI
+        if: steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/cli/*.tgz"
-      - uses: octokit/request-action@v2.x
+
+      # Reduce "traffic" between repos by calling NPM publish automation repo only if at least
+      # one package's version has changed
+      - name: NPM Publish automation
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version || steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version || steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
+        uses: octokit/request-action@v2.x
         with:
           route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
           ref: main
