@@ -23,10 +23,19 @@
     "build": "tsc",
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
-    "package": "pkg . --out-path ./bins",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "types": "./dist/index.d.ts",
+  "dependencies": {
+    "cli-table3": "^0.6.2",
+    "commander": "^9.4.0",
+    "debug": "^4.3.2",
+    "nunjucks": "^3.2.3",
+    "toml": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/nunjucks": "^3.2.1"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
