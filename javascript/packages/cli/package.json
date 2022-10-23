@@ -9,7 +9,7 @@
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "pkg packages/cli/."
+    "package": "pkg ."
   },
   "repository": {
     "type": "git",
@@ -50,8 +50,19 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
+    "@parity/zombienet-dsl-parser-wrapper": "^0.1.6",
     "@zombienet/orchestrator": "^0.0.5",
-    "@zombienet/utils": "^0.0.3"
+    "@zombienet/utils": "^0.0.3",
+    "axios": "^0.27.2",
+    "debug": "^4.3.2",
+    "nunjucks": "^3.2.3",
+    "progress": "^2.0.3",
+    "typescript": "^4.8.2"
+  },
+  "devDependencies": {
+    "@types/nunjucks": "^3.2.1",
+    "@types/progress": "^2.0.5",
+    "pkg": "~5.8.0"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme",
   "publishConfig": {
