@@ -15,7 +15,7 @@
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "lint:write": "npm run lint:write --workspaces --if-present",
-    "package": "pkg packages/cli/."
+    "package": "npm run -w packages/cli package"
   },
   "engines": {
     "node": ">=16"

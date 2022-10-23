@@ -9,7 +9,7 @@
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "pkg packages/cli/."
+    "package": "pkg ."
   },
   "repository": {
     "type": "git",
