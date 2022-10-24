@@ -7,27 +7,69 @@ on:
     branches: [main]
 
 jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+
+    # monorepo's version should always be the same with the CLIs version
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - id: monorepo-package-version
+        run: echo "::set-output name=version::`jq .version ./javascript/package.json`"
+      - id: cli-package-version
+        run: echo "::set-output name=version::`jq .version ./javascript/packages/cli/package.json`"
+      - run: exit 1
+        if: ${{ steps.monorepo-package-version.outputs.version != steps.cli-package-version.outputs.version }}
+
   build:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 17.x, 18.x]
+        node-version: [16.x, 17.x, 18.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3.1.0
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run lint
+        working-directory: "./javascript"
+
+  build-rust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3.1.0
+      - name: Install Rust Stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
+
+      - name: Build
+        run: cargo build
+
+      - name: Run tests
+        run: cargo test --verbose --all-targets --all-features
 
   all:
     # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks
     # are successful.
-    needs: [build]
+    needs: [check-versions, build, build-rust]
     runs-on: ubuntu-latest
     steps:
       - run: echo Success

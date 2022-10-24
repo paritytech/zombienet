@@ -1,0 +1,80 @@
+name: Zombienet NPM Automated Release
+on:
+  push:
+    branches: [main]
+jobs:
+  publish:
+    name: Build & Publish to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm install
+        working-directory: "./javascript"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.x"
+      - name: Build NPM Package
+        run: npm run build
+        working-directory: "./javascript"
+
+      - name: Check if 'CLI' version has been updated
+        id: cli_version
+        uses: PostHog/check-package-version@v2
+        with:
+          path: "./javascript/packages/cli"
+      - name: Check if 'Orchestrator' version has been updated
+        id: orch_version
+        uses: PostHog/check-package-version@v2
+        with:
+          path: "./javascript/packages/orchestrator"
+      - name: Check if 'Utils' version has been updated
+        id: utils_version
+        uses: PostHog/check-package-version@v2
+        with:
+          path: "./javascript/packages/utils"
+
+      # Pack and upload each package only if version is changed
+      - name: Pack Utils
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
+        run: npm pack
+        working-directory: "./javascript/packages/utils"
+      - name: Upload Utils
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: "./javascript/packages/utils/*.tgz"
+
+      - name: Pack orchestrator
+        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
+        run: npm pack
+        working-directory: "./javascript/packages/orchestrator"
+      - name: Upload Orchestrator
+        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: "./javascript/packages/orchestrator/*.tgz"
+
+      - name: Pack CLI
+        if: steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
+        run: npm pack
+        working-directory: "./javascript/packages/cli"
+      - name: Upload CLI
+        if: steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: "./javascript/packages/cli/*.tgz"
+
+      # Reduce "traffic" between repos by calling NPM publish automation repo only if at least
+      # one package's version has changed
+      - name: NPM Publish automation
+        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version || steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version || steps.cli_version.outputs.committed-version > steps.cli_version.outputs.published-version
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
+          ref: main
+          inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.NPM_PUBLISH_AUTOMATION_TOKEN }}

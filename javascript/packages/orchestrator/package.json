@@ -1,0 +1,64 @@
+{
+  "name": "@zombienet/orchestrator",
+  "version": "0.0.7",
+  "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paritytech/zombienet.git"
+  },
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "build": "tsc",
+    "lint": "npx prettier --check ./src",
+    "lint:write": "npx prettier --write ./src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "testing",
+    "framework",
+    "substrate",
+    "zombienet",
+    "cli",
+    "tool"
+  ],
+  "author": "Parity Technologies <admin@parity.io>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/paritytech/zombienet/issues"
+  },
+  "dependencies": {
+    "@polkadot/api": "^9.2.4",
+    "@polkadot/keyring": "^10.1.6",
+    "@polkadot/util-crypto": "^10.1.6",
+    "@zombienet/utils": "^0.0.4",
+    "axios": "^0.27.2",
+    "chai": "^4.3.4",
+    "debug": "^4.3.2",
+    "execa": "^5.1.1",
+    "fs-extra": "^10.0.0",
+    "jsdom": "^20.0.0",
+    "json-bigint": "^1.0.0",
+    "libp2p-crypto": "^0.21.2",
+    "minimatch": "^5.1.0",
+    "mocha": "^10.0.0",
+    "napi-maybe-compressed-blob": "0.0.2",
+    "peer-id": "^0.16.0",
+    "tmp-promise": "^3.0.2",
+    "typescript": "^4.8.2",
+    "yaml": "^2.0.0-9"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.3",
+    "@types/fs-extra": "^9.0.13",
+    "@types/jsdom": "^20.0.0",
+    "@types/mocha": "^9.0.0",
+    "@types/minimatch": "^5.1.2"
+  },
+  "homepage": "https://github.com/paritytech/zombienet#readme"
+}

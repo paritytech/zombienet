@@ -1,4 +1,4 @@
-name: release
+name: Zombienet Packages Release
 
 on:
   push:
@@ -13,16 +13,22 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.1.0
         with:
           fetch-depth: 0
       - name: setup node
         uses: actions/setup-node@v3
         with:
           node-version: '16'
+          working-directory: './javascript'
       - run: npm install
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run package
+        working-directory: "./javascript"
+      - name: Test if zombienet-linux runs
+        run: ./bins/zombienet-linux version
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -48,16 +54,22 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.1.0
         with:
           fetch-depth: 0
       - name: setup node
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-      - run: npm install
+          working-directory: './javascript'
+      - run: npm install && npm update
+        working-directory: "./javascript"
       - run: npm run build
+        working-directory: "./javascript"
       - run: npm run package
+        working-directory: "./javascript"
+      - name: Test if zombienet-mac runs
+        run: ./bins/zombienet-macos version
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
         env:
