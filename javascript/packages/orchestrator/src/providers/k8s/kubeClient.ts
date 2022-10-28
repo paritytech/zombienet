@@ -221,10 +221,12 @@ export class KubeClient extends Client {
   async wait_pod_ready(podName: string): Promise<void> {
     // loop until ready
     let t = this.timeout;
-    const args = ["get", "pod", podName, "-o", "jsonpath={.status.phase}"];
+    const args = ["get", "pod", podName, "--no-headers"];
     do {
       const result = await this.runCommand(args, undefined, true);
-      if (["Running", "Succeeded"].includes(result.stdout)) return;
+      if (result.stdout.match(/Running|Completed/)) return;
+      if (result.stdout.match(/ErrImagePull|ImagePullBackOff/))
+        throw new Error(`Error pulling image for pod : ${podName}`);
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       t -= 3;
