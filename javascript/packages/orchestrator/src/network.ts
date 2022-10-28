@@ -170,10 +170,7 @@ export class Network {
 
     if (showLogPath)
       new CreateLogTable({ colWidths: [20, 100] }).pushToPrint([
-        [
-          decorators.green("Node's logs:"),
-          decorators.magenta(logsPath),
-        ]
+        [decorators.green("Node's logs:"), decorators.magenta(logsPath)],
       ]);
 
     return logsPath;
