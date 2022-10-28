@@ -600,15 +600,8 @@ export async function start(
             logCommand = `tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`;
             break;
         }
-        logTable.pushTo([
-          [
-            {
-              colSpan: 2,
-              content: logCommand,
-            },
-          ],
-        ]);
         logTable.print();
+        console.log(logCommand + "\n\n");
       }
     };
 
