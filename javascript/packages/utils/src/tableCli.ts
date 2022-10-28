@@ -51,15 +51,18 @@ interface TableCreationProps {
   head?: any[];
   doubleBorder?: boolean;
   chars?: CharsObj;
+  wordWrap?: boolean;
 }
 
 export class CreateLogTable {
   table: CreatedTable | undefined;
   colWidths: number[];
+  wordWrap: boolean;
 
-  constructor({ head, colWidths, doubleBorder }: TableCreationProps) {
+  constructor({ head, colWidths, doubleBorder, wordWrap }: TableCreationProps) {
+    this.wordWrap = wordWrap || false;
     this.colWidths = colWidths;
-    const params: TableCreationProps = { colWidths };
+    const params: TableCreationProps = { colWidths, wordWrap };
 
     if (head?.length) params.head = head;
 
