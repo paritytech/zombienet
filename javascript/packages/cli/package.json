@@ -1,6 +1,6 @@
 {
   "name": "@parity/zombienet",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "scripts": {
@@ -51,8 +51,8 @@
   },
   "dependencies": {
     "@parity/zombienet-dsl-parser-wrapper": "^0.1.6",
-    "@zombienet/orchestrator": "^0.0.7",
-    "@zombienet/utils": "^0.0.4",
+    "@zombienet/orchestrator": "^0.0.8",
+    "@zombienet/utils": "^0.0.5",
     "axios": "^0.27.2",
     "debug": "^4.3.2",
     "nunjucks": "^3.2.3",
