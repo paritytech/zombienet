@@ -34,5 +34,6 @@ Roadmap Zombienet v2
 - Add more CLI subcommands
 - Add js/subxt snippets ready to use in assertions (e.g transfers)
 - Add XCM support in built-in assertions
+- Add `ink! smart contract` support
 - Add support to start from a live network (fork-off) [check subalfred]
 - Create "default configuration" - (if `zombieconfig.json` exists in same dir with zombienet then the config applied in it will override the default configuration of zombienet.  E.G if user wants to have as default `native` instead of `k8s` he can add  to default the entry `{ default: 'native' }`.)
