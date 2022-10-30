@@ -180,6 +180,8 @@ Usage: zombienet [options] [command]
 Options:
   -c, --spawn-concurrency &lt;concurrency&gt;  Number of concurrent spawning process to launch, default is 1
   -p, --provider &lt;provider&gt;              Override provider to use (choices: &quot;podman&quot;,&quot;kubernetes&quot;, &quot;native&quot;, default: kubernetes)
+  -d, --dir &lt;path&gt;                       Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)
+  -f, --force                            Force override all prompt commands
   -m, --monitor                          Start as monitor, do not auto cleanup network
   -h, --help                             display help for command
 
