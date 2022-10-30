@@ -321,7 +321,7 @@ program
   .addOption(
     new Option(
       "-d, --dir <path>",
-      "Directory path for placing the network files instead of random temp one",
+      "Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)",
     ),
   )
   .addOption(new Option("-f, --force", "Force override all prompt commands"));
