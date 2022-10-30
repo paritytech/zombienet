@@ -1,4 +1,4 @@
-import { getRandomPort } from "@zombienet/utils";
+import { getRandomPort, makeDir } from "@zombienet/utils";
 import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
@@ -53,8 +53,8 @@ export async function genPrometheusDef(namespace: string): Promise<any> {
   ];
   const cfgPath = `${client.tmpDir}/prometheus/etc`;
   const dataPath = `${client.tmpDir}/prometheus/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(cfgPath, true);
+  await makeDir(dataPath, true);
 
   const devices = [
     { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
@@ -134,7 +134,7 @@ export async function genGrafanaDef(
     },
   ];
   const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
-  await fs.mkdir(datasourcesPath, { recursive: true });
+  await makeDir(datasourcesPath, true);
 
   const devices = [
     {
@@ -256,8 +256,8 @@ export async function genTempoDef(namespace: string): Promise<any> {
   ];
   const cfgPath = `${client.tmpDir}/tempo/etc`;
   const dataPath = `${client.tmpDir}/tempo/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(cfgPath, true);
+  await makeDir(dataPath, true);
 
   const devices = [
     { name: "tempo-cfg", hostPath: { type: "Directory", path: cfgPath } },
@@ -374,9 +374,8 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const client = getClient();
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(cfgPath, true);
+  await makeDir(dataPath, true);
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },

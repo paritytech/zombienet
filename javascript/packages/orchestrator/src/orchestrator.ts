@@ -1,4 +1,5 @@
 import {
+  askQuestion,
   CreateLogTable,
   decorators,
   filterConsole,
@@ -6,6 +7,7 @@ import {
   getLokiUrl,
   getSha256,
   loadTypeDef,
+  makeDir,
   series,
   sleep,
 } from "@zombienet/utils";
@@ -79,6 +81,8 @@ export interface OrcOptionsInterface {
   monitor?: boolean;
   spawnConcurrency?: number;
   inCI?: boolean;
+  dir?: string;
+  force?: boolean;
 }
 
 export async function start(
@@ -117,8 +121,28 @@ export async function start(
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
 
-    // create tmp directory to store needed files
-    const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
+    // use provided dir (and make some validations) or create tmp directory to store needed files
+    const tmpDir = opts.dir
+      ? { path: opts.dir }
+      : await tmp.dir({ prefix: `${namespace}_` });
+
+    // If custom path is provided then create it
+    if (opts.dir) {
+      if (!fs.existsSync(opts.dir)) {
+        fs.mkdirSync(opts.dir);
+      } else if (!opts.force) {
+        const response = await askQuestion(
+          `${decorators.yellow(
+            "Directory already exists; Everything will be overwritten;\nDo you want to continue? (y/N)",
+          )}`,
+        );
+        if (response.toLowerCase() !== "y") {
+          console.log("Exiting...");
+          process.exit(1);
+        }
+      }
+    }
+
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
 
     // Define chain name and file name to use.
@@ -289,7 +313,7 @@ export async function start(
 
       const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
         const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        await fs.promises.mkdir(parachainFilesPath);
+        await makeDir(parachainFilesPath);
         await generateParachainFiles(
           namespace,
           tmpDir.path,
@@ -444,9 +468,7 @@ export async function start(
         if (parachain && parachain.name) nodeFilesPath += `/${parachain.name}`;
         nodeFilesPath += `/${node.name}`;
 
-        if (!fs.existsSync(nodeFilesPath)) {
-          await fs.promises.mkdir(nodeFilesPath, { recursive: true });
-        }
+        await makeDir(nodeFilesPath, true);
 
         const isStatemint = parachain && parachain.chain?.includes("statemint");
         const keystoreFiles = await generateKeystoreFiles(
@@ -830,7 +852,7 @@ export async function test(
 ) {
   let network: Network | undefined;
   try {
-    network = await start(credentials, networkConfig);
+    network = await start(credentials, networkConfig, { force: true });
     await cb(network);
   } catch (error) {
     console.error(error);
