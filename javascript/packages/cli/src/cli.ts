@@ -317,7 +317,14 @@ program
       "-m, --monitor",
       "Start as monitor, do not auto cleanup network",
     ),
-  );
+  )
+  .addOption(
+    new Option(
+      "-d, --dir <path>",
+      "Directory path for placing the network files instead of random temp one",
+    ),
+  )
+  .addOption(new Option("-f, --force", "Force override all prompt commands"));
 
 program
   .command("spawn")
@@ -384,6 +391,8 @@ async function spawn(
   _opts: any,
 ) {
   const opts = program.opts();
+  const dir = opts.dir || "";
+  const force = opts.force || false;
   const monitor = opts.monitor || false;
   const spawnConcurrency = opts.spawnConcurrency || 1;
   const configPath = resolve(process.cwd(), configFile);
@@ -424,7 +433,7 @@ async function spawn(
     }
   }
 
-  const options = { monitor, spawnConcurrency };
+  const options = { monitor, spawnConcurrency, dir, force };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }

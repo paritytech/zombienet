@@ -1,4 +1,5 @@
 import {
+  askQuestion,
   CreateLogTable,
   decorators,
   filterConsole,
@@ -79,6 +80,8 @@ export interface OrcOptionsInterface {
   monitor?: boolean;
   spawnConcurrency?: number;
   inCI?: boolean;
+  dir?: string;
+  force?: boolean;
 }
 
 export async function start(
@@ -117,8 +120,26 @@ export async function start(
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
 
-    // create tmp directory to store needed files
-    const tmpDir = await tmp.dir({ prefix: `${namespace}_` });
+    // use provided dir (and make some validations) or create tmp directory to store needed files
+    const tmpDir = opts.dir
+      ? { path: opts.dir }
+      : await tmp.dir({ prefix: `${namespace}_` });
+
+    // If custom path is provided then create it
+    if (opts.dir && !fs.existsSync(opts.dir)) {
+      fs.mkdirSync(opts.dir);
+    } else if (!opts.force) {
+      const response = await askQuestion(
+        `${decorators.yellow(
+          "Directory already exists; Everything will be overwritten;\nDo you want to continue? (y/N)",
+        )}`,
+      );
+      if (response.toLowerCase() !== "y") {
+        console.log("Exiting...");
+        process.exit(1);
+      }
+    }
+
     const localMagicFilepath = `${tmpDir.path}/finished.txt`;
 
     // Define chain name and file name to use.
