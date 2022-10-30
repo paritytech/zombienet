@@ -2,6 +2,7 @@ import {
   CreateLogTable,
   decorators,
   getHostIp,
+  makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import execa from "execa";
@@ -364,7 +365,7 @@ export class PodmanClient extends Client {
       debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       debug("keystoreRemoteDir", keystoreRemoteDir);
-      await fs.mkdir(keystoreRemoteDir, { recursive: true });
+      await makeDir(keystoreRemoteDir, true);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
       debug("keys injected");

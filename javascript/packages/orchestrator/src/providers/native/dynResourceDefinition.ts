@@ -1,4 +1,4 @@
-import { getRandomPort } from "@zombienet/utils";
+import { getRandomPort, makeDir } from "@zombienet/utils";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
 import {
@@ -11,8 +11,6 @@ import { Network } from "../../network";
 import { Node } from "../../types";
 import { getClient } from "../client";
 
-const fs = require("fs").promises;
-
 export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
@@ -23,10 +21,10 @@ export async function genBootnodeDef(
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
 
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await makeDir(cfgPath, true);
 
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(dataPath, true);
 
   const command = await genCmd(nodeSetup, cfgPath, dataPath, false);
 
@@ -59,10 +57,10 @@ export async function genNodeDef(
   const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await fs.mkdir(cfgPath, { recursive: true });
+  await makeDir(cfgPath, true);
 
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(dataPath, true);
 
   let computedCommand;
   if (nodeSetup.zombieRole === "cumulus-collator") {

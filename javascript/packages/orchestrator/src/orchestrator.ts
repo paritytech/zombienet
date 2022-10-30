@@ -7,6 +7,7 @@ import {
   getLokiUrl,
   getSha256,
   loadTypeDef,
+  makeDir,
   series,
   sleep,
 } from "@zombienet/utils";
@@ -310,7 +311,7 @@ export async function start(
 
       const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
         const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        await fs.promises.mkdir(parachainFilesPath);
+        await makeDir(parachainFilesPath);
         await generateParachainFiles(
           namespace,
           tmpDir.path,
@@ -465,9 +466,7 @@ export async function start(
         if (parachain && parachain.name) nodeFilesPath += `/${parachain.name}`;
         nodeFilesPath += `/${node.name}`;
 
-        if (!fs.existsSync(nodeFilesPath)) {
-          await fs.promises.mkdir(nodeFilesPath, { recursive: true });
-        }
+        await makeDir(nodeFilesPath, true);
 
         const isStatemint = parachain && parachain.chain?.includes("statemint");
         const keystoreFiles = await generateKeystoreFiles(

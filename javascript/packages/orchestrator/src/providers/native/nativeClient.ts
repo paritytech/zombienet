@@ -1,6 +1,7 @@
 import {
   CreateLogTable,
   decorators,
+  makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { spawn } from "child_process";
@@ -86,7 +87,7 @@ export class NativeClient extends Client {
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Native provider don't have the `namespace` isolation.
     // but we create the `remoteDir` to place files
-    await fs.promises.mkdir(this.remoteDir, { recursive: true });
+    await makeDir(this.remoteDir, true);
     return;
   }
   // Podman ONLY support `pods`
@@ -255,7 +256,7 @@ export class NativeClient extends Client {
     if (keystore) {
       // initialize keystore
       const keystoreRemoteDir = `${podDef.spec.dataPath}/chains/${chainSpecId}/keystore`;
-      await fs.promises.mkdir(keystoreRemoteDir, { recursive: true });
+      await makeDir(keystoreRemoteDir, true);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
     }

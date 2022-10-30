@@ -5,6 +5,7 @@ import {
   mnemonicGenerate,
   mnemonicToMiniSecret,
 } from "@polkadot/util-crypto";
+import { makeDir } from "@zombienet/utils";
 import fs from "fs";
 import { Node } from "./types";
 
@@ -65,7 +66,7 @@ export async function generateKeystoreFiles(
   isStatemint: boolean = false,
 ): Promise<string[]> {
   const keystoreDir = `${path}/keystore`;
-  await fs.promises.mkdir(keystoreDir);
+  await makeDir(keystoreDir);
 
   const paths: string[] = [];
   const keysHash = {

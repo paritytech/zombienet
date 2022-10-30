@@ -48,6 +48,12 @@ export function loadTypeDef(types: string | object): object {
   }
 }
 
+export async function makeDir(dir: string, recursive = false) {
+  if (!fs.existsSync(dir)) {
+    await fs.promises.mkdir(dir, { recursive });
+  }
+}
+
 export function getCredsFilePath(credsFile: string): string | undefined {
   if (fs.existsSync(credsFile)) return credsFile;
 
