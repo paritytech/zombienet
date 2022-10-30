@@ -127,17 +127,19 @@ export async function start(
       : await tmp.dir({ prefix: `${namespace}_` });
 
     // If custom path is provided then create it
-    if (opts.dir && !fs.existsSync(opts.dir)) {
-      fs.mkdirSync(opts.dir);
-    } else if (!opts.force) {
-      const response = await askQuestion(
-        `${decorators.yellow(
-          "Directory already exists; Everything will be overwritten;\nDo you want to continue? (y/N)",
-        )}`,
-      );
-      if (response.toLowerCase() !== "y") {
-        console.log("Exiting...");
-        process.exit(1);
+    if (opts.dir) {
+      if (!fs.existsSync(opts.dir)) {
+        fs.mkdirSync(opts.dir);
+      } else if (!opts.force) {
+        const response = await askQuestion(
+          `${decorators.yellow(
+            "Directory already exists; Everything will be overwritten;\nDo you want to continue? (y/N)",
+          )}`,
+        );
+        if (response.toLowerCase() !== "y") {
+          console.log("Exiting...");
+          process.exit(1);
+        }
       }
     }
 
@@ -850,7 +852,7 @@ export async function test(
 ) {
   let network: Network | undefined;
   try {
-    network = await start(credentials, networkConfig);
+    network = await start(credentials, networkConfig, { force: true });
     await cb(network);
   } catch (error) {
     console.error(error);
