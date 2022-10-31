@@ -2,7 +2,7 @@ import Mocha from "mocha";
 
 import { CreateLogTable, decorators } from "@zombienet/utils";
 
-const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_RUN_BEGIN } =
+const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_BEGIN } =
   Mocha.Runner.constants;
 
 interface TestReporterProps {
@@ -12,11 +12,13 @@ interface TestReporterProps {
   once: any;
 }
 
+let bannerPrinted = false;
+
 class TestReporter {
   constructor(runner: TestReporterProps) {
     const stats = runner.stats!;
 
-    const logTable = new CreateLogTable({
+    const logTableInit = new CreateLogTable({
       head: [
         {
           colSpan: 2,
@@ -24,6 +26,10 @@ class TestReporter {
           content: `${decorators.green("Test Results")}`,
         },
       ],
+      colWidths: [30, 100],
+    });
+
+    const logTable = new CreateLogTable({
       colWidths: [30, 100],
     });
 
@@ -38,11 +44,17 @@ class TestReporter {
       ],
     ]);
     runner
-      .once(EVENT_RUN_BEGIN, () => {
+      .once(EVENT_TEST_BEGIN, () => {
         announcement.print();
       })
+      .on(EVENT_TEST_BEGIN, () => {
+        if (!bannerPrinted) logTableInit.print();
+        bannerPrinted = true;
+      })
       .on(EVENT_TEST_PASS, (test: Mocha.Test) => {
-        logTable.pushTo([
+        new CreateLogTable({
+          colWidths: [30, 100],
+        }).pushToPrint([
           [
             new Date().toLocaleString(),
             `✅ ${test.title} ${decorators.red(`(${test.duration}ms)`)}`,
@@ -50,7 +62,9 @@ class TestReporter {
         ]);
       })
       .on(EVENT_TEST_FAIL, (test: Mocha.Test, err: any) => {
-        logTable.pushTo([
+        new CreateLogTable({
+          colWidths: [30, 100],
+        }).pushToPrint([
           [
             new Date().toLocaleString(),
             `❌ ${test.title} ${decorators.red(`(${test.duration}ms)`)}`,
