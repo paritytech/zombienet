@@ -38,17 +38,17 @@ RUN groupadd --gid 10001 nonroot && \
     --uid 10000 nonroot
 
 WORKDIR /home/nonroot/zombie-net
-COPY ./artifacts/dist ./dist
-COPY static-configs ./static-configs
+COPY ./artifacts/packages ./packages
 COPY scripts ./scripts
 COPY tests ./tests
-COPY artifacts/package* ./
+COPY artifacts/package.json ./
+COPY artifacts/package-lock.json ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
 # Change `cli` permissions and link to easy call
-RUN chmod +x ./dist/cli.js
-RUN ln -s /home/nonroot/zombie-net/dist/cli.js /usr/local/bin/zombie
+RUN chmod +x /home/nonroot/zombie-net/packages/cli/dist/cli.js
+RUN ln -s /home/nonroot/zombie-net/packages/cli/dist/cli.js /usr/local/bin/zombie
 
 # Dependency for run test script when run inside container
 RUN mkdir -p /var/log/zombie-net

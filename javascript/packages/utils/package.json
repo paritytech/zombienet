@@ -1,0 +1,43 @@
+{
+  "name": "@zombienet/utils",
+  "version": "0.0.5",
+  "description": "Useful utilities for ZombieNet Framework",
+  "main": "dist/index.js",
+  "author": "Parity Technologies <admin@parity.io>",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/paritytech/zombienet#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paritytech/zombienet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/paritytech/zombienet/issues"
+  },
+  "keywords": [
+    "utilities",
+    "utils",
+    "zombienet"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist/*",
+    "build": "tsc",
+    "lint": "npx prettier --check ./src",
+    "lint:write": "npx prettier --write ./src",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "cli-table3": "^0.6.2",
+    "commander": "^9.4.0",
+    "debug": "^4.3.2",
+    "nunjucks": "^3.2.3",
+    "toml": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/nunjucks": "^3.2.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
