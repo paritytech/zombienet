@@ -124,7 +124,7 @@ export async function genCumulusCollatorCmd(
         ...[
           "--",
           "--base-path",
-          dataPath,
+          relayDataPath,
           "--chain",
           `${cfgPath}/${chain}.json`,
           "--execution wasm",

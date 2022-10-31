@@ -63,7 +63,7 @@ export async function genNodeDef(
   await makeDir(dataPath, true);
 
   const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
-  await fs.mkdir(relayDataPath, { recursive: true });
+  await makeDir(relayDataPath, true);
 
   let computedCommand;
   if (nodeSetup.zombieRole === "cumulus-collator") {
