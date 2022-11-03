@@ -15,7 +15,8 @@
     "build": "npm run clean && npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "lint:write": "npm run lint:write --workspaces --if-present",
-    "package": "npm run -w packages/cli package"
+    "package": "npm run -w packages/cli package",
+    "zombie": "node ./packages/cli/dist/cli.js"
   },
   "engines": {
     "node": ">=16"
