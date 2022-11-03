@@ -50,7 +50,7 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
-    "@zombienet/zombienet-dsl-parser-wrapper": "^0.1.6",
+    "@zombienet/dsl-parser-wrapper": "^0.1.6",
     "@zombienet/orchestrator": "^0.0.9",
     "@zombienet/utils": "^0.0.5",
     "axios": "^0.27.2",
