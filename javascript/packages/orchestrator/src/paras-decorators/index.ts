@@ -71,7 +71,7 @@ const bifrostDecorators: ParaDecorator = Object.keys(bifrost).reduce(
 const eqDecorators: ParaDecorator = Object.keys(equilibrium).reduce(
   (memo, fn) => {
     memo[fn] = (equilibrium as ParaDecorator)[fn];
-      return memo;
+    return memo;
   },
   Object.create({}),
 );

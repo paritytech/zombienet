@@ -66,8 +66,36 @@ export function getNodeKey(
 
   return key;
 }
+export function clearAuthorities(specPath: string) {
+  const chainSpec = readAndParseChainSpec(specPath);
+  const runtimeConfig = getRuntimeConfig(chainSpec);
+
+  // clear keys
+  if (runtimeConfig?.session) runtimeConfig.session.keys.length = 0;
+  // clear aura
+  if (runtimeConfig?.aura) runtimeConfig.aura.authorities.length = 0;
+  // clear grandpa
+  if (runtimeConfig?.grandpa) runtimeConfig.grandpa.authorities.length = 0;
+
+  // clear collatorSelection
+  if (runtimeConfig?.collatorSelection)
+    runtimeConfig.collatorSelection.invulnerables = [];
+
+  // clear eqSession validators
+  if (runtimeConfig?.eqSessionManager)
+    runtimeConfig.eqSessionManager = { validators: [] };
+
+  writeChainSpec(specPath, chainSpec);
+  let logTable = new CreateLogTable({
+    colWidths: [120],
+  });
+  logTable.pushToPrint([
+    [decorators.green("🧹 Starting with a fresh authority set...")],
+  ]);
+}
 
 export default {
   getNodeKey,
   addAuthority,
+  clearAuthorities,
 };
