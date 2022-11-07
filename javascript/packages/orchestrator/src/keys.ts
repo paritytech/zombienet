@@ -82,6 +82,7 @@ export async function generateKeystoreFiles(
     beef: node.accounts.ec_account.publicKey,
     nmbs: node.accounts.sr_account.publicKey, // Nimbus
     rand: node.accounts.sr_account.publicKey, // Randomness (Moonbeam)
+    rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
   };
 
   for (const [k, v] of Object.entries(keysHash)) {
