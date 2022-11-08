@@ -9,7 +9,7 @@
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "pkg ."
+    "package": "pkg . -o ../../bins/zombienet"
   },
   "repository": {
     "type": "git",
@@ -27,8 +27,7 @@
     "targets": [
       "node16-macos-x64",
       "node16-linux-x64"
-    ],
-    "outputPath": "../../bins"
+    ]
   },
   "bin": {
     "zombienet": "./dist/cli.js"
