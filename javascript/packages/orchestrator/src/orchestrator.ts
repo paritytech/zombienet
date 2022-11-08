@@ -533,7 +533,7 @@ export async function start(
           nodeIdentifier,
         );
 
-const listeningIp = networkSpec.settings.local_ip || LOCALHOST;
+        const listeningIp = networkSpec.settings.local_ip || LOCALHOST;
 
         networkNode = new NetworkNode(
           node.name,
