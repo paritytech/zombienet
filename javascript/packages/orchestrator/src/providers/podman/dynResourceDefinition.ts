@@ -90,7 +90,7 @@ scrape_configs:
   ];
 
   const containerDef = {
-    image: "prom/prometheus",
+    image: "docker.io/prom/prometheus",
     name: "prometheus",
     imagePullPolicy: "Always",
     ports,
@@ -174,7 +174,7 @@ datasources:
   ];
 
   const containerDef = {
-    image: "grafana/grafana",
+    image: "docker.io/grafana/grafana",
     name: "grafana",
     imagePullPolicy: "Always",
     ports,
@@ -217,7 +217,7 @@ export async function getIntrospectorDef(
   ];
 
   const containerDef = {
-    image: "paritytech/polkadot-introspector:latest",
+    image: "docker.io/paritytech/polkadot-introspector:latest",
     name: INTROSPECTOR_POD_NAME,
     args: ["block-time-monitor", `--ws=${wsUri}`, "prometheus"],
     imagePullPolicy: "Always",
@@ -299,7 +299,7 @@ export async function genTempoDef(namespace: string): Promise<any> {
   ];
 
   const containerDef = {
-    image: "grafana/tempo:latest",
+    image: "docker.io/grafana/tempo:latest",
     name: "tempo",
     args: ["-config.file=/etc/tempo/tempo.yaml"],
     imagePullPolicy: "Always",
