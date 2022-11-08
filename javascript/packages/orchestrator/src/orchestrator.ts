@@ -533,13 +533,15 @@ export async function start(
           nodeIdentifier,
         );
 
+        const listeningIp = networkSpec.settings.local_ip || LOCALHOST;
+
         networkNode = new NetworkNode(
           node.name,
-          WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+          WS_URI_PATTERN.replace("{{IP}}", listeningIp).replace(
             "{{PORT}}",
             fwdPort.toString(),
           ),
-          METRICS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
+          METRICS_URI_PATTERN.replace("{{IP}}", listeningIp).replace(
             "{{PORT}}",
             nodePrometheusPort.toString(),
           ),

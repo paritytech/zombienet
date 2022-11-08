@@ -169,6 +169,9 @@ export async function generateNetworkSpec(
         computedWasmCommand;
       const bootnodes = relayChainBootnodes;
 
+      // parachain_relaychain
+      const paraChainName = (parachain.chain ? parachain.chain + "_" : "") + chainName;
+
       // collator could by defined in groups or
       // just using one collator definiton
       let collators = [];
@@ -178,7 +181,7 @@ export async function generateNetworkSpec(
             networkSpec,
             parachain.collator,
             parachain.id,
-            chainName,
+            paraChainName,
             para,
             bootnodes,
             Boolean(parachain.cumulus_based),
@@ -190,7 +193,7 @@ export async function generateNetworkSpec(
             networkSpec,
             collatorConfig,
             parachain.id,
-            chainName,
+            paraChainName,
             para,
             bootnodes,
             Boolean(parachain.cumulus_based),
@@ -219,7 +222,7 @@ export async function generateNetworkSpec(
               networkSpec,
               node,
               parachain.id,
-              chainName,
+              paraChainName,
               para,
               bootnodes,
               Boolean(parachain.cumulus_based),
