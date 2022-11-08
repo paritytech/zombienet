@@ -36,6 +36,7 @@ export interface Settings {
   polkadot_introspector?: boolean;
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
+  local_ip?: string;
 }
 
 export interface RelayChainConfig {
