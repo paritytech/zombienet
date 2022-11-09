@@ -1,0 +1,15 @@
+Description: Parachains Smoke test
+Network: ./paras.toml
+Creds: config
+
+# group is up
+validator: is up
+
+# Moonbeam
+alice: parachain 1282 is registered within 225 seconds
+alice: parachain 1282 block height is at least 10 within 250 seconds
+
+# bifrost
+alice: parachain 2001 is registered within 225 seconds
+alice: parachain 2001 block height is at least 10 within 250 seconds
+
