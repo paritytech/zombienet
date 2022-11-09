@@ -84,7 +84,8 @@ export async function genCumulusCollatorCmd(
   ];
 
   const chainParts = chain.split("_");
-  let relayChain = chainParts.length > 1 ? chainParts[1] : chainParts[0];
+  let relayChain =
+    chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
 
   if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
 
