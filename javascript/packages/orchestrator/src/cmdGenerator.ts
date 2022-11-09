@@ -123,7 +123,12 @@ export async function genCumulusCollatorCmd(
     ) {
       // Arguments for the relay chain node part of the collator binary.
       fullCmd.push(
-        ...["--", "--chain", `${cfgPath}/${relayChain}.json`, "--execution wasm"],
+        ...[
+          "--",
+          "--chain",
+          `${cfgPath}/${relayChain}.json`,
+          "--execution wasm",
+        ],
       );
 
       if (argsFullNode) {

@@ -170,7 +170,8 @@ export async function generateNetworkSpec(
       const bootnodes = relayChainBootnodes;
 
       // parachain_relaychain
-      const paraChainName = (parachain.chain ? parachain.chain + "_" : "") + chainName;
+      const paraChainName =
+        (parachain.chain ? parachain.chain + "_" : "") + chainName;
 
       // collator could by defined in groups or
       // just using one collator definiton
