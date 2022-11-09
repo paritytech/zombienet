@@ -36,7 +36,7 @@ export interface Settings {
   polkadot_introspector?: boolean;
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
-  local_ip?: string; // IP to `listen` for pod/process on podman/native providers.
+  local_ip?: string; // ip used for expose local services (rpc/metrics/monitors)
 }
 
 export interface RelayChainConfig {
