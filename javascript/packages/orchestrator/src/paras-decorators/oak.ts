@@ -6,7 +6,7 @@ import {
 } from "../chain-spec";
 import { Node } from "../types";
 
-// track 1st staking as default;
+// Track 1st staking bond as default
 let paraStakingBond: number | undefined;
 
 export type GenesisNodeKey = [string, string, { [key: string]: string }];
@@ -36,7 +36,7 @@ async function clearAuthorities(specPath: string) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  // clear parachainStaking
+  // Clear parachainStaking candidates
   if (runtimeConfig?.parachainStaking) {
     paraStakingBond = runtimeConfig.parachainStaking.candidates[0][1];
     runtimeConfig.parachainStaking.candidates.length = 0;
@@ -50,12 +50,12 @@ async function addParaCustom(specPath: string, node: Node) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);
 
-  // parachainStaking
   if (!runtimeConfig?.parachainStaking) return;
 
   const { sr_account } = node.accounts;
   const stakingBond = paraStakingBond || 1000000000000;
 
+  // Ensure collator account has enough balance to bond and add candidate
   runtimeConfig.balances.balances.push([sr_account.address, stakingBond]);
   runtimeConfig.parachainStaking.candidates.push([
     sr_account.address,
