@@ -1,10 +1,10 @@
-import { Node } from "../types";
 import {
   clearAuthorities as _clearAuthorities,
   getRuntimeConfig,
   readAndParseChainSpec,
   writeChainSpec,
 } from "../chain-spec";
+import { Node } from "../types";
 
 // track 1st staking as default;
 let paraStakingBond: number | undefined;

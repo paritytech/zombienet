@@ -79,13 +79,10 @@ const eqDecorators: ParaDecorator = Object.keys(equilibrium).reduce(
   Object.create({}),
 );
 
-const oakDecorators: ParaDecorator = Object.keys(oak).reduce(
-  (memo, fn) => {
-    memo[fn] = (oak as ParaDecorator)[fn];
-    return memo;
-  },
-  Object.create({}),
-);
+const oakDecorators: ParaDecorator = Object.keys(oak).reduce((memo, fn) => {
+  memo[fn] = (oak as ParaDecorator)[fn];
+  return memo;
+}, Object.create({}));
 
 const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
