@@ -407,7 +407,10 @@ export async function start(
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();
     let jaegerUrl: string;
-    if (client.providerName === "podman" && networkSpec.settings.enable_tracing) {
+    if (
+      client.providerName === "podman" &&
+      networkSpec.settings.enable_tracing
+    ) {
       const jaegerIp = await client.getNodeIP("tempo");
       jaegerUrl = `${jaegerIp}:6831`;
     } else if (
