@@ -84,6 +84,10 @@ export async function genCumulusCollatorCmd(
     "--unsafe-ws-external",
   ];
 
+  const chainParts = chain.split("_");
+  let relayChain =
+    chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
+
   if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
 
   const collatorPorts: any = {
@@ -126,7 +130,7 @@ export async function genCumulusCollatorCmd(
           "--base-path",
           relayDataPath,
           "--chain",
-          `${cfgPath}/${chain}.json`,
+          `${cfgPath}/${relayChain}.json`,
           "--execution wasm",
         ],
       );
@@ -188,7 +192,7 @@ export async function genCumulusCollatorCmd(
     // no args
     // Arguments for the relay chain node part of the collator binary.
     fullCmd.push(
-      ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+      ...["--", "--chain", `${cfgPath}/${relayChain}.json`, "--execution wasm"],
     );
 
     // ensure ports
