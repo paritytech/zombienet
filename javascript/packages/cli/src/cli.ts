@@ -63,50 +63,56 @@ let network: Network | undefined;
 
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
-  console.log(`${decorators.yellow("\nStart download...\n")}`);
-  const promises = [];
-  let count = 0;
-  for (let binary of binaries) {
-    promises.push(
-      new Promise<void>(async (resolve) => {
-        const { url, name } = options[binary];
-        const { data, headers } = await axios({
-          url,
-          method: "GET",
-          responseType: "stream",
-        });
-        const totalLength = headers["content-length"];
+  try {
+    console.log(`${decorators.yellow("\nStart download...\n")}`);
+    const promises = [];
+    let count = 0;
+    for (let binary of binaries) {
+      promises.push(
+        new Promise<void>(async (resolve) => {
+          const { url, name } = options[binary];
+          const { data, headers } = await axios({
+            url,
+            method: "GET",
+            responseType: "stream",
+          });
+          const totalLength = headers["content-length"];
 
-        const progressBar = new progress(
-          "-> downloading [:bar] :percent :etas",
-          {
-            width: 40,
-            complete: "=",
-            incomplete: " ",
-            renderThrottle: 1,
-            total: parseInt(totalLength),
-          },
-        );
+          const progressBar = new progress(
+            "-> downloading [:bar] :percent :etas",
+            {
+              width: 40,
+              complete: "=",
+              incomplete: " ",
+              renderThrottle: 1,
+              total: parseInt(totalLength),
+            },
+          );
 
-        const writer = fs.createWriteStream(path.resolve(__dirname, name));
+          const writer = fs.createWriteStream(path.resolve(name));
 
-        data.on("data", (chunk: any) => progressBar.tick(chunk.length));
-        data.pipe(writer);
-        data.on("end", () => {
-          console.log(decorators.yellow(`Binary "${name}" downloaded`));
-          // Add permissions to the binary
-          console.log(decorators.cyan(`Giving permissions to "${name}"`));
-          fs.chmodSync(path.resolve(__dirname, name), 0o755);
-          resolve();
-        });
-      }),
+          data.on("data", (chunk: any) => progressBar.tick(chunk.length));
+          data.pipe(writer);
+          data.on("end", () => {
+            console.log(decorators.yellow(`Binary "${name}" downloaded`));
+            // Add permissions to the binary
+            console.log(decorators.cyan(`Giving permissions to "${name}"`));
+            fs.chmodSync(path.resolve(name), 0o755);
+            resolve();
+          });
+        }),
+      );
+    }
+    await Promise.all(promises);
+    console.log(
+      decorators.cyan(
+        `Please add the dir to your $PATH by running the command:\n`,
+      ),
+      decorators.blue(`export PATH=${__dirname}:$PATH`),
     );
+  } catch (err) {
+    console.log("Unexpected error: ", err);
   }
-  await Promise.all(promises);
-  console.log(
-    decorators.cyan(`Please add the dir to your $PATH by running the command:`),
-    decorators.blue(`export PATH=${__dirname}:$PATH`),
-  );
 };
 
 // Retrieve the latest release for polkadot
