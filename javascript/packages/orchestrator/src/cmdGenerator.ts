@@ -45,7 +45,6 @@ export async function genCumulusCollatorCmd(
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
-    "--force-authoring": true,
     "--base-path": true,
     "--port": true,
     "--ws-port": true,
@@ -87,7 +86,7 @@ export async function genCumulusCollatorCmd(
   let relayChain =
     chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
 
-  if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  if (validator) fullCmd.push(...["--collator"]);
 
   const collatorPorts: any = {
     "--port": 0,
