@@ -178,22 +178,23 @@ function parse_url {
   local gh_remote_dir gh_api_var output
   gh_remote_dir=$1 gh_api_var=$2
   output=""
+  local url_regex="(https:\/\/github.com\/)([A-Za-z0-9_-]*)\/([A-Za-z0-9_-]*)\/tree\/([A-Za-z0-9_-]*)\/([A-Za-z0-9_\/-]+)"
 
   case "${gh_api_var}" in
     org )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\2|g' \
+      output="$(sed -E 's|'$url_regex'|\2|g' \
           <<< "${gh_remote_dir}")"
               ;;
     repo )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\3|g' \
+      output="$(sed -E 's|'$url_regex'|\3|g' \
           <<< "${gh_remote_dir}")"
               ;;
     branch )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\4|g' \
+      output="$(sed -E 's|'$url_regex'|\4|g' \
           <<< "${gh_remote_dir}")"
               ;;
     gh_dir )
-      output="$(sed -E 's|(https:\/\/github.com\/)([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-]*)\/tree\/([A-Za-z0-9_\-]*)\/([A-Za-z0-9_\-\/]+)|\5|g' \
+      output="$(sed -E 's|'$url_regex'|\5|g' \
           <<< "${gh_remote_dir}")"
               ;;
     ??* )
