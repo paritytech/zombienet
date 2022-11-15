@@ -106,9 +106,9 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
     await Promise.all(promises);
     console.log(
       decorators.cyan(
-        `Please add the dir to your $PATH by running the command:\n`,
+        `Please add the current dir to your $PATH by running the command:\n`,
       ),
-      decorators.blue(`export PATH=${__dirname}:$PATH`),
+      decorators.blue(`export PATH=${process.cwd()}:$PATH`),
     );
   } catch (err) {
     console.log("Unexpected error: ", err);
