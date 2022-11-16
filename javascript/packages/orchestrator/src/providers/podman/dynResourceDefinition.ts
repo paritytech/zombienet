@@ -383,7 +383,10 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "tmp-data", hostPath: { type: "Directory", path: dataPath } },
-    { name: "tmp-relay-data", hostPath: { type: "Directory", path: relayDataPath } },
+    {
+      name: "tmp-relay-data",
+      hostPath: { type: "Directory", path: relayDataPath },
+    },
   ];
 
   return [volume_mounts, devices];

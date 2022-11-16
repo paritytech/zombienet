@@ -132,7 +132,11 @@ function make_volume_mounts(): [any, any] {
     { name: "tmp-relay-data", mountPath: "/relay-data", readOnly: false },
   ];
 
-  const devices = [{ name: "tmp-cfg" }, { name: "tmp-data" }, { name: "tmp-relay-data" }];
+  const devices = [
+    { name: "tmp-cfg" },
+    { name: "tmp-data" },
+    { name: "tmp-relay-data" },
+  ];
 
   return [volume_mounts, devices];
 }
