@@ -42,11 +42,17 @@ export async function genCumulusCollatorCmd(
   relayDataPath: string = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
-  const { name, chain, parachainId, key, validator } = nodeSetup;
+  const { name, chain, parachainId, key, validator, commandWithArgs } =
+    nodeSetup;
+
+  // command with args
+  if (commandWithArgs) {
+    return parseCmdWithArguments(commandWithArgs);
+  }
+
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
-    "--force-authoring": true,
     "--base-path": true,
     "--port": true,
     "--ws-port": true,
@@ -88,7 +94,7 @@ export async function genCumulusCollatorCmd(
   let relayChain =
     chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
 
-  if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  if (validator) fullCmd.push(...["--collator"]);
 
   const collatorPorts: any = {
     "--port": 0,
