@@ -1,0 +1,42 @@
+[settings]
+  timeout = 1000
+
+[relaychain]
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
+chain = "rococo-local"
+default_command = "polkadot"
+
+  [[relaychain.node_groups]]
+  name = "validator"
+  args = [ "-lparachain=debug" ]
+  count = 5
+
+
+[[parachains]]
+id = 1282
+chain = "moonbase-local"
+cumulus_based = true
+
+  [parachains.collator]
+  name = "alith"
+  image = "{{MOONBEAM_COL_IMAGE}}"
+  command = "/moonbeam/moonbeam"
+  args = ["-lparachain=debug"]
+
+[[parachains]]
+id = 2001
+chain = "bifrost-kusama-local"
+cumulus_based = true
+
+  [parachains.collator]
+  name = "alice"
+  image = "{{BIFROST_COL_IMAGE}}"
+  command = "bifrost"
+  args = ["-lparachain=debug"]
+
+
+
+[types.Header]
+number = "u64"
+parent_hash = "Hash"
+post_state = "Hash"

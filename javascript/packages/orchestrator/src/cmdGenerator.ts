@@ -41,11 +41,17 @@ export async function genCumulusCollatorCmd(
   dataPath: string = "/data",
   useWrapper = true,
 ): Promise<string[]> {
-  const { name, chain, parachainId, key, validator } = nodeSetup;
+  const { name, chain, parachainId, key, validator, commandWithArgs } =
+    nodeSetup;
+
+  // command with args
+  if (commandWithArgs) {
+    return parseCmdWithArguments(commandWithArgs);
+  }
+
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
-    "--force-authoring": true,
     "--base-path": true,
     "--port": true,
     "--ws-port": true,
@@ -83,7 +89,11 @@ export async function genCumulusCollatorCmd(
     "--unsafe-ws-external",
   ];
 
-  if (validator) fullCmd.push(...["--collator", "--force-authoring"]);
+  const chainParts = chain.split("_");
+  let relayChain =
+    chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
+
+  if (validator) fullCmd.push(...["--collator"]);
 
   const collatorPorts: any = {
     "--port": 0,
@@ -120,7 +130,12 @@ export async function genCumulusCollatorCmd(
     ) {
       // Arguments for the relay chain node part of the collator binary.
       fullCmd.push(
-        ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+        ...[
+          "--",
+          "--chain",
+          `${cfgPath}/${relayChain}.json`,
+          "--execution wasm",
+        ],
       );
 
       if (argsFullNode) {
@@ -180,7 +195,7 @@ export async function genCumulusCollatorCmd(
     // no args
     // Arguments for the relay chain node part of the collator binary.
     fullCmd.push(
-      ...["--", "--chain", `${cfgPath}/${chain}.json`, "--execution wasm"],
+      ...["--", "--chain", `${cfgPath}/${relayChain}.json`, "--execution wasm"],
     );
 
     // ensure ports
