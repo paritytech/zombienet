@@ -41,7 +41,14 @@ export async function genCumulusCollatorCmd(
   dataPath: string = "/data",
   useWrapper = true,
 ): Promise<string[]> {
-  const { name, chain, parachainId, key, validator } = nodeSetup;
+  const { name, chain, parachainId, key, validator, commandWithArgs } =
+    nodeSetup;
+
+  // command with args
+  if (commandWithArgs) {
+    return parseCmdWithArguments(commandWithArgs);
+  }
+
   const parachainAddedArgs: any = {
     "--name": true,
     "--collator": true,
