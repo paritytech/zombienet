@@ -12,7 +12,7 @@
 You need to first _clone_ this repository and run:
 
 ```bash
-cd zombienet
+cd zombienet/javascript
 npm install
 npm run build
 ```
