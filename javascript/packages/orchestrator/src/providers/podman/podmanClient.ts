@@ -1,6 +1,7 @@
 import {
   CreateLogTable,
   decorators,
+  downloadFile,
   getHostIp,
   makeDir,
   writeLocalJsonFile,
@@ -344,6 +345,7 @@ export class PodmanClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
+    dbSnapshot?: string
   ): Promise<void> {
     const name = podDef.metadata.name;
 
@@ -360,12 +362,22 @@ export class PodmanClient extends Client {
       ],
     ]);
 
+    // initialize keystore
+    const dataPath = podDef.spec.volumes.find(
+      (vol: any) => vol.name === "tmp-data",
+    );
+    debug("dataPath", dataPath);
+
+    if (dbSnapshot) {
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await makeDir(`${dataPath.hostPath.path}/chains`, true);
+
+      await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/chains/db.tgz`);
+      await this.runCommand(["-c", `cd ${dataPath.hostPath.path}/chains && tar -xzvf db.tgz`]);
+    }
+
     if (keystore) {
-      // initialize keystore
-      const dataPath = podDef.spec.volumes.find(
-        (vol: any) => vol.name === "tmp-data",
-      );
-      debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       debug("keystoreRemoteDir", keystoreRemoteDir);
       await makeDir(keystoreRemoteDir, true);
