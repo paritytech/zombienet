@@ -384,7 +384,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const client = getClient();
       const getValue = async () : Promise<number> => {
 	await new Promise((resolve) => setTimeout(resolve, timeout*1000));
-	let logs = await client.getNodeLogs(this.name, 2, true);
+	let logs = await client.getNodeLogs(this.name, undefined, true);
 
 	for (let line of logs.split("\n")) {
 	  if (client.providerName !== "native") {
