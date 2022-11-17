@@ -110,6 +110,51 @@ fn parse_match_pattern_rule(
     Ok((name, match_type, pattern, timeout))
 }
 
+fn parse_lines_count_match_pattern_rule(
+    record: Pair<Rule>,
+) -> Result<(String, String, String, ast::Comparison, Option<Duration>), ParserError> {
+    let mut pairs = record.into_inner();
+    let name = parse_name(get_pair(&mut pairs, "name")?)?;
+
+    let mut explicit_match_type = false;
+
+    let pair = get_pair(&mut pairs, "match_type")?;
+    let match_type = if let Rule::match_type = pair.as_rule() {
+        explicit_match_type = true;
+        pair.as_str().to_owned()
+    } else {
+        String::from("regex")
+    };
+
+    let pattern_pair = if explicit_match_type {
+        get_pair(&mut pairs, "pattern")?
+    } else {
+        pair
+    };
+
+    let pattern = pattern_pair.as_str().trim_matches('"').to_owned();
+
+    let cmp_rule = get_pair(&mut pairs, "cmp_rule")?;
+    let comparison: ast::Comparison = match cmp_rule.as_rule() {
+        Rule::int => ast::Comparison {
+            op: ast::Operator::Equal,
+            target_value: parse_taget_value(cmp_rule)?,
+        },
+        Rule::comparison => parse_comparison(cmp_rule)?,
+        _ => {
+            return Err(ParserError::UnreachableRule(pairs.as_str().to_string()));
+        }
+    };
+
+    let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
+        Some(parse_within(within_rule)?)
+    } else {
+        None
+    };
+
+    Ok((name, match_type, pattern, comparison, timeout))
+}
+
 fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<AssertionKind, ParserError> {
     let mut pairs = record.into_inner();
     let node_name = parse_name(get_pair(&mut pairs, "name")?)?;
@@ -398,6 +443,23 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                         node_name: name,
                         match_type,
                         pattern,
+                        timeout,
+                    },
+                    original_line,
+                };
+
+                assertions.push(assertion);
+            }
+            Rule::count_log_match => {
+                let (name, match_type, pattern, comparison, timeout) = parse_lines_count_match_pattern_rule(record)?;
+
+                let assertion = Assertion {
+                    parsed: AssertionKind::CountLogMatch {
+                        node_name: name,
+                        match_type,
+                        pattern,
+                        target_value: comparison.target_value,
+                        op: comparison.op,
                         timeout,
                     },
                     original_line,

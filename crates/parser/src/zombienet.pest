@@ -64,6 +64,7 @@ para_runtime_dummy_upgrade = { node_name ~ parachain ~ "perform dummy upgrade" ~
 histogram = { node_name ~ "reports histogram" ~ metric_name ~ "has" ~ (comparison | int+) ~ "samples in buckets" ~ square_brackets_strings ~ within? }
 report = { node_name ~ "reports" ~ metric_name ~ comparison ~ within? }
 log_match = { node_name ~ "log line" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
+count_log_match = { node_name ~ "count of log lines" ~ ("containing"|"matching") ~ match_type? ~ double_quoted_string ~ "is" ~ (comparison | int+) ~ within? }
 trace = { node_name ~ "trace with traceID" ~ span_id ~ "contains" ~ square_brackets_strings ~ within? }
 system_event = { node_name ~ "system event" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
 custom_js = { node_name ~ "js-script" ~ file_path ~ ("with" ~ double_quoted_string)? ~ ( "return" ~ comparison )? ~ within? }
@@ -93,6 +94,7 @@ file = { SOI ~ (
     histogram |
     report |
     log_match |
+    count_log_match |
     trace |
     system_event |
     custom_js |
