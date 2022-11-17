@@ -285,7 +285,7 @@ dependencies = [
 
 [[package]]
 name = "dsl-parser-wrapper"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "parser",
  "serde_json",
