@@ -451,7 +451,8 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::count_log_match => {
-                let (name, match_type, pattern, comparison, timeout) = parse_lines_count_match_pattern_rule(record)?;
+                let (name, match_type, pattern, comparison, timeout) =
+                    parse_lines_count_match_pattern_rule(record)?;
 
                 let assertion = Assertion {
                     parsed: AssertionKind::CountLogMatch {

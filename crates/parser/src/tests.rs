@@ -309,7 +309,8 @@ fn log_match_glob_parse_ok() {
 
 #[test]
 fn count_log_match_equal_parse_ok() {
-    let line: &str = r#"alice: count of log lines containing "Imported #12" is 0 within 20 seconds"#;
+    let line: &str =
+        r#"alice: count of log lines containing "Imported #12" is 0 within 20 seconds"#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",
@@ -339,7 +340,8 @@ fn count_log_match_equal_parse_ok() {
 
 #[test]
 fn count_log_match_is_at_least_parse_ok() {
-    let line: &str = r#"alice: count of log lines containing "Imported #12" is at least 12 within 20 seconds"#;
+    let line: &str =
+        r#"alice: count of log lines containing "Imported #12" is at least 12 within 20 seconds"#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",
@@ -369,7 +371,8 @@ fn count_log_match_is_at_least_parse_ok() {
 
 #[test]
 fn count_log_match_glob_equal_parse_ok() {
-    let line: &str = r#"alice: count of log lines containing glob "Imported #12" is 10 within 20 seconds"#;
+    let line: &str =
+        r#"alice: count of log lines containing glob "Imported #12" is 10 within 20 seconds"#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",
@@ -399,7 +402,8 @@ fn count_log_match_glob_equal_parse_ok() {
 
 #[test]
 fn count_log_match_glob_is_at_least_parse_ok() {
-    let line: &str = r#"alice: count of log lines matching glob "*rted #1*" is at least 5 within 10 seconds"#;
+    let line: &str =
+        r#"alice: count of log lines matching glob "*rted #1*" is at least 5 within 10 seconds"#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",
@@ -426,7 +430,6 @@ fn count_log_match_glob_is_at_least_parse_ok() {
     let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
     assert_eq!(result, t);
 }
-
 
 #[test]
 fn trace_parse_ok() {
