@@ -82,6 +82,7 @@ export async function generateNetworkSpec(
     networkSpec.relaychain.genesis = config.relaychain.genesis;
   const chainName = config.relaychain.chain || DEFAULT_CHAIN;
 
+  if (config.relaychain.default_db_snapshot) networkSpec.relaychain.defaultDbSnapshot = config.relaychain.default_db_snapshot;
   // settings
   networkSpec.settings = {
     timeout: DEFAULT_GLOBAL_TIMEOUT,
@@ -143,6 +144,7 @@ export async function generateNetworkSpec(
         overrides: nodeGroup.overrides,
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
+        db_snapshot: nodeGroup.db_snapshot
       };
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
@@ -570,6 +572,12 @@ async function getNodeFromConfig(
   };
 
   if (group) nodeSetup.group = group;
+
+  const dbSnapshot = node.db_snapshot ? node.db_snapshot :
+    networkSpec.relaychain.defaultDbSnapshot ? networkSpec.relaychain.defaultDbSnapshot :
+    null;
+
+  if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
   return nodeSetup;
 }
 

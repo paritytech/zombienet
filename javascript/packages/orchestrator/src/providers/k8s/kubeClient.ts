@@ -91,6 +91,7 @@ export class KubeClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
+    dbSnapshot?: string
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -116,6 +117,41 @@ export class KubeClient extends Client {
 
     await this.createResource(podDef, true, false);
     await this.wait_transfer_container(name);
+
+    if (dbSnapshot) {
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await this.runCommand(
+        [
+          "exec",
+          name,
+          "-c",
+          TRANSFER_CONTAINER_NAME,
+          "--",
+          "ash",
+          "-c",
+          [
+            "mkdir",
+            "-p",
+            "/data/chains",
+            "&&",
+            "wget",
+            dbSnapshot,
+            "-O",
+            "/data/chains/db.tgz",
+            "&&",
+            "cd",
+            "/data/chains",
+            "&&",
+            "tar",
+            "-xzvf",
+            "db.tgz"
+          ].join(" ")
+        ],
+        undefined,
+        true,
+      );
+    }
 
     if (keystore) {
       // initialize keystore
@@ -618,6 +654,7 @@ export class KubeClient extends Client {
       if (scoped) augmentedCmd.push("--namespace", this.namespace);
 
       const finalArgs = [...augmentedCmd, ...args];
+      debug("finalArgs", finalArgs);
       const result = await execa("kubectl", finalArgs, {
         input: resourceDef,
       });
