@@ -374,7 +374,7 @@ export class PodmanClient extends Client {
       await makeDir(`${dataPath.hostPath.path}/chains`, true);
 
       await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/chains/db.tgz`);
-      await this.runCommand([
+      await execa("bash", [
         "-c",
         `cd ${dataPath.hostPath.path}/chains && tar -xzvf db.tgz`,
       ]);
