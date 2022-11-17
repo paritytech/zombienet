@@ -409,6 +409,7 @@ alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in b
 # logs
 bob: log line matches glob &quot;*rted #1*&quot; within 10 seconds
 bob: log line matches &quot;Imported #[0-9]+&quot; within 10 seconds
+bob: count of log lines maching &quot;Error&quot; is 0 within 10 seconds
 
 # system events
 bob: system event contains &quot;A candidate was included&quot; within 20 seconds
@@ -840,6 +841,16 @@ For example:</p>
 <li><code>node-name</code>: log line (contains|matches) ( regex|glob) &quot;pattern&quot; [within x seconds]
 <ul>
 <li>alice: log line matches glob &quot;<em>rted #1</em>&quot; within 10 seconds</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Logs assertions: Get logs from nodes and assert on the number of lines matching pattern (support <code>regex</code> and <code>glob</code>).</p>
+<ul>
+<li><code>node-name</code>: count of log lines (containing|matcheing) ( regex|glob) &quot;pattern&quot; [within x seconds]
+<ul>
+<li>alice: count of log lines matching glob &quot;<em>rted #1</em>&quot; within 10 seconds</li>
 </ul>
 </li>
 </ul>
