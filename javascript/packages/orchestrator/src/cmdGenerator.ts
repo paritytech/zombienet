@@ -39,6 +39,7 @@ export async function genCumulusCollatorCmd(
   nodeSetup: Node,
   cfgPath: string = "/cfg",
   dataPath: string = "/data",
+  relayDataPath: string = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator, commandWithArgs } =
@@ -46,7 +47,7 @@ export async function genCumulusCollatorCmd(
 
   // command with args
   if (commandWithArgs) {
-    return parseCmdWithArguments(commandWithArgs);
+    return parseCmdWithArguments(commandWithArgs, useWrapper);
   }
 
   const parachainAddedArgs: any = {
@@ -132,6 +133,8 @@ export async function genCumulusCollatorCmd(
       fullCmd.push(
         ...[
           "--",
+          "--base-path",
+          relayDataPath,
           "--chain",
           `${cfgPath}/${relayChain}.json`,
           "--execution wasm",

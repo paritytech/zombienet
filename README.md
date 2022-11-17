@@ -311,7 +311,7 @@ Other examples are provided in the [examples](examples) directory.
 You need first to *clone* this repository and run:
 
 ```bash
-cd zombienet
+cd zombienet/javascript
 npm install
 npm run build
 ```
