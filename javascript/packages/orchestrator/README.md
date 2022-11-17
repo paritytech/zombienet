@@ -309,7 +309,7 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 You need first to *clone* this repository and run:
 
 ```bash
-cd zombienet
+cd zombienet/javascript
 npm install
 npm run build
 ```
