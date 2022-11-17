@@ -55,6 +55,11 @@ The first lines are used to define the **header fields**:
   - `node-name`: log line (contains|matches) ( regex|glob) "pattern" [within x seconds]
     - alice: log line matches glob "_rted #1_" within 10 seconds
 
+- Logs assertions: Get logs from nodes and assert on the number of lines matching pattern (support `regex` and `glob`).
+
+  - `node-name`: count of log lines (containing|matcheing) ( regex|glob) "pattern" [within x seconds]
+    - alice: count of log lines matching glob "_rted #1_" within 10 seconds
+
 - System events assertion: Find a `system event` from subscription by matching a `pattern`. _NOTE_ the subscription is made when we start this particular test, so we **can not** match on event in the past.
 
   - `node-name`: system event (contains|matches)( regex| glob) "pattern" [within x seconds]

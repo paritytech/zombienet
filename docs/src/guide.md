@@ -75,6 +75,7 @@ alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in b
 # logs
 bob: log line matches glob "*rted #1*" within 10 seconds
 bob: log line matches "Imported #[0-9]+" within 10 seconds
+bob: count of log lines maching "Error" is 0 within 10 seconds
 
 # system events
 bob: system event contains "A candidate was included" within 20 seconds
