@@ -490,7 +490,7 @@ export async function start(
         finalFilesToCopyToNode,
         keystoreLocalDir,
         parachainSpecId || client.chainId,
-        node.dbSnapshot
+        node.dbSnapshot,
       );
 
       const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);

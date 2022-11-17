@@ -5,7 +5,6 @@ import {
   makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
-import axios from "axios";
 import { spawn } from "child_process";
 import execa from "execa";
 import { copy as fseCopy } from "fs-extra";
@@ -230,7 +229,7 @@ export class NativeClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
-    dbSnapshot?: string
+    dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
@@ -262,7 +261,10 @@ export class NativeClient extends Client {
       await makeDir(`${podDef.spec.dataPath}/chains`, true);
 
       await downloadFile(dbSnapshot, `${podDef.spec.dataPath}/chains/db.tgz`);
-      await this.runCommand(["-c", `cd ${podDef.spec.dataPath}/chains && tar -xzvf db.tgz`]);
+      await this.runCommand([
+        "-c",
+        `cd ${podDef.spec.dataPath}/chains && tar -xzvf db.tgz`,
+      ]);
     }
 
     if (keystore) {

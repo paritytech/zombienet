@@ -91,7 +91,7 @@ export class KubeClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
-    dbSnapshot?: string
+    dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -145,8 +145,8 @@ export class KubeClient extends Client {
             "&&",
             "tar",
             "-xzvf",
-            "db.tgz"
-          ].join(" ")
+            "db.tgz",
+          ].join(" "),
         ],
         undefined,
         true,

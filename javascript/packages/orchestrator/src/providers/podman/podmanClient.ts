@@ -345,7 +345,7 @@ export class PodmanClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
-    dbSnapshot?: string
+    dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
 
@@ -374,7 +374,10 @@ export class PodmanClient extends Client {
       await makeDir(`${dataPath.hostPath.path}/chains`, true);
 
       await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/chains/db.tgz`);
-      await this.runCommand(["-c", `cd ${dataPath.hostPath.path}/chains && tar -xzvf db.tgz`]);
+      await this.runCommand([
+        "-c",
+        `cd ${dataPath.hostPath.path}/chains && tar -xzvf db.tgz`,
+      ]);
     }
 
     if (keystore) {

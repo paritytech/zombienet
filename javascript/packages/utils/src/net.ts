@@ -1,6 +1,6 @@
 import axios from "axios";
-import fs from "fs";
 import dns from "dns";
+import fs from "fs";
 import { AddressInfo, createServer } from "net";
 import os from "os";
 
@@ -34,7 +34,7 @@ export async function getHostIp(): Promise<string> {
 
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
-    await new Promise<void>( async (resolve) => {
+    await new Promise<void>(async (resolve) => {
       const { data } = await axios({
         url,
         method: "GET",
