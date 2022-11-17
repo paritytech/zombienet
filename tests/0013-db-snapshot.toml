@@ -1,0 +1,15 @@
+[relaychain]
+default_image = "docker.io/paritypr/polkadot-debug:master"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+default_db_snapshot = "https://storage.googleapis.com/zombienet-db-snaps/chains-test.tgz"
+
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true

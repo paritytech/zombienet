@@ -1,0 +1,11 @@
+Description: Db Snapshot test
+Network: ./0013-db-snapshot.toml
+Creds: config
+
+
+# well known functions
+alice: is up
+bob: is up
+
+# check balance
+alice: js-script ./check-balance.js with "alice" return is 900000999940423862 within 200 seconds
