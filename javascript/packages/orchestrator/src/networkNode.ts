@@ -378,35 +378,36 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
     try {
-      let total_count  = 0;
+      let total_count = 0;
       const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
-      const getValue = async () : Promise<number> => {
-	await new Promise((resolve) => setTimeout(resolve, timeout*1000));
-	let logs = await client.getNodeLogs(this.name, undefined, true);
+      const getValue = async (): Promise<number> => {
+        await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
+        let logs = await client.getNodeLogs(this.name, undefined, true);
 
-	for (let line of logs.split("\n")) {
-	  if (client.providerName !== "native") {
-	    // remove the extra timestamp
-	    line = line.split(" ").slice(1).join(" ");
-	  }
-	  if (re.test(line)) {
-	    total_count += 1;
-	  }
-	}
-	return total_count;
+        for (let line of logs.split("\n")) {
+          if (client.providerName !== "native") {
+            // remove the extra timestamp
+            line = line.split(" ").slice(1).join(" ");
+          }
+          if (re.test(line)) {
+            total_count += 1;
+          }
+        }
+        return total_count;
       };
 
       const resp = await Promise.race([
         getValue(),
-        new Promise((resolve) =>
-          setTimeout(() => {
-            const err = new Error(
-              `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
-            );
-            return resolve(err);
-          }, (timeout + 2) * 1000), //extra 2s for processing log
+        new Promise(
+          (resolve) =>
+            setTimeout(() => {
+              const err = new Error(
+                `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
+              );
+              return resolve(err);
+            }, (timeout + 2) * 1000), //extra 2s for processing log
         ),
       ]);
       if (resp instanceof Error) throw resp;

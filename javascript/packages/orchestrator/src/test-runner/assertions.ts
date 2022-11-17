@@ -135,14 +135,23 @@ const LogMatch = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   };
 };
 
-const CountLogMatch = ({ node_name, pattern, match_type, op, target_value, timeout }: FnArgs) => {
+const CountLogMatch = ({
+  node_name,
+  pattern,
+  match_type,
+  op,
+  target_value,
+  timeout,
+}: FnArgs) => {
   const comparatorFn = comparators[op!];
   const isGlob = (match_type && match_type.trim() === "glob") || false;
 
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
-      nodes.map((node: any) => node.countPatternLines(pattern!, isGlob, timeout)),
+      nodes.map((node: any) =>
+        node.countPatternLines(pattern!, isGlob, timeout),
+      ),
     );
 
     for (const value of results) {
