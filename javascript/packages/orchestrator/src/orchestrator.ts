@@ -133,7 +133,7 @@ export async function start(
       } else if (!opts.force) {
         const response = await askQuestion(
           `${decorators.yellow(
-            "Directory already exists; Everything will be overwritten;\nDo you want to continue? (y/N)",
+            "Directory already exists; \nDo you want to continue? (y/N)",
           )}`,
         );
         if (response.toLowerCase() !== "y") {
