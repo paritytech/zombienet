@@ -47,7 +47,7 @@ export async function genCumulusCollatorCmd(
 
   // command with args
   if (commandWithArgs) {
-    return parseCmdWithArguments(commandWithArgs);
+    return parseCmdWithArguments(commandWithArgs, useWrapper);
   }
 
   const parachainAddedArgs: any = {
