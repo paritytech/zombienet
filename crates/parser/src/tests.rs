@@ -308,6 +308,130 @@ fn log_match_glob_parse_ok() {
 }
 
 #[test]
+fn count_log_match_equal_parse_ok() {
+    let line: &str =
+        r#"alice: count of log lines containing "Imported #12" is 0 within 20 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: count of log lines containing \"Imported #12\" is 0 within 20 seconds",
+                "parsed": {
+                  "fn": "CountLogMatch",
+                  "args": {
+                    "node_name": "alice",
+                    "match_type": "regex",
+                    "pattern": "Imported #12",
+                    "op": "Equal",
+                    "target_value": 0,
+                    "timeout": 20
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn count_log_match_is_at_least_parse_ok() {
+    let line: &str =
+        r#"alice: count of log lines containing "Imported #12" is at least 12 within 20 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: count of log lines containing \"Imported #12\" is at least 12 within 20 seconds",
+                "parsed": {
+                  "fn": "CountLogMatch",
+                  "args": {
+                    "node_name": "alice",
+                    "match_type": "regex",
+                    "pattern": "Imported #12",
+                    "op": "IsAtLeast",
+                    "target_value": 12,
+                    "timeout": 20
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn count_log_match_glob_equal_parse_ok() {
+    let line: &str =
+        r#"alice: count of log lines containing glob "Imported #12" is 10 within 20 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: count of log lines containing glob \"Imported #12\" is 10 within 20 seconds",
+                "parsed": {
+                  "fn": "CountLogMatch",
+                  "args": {
+                    "node_name": "alice",
+                    "match_type": "glob",
+                    "pattern": "Imported #12",
+                    "op": "Equal",
+                    "target_value": 10,
+                    "timeout": 20
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn count_log_match_glob_is_at_least_parse_ok() {
+    let line: &str =
+        r#"alice: count of log lines matching glob "*rted #1*" is at least 5 within 10 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: count of log lines matching glob \"*rted #1*\" is at least 5 within 10 seconds",
+                "parsed": {
+                  "fn": "CountLogMatch",
+                  "args": {
+                    "node_name": "alice",
+                    "match_type": "glob",
+                    "pattern": "*rted #1*",
+                    "op": "IsAtLeast",
+                    "target_value": 5,
+                    "timeout": 10
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn trace_parse_ok() {
     let line: &str = r#"alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]"#;
     let data = r#"{

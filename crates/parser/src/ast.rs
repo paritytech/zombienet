@@ -80,6 +80,15 @@ pub enum AssertionKind {
         #[serde(with = "optional_timeout")]
         timeout: Option<Duration>,
     },
+    CountLogMatch {
+        node_name: NodeName,
+        match_type: String,
+        pattern: String,
+        op: Operator,
+        target_value: u64,
+        #[serde(with = "optional_timeout")]
+        timeout: Option<Duration>,
+    },
     Trace {
         node_name: NodeName,
         span_id: String,
