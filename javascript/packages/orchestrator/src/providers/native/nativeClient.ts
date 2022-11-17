@@ -1,6 +1,7 @@
 import {
   CreateLogTable,
   decorators,
+  downloadFile,
   makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
@@ -228,6 +229,7 @@ export class NativeClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
+    dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
@@ -252,6 +254,18 @@ export class NativeClient extends Client {
         decorators.white(podDef.spec.command.join(" ")),
       ],
     ]);
+
+    if (dbSnapshot) {
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await makeDir(`${podDef.spec.dataPath}/chains`, true);
+
+      await downloadFile(dbSnapshot, `${podDef.spec.dataPath}/chains/db.tgz`);
+      await this.runCommand([
+        "-c",
+        `cd ${podDef.spec.dataPath}/chains && tar -xzvf db.tgz`,
+      ]);
+    }
 
     if (keystore) {
       // initialize keystore

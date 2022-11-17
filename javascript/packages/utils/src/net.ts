@@ -1,4 +1,6 @@
+import axios from "axios";
 import dns from "dns";
+import fs from "fs";
 import { AddressInfo, createServer } from "net";
 import os from "os";
 
@@ -28,4 +30,24 @@ export async function getHostIp(): Promise<string> {
       resolve(addr);
     });
   });
+}
+
+export async function downloadFile(url: string, dest: string): Promise<void> {
+  try {
+    await new Promise<void>(async (resolve) => {
+      const { data } = await axios({
+        url,
+        method: "GET",
+        responseType: "stream",
+      });
+
+      const writer = fs.createWriteStream(dest);
+      data.pipe(writer);
+      data.on("end", () => {
+        resolve();
+      });
+    });
+  } catch (err) {
+    console.log("Unexpected error: ", err);
+  }
 }
