@@ -346,6 +346,10 @@ export class NativeClient extends Client {
   }
 
   async wait_node_ready(nodeName: string, logFile: string): Promise<void> {
+    // check if the process is alive
+    const result = await this.runCommand(["-c", `ps ${this.processMap[nodeName].pid}`]);
+    if(result.exitCode > 0) throw new Error(`Process: ${this.processMap[nodeName].pid}, for node: ${nodeName} dies`);
+
     // loop until ready
     let t = this.timeout;
     const args = [
