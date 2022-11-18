@@ -318,18 +318,16 @@ export class PodmanClient extends Client {
 
       // set as executable
       const baseArgs = ["exec", identifier];
-      await this.runCommand(
-        [...baseArgs, "/bin/chmod", "+x", scriptPathInPod],
-        undefined,
-        true,
-      );
+      await this.runCommand([...baseArgs, "/bin/chmod", "+x", scriptPathInPod]);
 
       // exec
-      const result = await this.runCommand(
-        [...baseArgs, "bash", "-c", scriptPathInPod, ...args],
-        undefined,
-        true,
-      );
+      const result = await this.runCommand([
+        ...baseArgs,
+        "bash",
+        "-c",
+        scriptPathInPod,
+        ...args,
+      ]);
 
       return {
         exitCode: result.exitCode,
