@@ -6,6 +6,7 @@ enum PARA {
   Bifrost = "bifrost",
   Equilibrium = "equilibrium",
   Oak = "oak",
+  Mangata = "mangata",
   Generic = "generic",
 }
 
@@ -18,6 +19,7 @@ import acala from "./acala";
 import bifrost from "./bifrost";
 import efinity from "./efinity";
 import equilibrium from "./equilibrium";
+import mangata from "./mangata";
 import moonbeam from "./moonbeam";
 import oak from "./oak";
 import statemint from "./statemint";
@@ -30,6 +32,7 @@ function whichPara(chain: string): PARA {
   if (/bifrost/.test(chain)) return PARA.Bifrost;
   if (/equilibrium|genshiro/.test(chain)) return PARA.Equilibrium;
   if (/oak|turing|neumann/.test(chain)) return PARA.Oak;
+  if (/mangata/.test(chain)) return PARA.Mangata;
 
   return PARA.Generic;
 }
@@ -84,6 +87,14 @@ const oakDecorators: ParaDecorator = Object.keys(oak).reduce((memo, fn) => {
   return memo;
 }, Object.create({}));
 
+const mangataDecorators: ParaDecorator = Object.keys(mangata).reduce(
+  (memo, fn) => {
+    memo[fn] = (mangata as ParaDecorator)[fn];
+    return memo;
+  },
+  Object.create({}),
+);
+
 const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
   statemint: statemintDecorators,
@@ -92,6 +103,7 @@ const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   bifrost: bifrostDecorators,
   equilibrium: eqDecorators,
   oak: oakDecorators,
+  mangata: mangataDecorators,
   generic: {},
 };
 
