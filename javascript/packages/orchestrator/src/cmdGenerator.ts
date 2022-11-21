@@ -247,7 +247,7 @@ export async function genCmd(
 
   // command with args
   if (commandWithArgs) {
-    return parseCmdWithArguments(commandWithArgs);
+    return parseCmdWithArguments(commandWithArgs, useWrapper);
   }
 
   if (!command) command = DEFAULT_COMMAND;
