@@ -26,7 +26,8 @@
     ],
     "targets": [
       "node16-macos-x64",
-      "node16-linux-x64"
+      "node16-linux-x64",
+      "node16-linux-arm64"
     ]
   },
   "bin": {

@@ -46,7 +46,16 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./javascript/bins/zombienet-linux
+          asset_path: ./javascript/bins/zombienet-linux-x64
+          asset_name: zombienet-linux
+          asset_content_type: application/octet-stream
+      - name: upload linux arm64 artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./javascript/bins/zombienet-linux-arm64
           asset_name: zombienet-linux
           asset_content_type: application/octet-stream
   build_release_for_mac:
@@ -78,6 +87,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
-          asset_path: ./javascript/bins/zombienet-macos
+          asset_path: ./javascript/bins/zombienet-macos-x64
           asset_name: zombienet-macos
           asset_content_type: application/octet-stream
