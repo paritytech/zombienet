@@ -36,12 +36,14 @@ export interface Settings {
   polkadot_introspector?: boolean;
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
+  local_ip?: string; // ip used for expose local services (rpc/metrics/monitors)
 }
 
 export interface RelayChainConfig {
   default_command?: string;
   default_image?: string;
   default_resources?: Resources;
+  default_db_snapshot?: string;
   chain: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -73,6 +75,7 @@ export interface NodeConfig {
   rpc_port?: number;
   prometheus_port?: number;
   p2p_port?: number;
+  db_snapshot?: string;
 }
 
 export interface NodeGroupConfig {
@@ -84,6 +87,7 @@ export interface NodeGroupConfig {
   overrides?: Override[];
   count: string | number;
   resources?: Resources;
+  db_snapshot?: string;
 }
 
 export interface ParachainConfig {
@@ -120,6 +124,7 @@ export interface ComputedNetwork {
     defaultImage: string;
     defaultCommand: string;
     defaultArgs: string[];
+    defaultDbSnapshot?: string;
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
@@ -168,6 +173,7 @@ export interface Node {
   prometheusPort: number;
   p2pPort: number;
   imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
+  dbSnapshot?: string;
 }
 
 export interface Collator {

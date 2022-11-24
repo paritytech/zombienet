@@ -1,6 +1,8 @@
 import {
   CreateLogTable,
   decorators,
+  downloadFile,
+  makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { spawn } from "child_process";
@@ -86,7 +88,7 @@ export class NativeClient extends Client {
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Native provider don't have the `namespace` isolation.
     // but we create the `remoteDir` to place files
-    await fs.promises.mkdir(this.remoteDir, { recursive: true });
+    await makeDir(this.remoteDir, true);
     return;
   }
   // Podman ONLY support `pods`
@@ -227,6 +229,7 @@ export class NativeClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
+    dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));
@@ -252,10 +255,22 @@ export class NativeClient extends Client {
       ],
     ]);
 
+    if (dbSnapshot) {
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await makeDir(`${podDef.spec.dataPath}/chains`, true);
+
+      await downloadFile(dbSnapshot, `${podDef.spec.dataPath}/chains/db.tgz`);
+      await this.runCommand([
+        "-c",
+        `cd ${podDef.spec.dataPath}/chains && tar -xzvf db.tgz`,
+      ]);
+    }
+
     if (keystore) {
       // initialize keystore
       const keystoreRemoteDir = `${podDef.spec.dataPath}/chains/${chainSpecId}/keystore`;
-      await fs.promises.mkdir(keystoreRemoteDir, { recursive: true });
+      await makeDir(keystoreRemoteDir, true);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
     }
@@ -331,6 +346,16 @@ export class NativeClient extends Client {
   }
 
   async wait_node_ready(nodeName: string, logFile: string): Promise<void> {
+    // check if the process is alive
+    const result = await this.runCommand([
+      "-c",
+      `ps ${this.processMap[nodeName].pid}`,
+    ]);
+    if (result.exitCode > 0)
+      throw new Error(
+        `Process: ${this.processMap[nodeName].pid}, for node: ${nodeName} dies`,
+      );
+
     // loop until ready
     let t = this.timeout;
     const args = [

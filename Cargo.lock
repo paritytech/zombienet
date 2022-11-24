@@ -284,6 +284,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dsl-parser-wrapper"
+version = "0.1.7"
+dependencies = [
+ "parser",
+ "serde_json",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1493,12 +1502,3 @@ name = "windows_x86_64_msvc"
 version = "0.36.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c811ca4a8c853ef420abd8592ba53ddbbac90410fab6903b3e79972a631f7680"
-
-[[package]]
-name = "zombienet-dsl-parser-wrapper"
-version = "0.1.6"
-dependencies = [
- "parser",
- "serde_json",
- "wasm-bindgen",
-]

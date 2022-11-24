@@ -126,6 +126,8 @@ Options:
   -c, --spawn-concurrency <concurrency>  Number of concurrent spawning process to launch, default is 1
   -p, --provider <provider>              Override provider to use (choices: "podman", "kubernetes", "native")
                                          default: kubernetes
+  -d, --dir <path>                       Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)
+  -f, --force                            Force override all prompt commands
   -m, --monitor                          Start as monitor, do not auto cleanup network
   -h, --help                             display help for command
 
@@ -309,7 +311,7 @@ Other examples are provided in the [examples](examples) directory.
 You need first to *clone* this repository and run:
 
 ```bash
-cd zombienet
+cd zombienet/javascript
 npm install
 npm run build
 ```

@@ -16,6 +16,7 @@ stages:
 
 variables:
   CI_IMAGE: "node:16.18"
+  BUILDAH_IMAGE: "quay.io/buildah/stable:v1.27"
   DOCKERFILE: scripts/ci/docker/zombienet_injected.Dockerfile
   DOCKERHUB_REPO: paritytech
   IMAGE_NAME: $DOCKERHUB_REPO/zombienet
@@ -117,7 +118,7 @@ publish-test:
   <<: *test-refs
   <<: *kubernetes-env
   variables:
-    CI_IMAGE: quay.io/buildah/stable
+    CI_IMAGE: $BUILDAH_IMAGE
   script:
     - buildah bud
       --format=docker
@@ -130,7 +131,7 @@ publish-test:
 publish-docker-pr:
   stage: publish
   variables:
-    CI_IMAGE: quay.io/buildah/stable
+    CI_IMAGE: $BUILDAH_IMAGE
     DOCKERHUB_REPO: paritypr
   before_script:
     - export VERSION=${CI_COMMIT_SHORT_SHA}
@@ -143,7 +144,7 @@ publish-docker-pr:
 publish-docker:
   stage: publish
   variables:
-    CI_IMAGE: quay.io/buildah/stable
+    CI_IMAGE: $BUILDAH_IMAGE
   before_script:
     - if [[ "${CI_COMMIT_TAG}" ]]; then
       VERSION=${CI_COMMIT_TAG};
@@ -454,7 +455,7 @@ zombienet-upgrade-node:
   tags:
     - zombienet-polkadot-integration-test
 
-paras-moonbeam:
+paras:
   stage: deploy
   <<: *kubernetes-env
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
@@ -467,19 +468,51 @@ paras-moonbeam:
   #   - job:                         publish-docker-pr
 
   variables:
-    GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/paras/moonbeam"
+    GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/paras"
 
   before_script:
-    - echo "Zombienet Upgrade node"
+    - echo "Zombienet Paras smoke test"
     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
     - echo "${GH_DIR}"
     - export DEBUG=zombie*
     - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
-    - export COL_IMAGE="docker.io/purestake/moonbeam:v0.26"
+    - export BIFROST_COL_IMAGE=docker.io/bifrostnetwork/bifrost:latest
+    - export MOONBEAM_COL_IMAGE=docker.io/purestake/moonbeam:v0.26
 
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
-      --test="moonbeam.zndsl"
+      --test="paras.zndsl"
+  allow_failure: true
+  retry: 2
+  tags:
+    - zombienet-polkadot-integration-test
+
+db-snapshot:
+  stage: deploy
+  <<: *kubernetes-env
+  image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_REF_NAME == "master"
+    - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/ # PRs
+    - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/ # i.e. v1.0, v2.1rc1
+  # needs:
+  #   - job:                         publish-docker-pr
+
+  variables:
+    GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests"
+
+  before_script:
+    - echo "Zombienet Db Snapshot"
+    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+    - echo "${GH_DIR}"
+    - export DEBUG=zombie*
+    - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
+    - export COL_IMAGE="docker.io/paritypr/colander:master"
+
+  script:
+    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
+      --test="0013-db-snapshot.zndsl"
   allow_failure: true
   retry: 2
   tags:

@@ -1,4 +1,4 @@
-import { getRandomPort } from "@zombienet/utils";
+import { getRandomPort, makeDir } from "@zombienet/utils";
 import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
@@ -53,8 +53,8 @@ export async function genPrometheusDef(namespace: string): Promise<any> {
   ];
   const cfgPath = `${client.tmpDir}/prometheus/etc`;
   const dataPath = `${client.tmpDir}/prometheus/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(cfgPath, true);
+  await makeDir(dataPath, true);
 
   const devices = [
     { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
@@ -90,7 +90,7 @@ scrape_configs:
   ];
 
   const containerDef = {
-    image: "prom/prometheus",
+    image: "docker.io/prom/prometheus",
     name: "prometheus",
     imagePullPolicy: "Always",
     ports,
@@ -134,7 +134,7 @@ export async function genGrafanaDef(
     },
   ];
   const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
-  await fs.mkdir(datasourcesPath, { recursive: true });
+  await makeDir(datasourcesPath, true);
 
   const devices = [
     {
@@ -174,7 +174,7 @@ datasources:
   ];
 
   const containerDef = {
-    image: "grafana/grafana",
+    image: "docker.io/grafana/grafana",
     name: "grafana",
     imagePullPolicy: "Always",
     ports,
@@ -217,7 +217,7 @@ export async function getIntrospectorDef(
   ];
 
   const containerDef = {
-    image: "paritytech/polkadot-introspector:latest",
+    image: "docker.io/paritytech/polkadot-introspector:latest",
     name: INTROSPECTOR_POD_NAME,
     args: ["block-time-monitor", `--ws=${wsUri}`, "prometheus"],
     imagePullPolicy: "Always",
@@ -256,8 +256,8 @@ export async function genTempoDef(namespace: string): Promise<any> {
   ];
   const cfgPath = `${client.tmpDir}/tempo/etc`;
   const dataPath = `${client.tmpDir}/tempo/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-  await fs.mkdir(dataPath, { recursive: true });
+  await makeDir(cfgPath, true);
+  await makeDir(dataPath, true);
 
   const devices = [
     { name: "tempo-cfg", hostPath: { type: "Directory", path: cfgPath } },
@@ -299,7 +299,7 @@ export async function genTempoDef(namespace: string): Promise<any> {
   ];
 
   const containerDef = {
-    image: "grafana/tempo:latest",
+    image: "docker.io/grafana/tempo:latest",
     name: "tempo",
     args: ["-config.file=/etc/tempo/tempo.yaml"],
     imagePullPolicy: "Always",
@@ -369,18 +369,24 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg:U", readOnly: false },
     { name: "tmp-data", mountPath: "/data:U", readOnly: false },
+    { name: "tmp-relay-data", mountPath: "/relay-data:U", readOnly: false },
   ];
 
   const client = getClient();
   const cfgPath = `${client.tmpDir}/${name}/cfg`;
   const dataPath = `${client.tmpDir}/${name}/data`;
-  await fs.mkdir(cfgPath, { recursive: true });
-
-  await fs.mkdir(dataPath, { recursive: true });
+  const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
+  await makeDir(cfgPath, true);
+  await makeDir(dataPath, true);
+  await makeDir(relayDataPath, true);
 
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "tmp-data", hostPath: { type: "Directory", path: dataPath } },
+    {
+      name: "tmp-relay-data",
+      hostPath: { type: "Directory", path: relayDataPath },
+    },
   ];
 
   return [volume_mounts, devices];

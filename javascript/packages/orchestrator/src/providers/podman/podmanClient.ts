@@ -1,7 +1,9 @@
 import {
   CreateLogTable,
   decorators,
+  downloadFile,
   getHostIp,
+  makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import execa from "execa";
@@ -11,6 +13,7 @@ import YAML from "yaml";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
+  LOCALHOST,
   P2P_PORT,
   PROMETHEUS_PORT,
 } from "../../constants";
@@ -90,10 +93,12 @@ export class PodmanClient extends Client {
     const prometheusSpec = await genPrometheusDef(this.namespace);
     const promPort = prometheusSpec.spec.containers[0].ports[0].hostPort;
     await this.createResource(prometheusSpec, false, true);
+    const listeningIp = settings.local_ip || LOCALHOST;
+
     console.log(
       `\n\t Monitor: ${decorators.green(
         prometheusSpec.metadata.name,
-      )} - url: http://127.0.0.1:${promPort}`,
+      )} - url: http://${listeningIp}:${promPort}`,
     );
 
     const tempoSpec = await genTempoDef(this.namespace);
@@ -103,7 +108,7 @@ export class PodmanClient extends Client {
     console.log(
       `\n\t Monitor: ${decorators.green(
         tempoSpec.metadata.name,
-      )} - url: http://127.0.0.1:${tempoPort}`,
+      )} - url: http://${listeningIp}:${tempoPort}`,
     );
 
     const prometheusIp = await this.getNodeIP("prometheus");
@@ -118,7 +123,7 @@ export class PodmanClient extends Client {
     console.log(
       `\n\t Monitor: ${decorators.green(
         grafanaSpec.metadata.name,
-      )} - url: http://127.0.0.1:${grafanaPort}`,
+      )} - url: http://${listeningIp}:${grafanaPort}`,
     );
   }
 
@@ -313,18 +318,16 @@ export class PodmanClient extends Client {
 
       // set as executable
       const baseArgs = ["exec", identifier];
-      await this.runCommand(
-        [...baseArgs, "/bin/chmod", "+x", scriptPathInPod],
-        undefined,
-        true,
-      );
+      await this.runCommand([...baseArgs, "/bin/chmod", "+x", scriptPathInPod]);
 
       // exec
-      const result = await this.runCommand(
-        [...baseArgs, "bash", "-c", scriptPathInPod, ...args],
-        undefined,
-        true,
-      );
+      const result = await this.runCommand([
+        ...baseArgs,
+        "bash",
+        "-c",
+        scriptPathInPod,
+        ...args,
+      ]);
 
       return {
         exitCode: result.exitCode,
@@ -340,6 +343,7 @@ export class PodmanClient extends Client {
     filesToCopy: fileMap[] = [],
     keystore: string,
     chainSpecId: string,
+    dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
 
@@ -356,15 +360,28 @@ export class PodmanClient extends Client {
       ],
     ]);
 
+    // initialize keystore
+    const dataPath = podDef.spec.volumes.find(
+      (vol: any) => vol.name === "tmp-data",
+    );
+    debug("dataPath", dataPath);
+
+    if (dbSnapshot) {
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await makeDir(`${dataPath.hostPath.path}/chains`, true);
+
+      await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/chains/db.tgz`);
+      await execa("bash", [
+        "-c",
+        `cd ${dataPath.hostPath.path}/chains && tar -xzvf db.tgz`,
+      ]);
+    }
+
     if (keystore) {
-      // initialize keystore
-      const dataPath = podDef.spec.volumes.find(
-        (vol: any) => vol.name === "tmp-data",
-      );
-      debug("dataPath", dataPath);
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       debug("keystoreRemoteDir", keystoreRemoteDir);
-      await fs.mkdir(keystoreRemoteDir, { recursive: true });
+      await makeDir(keystoreRemoteDir, true);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
       debug("keys injected");

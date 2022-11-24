@@ -1,6 +1,6 @@
 {
-  "name": "@parity/zombienet",
-  "version": "1.3.7",
+  "name": "@zombienet/cli",
+  "version": "1.3.18",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "package": "pkg ."
+    "package": "pkg . -o ../../bins/zombienet"
   },
   "repository": {
     "type": "git",
@@ -27,8 +27,7 @@
     "targets": [
       "node16-macos-x64",
       "node16-linux-x64"
-    ],
-    "outputPath": "../bins"
+    ]
   },
   "bin": {
     "zombienet": "./dist/cli.js"
@@ -50,9 +49,9 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
-    "@parity/zombienet-dsl-parser-wrapper": "^0.1.6",
-    "@zombienet/orchestrator": "^0.0.6",
-    "@zombienet/utils": "^0.0.4",
+    "@zombienet/dsl-parser-wrapper": "^0.1.7",
+    "@zombienet/orchestrator": "^0.0.13",
+    "@zombienet/utils": "^0.0.7",
     "axios": "^0.27.2",
     "debug": "^4.3.2",
     "nunjucks": "^3.2.3",

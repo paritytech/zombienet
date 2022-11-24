@@ -119,8 +119,8 @@ export function getFilePathNameExt(filePath: string): {
 } {
   // Get path, fileName and extension
   const index = filePath.lastIndexOf("/");
-  const fullPath = filePath.slice(0, index);
-  const fileNameWithExt = filePath.slice(index + 1);
+  const fullPath = index < 0 ? "." : filePath.slice(0, index);
+  const fileNameWithExt = index < 0 ? filePath : filePath.slice(index + 1);
   const extension = fileNameWithExt.split(".").pop() || "";
   const [fileName] = fileNameWithExt.split(".");
 

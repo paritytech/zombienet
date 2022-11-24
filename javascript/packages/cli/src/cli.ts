@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import parser from "@parity/zombienet-dsl-parser-wrapper";
+import parser from "@zombienet/dsl-parser-wrapper";
 import { Network, run, start } from "@zombienet/orchestrator";
 
 import type {
@@ -63,50 +63,56 @@ let network: Network | undefined;
 
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
-  console.log(`${decorators.yellow("\nStart download...\n")}`);
-  const promises = [];
-  let count = 0;
-  for (let binary of binaries) {
-    promises.push(
-      new Promise<void>(async (resolve) => {
-        const { url, name } = options[binary];
-        const { data, headers } = await axios({
-          url,
-          method: "GET",
-          responseType: "stream",
-        });
-        const totalLength = headers["content-length"];
+  try {
+    console.log(`${decorators.yellow("\nStart download...\n")}`);
+    const promises = [];
+    let count = 0;
+    for (let binary of binaries) {
+      promises.push(
+        new Promise<void>(async (resolve) => {
+          const { url, name } = options[binary];
+          const { data, headers } = await axios({
+            url,
+            method: "GET",
+            responseType: "stream",
+          });
+          const totalLength = headers["content-length"];
 
-        const progressBar = new progress(
-          "-> downloading [:bar] :percent :etas",
-          {
-            width: 40,
-            complete: "=",
-            incomplete: " ",
-            renderThrottle: 1,
-            total: parseInt(totalLength),
-          },
-        );
+          const progressBar = new progress(
+            "-> downloading [:bar] :percent :etas",
+            {
+              width: 40,
+              complete: "=",
+              incomplete: " ",
+              renderThrottle: 1,
+              total: parseInt(totalLength),
+            },
+          );
 
-        const writer = fs.createWriteStream(path.resolve(__dirname, name));
+          const writer = fs.createWriteStream(path.resolve(name));
 
-        data.on("data", (chunk: any) => progressBar.tick(chunk.length));
-        data.pipe(writer);
-        data.on("end", () => {
-          console.log(decorators.yellow(`Binary "${name}" downloaded`));
-          // Add permissions to the binary
-          console.log(decorators.cyan(`Giving permissions to "${name}"`));
-          fs.chmodSync(path.resolve(__dirname, name), 0o755);
-          resolve();
-        });
-      }),
+          data.on("data", (chunk: any) => progressBar.tick(chunk.length));
+          data.pipe(writer);
+          data.on("end", () => {
+            console.log(decorators.yellow(`Binary "${name}" downloaded`));
+            // Add permissions to the binary
+            console.log(decorators.cyan(`Giving permissions to "${name}"`));
+            fs.chmodSync(path.resolve(name), 0o755);
+            resolve();
+          });
+        }),
+      );
+    }
+    await Promise.all(promises);
+    console.log(
+      decorators.cyan(
+        `Please add the current dir to your $PATH by running the command:\n`,
+      ),
+      decorators.blue(`export PATH=${process.cwd()}:$PATH`),
     );
+  } catch (err) {
+    console.log("Unexpected error: ", err);
   }
-  await Promise.all(promises);
-  console.log(
-    decorators.cyan(`Please add the dir to your $PATH by running the command:`),
-    decorators.blue(`export PATH=${__dirname}:$PATH`),
-  );
 };
 
 // Retrieve the latest release for polkadot
@@ -317,7 +323,14 @@ program
       "-m, --monitor",
       "Start as monitor, do not auto cleanup network",
     ),
-  );
+  )
+  .addOption(
+    new Option(
+      "-d, --dir <path>",
+      "Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)",
+    ),
+  )
+  .addOption(new Option("-f, --force", "Force override all prompt commands"));
 
 program
   .command("spawn")
@@ -384,6 +397,8 @@ async function spawn(
   _opts: any,
 ) {
   const opts = program.opts();
+  const dir = opts.dir || "";
+  const force = opts.force || false;
   const monitor = opts.monitor || false;
   const spawnConcurrency = opts.spawnConcurrency || 1;
   const configPath = resolve(process.cwd(), configFile);
@@ -424,7 +439,7 @@ async function spawn(
     }
   }
 
-  const options = { monitor, spawnConcurrency };
+  const options = { monitor, spawnConcurrency, dir, force };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
