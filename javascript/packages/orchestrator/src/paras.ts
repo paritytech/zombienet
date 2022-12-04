@@ -1,4 +1,4 @@
-import { getRandomPort } from "@zombienet/utils";
+import { decorators, getRandomPort } from "@zombienet/utils";
 import fs from "fs";
 import chainSpecFns from "./chain-spec";
 import { getUniqueName } from "./configGenerator";
@@ -55,30 +55,40 @@ export async function generateParachainFiles(
   );
 
   let chainSpecFullPath;
+  const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${
+    parachain.name
+  }.json`;
+
+  const chainSpecFullPathPlain = `${tmpDir}/${
+    parachain.chain ? parachain.chain + "-" : ""
+  }${parachain.name}-${chainName}-plain.json`;
+
   if (parachain.cumulusBased) {
     // need to create the parachain spec parachain file name is [para chain-]<para name>-<relay chain>
-    const chainSpecFullPathPlain = `${tmpDir}/${
-      parachain.chain ? parachain.chain + "-" : ""
-    }${parachain.name}-${chainName}-plain.json`;
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
-    const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
-      parachain.name
-    }-${chainName}.json`;
 
-    debug("creating chain spec plain");
-    // create or copy chain spec
-    await setupChainSpec(
-      namespace,
-      {
-        chainSpecPath: parachain.chainSpecPath,
-        chainSpecCommand: `${parachain.collators[0].command} build-spec ${
-          parachain.chain ? "--chain " + parachain.chain : ""
-        } --disable-default-bootnode`,
-        defaultImage: parachain.collators[0].image,
-      },
-      chainName,
-      chainSpecFullPathPlain,
-    );
+    // Check if the chain-spec file is provided.
+    if (parachain.chainSpecPath) {
+      await fs.promises.copyFile(
+        parachain.chainSpecPath,
+        chainSpecFullPathPlain,
+      );
+    } else {
+      debug("creating chain spec plain");
+      // create or copy chain spec
+      await setupChainSpec(
+        namespace,
+        {
+          chainSpecPath: parachain.chainSpecPath,
+          chainSpecCommand: `${parachain.collators[0].command} build-spec ${
+            parachain.chain ? "--chain " + parachain.chain : ""
+          } --disable-default-bootnode`,
+          defaultImage: parachain.collators[0].image,
+        },
+        chainName,
+        chainSpecFullPathPlain,
+      );
+    }
 
     const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
 
@@ -91,53 +101,67 @@ export async function generateParachainFiles(
 
     writeChainSpec(chainSpecFullPathPlain, plainData);
 
-    // clear auths
-    await clearAuthorities(chainSpecFullPathPlain);
-
-    // Chain spec customization logic
-    const addToSession = async (node: Node) => {
-      const key = getNodeKey(node, false);
-      await addAuthority(chainSpecFullPathPlain, node, key);
-    };
-
-    const addToAura = async (node: Node) => {
-      await addAuraAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
-    };
-
-    const addAuthFn = specHaveSessionsKeys(plainData)
-      ? addToSession
-      : addToAura;
-
-    for (const node of parachain.collators) {
-      if (node.validator) {
-        await addAuthFn(node);
-        await addCollatorSelection(chainSpecFullPathPlain, node);
-        await addParaCustom(chainSpecFullPathPlain, node);
-      }
-    }
-
-    if (parachain.genesis)
-      await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
-
-    debug("creating chain spec raw");
-    // ensure needed file
-    if (parachain.chain)
-      fs.copyFileSync(
-        chainSpecFullPathPlain,
-        `${tmpDir}/${parachain.chain}-${parachain.name}-plain.json`,
-      );
     chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
+    // Check if the spec is in raw format
+    if (!plainData.genesis.raw) {
+      // clear auths
+      await clearAuthorities(chainSpecFullPathPlain);
 
-    // generate the raw chain spec
-    await getChainSpecRaw(
-      namespace,
-      parachain.collators[0].image,
-      `${parachain.chain ? parachain.chain + "-" : ""}${
-        parachain.name
-      }-${chainName}`,
-      parachain.collators[0].command!,
-      chainSpecFullPath,
-    );
+      // Chain spec customization logic
+      const addToSession = async (node: Node) => {
+        const key = getNodeKey(node, false);
+        await addAuthority(chainSpecFullPathPlain, node, key);
+      };
+
+      const addToAura = async (node: Node) => {
+        await addAuraAuthority(
+          chainSpecFullPathPlain,
+          node.name,
+          node.accounts!,
+        );
+      };
+
+      const addAuthFn = specHaveSessionsKeys(plainData)
+        ? addToSession
+        : addToAura;
+
+      for (const node of parachain.collators) {
+        if (node.validator) {
+          await addAuthFn(node);
+          await addCollatorSelection(chainSpecFullPathPlain, node);
+          await addParaCustom(chainSpecFullPathPlain, node);
+        }
+      }
+
+      if (parachain.genesis)
+        await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
+
+      debug("creating chain spec raw");
+      // ensure needed file
+      if (parachain.chain)
+        fs.copyFileSync(
+          chainSpecFullPathPlain,
+          `${tmpDir}/${parachain.chain}-${parachain.name}-plain.json`,
+        );
+
+      // generate the raw chain spec
+      await getChainSpecRaw(
+        namespace,
+        parachain.collators[0].image,
+        `${parachain.chain ? parachain.chain + "-" : ""}${
+          parachain.name
+        }-${chainName}`,
+        parachain.collators[0].command!,
+        chainSpecFullPath,
+      );
+    } else {
+      console.log(
+        `\n\t\t 🚧 ${decorators.yellow(
+          `Chain Spec for paraId ${parachain.id} was set to a file in raw format, can't customize.`,
+        )} 🚧`,
+      );
+      await fs.promises.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
+    }
 
     // ensure the correct para_id
     const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
@@ -148,10 +172,6 @@ export async function generateParachainFiles(
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;
   }
-
-  const chainSpecFileName = `${parachain.chain ? parachain.chain : chainName}-${
-    parachain.name
-  }.json`;
 
   // check if we need to create files
   if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
