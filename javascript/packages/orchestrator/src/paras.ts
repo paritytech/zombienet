@@ -61,18 +61,19 @@ export async function generateParachainFiles(
 
   const chainSpecFullPathPlain = `${tmpDir}/${
     parachain.chain ? parachain.chain + "-" : ""
-    }${parachain.name}-${chainName}-plain.json`;
-
+  }${parachain.name}-${chainName}-plain.json`;
 
   if (parachain.cumulusBased) {
     // need to create the parachain spec parachain file name is [para chain-]<para name>-<relay chain>
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
 
     // Check if the chain-spec file is provided.
-    if(parachain.chainSpecPath) {
-      await fs.promises.copyFile(parachain.chainSpecPath, chainSpecFullPathPlain);
+    if (parachain.chainSpecPath) {
+      await fs.promises.copyFile(
+        parachain.chainSpecPath,
+        chainSpecFullPathPlain,
+      );
     } else {
-
       debug("creating chain spec plain");
       // create or copy chain spec
       await setupChainSpec(
@@ -103,7 +104,6 @@ export async function generateParachainFiles(
     chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
     // Check if the spec is in raw format
     if (!plainData.genesis.raw) {
-
       // clear auths
       await clearAuthorities(chainSpecFullPathPlain);
 
@@ -114,7 +114,11 @@ export async function generateParachainFiles(
       };
 
       const addToAura = async (node: Node) => {
-        await addAuraAuthority(chainSpecFullPathPlain, node.name, node.accounts!);
+        await addAuraAuthority(
+          chainSpecFullPathPlain,
+          node.name,
+          node.accounts!,
+        );
       };
 
       const addAuthFn = specHaveSessionsKeys(plainData)
