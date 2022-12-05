@@ -28,6 +28,8 @@ jobs:
         working-directory: "./javascript"
       - run: npm run package:linux
         working-directory: "./javascript"
+      - run: ls ./bins
+        working-directory: "./javascript"
       - name: Test if zombienet-linux runs
         run: ./bins/zombienet-linux-x64 version
         working-directory: "./javascript"
