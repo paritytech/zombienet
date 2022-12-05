@@ -28,7 +28,7 @@ jobs:
       - run: npm run package
         working-directory: "./javascript"
       - name: Test if zombienet-linux runs
-        run: ./bins/zombienet-linux-linux-x64 version
+        run: ./bins/zombienet-linux-x64 version
         working-directory: "./javascript"
       - name: release
         uses: actions/create-release@v1
@@ -47,7 +47,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./javascript/bins/zombienet-linux-x64
-          asset_name: zombienet-linux-linux-x64
+          asset_name: zombienet-linux-x64
           asset_content_type: application/octet-stream
       - name: upload linux arm64 artifact
         uses: actions/upload-release-asset@v1
