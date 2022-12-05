@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/cli",
-  "version": "1.3.20",
+  "version": "1.3.21",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1",
     "package": "pkg . -o ../../bins/zombienet",
-    "package:linux": "pkg . -o ../../bins/zombienet -t node16-linux-x64, node16-linux-arm64",
+    "package:linux": "pkg . -o ../../bins/zombienet -t node16-linux-x64,node16-linux-arm64",
     "package:macos": "pkg . -o ../../bins/zombienet -t node16-macos-x64"
   },
   "repository": {
