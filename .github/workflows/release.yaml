@@ -25,7 +25,7 @@ jobs:
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
-      - run: npm run package
+      - run: npm run package:linux
         working-directory: "./javascript"
       - name: Test if zombienet-linux runs
         run: ./bins/zombienet-linux-x64 version
@@ -76,7 +76,7 @@ jobs:
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
-      - run: npm run package
+      - run: npm run package:macos
         working-directory: "./javascript"
       - name: Test if zombienet-mac runs
         run: ./bins/zombienet-macos version
