@@ -16,6 +16,8 @@
     "lint": "npm run lint --workspaces --if-present",
     "lint:write": "npm run lint:write --workspaces --if-present",
     "package": "npm run -w packages/cli package",
+    "package:linux": "npm run -w packages/cli package:linux",
+    "package:macos": "npm run -w packages/cli package:macos",
     "zombie": "node ./packages/cli/dist/cli.js"
   },
   "engines": {
