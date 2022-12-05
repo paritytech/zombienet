@@ -87,6 +87,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
-          asset_path: ./javascript/bins/zombienet-macos-x64
+          asset_path: ./javascript/bins/zombienet-macos
           asset_name: zombienet-macos
           asset_content_type: application/octet-stream
