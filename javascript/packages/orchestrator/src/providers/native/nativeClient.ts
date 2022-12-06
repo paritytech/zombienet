@@ -350,40 +350,23 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand([
-      "-c",
-      `ps ${pid}`,
-    ]);
+    const result = await this.runCommand(["-c", `ps ${pid}`]);
     if (result.exitCode > 0)
-      throw new Error(
-        `Process: ${pid}, for node: ${nodeName} dies`,
-      );
+      throw new Error(`Process: ${pid}, for node: ${nodeName} dies`);
 
     // check log lines grow between 2/6/12 secs
-    const lines_1 = await this.runCommand([
-      "-c",
-      `wc -l ${logs}`,
-    ]);
+    const lines_1 = await this.runCommand(["-c", `wc -l ${logs}`]);
     await sleep(2000);
-    const lines_2 = await this.runCommand([
-      "-c",
-      `wc -l ${logs}`,
-    ]);
+    const lines_2 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
     await sleep(6000);
-    const lines_3 = await this.runCommand([
-      "-c",
-      `wc -l ${logs}`,
-    ]);
+    const lines_3 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_3.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
 
     await sleep(12000);
-    const lines_4 = await this.runCommand([
-      "-c",
-      `wc -l ${logs}`,
-    ]);
+    const lines_4 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_4.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
 
