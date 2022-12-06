@@ -356,7 +356,7 @@ export class NativeClient extends Client {
     ]);
     if (result.exitCode > 0)
       throw new Error(
-        `Process: ${this.processMap[nodeName].pid}, for node: ${nodeName} dies`,
+        `Process: ${pid}, for node: ${nodeName} dies`,
       );
 
     // check log lines grow between 2/6/12 secs
