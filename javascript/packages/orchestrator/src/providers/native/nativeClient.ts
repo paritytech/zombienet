@@ -1,9 +1,9 @@
 import {
-  sleep,
   CreateLogTable,
   decorators,
   downloadFile,
   makeDir,
+  sleep,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { spawn } from "child_process";
@@ -358,17 +358,32 @@ export class NativeClient extends Client {
       );
 
     // check log lines grow between 2/6/12 secs
-    const lines_1 = await this.runCommand(["-c", `wc -l ${this.processMap[nodeName].logs}`]);
+    const lines_1 = await this.runCommand([
+      "-c",
+      `wc -l ${this.processMap[nodeName].logs}`,
+    ]);
     await sleep(2000);
-    const lines_2 = await this.runCommand(["-c", `wc -l ${this.processMap[nodeName].logs}`]);
-    if(parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim())) return;
+    const lines_2 = await this.runCommand([
+      "-c",
+      `wc -l ${this.processMap[nodeName].logs}`,
+    ]);
+    if (parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim()))
+      return;
     await sleep(6000);
-    const lines_3 = await this.runCommand(["-c", `wc -l ${this.processMap[nodeName].logs}`]);
-    if(parseInt(lines_3.stdout.trim()) > parseInt(lines_1.stdout.trim())) return;
+    const lines_3 = await this.runCommand([
+      "-c",
+      `wc -l ${this.processMap[nodeName].logs}`,
+    ]);
+    if (parseInt(lines_3.stdout.trim()) > parseInt(lines_1.stdout.trim()))
+      return;
 
     await sleep(12000);
-    const lines_4 = await this.runCommand(["-c", `wc -l ${this.processMap[nodeName].logs}`]);
-    if(parseInt(lines_4.stdout.trim()) > parseInt(lines_1.stdout.trim())) return;
+    const lines_4 = await this.runCommand([
+      "-c",
+      `wc -l ${this.processMap[nodeName].logs}`,
+    ]);
+    if (parseInt(lines_4.stdout.trim()) > parseInt(lines_1.stdout.trim()))
+      return;
 
     throw new Error(
       `Log lines of process: ${this.processMap[nodeName].pid} ( node: ${nodeName} ) doesn't grow, please check logs at ${this.processMap[nodeName].logs}`,
