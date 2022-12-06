@@ -352,7 +352,7 @@ export class NativeClient extends Client {
     const { pid, logs } = procNodeName;
     const result = await this.runCommand([
       "-c",
-      `ps ${this.processMap[nodeName].pid}`,
+      `ps ${pid}`,
     ]);
     if (result.exitCode > 0)
       throw new Error(
