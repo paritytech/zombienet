@@ -367,7 +367,7 @@ export class NativeClient extends Client {
     await sleep(2000);
     const lines_2 = await this.runCommand([
       "-c",
-      `wc -l ${this.processMap[nodeName].logs}`,
+      `wc -l ${logs}`,
     ]);
     if (parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
