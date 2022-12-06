@@ -348,6 +348,8 @@ export class NativeClient extends Client {
   async wait_node_ready(nodeName: string): Promise<void> {
     // check if the process is alive after 1 seconds
     await sleep(1000);
+    const procNodeName = this.processMap[nodeName];
+    const { pid, logs } = procNodeName;
     const result = await this.runCommand([
       "-c",
       `ps ${this.processMap[nodeName].pid}`,
