@@ -388,7 +388,7 @@ export class NativeClient extends Client {
       return;
 
     throw new Error(
-      `Log lines of process: ${this.processMap[nodeName].pid} ( node: ${nodeName} ) doesn't grow, please check logs at ${this.processMap[nodeName].logs}`,
+      `Log lines of process: ${pid} ( node: ${nodeName} ) doesn't grow, please check logs at ${logs}`,
     );
   }
 
