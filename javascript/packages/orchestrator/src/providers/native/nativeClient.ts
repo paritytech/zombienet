@@ -362,7 +362,7 @@ export class NativeClient extends Client {
     // check log lines grow between 2/6/12 secs
     const lines_1 = await this.runCommand([
       "-c",
-      `wc -l ${this.processMap[nodeName].logs}`,
+      `wc -l ${logs}`,
     ]);
     await sleep(2000);
     const lines_2 = await this.runCommand([
