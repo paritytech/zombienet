@@ -3,6 +3,7 @@ import {
   decorators,
   downloadFile,
   makeDir,
+  sleep,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { spawn } from "child_process";
@@ -330,8 +331,7 @@ export class NativeClient extends Client {
       debug(this.command);
       debug(resourseDef.spec.command);
 
-      const logFile = `${this.tmpDir}/${name}.log`;
-      const log = fs.createWriteStream(logFile);
+      const log = fs.createWriteStream(this.processMap[name].logs);
       const nodeProcess = spawn(this.command, [
         "-c",
         ...resourseDef.spec.command,
@@ -341,37 +341,38 @@ export class NativeClient extends Client {
       nodeProcess.stderr.pipe(log);
       this.processMap[name].pid = nodeProcess.pid;
 
-      await this.wait_node_ready(name, logFile);
+      await this.wait_node_ready(name);
     }
   }
 
-  async wait_node_ready(nodeName: string, logFile: string): Promise<void> {
-    // check if the process is alive
-    const result = await this.runCommand([
-      "-c",
-      `ps ${this.processMap[nodeName].pid}`,
-    ]);
+  async wait_node_ready(nodeName: string): Promise<void> {
+    // check if the process is alive after 1 seconds
+    await sleep(1000);
+    const procNodeName = this.processMap[nodeName];
+    const { pid, logs } = procNodeName;
+    const result = await this.runCommand(["-c", `ps ${pid}`]);
     if (result.exitCode > 0)
-      throw new Error(
-        `Process: ${this.processMap[nodeName].pid}, for node: ${nodeName} dies`,
-      );
+      throw new Error(`Process: ${pid}, for node: ${nodeName} dies`);
 
-    // loop until ready
-    let t = this.timeout;
-    const args = [
-      "-c",
-      `grep -E 'Listening for new connections|Running JSON-RPC'  ${logFile} | wc -l`,
-    ];
-    do {
-      const result = await this.runCommand(args);
-      debug(result);
-      if (parseInt(result.stdout.trim(), 10) >= 1) return;
+    // check log lines grow between 2/6/12 secs
+    const lines_1 = await this.runCommand(["-c", `wc -l ${logs}`]);
+    await sleep(2000);
+    const lines_2 = await this.runCommand(["-c", `wc -l ${logs}`]);
+    if (parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim()))
+      return;
+    await sleep(6000);
+    const lines_3 = await this.runCommand(["-c", `wc -l ${logs}`]);
+    if (parseInt(lines_3.stdout.trim()) > parseInt(lines_1.stdout.trim()))
+      return;
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      t -= 3;
-    } while (t > 0);
+    await sleep(12000);
+    const lines_4 = await this.runCommand(["-c", `wc -l ${logs}`]);
+    if (parseInt(lines_4.stdout.trim()) > parseInt(lines_1.stdout.trim()))
+      return;
 
-    throw new Error(`Timeout(${this.timeout}) for node : ${nodeName}`);
+    throw new Error(
+      `Log lines of process: ${pid} ( node: ${nodeName} ) doesn't grow, please check logs at ${logs}`,
+    );
   }
 
   async isPodMonitorAvailable(): Promise<boolean> {
