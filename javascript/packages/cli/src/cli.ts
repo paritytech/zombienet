@@ -32,28 +32,11 @@ import {
   DEFAULT_PROVIDER,
 } from "./constants";
 
-const DEFAULT_CUMULUS_COLLATOR_URL =
-  "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
-// const DEFAULT_ADDER_COLLATOR_URL =
-//   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
-
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
 
-const options: OptIf = {
-  "polkadot-parachain": {
-    name: "polkadot-parachain",
-    url: DEFAULT_CUMULUS_COLLATOR_URL,
-    size: "120",
-  },
-  // // Deactivate for now
-  // adderCollator: {
-  //   name: "adderCollator",
-  //   url: DEFAULT_ADDER_COLLATOR_URL,
-  //   size: "950",
-  // },
-};
+const options: OptIf = {};
 
 const debug = require("debug")("zombie-cli");
 
