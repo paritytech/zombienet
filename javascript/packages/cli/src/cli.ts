@@ -112,7 +112,7 @@ const latestPolkadotReleaseURL = async (
     let obj: any;
     let tag_name;
 
-    while (1 == 1) {
+    while (!tag_name) {
       let res = allReleases?.data[idx];
       obj = res.assets.filter((a: any) => a.name === name);
       if (obj.length === 0) {
