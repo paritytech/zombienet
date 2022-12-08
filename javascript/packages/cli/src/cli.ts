@@ -108,21 +108,15 @@ const latestPolkadotReleaseURL = async (
       `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
 
-    let idx = 0;
     let obj: any;
     let tag_name;
 
-    while (!tag_name) {
-      let res = allReleases?.data[idx];
-      obj = res.assets.filter((a: any) => a.name === name);
-      if (obj.length === 0) {
-        idx++;
-        continue;
-      } else {
-        tag_name = res.tag_name;
-        break;
-      }
-    }
+    const release = allReleases.data.find((r: any) => {
+      obj = r?.assets?.find((a: any) => a.name === name);
+      return Boolean(obj);
+    });
+
+    tag_name = release.tag_name;
 
     if (!tag_name) {
       throw new Error(
@@ -132,7 +126,7 @@ const latestPolkadotReleaseURL = async (
 
     return [
       `https://github.com/paritytech/${repo}/releases/download/${tag_name}/${name}`,
-      convertBytes(obj[0].size),
+      convertBytes(obj.size),
     ];
   } catch (err: any) {
     if (err.code === "ENOTFOUND") {
@@ -140,7 +134,7 @@ const latestPolkadotReleaseURL = async (
     } else if (err.response && err.response.status === 404) {
       throw new Error("Could not find a release.");
     }
-    throw new Error(err);
+    throw new Error("`latestPolkadotReleaseURL` error: " + err);
   }
 };
 
