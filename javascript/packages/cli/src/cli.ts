@@ -130,20 +130,25 @@ const latestPolkadotReleaseURL = async (
     let tag_name;
 
     while (1 == 1) {
-      console.log("allReleases", allReleases?.data[idx]);
       let res = allReleases?.data[idx];
       obj = res.assets.filter((a: any) => a.name === name);
-      tag_name = res.tag_name;
       if (obj.length === 0) {
         idx++;
         continue;
       } else {
+        tag_name = res.tag_name;
         break;
       }
     }
 
+    if (!tag_name) {
+      throw new Error(
+        "Should never come to this point. Tag_name should never be undefined!",
+      );
+    }
+
     return [
-      `https://github.com/paritytech/${repo}/releases/download/${s}/${name}`,
+      `https://github.com/paritytech/${repo}/releases/download/${tag_name}/${name}`,
       convertBytes(obj[0].size),
     ];
   } catch (err: any) {
