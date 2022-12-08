@@ -52,7 +52,7 @@ const configurationFileChecks = (config: LaunchConfig): void => {
   for (const parachain of config.parachains) {
     for (const collatorGroup of parachain.collator_groups || []) {
       validateImageUrl(
-        collatorGroup.image || config.relaychain.default_image || DEFAULT_IMAGE,
+        collatorGroup.image || config.relaychain.default_image || DEFAULT_COLLATOR_IMAGE,
       );
     }
     for (const collatorConfig of parachain.collators || []) {
