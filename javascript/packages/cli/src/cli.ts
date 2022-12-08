@@ -121,12 +121,29 @@ const latestPolkadotReleaseURL = async (
   name: string,
 ): Promise<[string, string]> => {
   try {
-    const res = await axios.get(
-      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
+    const allReleases = await axios.get(
+      `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
-    const obj = res.data.assets.filter((a: any) => a.name === name);
+
+    let idx = 0;
+    let obj: any;
+    let tag_name;
+
+    while (1 == 1) {
+      console.log("allReleases", allReleases?.data[idx]);
+      let res = allReleases?.data[idx];
+      obj = res.assets.filter((a: any) => a.name === name);
+      tag_name = res.tag_name;
+      if (obj.length === 0) {
+        idx++;
+        continue;
+      } else {
+        break;
+      }
+    }
+
     return [
-      `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`,
+      `https://github.com/paritytech/${repo}/releases/download/${s}/${name}`,
       convertBytes(obj[0].size),
     ];
   } catch (err: any) {
