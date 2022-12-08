@@ -163,12 +163,16 @@ export class NativeClient extends Client {
     return ["127.0.0.1", hostPort];
   }
 
-  async runCommand(args: string[], _resourceDef?: string, _scoped?: boolean, allowFail?: boolean): Promise<RunCommandResponse> {
-    let result;
+  async runCommand(
+    args: string[],
+    _resourceDef?: string,
+    _scoped?: boolean,
+    allowFail?: boolean,
+  ): Promise<RunCommandResponse> {
     try {
       if (args[0] === "bash") args.splice(0, 1);
       debug(args);
-      result = await execa(this.command, args);
+      const result = await execa(this.command, args);
 
       // podman use stderr for logs
       const stdout =
@@ -184,16 +188,15 @@ export class NativeClient extends Client {
       };
     } catch (error: any) {
       debug(error);
-      if(!allowFail) throw error;
+      if (!allowFail) throw error;
 
       const { exitCode, stdout, message: errorMsg } = error;
 
       return {
         exitCode,
         stdout,
-        errorMsg
-      }
-
+        errorMsg,
+      };
     }
   }
 
@@ -360,7 +363,12 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand(["-c", `ps ${pid}`], undefined, undefined, true);
+    const result = await this.runCommand(
+      ["-c", `ps ${pid}`],
+      undefined,
+      undefined,
+      true,
+    );
     if (result.exitCode > 0) {
       const lines = await this.getNodeLogs(nodeName);
 
