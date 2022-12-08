@@ -32,28 +32,11 @@ import {
   DEFAULT_PROVIDER,
 } from "./constants";
 
-const DEFAULT_CUMULUS_COLLATOR_URL =
-  "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
-// const DEFAULT_ADDER_COLLATOR_URL =
-//   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
-
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
 
-const options: OptIf = {
-  "polkadot-parachain": {
-    name: "polkadot-parachain",
-    url: DEFAULT_CUMULUS_COLLATOR_URL,
-    size: "120",
-  },
-  // // Deactivate for now
-  // adderCollator: {
-  //   name: "adderCollator",
-  //   url: DEFAULT_ADDER_COLLATOR_URL,
-  //   size: "950",
-  // },
-};
+const options: OptIf = {};
 
 const debug = require("debug")("zombie-cli");
 
@@ -121,13 +104,29 @@ const latestPolkadotReleaseURL = async (
   name: string,
 ): Promise<[string, string]> => {
   try {
-    const res = await axios.get(
-      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
+    const allReleases = await axios.get(
+      `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
-    const obj = res.data.assets.filter((a: any) => a.name === name);
+
+    let obj: any;
+    let tag_name;
+
+    const release = allReleases.data.find((r: any) => {
+      obj = r?.assets?.find((a: any) => a.name === name);
+      return Boolean(obj);
+    });
+
+    tag_name = release.tag_name;
+
+    if (!tag_name) {
+      throw new Error(
+        "Should never come to this point. Tag_name should never be undefined!",
+      );
+    }
+
     return [
-      `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`,
-      convertBytes(obj[0].size),
+      `https://github.com/paritytech/${repo}/releases/download/${tag_name}/${name}`,
+      convertBytes(obj.size),
     ];
   } catch (err: any) {
     if (err.code === "ENOTFOUND") {
@@ -135,7 +134,7 @@ const latestPolkadotReleaseURL = async (
     } else if (err.response && err.response.status === 404) {
       throw new Error("Could not find a release.");
     }
-    throw new Error(err);
+    throw new Error("`latestPolkadotReleaseURL` error: " + err);
   }
 };
 
@@ -509,11 +508,28 @@ async function setup(params: any) {
     );
     return;
   }
+
+  console.log(
+    `${decorators.green("Gathering latest releases' versions...\n")}`,
+  );
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL("polkadot", "polkadot").then(
       (res: [string, string]) => {
         options.polkadot = {
           name: "polkadot",
+          url: res[0],
+          size: res[1],
+        };
+        resolve();
+      },
+    );
+  });
+
+  await new Promise<void>((resolve) => {
+    latestPolkadotReleaseURL("cumulus", "polkadot-parachain").then(
+      (res: [string, string]) => {
+        options["polkadot-parachain"] = {
+          name: "polkadot-parachain",
           url: res[0],
           size: res[1],
         };
