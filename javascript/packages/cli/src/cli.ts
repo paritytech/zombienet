@@ -531,11 +531,28 @@ async function setup(params: any) {
     );
     return;
   }
+
+  console.log(
+    `${decorators.green("Gathering latest releases' versions...\n")}`,
+  );
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL("polkadot", "polkadot").then(
       (res: [string, string]) => {
         options.polkadot = {
           name: "polkadot",
+          url: res[0],
+          size: res[1],
+        };
+        resolve();
+      },
+    );
+  });
+
+  await new Promise<void>((resolve) => {
+    latestPolkadotReleaseURL("cumulus", "polkadot-parachain").then(
+      (res: [string, string]) => {
+        options["polkadot-parachain"] = {
+          name: "polkadot-parachain",
           url: res[0],
           size: res[1],
         };
