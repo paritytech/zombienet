@@ -43,22 +43,22 @@ const DEFAULT_ENV: envVars[] = [
 ];
 
 const configurationFileChecks = (config: LaunchConfig): void => {
-  validateImageUrl(config.relaychain.default_image || DEFAULT_IMAGE);
-  for (const nodeGroup of config.relaychain.node_groups || []) {
+  validateImageUrl(config?.relaychain?.default_image || DEFAULT_IMAGE);
+  for (const nodeGroup of config?.relaychain?.node_groups || []) {
     validateImageUrl(
-      nodeGroup.image || config.relaychain.default_image || DEFAULT_IMAGE,
+      nodeGroup?.image || config?.relaychain.default_image || DEFAULT_IMAGE,
     );
   }
-  for (const parachain of config.parachains) {
-    for (const collatorGroup of parachain.collator_groups || []) {
+  for (const parachain of config?.parachains) {
+    for (const collatorGroup of parachain?.collator_groups || []) {
       validateImageUrl(
-        collatorGroup.image ||
-          config.relaychain.default_image ||
+        collatorGroup?.image ||
+          config?.relaychain?.default_image ||
           DEFAULT_COLLATOR_IMAGE,
       );
     }
-    for (const collatorConfig of parachain.collators || []) {
-      validateImageUrl(collatorConfig.image || DEFAULT_COLLATOR_IMAGE);
+    for (const collatorConfig of parachain?.collators || []) {
+      validateImageUrl(collatorConfig?.image || DEFAULT_COLLATOR_IMAGE);
     }
   }
 };
