@@ -35,7 +35,7 @@ jobs:
 
       # Pack and upload each package only if version is changed
       - name: Pack Utils
-        if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
+        # if: steps.utils_version.outputs.committed-version > steps.utils_version.outputs.published-version
         run: npm pack
         working-directory: "./javascript/packages/utils"
       - name: Upload Utils
@@ -46,7 +46,7 @@ jobs:
           path: "./javascript/packages/utils/*.tgz"
 
       - name: Pack orchestrator
-        if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
+        # if: steps.orch_version.outputs.committed-version > steps.orch_version.outputs.published-version
         run: npm pack
         working-directory: "./javascript/packages/orchestrator"
       - name: Upload Orchestrator
