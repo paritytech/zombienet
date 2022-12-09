@@ -163,7 +163,12 @@ export class NativeClient extends Client {
     return ["127.0.0.1", hostPort];
   }
 
-  async runCommand(args: string[]): Promise<RunCommandResponse> {
+  async runCommand(
+    args: string[],
+    _resourceDef?: string,
+    _scoped?: boolean,
+    allowFail?: boolean,
+  ): Promise<RunCommandResponse> {
     try {
       if (args[0] === "bash") args.splice(0, 1);
       debug(args);
@@ -181,9 +186,17 @@ export class NativeClient extends Client {
         exitCode: result.exitCode,
         stdout,
       };
-    } catch (error) {
-      console.log(error);
-      throw error;
+    } catch (error: any) {
+      debug(error);
+      if (!allowFail) throw error;
+
+      const { exitCode, stdout, message: errorMsg } = error;
+
+      return {
+        exitCode,
+        stdout,
+        errorMsg,
+      };
     }
   }
 
@@ -350,9 +363,32 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand(["-c", `ps ${pid}`]);
-    if (result.exitCode > 0)
-      throw new Error(`Process: ${pid}, for node: ${nodeName} dies`);
+    const result = await this.runCommand(
+      ["-c", `ps ${pid}`],
+      undefined,
+      undefined,
+      true,
+    );
+    if (result.exitCode > 0) {
+      const lines = await this.getNodeLogs(nodeName);
+
+      let logTable = new CreateLogTable({
+        colWidths: [20, 100],
+      });
+
+      logTable.pushToPrint([
+        [decorators.cyan("Pod"), decorators.green(nodeName)],
+        [decorators.cyan("Status"), decorators.red("Error")],
+        [
+          decorators.cyan("Message"),
+          decorators.white(`Process: ${pid}, for node: ${nodeName} dies.`),
+        ],
+        [decorators.cyan("Output"), decorators.white(lines)],
+      ]);
+
+      // throw
+      throw new Error();
+    }
 
     // check log lines grow between 2/6/12 secs
     const lines_1 = await this.runCommand(["-c", `wc -l ${logs}`]);

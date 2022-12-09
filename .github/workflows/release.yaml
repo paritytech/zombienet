@@ -30,34 +30,44 @@ jobs:
       - name: Test if zombienet-linux runs
         run: ./bins/zombienet-linux-x64 version
         working-directory: "./javascript"
+#       - name: release
+#         uses: actions/create-release@v1
+#         id: create_release
+#         with:
+#           draft: false
+#           prerelease: false
+#           release_name: ${{ github.ref }}
+#           tag_name: ${{ github.ref }}
+#         env:
+#           GITHUB_TOKEN: ${{ github.token }}
+#       - name: upload linux artifact
+#         uses: actions/upload-release-asset@v1
+#         env:
+#           GITHUB_TOKEN: ${{ github.token }}
+#         with:
+#           upload_url: ${{ steps.create_release.outputs.upload_url }}
+#           asset_path: ./javascript/bins/zombienet-linux-x64
+#           asset_name: zombienet-linux-x64
+#           asset_content_type: application/octet-stream
+#       - name: upload linux arm64 artifact
+#         uses: actions/upload-release-asset@v1
+#         env:
+#           GITHUB_TOKEN: ${{ github.token }}
+#         with:
+#           upload_url: ${{ steps.create_release.outputs.upload_url }}
+#           asset_path: ./javascript/bins/zombienet-linux-arm64
+#           asset_name: zombienet-linux-arm64
+#           asset_content_type: application/octet-stream
+
       - name: release
-        uses: actions/create-release@v1
+        uses: "marvinpinto/action-automatic-releases@latest"
         id: create_release
         with:
-          draft: false
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: upload linux artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./javascript/bins/zombienet-linux-x64
-          asset_name: zombienet-linux-x64
-          asset_content_type: application/octet-stream
-      - name: upload linux arm64 artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./javascript/bins/zombienet-linux-arm64
-          asset_name: zombienet-linux-arm64
-          asset_content_type: application/octet-stream
+          files: |
+            ./javascript/bins/zombienet-linux-arm64
+            ./javascript/bins/zombienet-linux-x64
   build_release_for_mac:
     name: build_release_for_mac
     needs: build_release_for_linux
