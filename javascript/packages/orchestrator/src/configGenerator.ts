@@ -42,25 +42,40 @@ const DEFAULT_ENV: envVars[] = [
   { name: "RUST_BACKTRACE", value: "FULL" },
 ];
 
+const isIterable = (obj: any) => {
+  // checks for null and undefined
+  if (obj == null || typeof obj == "string") {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === "function";
+};
+
 const configurationFileChecks = (config: LaunchConfig): void => {
   validateImageUrl(config?.relaychain?.default_image || DEFAULT_IMAGE);
-  for (const nodeGroup of config?.relaychain?.node_groups || []) {
-    validateImageUrl(
-      nodeGroup?.image || config?.relaychain.default_image || DEFAULT_IMAGE,
-    );
-  }
-  for (const parachain of config?.parachains) {
-    for (const collatorGroup of parachain?.collator_groups || []) {
+  if (
+    config?.relaychain?.node_groups &&
+    isIterable(config?.relaychain?.node_groups)
+  )
+    for (const nodeGroup of config?.relaychain?.node_groups || []) {
       validateImageUrl(
-        collatorGroup?.image ||
-          config?.relaychain?.default_image ||
-          DEFAULT_COLLATOR_IMAGE,
+        nodeGroup?.image || config?.relaychain.default_image || DEFAULT_IMAGE,
       );
     }
-    for (const collatorConfig of parachain?.collators || []) {
-      validateImageUrl(collatorConfig?.image || DEFAULT_COLLATOR_IMAGE);
+  if (config?.parachains && isIterable(config?.parachains))
+    for (const parachain of config?.parachains) {
+      if (parachain?.collator_groups && isIterable(parachain?.collator_groups))
+        for (const collatorGroup of parachain?.collator_groups || []) {
+          validateImageUrl(
+            collatorGroup?.image ||
+              config?.relaychain?.default_image ||
+              DEFAULT_COLLATOR_IMAGE,
+          );
+        }
+      if (parachain?.collators && isIterable(parachain?.collators))
+        for (const collatorConfig of parachain?.collators || []) {
+          validateImageUrl(collatorConfig?.image || DEFAULT_COLLATOR_IMAGE);
+        }
     }
-  }
 };
 
 export async function generateNetworkSpec(
