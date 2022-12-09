@@ -3,6 +3,8 @@ import { fileMap } from "../types";
 export interface RunCommandResponse {
   exitCode: number;
   stdout: string;
+  stderr?: string;
+  errorMsg?: string;
 }
 
 export abstract class Client {
@@ -52,6 +54,7 @@ export abstract class Client {
     args: string[],
     resourceDef?: string,
     scoped?: boolean,
+    allowFail?: boolean,
   ): Promise<RunCommandResponse>;
   abstract runScript(
     identifier: string,
