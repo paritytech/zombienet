@@ -1,7 +1,7 @@
 import fs from "fs";
 import path, { resolve } from "path";
 
-import { getRandomPort, getSha256 } from "@zombienet/utils";
+import { getRandomPort, getSha256, validateImageUrl } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -42,6 +42,42 @@ const DEFAULT_ENV: envVars[] = [
   { name: "RUST_BACKTRACE", value: "FULL" },
 ];
 
+const isIterable = (obj: any) => {
+  // checks for null and undefined
+  if (obj == null || typeof obj == "string") {
+    return false;
+  }
+  return typeof obj[Symbol.iterator] === "function";
+};
+
+const configurationFileChecks = (config: LaunchConfig): void => {
+  validateImageUrl(config?.relaychain?.default_image || DEFAULT_IMAGE);
+  if (
+    config?.relaychain?.node_groups &&
+    isIterable(config?.relaychain?.node_groups)
+  )
+    for (const nodeGroup of config?.relaychain?.node_groups || []) {
+      validateImageUrl(
+        nodeGroup?.image || config?.relaychain.default_image || DEFAULT_IMAGE,
+      );
+    }
+  if (config?.parachains && isIterable(config?.parachains))
+    for (const parachain of config?.parachains) {
+      if (parachain?.collator_groups && isIterable(parachain?.collator_groups))
+        for (const collatorGroup of parachain?.collator_groups || []) {
+          validateImageUrl(
+            collatorGroup?.image ||
+              config?.relaychain?.default_image ||
+              DEFAULT_COLLATOR_IMAGE,
+          );
+        }
+      if (parachain?.collators && isIterable(parachain?.collators))
+        for (const collatorConfig of parachain?.collators || []) {
+          validateImageUrl(collatorConfig?.image || DEFAULT_COLLATOR_IMAGE);
+        }
+    }
+};
+
 export async function generateNetworkSpec(
   config: LaunchConfig,
 ): Promise<ComputedNetwork> {
@@ -77,6 +113,10 @@ export async function generateNetworkSpec(
     },
     parachains: [],
   };
+
+  // check all imageURLs for validity
+  // TODO: These checks should be agains all config items that needs check
+  configurationFileChecks(config);
 
   if (config.relaychain.genesis)
     networkSpec.relaychain.genesis = config.relaychain.genesis;
@@ -500,7 +540,7 @@ async function getNodeFromConfig(
   const command = node.command
     ? node.command
     : networkSpec.relaychain.defaultCommand;
-  const image = node.image ? node.image : networkSpec.relaychain.defaultImage;
+  const image = node.image || networkSpec.relaychain.defaultImage;
   let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || []);
   if (node.args) args = args.concat(sanitizeArgs(node.args));
 
