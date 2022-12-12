@@ -333,22 +333,25 @@ export class NativeClient extends Client {
   }
 
   async createResource(resourseDef: any): Promise<void> {
-    const { metadata: name, labels } = resourseDef;
-    const { spec: command } = resourseDef;
+    const name = resourseDef.metadata.name;
     const doc = new YAML.Document(resourseDef);
     const docInYaml = doc.toString();
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
     await fs.promises.writeFile(localFilePath, docInYaml);
 
-    if (labels["zombie-role"] === "temp") {
-      await this.runCommand(command);
+    if (resourseDef.metadata.labels["zombie-role"] === "temp") {
+      await this.runCommand(resourseDef.spec.command);
     } else {
-      if (command[0] === "bash") command.splice(0, 1);
+      if (resourseDef.spec.command[0] === "bash")
+        resourseDef.spec.command.splice(0, 1);
       debug(this.command);
-      debug(command);
+      debug(resourseDef.spec.command);
 
       const log = fs.createWriteStream(this.processMap[name].logs);
-      const nodeProcess = spawn(this.command, ["-c", ...command]);
+      const nodeProcess = spawn(this.command, [
+        "-c",
+        ...resourseDef.spec.command,
+      ]);
       debug(nodeProcess.pid);
       nodeProcess.stdout.pipe(log);
       nodeProcess.stderr.pipe(log);
