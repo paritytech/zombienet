@@ -479,7 +479,7 @@ export class KubeClient extends Client {
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
-        if (file) await this.createStaticResource(file);
+        if (file) await this.createStaticResource(file, this.namespace);
       }
     }
 
