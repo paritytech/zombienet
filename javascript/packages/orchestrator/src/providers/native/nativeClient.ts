@@ -17,7 +17,12 @@ import {
   P2P_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
+import {
+  Client,
+  RunCommandOptions,
+  RunCommandResponse,
+  setClient,
+} from "../client";
 const fs = require("fs");
 
 const debug = require("debug")("zombie::native::client");
@@ -165,9 +170,7 @@ export class NativeClient extends Client {
 
   async runCommand(
     args: string[],
-    _resourceDef?: string,
-    _scoped?: boolean,
-    allowFail?: boolean,
+    opts?: RunCommandOptions,
   ): Promise<RunCommandResponse> {
     try {
       if (args[0] === "bash") args.splice(0, 1);
@@ -188,7 +191,7 @@ export class NativeClient extends Client {
       };
     } catch (error: any) {
       debug(error);
-      if (!allowFail) throw error;
+      if (!opts?.allowFail) throw error;
 
       const { exitCode, stdout, message: errorMsg } = error;
 
@@ -330,25 +333,22 @@ export class NativeClient extends Client {
   }
 
   async createResource(resourseDef: any): Promise<void> {
-    const name = resourseDef.metadata.name;
+    const { metadata: name, labels } = resourseDef;
+    const { spec: command } = resourseDef;
     const doc = new YAML.Document(resourseDef);
     const docInYaml = doc.toString();
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
     await fs.promises.writeFile(localFilePath, docInYaml);
 
-    if (resourseDef.metadata.labels["zombie-role"] === "temp") {
-      await this.runCommand(resourseDef.spec.command);
+    if (labels["zombie-role"] === "temp") {
+      await this.runCommand(command);
     } else {
-      if (resourseDef.spec.command[0] === "bash")
-        resourseDef.spec.command.splice(0, 1);
+      if (command[0] === "bash") command.splice(0, 1);
       debug(this.command);
-      debug(resourseDef.spec.command);
+      debug(command);
 
       const log = fs.createWriteStream(this.processMap[name].logs);
-      const nodeProcess = spawn(this.command, [
-        "-c",
-        ...resourseDef.spec.command,
-      ]);
+      const nodeProcess = spawn(this.command, ["-c", ...command]);
       debug(nodeProcess.pid);
       nodeProcess.stdout.pipe(log);
       nodeProcess.stderr.pipe(log);
@@ -363,12 +363,9 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand(
-      ["-c", `ps ${pid}`],
-      undefined,
-      undefined,
-      true,
-    );
+    const result = await this.runCommand(["-c", `ps ${pid}`], {
+      allowFail: true,
+    });
     if (result.exitCode > 0) {
       const lines = await this.getNodeLogs(nodeName);
 
