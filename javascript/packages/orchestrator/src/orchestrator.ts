@@ -132,9 +132,9 @@ export async function start(
         fs.mkdirSync(opts.dir);
       } else if (!opts.force) {
         const response = await askQuestion(
-          `${decorators.yellow(
+          decorators.yellow(
             "Directory already exists; \nDo you want to continue? (y/N)",
-          )}`,
+          ),
         );
         if (response.toLowerCase() !== "y") {
           console.log("Exiting...");
@@ -181,8 +181,8 @@ export async function start(
 
     const zombieTable = new CreateLogTable({
       head: [
-        `${decorators.green("🧟 Zombienet 🧟")}`,
-        `${decorators.green("Initiation")}`,
+        decorators.green("🧟 Zombienet 🧟"),
+        decorators.green("Initiation"),
       ],
       colWidths: [20, 100],
       doubleBorder: true,

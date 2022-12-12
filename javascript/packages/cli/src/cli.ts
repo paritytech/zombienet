@@ -47,7 +47,7 @@ let network: Network | undefined;
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
   try {
-    console.log(`${decorators.yellow("\nStart download...\n")}`);
+    console.log(decorators.yellow("\nStart download...\n"));
     const promises = [];
     let count = 0;
     for (let binary of binaries) {
@@ -499,7 +499,7 @@ async function test(
  * @returns
  */
 async function setup(params: any) {
-  console.log(`${decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n")}`);
+  console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
   if (
     ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
   ) {
@@ -509,9 +509,7 @@ async function setup(params: any) {
     return;
   }
 
-  console.log(
-    `${decorators.green("Gathering latest releases' versions...\n")}`,
-  );
+  console.log(decorators.green("Gathering latest releases' versions...\n"));
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL("polkadot", "polkadot").then(
       (res: [string, string]) => {
@@ -545,7 +543,7 @@ async function setup(params: any) {
       `${decorators.yellow(
         "Note: ",
       )} You are using MacOS. Please, clone the polkadot repo ` +
-        `${decorators.cyan("(https://github.com/paritytech/polkadot)")}` +
+        decorators.cyan("(https://github.com/paritytech/polkadot)") +
         ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
     );
     const index = params.indexOf("polkadot");
@@ -555,9 +553,7 @@ async function setup(params: any) {
   }
 
   if (params.length === 0) {
-    console.log(
-      `${decorators.green("No more binaries to download. Exiting...")}`,
-    );
+    console.log(decorators.green("No more binaries to download. Exiting..."));
     return;
   }
   let count = 0;
@@ -569,7 +565,7 @@ async function setup(params: any) {
   });
   console.log("Total approx. size: ", count, "MB");
   const response = await askQuestion(
-    `${decorators.yellow("\nDo you want to continue? (y/n)")}`,
+    decorators.yellow("\nDo you want to continue? (y/n)"),
   );
   if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
     console.log("Invalid input. Exiting...");
