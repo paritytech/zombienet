@@ -30,7 +30,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   } catch (err) {
     debug(`ERR: ${err}`);
     console.log(
-      `\n${decorators.red(`Error`)} \t ${decorators.dim(
+      `\n${decorators.red(`Error`)} \t ${decorators.bright(
         `fetching metrics from: ${metricUri}`,
       )}`,
     );

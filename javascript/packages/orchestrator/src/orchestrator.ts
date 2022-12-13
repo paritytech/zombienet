@@ -378,12 +378,12 @@ export async function start(
       ]);
     } catch (err) {
       console.log(
-        `\n ${decorators.red("Unexpected error: ")} \t ${decorators.dim(
+        `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
           err,
         )}\n`,
       );
       throw new Error(
-        `${decorators.red(`Error:`)} \t ${decorators.dim(
+        `${decorators.red(`Error:`)} \t ${decorators.bright(
           ` chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`,
         )}`,
       );
@@ -851,7 +851,7 @@ export async function start(
     return network;
   } catch (error) {
     console.log(
-      `\n ${decorators.red("Error: ")} \t ${decorators.dim(error)}\n`,
+      `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
     );
     if (network) {
       await network.dumpLogs();
@@ -873,7 +873,7 @@ export async function test(
     await cb(network);
   } catch (error) {
     console.log(
-      `\n ${decorators.red("Error: ")} \t ${decorators.dim(error)}\n`,
+      `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
     );
   } finally {
     if (network) {

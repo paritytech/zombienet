@@ -50,7 +50,9 @@ export async function downloadFile(url: string, dest: string): Promise<void> {
     });
   } catch (err) {
     console.log(
-      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.dim(err)}\n`,
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
     );
   }
 }

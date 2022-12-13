@@ -226,7 +226,7 @@ export class Network {
       return value;
     } catch (err) {
       console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
       );
       if (limitTimeout) clearTimeout(limitTimeout);
       throw err;
@@ -273,7 +273,7 @@ export class Network {
       return true;
     } catch (err) {
       console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
       );
       return false;
     }

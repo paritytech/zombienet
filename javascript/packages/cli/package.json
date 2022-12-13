@@ -54,7 +54,7 @@
   "dependencies": {
     "@zombienet/dsl-parser-wrapper": "^0.1.7",
     "@zombienet/orchestrator": "^0.0.14",
-    "@zombienet/utils": "^0.0.10",
+    "@zombienet/utils": "^0.0.11",
     "axios": "^0.27.2",
     "debug": "^4.3.2",
     "nunjucks": "^3.2.3",

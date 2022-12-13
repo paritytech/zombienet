@@ -95,7 +95,9 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
     );
   } catch (err) {
     console.log(
-      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.dim(err)}\n`,
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
     );
   }
 };
@@ -277,7 +279,9 @@ process.on("unhandledRejection", async (err) => {
   }
   debug(err);
   console.log(
-    `\n${decorators.red("UnhandledRejection: ")} \t ${decorators.dim(err)}\n`,
+    `\n${decorators.red("UnhandledRejection: ")} \t ${decorators.bright(
+      err,
+    )}\n`,
   );
   process.exit(1001);
 });
@@ -481,7 +485,7 @@ async function test(
   try {
     testDef = JSON.parse(parser.parse_to_json(content));
   } catch (e) {
-    console.log(`\n ${decorators.red("Error:")} \t ${decorators.dim(e)}\n`);
+    console.log(`\n ${decorators.red("Error:")} \t ${decorators.bright(e)}\n`);
     process.exit(1);
   }
 
@@ -593,7 +597,9 @@ async function convert(param: string) {
     // Read through the JSON and write to stream sample
     await convertInput(filePath);
   } catch (err) {
-    console.log(`\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`);
+    console.log(
+      `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
+    );
   }
 }
 

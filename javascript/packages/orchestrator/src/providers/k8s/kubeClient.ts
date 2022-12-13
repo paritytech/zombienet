@@ -708,7 +708,7 @@ export class KubeClient extends Client {
       }
     } catch (err) {
       console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
       );
     } finally {
       return available;
