@@ -7,6 +7,12 @@ export interface RunCommandResponse {
   errorMsg?: string;
 }
 
+export interface RunCommandOptions {
+  resourceDef?: string;
+  scoped?: boolean;
+  allowFail?: boolean;
+}
+
 export abstract class Client {
   namespace: string;
   configPath: string;
@@ -52,9 +58,7 @@ export abstract class Client {
   ): Promise<number>;
   abstract runCommand(
     args: string[],
-    resourceDef?: string,
-    scoped?: boolean,
-    allowFail?: boolean,
+    opts?: RunCommandOptions,
   ): Promise<RunCommandResponse>;
   abstract runScript(
     identifier: string,

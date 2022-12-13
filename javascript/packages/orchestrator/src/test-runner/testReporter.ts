@@ -23,7 +23,7 @@ class TestReporter {
         {
           colSpan: 2,
           hAlign: "center",
-          content: `${decorators.green("Test Results")}`,
+          content: decorators.green("Test Results"),
         },
       ],
       colWidths: [30, 100],

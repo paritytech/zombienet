@@ -16,7 +16,12 @@ import {
   TRANSFER_CONTAINER_NAME,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
+import {
+  Client,
+  RunCommandOptions,
+  RunCommandResponse,
+  setClient,
+} from "../client";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -66,7 +71,7 @@ export class KubeClient extends Client {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this.runCommand(["cluster-info"], undefined, false);
+      const result = await this.runCommand(["cluster-info"], { scoped: false });
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -121,54 +126,46 @@ export class KubeClient extends Client {
     if (dbSnapshot) {
       // we need to get the snapshot from a public access
       // and extract to /data
-      await this.runCommand(
+      await this.runCommand([
+        "exec",
+        name,
+        "-c",
+        TRANSFER_CONTAINER_NAME,
+        "--",
+        "ash",
+        "-c",
         [
-          "exec",
-          name,
-          "-c",
-          TRANSFER_CONTAINER_NAME,
-          "--",
-          "ash",
-          "-c",
-          [
-            "mkdir",
-            "-p",
-            "/data/chains",
-            "&&",
-            "wget",
-            dbSnapshot,
-            "-O",
-            "/data/chains/db.tgz",
-            "&&",
-            "cd",
-            "/data/chains",
-            "&&",
-            "tar",
-            "-xzvf",
-            "db.tgz",
-          ].join(" "),
-        ],
-        undefined,
-        true,
-      );
+          "mkdir",
+          "-p",
+          "/data/chains",
+          "&&",
+          "wget",
+          dbSnapshot,
+          "-O",
+          "/data/chains/db.tgz",
+          "&&",
+          "cd",
+          "/data/chains",
+          "&&",
+          "tar",
+          "-xzvf",
+          "db.tgz",
+        ].join(" "),
+      ]);
     }
 
     if (keystore) {
       // initialize keystore
-      await this.runCommand(
-        [
-          "exec",
-          name,
-          "-c",
-          TRANSFER_CONTAINER_NAME,
-          "--",
-          "/bin/mkdir",
-          "-p",
-          `/data/chains/${chainSpecId}/keystore`,
-        ],
-        undefined,
-        true,
-      );
+      await this.runCommand([
+        "exec",
+        name,
+        "-c",
+        TRANSFER_CONTAINER_NAME,
+        "--",
+        "/bin/mkdir",
+        "-p",
+        `/data/chains/${chainSpecId}/keystore`,
+      ]);
 
       // inject keys
       await this.copyFileToPod(
@@ -222,11 +219,10 @@ export class KubeClient extends Client {
     scoped: boolean = false,
     waitReady: boolean = false,
   ): Promise<void> {
-    await this.runCommand(
-      ["apply", "-f", "-"],
-      JSON.stringify(resourseDef),
+    await this.runCommand(["apply", "-f", "-"], {
+      resourceDef: JSON.stringify(resourseDef),
       scoped,
-    );
+    });
 
     debug(resourseDef);
     const name = resourseDef.metadata.name;
@@ -237,7 +233,7 @@ export class KubeClient extends Client {
       let t = this.timeout;
       const args = ["get", kind, name, "-o", "jsonpath={.status}"];
       do {
-        const result = await this.runCommand(args, undefined, true);
+        const result = await this.runCommand(args);
         const status = JSON.parse(result.stdout);
         if (["Running", "Succeeded"].includes(status.phase)) return;
 
@@ -259,7 +255,7 @@ export class KubeClient extends Client {
     let t = this.timeout;
     const args = ["get", "pod", podName, "--no-headers"];
     do {
-      const result = await this.runCommand(args, undefined, true);
+      const result = await this.runCommand(args);
       if (result.stdout.match(/Running|Completed/)) return;
       if (result.stdout.match(/ErrImagePull|ImagePullBackOff/))
         throw new Error(`Error pulling image for pod : ${podName}`);
@@ -275,7 +271,7 @@ export class KubeClient extends Client {
     let t = this.timeout;
     const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
     do {
-      const result = await this.runCommand(args, undefined, true);
+      const result = await this.runCommand(args);
       const status = JSON.parse(result.stdout);
 
       // check if we are waiting init container
@@ -315,12 +311,14 @@ export class KubeClient extends Client {
     }
 
     if (scopeNamespace) {
-      await this.runCommand(
-        ["-n", scopeNamespace, "apply", "-f", "-"],
+      await this.runCommand(["-n", scopeNamespace, "apply", "-f", "-"], {
         resourceDef,
-      );
+      });
     } else {
-      await this.runCommand(["apply", "-f", "-"], resourceDef);
+      await this.runCommand(["apply", "-f", "-"], {
+        resourceDef,
+        scoped: false,
+      });
     }
   }
 
@@ -336,11 +334,10 @@ export class KubeClient extends Client {
       .toString("utf-8")
       .replace(/{{namespace}}/gi, this.namespace)
       .replace(/{{chain}}/gi, chain);
-    await this.runCommand(
-      ["-n", "monitoring", "apply", "-f", "-"],
+    await this.runCommand(["-n", "monitoring", "apply", "-f", "-"], {
       resourceDef,
-      false,
-    );
+      scoped: false,
+    });
     // await this.kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
@@ -361,7 +358,7 @@ export class KubeClient extends Client {
       );
     }
 
-    await this.runCommand(["apply", "-f", "-"], resourceDef);
+    await this.runCommand(["apply", "-f", "-"], { resourceDef, scoped: false });
   }
 
   async copyFileToPod(
@@ -374,7 +371,7 @@ export class KubeClient extends Client {
     if (unique) {
       const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
       if (container) args.push("-c", container);
-      await this.runCommand(args, undefined, true);
+      await this.runCommand(args);
       debug("copyFileToPod", args);
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
@@ -396,17 +393,13 @@ export class KubeClient extends Client {
         `http://fileserver/${fileHash}`,
       ];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
-      let result = await this.runCommand(
-        [...args, ...extraArgs],
-        undefined,
-        true,
-      );
+      let result = await this.runCommand([...args, ...extraArgs]);
       debug(result);
 
       if (container) args.push("-c", container);
       extraArgs = ["--", "/bin/chmod", "+x", podFilePath];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
-      result = await this.runCommand([...args, ...extraArgs], undefined, true);
+      result = await this.runCommand([...args, ...extraArgs]);
       debug(result);
     }
   }
@@ -420,7 +413,7 @@ export class KubeClient extends Client {
     const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
     if (container) args.push("-c", container);
     debug("copyFileFromPod", args);
-    const result = await this.runCommand(args, undefined, true);
+    const result = await this.runCommand(args);
     debug(result);
   }
 
@@ -435,16 +428,14 @@ export class KubeClient extends Client {
   }
 
   async destroyNamespace() {
-    await this.runCommand(
-      ["delete", "namespace", this.namespace],
-      undefined,
-      false,
-    );
+    await this.runCommand(["delete", "namespace", this.namespace], {
+      scoped: false,
+    });
   }
 
   async getNodeIP(identifier: string): Promise<string> {
     const args = ["get", "pod", identifier, "-o", "jsonpath={.status.podIP}"];
-    const result = await this.runCommand(args, undefined, true);
+    const result = await this.runCommand(args);
     return result.stdout;
   }
 
@@ -488,7 +479,7 @@ export class KubeClient extends Client {
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
-        if (file) await this.createStaticResource(file);
+        if (file) await this.createStaticResource(file, this.namespace);
       }
     }
 
@@ -549,7 +540,7 @@ export class KubeClient extends Client {
       "-o",
       "jsonpath={.status.phase}",
     ];
-    const result = await this.runCommand(args, undefined, false);
+    const result = await this.runCommand(args, { scoped: false });
     if (result.exitCode !== 0 || result.stdout !== "Active") return false;
     return true;
   }
@@ -633,7 +624,7 @@ export class KubeClient extends Client {
     if (withTimestamp) args.push("--timestamps=true");
     args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
 
-    const result = await this.runCommand(args, undefined, false);
+    const result = await this.runCommand(args, { scoped: false });
     return result.stdout;
   }
 
@@ -646,17 +637,17 @@ export class KubeClient extends Client {
   // run kubectl
   async runCommand(
     args: string[],
-    resourceDef?: string,
-    scoped: boolean = true,
+    opts?: RunCommandOptions,
   ): Promise<RunCommandResponse> {
     try {
       const augmentedCmd: string[] = ["--kubeconfig", this.configPath];
-      if (scoped) augmentedCmd.push("--namespace", this.namespace);
+      if (opts?.scoped === undefined || opts?.scoped)
+        augmentedCmd.push("--namespace", this.namespace);
 
       const finalArgs = [...augmentedCmd, ...args];
       debug("finalArgs", finalArgs);
       const result = await execa("kubectl", finalArgs, {
-        input: resourceDef,
+        input: opts?.resourceDef,
       });
 
       return {
@@ -688,18 +679,15 @@ export class KubeClient extends Client {
 
       // set as executable
       const baseArgs = ["exec", `Pod/${identifier}`, "--"];
-      await this.runCommand(
-        [...baseArgs, "/bin/chmod", "+x", scriptPathInPod],
-        undefined,
-        true,
-      );
+      await this.runCommand([...baseArgs, "/bin/chmod", "+x", scriptPathInPod]);
 
       // exec
-      const result = await this.runCommand(
-        [...baseArgs, "bash", scriptPathInPod, ...args],
-        undefined,
-        true,
-      );
+      const result = await this.runCommand([
+        ...baseArgs,
+        "bash",
+        scriptPathInPod,
+        ...args,
+      ]);
 
       return {
         exitCode: result.exitCode,
@@ -748,7 +736,7 @@ export class KubeClient extends Client {
     });
     logTable.pushTo([
       [decorators.cyan("Uploading:"), decorators.green(localFilePath)],
-      [`${decorators.cyan("as:")}`, decorators.green(fileHash)],
+      [decorators.cyan("as:"), decorators.green(fileHash)],
     ]);
     logTable.print();
     const args = [
@@ -758,7 +746,7 @@ export class KubeClient extends Client {
     ];
 
     debug("copyFileToPod", args);
-    const result = await this.runCommand(args, undefined, true);
+    const result = await this.runCommand(args);
     debug(result);
     fileUploadCache[fileHash] = fileName;
   }
