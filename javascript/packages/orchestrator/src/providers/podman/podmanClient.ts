@@ -298,7 +298,9 @@ export class PodmanClient extends Client {
         stdout,
       };
     } catch (error) {
-      console.log(error);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.dim(error)}\n`,
+      );
       throw error;
     }
   }

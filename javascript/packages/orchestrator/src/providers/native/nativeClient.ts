@@ -378,7 +378,10 @@ export class NativeClient extends Client {
 
       logTable.pushToPrint([
         [decorators.cyan("Pod"), decorators.green(nodeName)],
-        [decorators.cyan("Status"), decorators.red("Error")],
+        [
+          decorators.cyan("Status"),
+          decorators.reverse(decorators.red("Error")),
+        ],
         [
           decorators.cyan("Message"),
           decorators.white(`Process: ${pid}, for node: ${nodeName} dies.`),

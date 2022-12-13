@@ -707,7 +707,9 @@ export class KubeClient extends Client {
         if (result.stdout.includes("podmonitor")) available = true;
       }
     } catch (err) {
-      console.log(err);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+      );
     } finally {
       return available;
     }

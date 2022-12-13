@@ -225,7 +225,9 @@ export class Network {
       }
       return value;
     } catch (err) {
-      console.log(err);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+      );
       if (limitTimeout) clearTimeout(limitTimeout);
       throw err;
     }
@@ -270,7 +272,9 @@ export class Network {
       await node.apiInstance?.rpc.system.name();
       return true;
     } catch (err) {
-      console.log(err);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+      );
       return false;
     }
   }
