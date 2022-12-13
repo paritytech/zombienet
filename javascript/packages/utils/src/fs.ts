@@ -3,6 +3,7 @@ import { Environment } from "nunjucks";
 import path from "path";
 import readline from "readline";
 import toml from "toml";
+import { decorators } from "./colors";
 import { RelativeLoader } from "./nunjucks-relative-loader";
 import { LaunchConfig } from "./types";
 
@@ -109,6 +110,6 @@ export function readDataFile(filepath: string): string {
     const fileData = fs.readFileSync(filepath, "utf8");
     return fileData.trim();
   } catch (err) {
-    throw Error(`Cannot read ${filepath}: ` + err);
+    throw Error(decorators.red(`Cannot read ${filepath}: ${err}`));
   }
 }

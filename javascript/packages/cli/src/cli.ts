@@ -94,7 +94,9 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
       decorators.blue(`export PATH=${process.cwd()}:$PATH`),
     );
   } catch (err) {
-    console.log("Unexpected error: ", err);
+    console.log(
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.dim(err)}\n`,
+    );
   }
 };
 
@@ -274,7 +276,9 @@ process.on("unhandledRejection", async (err) => {
     await network.stop();
   }
   debug(err);
-  console.log(`UnhandledRejection: ${err}`);
+  console.log(
+    `\n${decorators.red("UnhandledRejection: ")} \t ${decorators.dim(err)}\n`,
+  );
   process.exit(1001);
 });
 
@@ -477,7 +481,7 @@ async function test(
   try {
     testDef = JSON.parse(parser.parse_to_json(content));
   } catch (e) {
-    console.log(e);
+    console.log(`\n ${decorators.red("Error:")} \t ${decorators.dim(e)}\n`);
     process.exit(1);
   }
 
@@ -589,7 +593,7 @@ async function convert(param: string) {
     // Read through the JSON and write to stream sample
     await convertInput(filePath);
   } catch (err) {
-    console.log("error", err);
+    console.log(`\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`);
   }
 }
 
