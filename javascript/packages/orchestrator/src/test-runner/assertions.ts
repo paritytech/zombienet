@@ -269,7 +269,7 @@ const CustomJs = ({
       console.log(
         `\n ${decorators.red(
           `Error running script: ${file_path!}`,
-        )} \t ${decorators.dim(err.message)}\n`,
+        )} \t ${decorators.bright(err.message)}\n`,
       );
       throw new Error(err);
     }
@@ -334,7 +334,7 @@ const CustomSh = ({
       console.log(
         `\n ${decorators.red(
           `Error running script: ${file_path!}`,
-        )} \t ${decorators.dim(err.message)}\n`,
+        )} \t ${decorators.bright(err.message)}\n`,
       );
       throw new Error(err);
     }

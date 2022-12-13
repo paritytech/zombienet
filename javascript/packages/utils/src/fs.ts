@@ -90,15 +90,15 @@ const parseConfigFile = (
   const fileType = filepath?.split(".")?.pop();
   if (!fileType) {
     throw new Error(
-      `${decorators.red("Error - config file has no extension.")}`,
+      `${decorators.bright("Error - config file has no extension.")}`,
     );
   }
   const data = fs.readFileSync(filepath, "utf-8");
   const lines = data.split(/\r?\n/);
   let firstChar;
   for (let line of lines) {
-    // Avoid any lines with comments
-    if (line[0] === "#" || line[0] === "/") {
+    // Avoid any lines with comments or empty lines
+    if (!line && ["#", "/", " "].includes(line[0])) {
       continue;
     } else {
       firstChar = line[0];
@@ -108,7 +108,7 @@ const parseConfigFile = (
 
   if (!firstChar) {
     throw new Error(
-      `${decorators.bright("File must have no valid characters.")}`,
+      `${decorators.bright("Config file has no valid characters.")}`,
     );
   }
 

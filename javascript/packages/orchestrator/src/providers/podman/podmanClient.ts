@@ -299,7 +299,7 @@ export class PodmanClient extends Client {
       };
     } catch (error) {
       console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.dim(error)}\n`,
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
       );
       throw error;
     }

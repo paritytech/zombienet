@@ -114,7 +114,7 @@ export async function run(
       console.log(
         `\n${decorators.red(
           "Error launching the network!",
-        )} \t ${decorators.dim(err)}`,
+        )} \t ${decorators.bright(err)}`,
       );
       exitMocha(100);
     }
@@ -214,7 +214,7 @@ export async function run(
 
     if (!generator) {
       console.log(
-        `\n ${decorators.red("Invalid fn generator:")} \t ${decorators.dim(
+        `\n ${decorators.red("Invalid fn generator:")} \t ${decorators.bright(
           assertion.parsed.fn,
         )}`,
       );

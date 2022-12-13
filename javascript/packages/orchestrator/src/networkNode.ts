@@ -135,7 +135,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return true;
     } catch (err) {
       console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.dim(err)}\n`,
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
       );
       return false;
     } finally {
@@ -212,7 +212,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return value;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.dim(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
           err?.message,
         )}\n`,
       );
@@ -297,7 +297,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return value || 0;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.dim(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
           err?.message,
         )}\n`,
       );
@@ -366,7 +366,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return value || 0;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.dim(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
           err?.message,
         )}\n`,
       );
@@ -417,7 +417,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return total_count;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.dim(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
           err?.message,
         )}\n`,
       );
@@ -480,7 +480,7 @@ export class NetworkNode implements NetworkNodeInterface {
       return true;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.dim(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
           err?.message,
         )}\n`,
       );
