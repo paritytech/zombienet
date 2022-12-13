@@ -3,6 +3,7 @@ import { Environment } from "nunjucks";
 import path from "path";
 import readline from "readline";
 import toml from "toml";
+import yaml from "yaml";
 import { decorators } from "./colors";
 import { RelativeLoader } from "./nunjucks-relative-loader";
 import { LaunchConfig } from "./types";
@@ -77,6 +78,65 @@ function getReplacementInText(content: string): string[] {
   return replacements;
 }
 
+const parseConfigFile = (
+  content: string,
+  filepath: string,
+  configBasePath: string,
+): LaunchConfig => {
+  const jsonChar = /[\{]/;
+  const tomlChar = /[\[]/;
+  const yamlChar = /[A-Za-z\-\#]/;
+
+  const fileType = filepath?.split(".")?.pop();
+  if (!fileType) {
+    throw new Error(
+      `${decorators.red("Error - config file has no extension.")}`,
+    );
+  }
+  const data = fs.readFileSync(filepath, "utf-8");
+  const lines = data.split(/\r?\n/);
+  let firstChar;
+  for (let line of lines) {
+    // Avoid any lines with comments
+    if (line[0] === "#" || line[0] === "/") {
+      continue;
+    } else {
+      firstChar = line[0];
+      break;
+    }
+  }
+
+  if (!firstChar) {
+    throw new Error(
+      `${decorators.bright("File must have no valid characters.")}`,
+    );
+  }
+
+  let config: LaunchConfig = {} as LaunchConfig;
+
+  if (fileType?.toLocaleLowerCase() === "json" && jsonChar.test(firstChar)) {
+    config = JSON.parse(content);
+  } else if (
+    fileType?.toLocaleLowerCase() === "toml" &&
+    tomlChar.test(firstChar)
+  ) {
+    config = toml.parse(content);
+  } else if (
+    fileType?.toLocaleLowerCase() === "yaml" &&
+    yamlChar.test(firstChar)
+  ) {
+    config = yaml.parse(content);
+  } else {
+    throw new Error(
+      `${decorators.bright(
+        "config file is not one of the known types: 'json', 'toml' or 'yaml'.",
+      )}`,
+    );
+  }
+  config.configBasePath = configBasePath;
+  return config;
+};
+
 export function readNetworkConfig(filepath: string): LaunchConfig {
   const configBasePath = path.dirname(filepath);
   const env = new Environment(new RelativeLoader([configBasePath]));
@@ -94,15 +154,7 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
     throw new Error(`Environment not set for : ${replacements.join(",")}`);
   }
 
-  // TODO: add better file recognition
-  const fileType = filepath.split(".").pop();
-  const config: LaunchConfig =
-    fileType?.toLocaleLowerCase() === "json"
-      ? JSON.parse(content)
-      : toml.parse(content);
-
-  config.configBasePath = configBasePath;
-  return config;
+  return parseConfigFile(content, filepath, configBasePath);
 }
 
 export function readDataFile(filepath: string): string {
