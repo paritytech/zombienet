@@ -1,5 +1,5 @@
-# some comment
-# some comment
+ # some comment
+# first space above is on purpose for testing parser
 [relaychain]
 default_image = "docker.io/paritypr/polkadot-debug:master"
 default_command = "polkadot"
