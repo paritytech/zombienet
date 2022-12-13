@@ -289,7 +289,8 @@ export class Network {
           content: decorators.green("Network launched 🚀🚀"),
         },
       ],
-      colWidths: [30, 100],
+      colWidths: [30, 170],
+      wordWrap: true,
     });
     logTable.pushTo([
       ["Namespace", this.namespace],
@@ -337,6 +338,20 @@ export class Network {
       ? node.wsUri
       : encodeURIComponent(node.wsUri);
 
+    let logCommand: string = "";
+
+    switch (this.client.providerName) {
+      case "podman":
+        logCommand = `podman logs -f ${node.name}_pod-${node.name}`;
+        break;
+      case "kubernetes":
+        logCommand = `kubectl logs -f ${node.name} -c ${node.name} -n ${this.client.namespace}`;
+        break;
+      case "native":
+        logCommand = `tail -f  ${this.client.tmpDir}/${node.name}.log`;
+        break;
+    }
+
     logTable.pushTo([
       [{ colSpan: 2, hAlign: "center", content: "Node Information" }],
       [decorators.cyan("Name"), decorators.green(node.name)],
@@ -345,6 +360,7 @@ export class Network {
         `https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer`,
       ],
       [decorators.cyan("Prometheus Link"), node.prometheusUri],
+      [decorators.cyan("Log Cmd"), logCommand],
     ]);
   }
 
