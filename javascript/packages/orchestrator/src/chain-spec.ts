@@ -350,7 +350,9 @@ export async function addParachainToGenesis(
     );
   } else {
     console.error(
-      `\n${decorators.red("  ⚠ paras not found in runtimeConfig")}`,
+      `\n${decorators.reverse(
+        decorators.red("  ⚠ paras not found in runtimeConfig"),
+      )}`,
     );
     process.exit(1);
   }
@@ -460,9 +462,9 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
       }
     } else {
       console.error(
-        `\n\t\t  ${decorators.red("⚠ Bad Genesis Configuration")} [ ${key}: ${
-          obj1[key]
-        } ]`,
+        `\n\t\t  ${decorators.reverse(
+          decorators.red("⚠ Bad Genesis Configuration"),
+        )} [ ${key}: ${obj1[key]} ]`,
       );
     }
   });
@@ -496,8 +498,8 @@ export function writeChainSpec(specPath: string, chainSpec: any) {
     fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(
-      `\n\t\t  ${decorators.red(
-        "  ⚠ failed to write the chain spec with path: ",
+      `\n\t\t  ${decorators.reverse(
+        decorators.red("  ⚠ failed to write the chain spec with path: "),
       )} ${specPath}`,
     );
     process.exit(1);

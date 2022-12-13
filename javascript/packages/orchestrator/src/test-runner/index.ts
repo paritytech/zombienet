@@ -111,8 +111,11 @@ export async function run(
       await sleep(5 * 1000);
       return;
     } catch (err) {
-      console.log(`\n${decorators.red("Error launching the network!")}`);
-      console.log(`\t ${err}`);
+      console.log(
+        `\n${decorators.red(
+          "Error launching the network!",
+        )} \t ${decorators.dim(err)}`,
+      );
       exitMocha(100);
     }
   });
@@ -129,7 +132,7 @@ export async function run(
         if (failed.length) {
           console.log(
             `\n\n\t${decorators.red(
-              "Hey one or more of your test failed, to see the full logs of the nodes please go to:",
+              "One or more of your test failed, to see the full logs of the nodes please go to:",
             )}`,
           );
 
@@ -211,7 +214,9 @@ export async function run(
 
     if (!generator) {
       console.log(
-        `\n\t ${decorators.red("Invalid fn generator:" + assertion.parsed.fn)}`,
+        `\n ${decorators.red("Invalid fn generator:")} \t ${decorators.dim(
+          assertion.parsed.fn,
+        )}`,
       );
       process.exit(1);
     }
