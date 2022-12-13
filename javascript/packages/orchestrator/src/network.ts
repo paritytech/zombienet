@@ -360,10 +360,7 @@ export class Network {
         `https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer`,
       ],
       [decorators.cyan("Prometheus Link"), node.prometheusUri],
-      [
-        decorators.cyan("Log Path"),
-        this.client.tmpDir + "/" + node.name + ".log",
-      ],
+      [decorators.cyan("Log Cmd"), logCommand],
     ]);
   }
 
