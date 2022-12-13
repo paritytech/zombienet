@@ -282,7 +282,7 @@ export class Network {
         {
           colSpan: 2,
           hAlign: "center",
-          content: `${decorators.green("Network launched 🚀🚀")}`,
+          content: decorators.green("Network launched 🚀🚀"),
         },
       ],
       colWidths: [30, 100],
@@ -335,12 +335,12 @@ export class Network {
 
     logTable.pushTo([
       [{ colSpan: 2, hAlign: "center", content: "Node Information" }],
-      [`${decorators.cyan("Name")}`, `${decorators.green(node.name)}`],
+      [decorators.cyan("Name"), decorators.green(node.name)],
       [
-        `${decorators.cyan("Direct Link")}`,
+        decorators.cyan("Direct Link"),
         `https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer`,
       ],
-      [`${decorators.cyan("Prometheus Link")}`, node.prometheusUri],
+      [decorators.cyan("Prometheus Link"), node.prometheusUri],
     ]);
   }
 

@@ -748,7 +748,7 @@ export class KubeClient extends Client {
     });
     logTable.pushTo([
       [decorators.cyan("Uploading:"), decorators.green(localFilePath)],
-      [`${decorators.cyan("as:")}`, decorators.green(fileHash)],
+      [decorators.cyan("as:"), decorators.green(fileHash)],
     ]);
     logTable.print();
     const args = [
