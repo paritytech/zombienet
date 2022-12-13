@@ -57,7 +57,7 @@ class TestReporter {
         }).pushToPrint([
           [
             new Date().toLocaleString(),
-            `✅ ${test.title} ${decorators.underline(`(${test.duration}ms)`)}`,
+            `✅ ${test.title} ${decorators.underscore(`(${test.duration}ms)`)}`,
           ],
         ]);
       })
@@ -67,7 +67,7 @@ class TestReporter {
         }).pushToPrint([
           [
             new Date().toLocaleString(),
-            `❌ ${test.title} ${decorators.underline(`(${test.duration}ms)`)}`,
+            `❌ ${test.title} ${decorators.underscore(`(${test.duration}ms)`)}`,
           ],
         ]);
       })
