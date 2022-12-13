@@ -78,7 +78,7 @@ export class NetworkNode implements NetworkNodeInterface {
       : `echo restart > /tmp/zombiepipe`;
     args.push(cmd);
 
-    const result = await client.runCommand(args, undefined, true);
+    const result = await client.runCommand(args, { scoped: true });
     if (result.exitCode !== 0) return false;
     // restart the port-fw if needed
     const url = new URL(this.wsUri);
@@ -106,7 +106,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
-    const result = await client.runCommand(args, undefined, true);
+    const result = await client.runCommand(args, { scoped: true });
     return result.exitCode === 0;
   }
 
@@ -120,7 +120,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "-c",
       "echo resume > /tmp/zombiepipe",
     ];
-    const result = await client.runCommand(args, undefined, true);
+    const result = await client.runCommand(args, { scoped: true });
     return result.exitCode === 0;
   }
 

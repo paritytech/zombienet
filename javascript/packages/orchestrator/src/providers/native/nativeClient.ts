@@ -17,7 +17,12 @@ import {
   P2P_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
+import {
+  Client,
+  RunCommandOptions,
+  RunCommandResponse,
+  setClient,
+} from "../client";
 const fs = require("fs");
 
 const debug = require("debug")("zombie::native::client");
@@ -165,9 +170,7 @@ export class NativeClient extends Client {
 
   async runCommand(
     args: string[],
-    _resourceDef?: string,
-    _scoped?: boolean,
-    allowFail?: boolean,
+    opts?: RunCommandOptions,
   ): Promise<RunCommandResponse> {
     try {
       if (args[0] === "bash") args.splice(0, 1);
@@ -188,7 +191,7 @@ export class NativeClient extends Client {
       };
     } catch (error: any) {
       debug(error);
-      if (!allowFail) throw error;
+      if (!opts?.allowFail) throw error;
 
       const { exitCode, stdout, message: errorMsg } = error;
 
@@ -363,12 +366,9 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand(
-      ["-c", `ps ${pid}`],
-      undefined,
-      undefined,
-      true,
-    );
+    const result = await this.runCommand(["-c", `ps ${pid}`], {
+      allowFail: true,
+    });
     if (result.exitCode > 0) {
       const lines = await this.getNodeLogs(nodeName);
 
