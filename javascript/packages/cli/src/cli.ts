@@ -77,7 +77,10 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
           data.on("data", (chunk: any) => progressBar.tick(chunk.length));
           data.pipe(writer);
           data.on("end", () => {
-            console.log(decorators.yellow(`Binary "${name}" downloaded`));
+            console.log(
+              decorators.yellow(`Binary "${name}" downloaded to:`),
+              decorators.bright(`"${process.cwd()}".`),
+            );
             // Add permissions to the binary
             console.log(decorators.cyan(`Giving permissions to "${name}"`));
             fs.chmodSync(path.resolve(name), 0o755);
