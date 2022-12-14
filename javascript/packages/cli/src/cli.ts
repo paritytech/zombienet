@@ -410,7 +410,11 @@ async function spawn(
   const spawnConcurrency = opts.spawnConcurrency || 1;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
-    console.error("  ⚠ Config file does not exist: ", configPath);
+    console.error(
+      `${decorators.reverse(
+        decorators.red(`  ⚠ Config file does not exist: ${configPath}`),
+      )}`,
+    );
     process.exit();
   }
 
@@ -441,7 +445,11 @@ async function spawn(
       console.log(
         `Running ${config.settings?.provider || DEFAULT_PROVIDER} provider:`,
       );
-      console.error("  ⚠ I can't find the Creds file: ", credsFile);
+      console.error(
+        `${decorators.reverse(
+          decorators.red(`  ⚠ I can't find the Creds file: ${credsFile}`),
+        )}`,
+      );
       process.exit();
     }
   }
