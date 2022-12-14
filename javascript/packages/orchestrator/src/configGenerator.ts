@@ -51,6 +51,12 @@ const isIterable = (obj: any) => {
 };
 
 const configurationFileChecks = (config: LaunchConfig): void => {
+  if ((config as any).hrmpChannels) {
+    throw new Error(
+      "'hrmpChannel' value the given configuration file is deprecated; Please use 'hrmp_channel' instead;",
+    );
+  }
+
   validateImageUrl(config?.relaychain?.default_image || DEFAULT_IMAGE);
   if (
     config?.relaychain?.node_groups &&
