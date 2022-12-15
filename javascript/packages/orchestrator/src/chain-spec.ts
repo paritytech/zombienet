@@ -428,7 +428,11 @@ export async function addHrmpChannelsToGenesis(
         ),
       );
     } else {
-      console.error("  ⚠ hrmp not found in runtimeConfig");
+      console.error(
+        `${decorators.reverse(
+          decorators.red(`  ⚠ hrmp not found in runtimeConfig`),
+        )}`,
+      );
       process.exit(1);
     }
 

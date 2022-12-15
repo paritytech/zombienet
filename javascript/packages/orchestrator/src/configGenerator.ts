@@ -1,7 +1,12 @@
 import fs from "fs";
 import path, { resolve } from "path";
 
-import { getRandomPort, getSha256, validateImageUrl } from "@zombienet/utils";
+import {
+  decorators,
+  getRandomPort,
+  getSha256,
+  validateImageUrl,
+} from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
   DEFAULT_ADDER_COLLATOR_BIN,
@@ -149,7 +154,11 @@ export async function generateNetworkSpec(
       config.relaychain.chain_spec_path,
     );
     if (!fs.existsSync(chainSpecPath)) {
-      console.error("Chain spec provided does not exist: ", chainSpecPath);
+      console.error(
+        decorators.red(
+          `Genesis spec provided does not exist: ${chainSpecPath}`,
+        ),
+      );
       process.exit();
     } else {
       networkSpec.relaychain.chainSpecPath = chainSpecPath;
@@ -302,8 +311,9 @@ export async function generateNetworkSpec(
         );
         if (!fs.existsSync(genesisStatePath)) {
           console.error(
-            "Genesis spec provided does not exist: ",
-            genesisStatePath,
+            decorators.red(
+              `Genesis spec provided does not exist: ${genesisStatePath}`,
+            ),
           );
           process.exit();
         } else {
@@ -324,8 +334,9 @@ export async function generateNetworkSpec(
         );
         if (!fs.existsSync(genesisWasmPath)) {
           console.error(
-            "Genesis spec provided does not exist: ",
-            genesisWasmPath,
+            decorators.red(
+              `Genesis spec provided does not exist: ${genesisWasmPath}`,
+            ),
           );
           process.exit();
         } else {
@@ -362,7 +373,9 @@ export async function generateNetworkSpec(
         const chainSpecPath = resolve(process.cwd(), parachain.chain_spec_path);
         if (!fs.existsSync(chainSpecPath)) {
           console.error(
-            `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
+            decorators.red(
+              `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
+            ),
           );
           process.exit();
         } else {

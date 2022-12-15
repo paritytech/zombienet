@@ -42,7 +42,11 @@ export function loadTypeDef(types: string | object): object {
       const rawdata = fs.readFileSync(types, { encoding: "utf-8" });
       return JSON.parse(rawdata);
     } catch {
-      console.error("failed to load parachain typedef file");
+      console.error(
+        `${decorators.reverse(
+          decorators.red(`  failed to load parachain typedef file`),
+        )}`,
+      );
       process.exit(1);
     }
   } else {
