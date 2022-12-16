@@ -132,9 +132,7 @@ export async function run(
         });
         if (failed.length) {
           console.log(
-            `\n\n\t${decorators.red(
-              "❌ One or more of your test failed...",
-            )}`,
+            `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
           );
 
           switch (network.client.providerName) {
@@ -165,7 +163,11 @@ export async function run(
         }
 
         // show logs
-        console.log(`\n\n\t${decorators.magenta("📓 To see the full logs of the nodes please go to:",)}`);
+        console.log(
+          `\n\n\t${decorators.magenta(
+            "📓 To see the full logs of the nodes please go to:",
+          )}`,
+        );
         switch (network.client.providerName) {
           case "podman":
           case "native":
@@ -189,9 +191,7 @@ export async function run(
                 );
               }
 
-              for (const [paraId, parachain] of Object.entries(
-                network.paras,
-              )) {
+              for (const [paraId, parachain] of Object.entries(network.paras)) {
                 console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
                 for (const node of parachain?.nodes) {
                   const loki_url = getLokiUrl(
