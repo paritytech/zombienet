@@ -145,7 +145,7 @@ export async function run(
               if (inCI) {
                 // keep pods running for 30 mins.
                 console.log(
-                  `\n\t${decorators.yellow(
+                  `\n\t${decorators.red(
                     "One or more test failed, we will keep the namespace up for 30 more minutes",
                   )}`,
                 );
