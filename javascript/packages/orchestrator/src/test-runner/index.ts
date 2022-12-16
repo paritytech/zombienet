@@ -125,6 +125,7 @@ export async function run(
     if (network && !network.wasRunning) {
       const logsPath = await network.dumpLogs(false);
       const tests = this.test?.parent?.tests;
+
       if (tests) {
         const failed = tests.filter((test) => {
           return test.state !== "passed";
@@ -132,22 +133,67 @@ export async function run(
         if (failed.length) {
           console.log(
             `\n\n\t${decorators.red(
-              "One or more of your test failed, to see the full logs of the nodes please go to:",
+              "❌ One or more of your test failed...",
             )}`,
           );
 
           switch (network.client.providerName) {
             case "podman":
             case "native":
-              console.log(`\n\t${decorators.magenta(logsPath)}`);
               console.log(`\n\t ${decorators.green("Deleting network")}`);
               await network.stop();
               break;
             case "kubernetes":
               if (inCI) {
-                // show links to grafana and also we need to move the logs to artifacts
-                const networkEndtime = new Date().getTime();
-                for (const node of network.relay) {
+                // keep pods running for 30 mins.
+                console.log(
+                  `\n\t${decorators.yellow(
+                    "One or more test failed, we will keep the namespace up for 30 more minutes",
+                  )}`,
+                );
+                await network.upsertCronJob(30);
+              } else {
+                console.log(`\n\t ${decorators.green("Deleting network")}`);
+                await network.stop();
+              }
+              break;
+          }
+        } else {
+          // All test passed, just remove the network
+          console.log(`\n\t ${decorators.green("Deleting network")}`);
+          await network.stop();
+        }
+
+        // show logs
+        console.log(`\n\n\t${decorators.magenta("📓 To see the full logs of the nodes please go to:",)}`);
+        switch (network.client.providerName) {
+          case "podman":
+          case "native":
+            console.log(`\n\t${decorators.magenta(logsPath)}`);
+            break;
+          case "kubernetes":
+            if (inCI) {
+              // show links to grafana and also we need to move the logs to artifacts
+              const networkEndtime = new Date().getTime();
+              for (const node of network.relay) {
+                const loki_url = getLokiUrl(
+                  network.namespace,
+                  node.name,
+                  network.networkStartTime!,
+                  networkEndtime,
+                );
+                console.log(
+                  `\t${decorators.magenta(node.name)}: ${decorators.green(
+                    loki_url,
+                  )}`,
+                );
+              }
+
+              for (const [paraId, parachain] of Object.entries(
+                network.paras,
+              )) {
+                console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
+                for (const node of parachain?.nodes) {
                   const loki_url = getLokiUrl(
                     network.namespace,
                     node.name,
@@ -155,53 +201,23 @@ export async function run(
                     networkEndtime,
                   );
                   console.log(
-                    `\t${decorators.magenta(node.name)}: ${decorators.green(
+                    `\t\t${decorators.magenta(node.name)}: ${decorators.green(
                       loki_url,
                     )}`,
                   );
                 }
-
-                for (const [paraId, parachain] of Object.entries(
-                  network.paras,
-                )) {
-                  console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                  for (const node of parachain?.nodes) {
-                    const loki_url = getLokiUrl(
-                      network.namespace,
-                      node.name,
-                      network.networkStartTime!,
-                      networkEndtime,
-                    );
-                    console.log(
-                      `\t\t${decorators.magenta(node.name)}: ${decorators.green(
-                        loki_url,
-                      )}`,
-                    );
-                  }
-                }
-
-                // logs are also collaected as artifacts
-                console.log(
-                  `\n\n\t ${decorators.yellow(
-                    "Logs are also available in the artifacts' pipeline in gitlab",
-                  )}`,
-                );
-              } else {
-                console.log(`\n\t${decorators.magenta(logsPath)}`);
               }
-              // keep pods running for 30 mins.
+
+              // logs are also collaected as artifacts
               console.log(
-                `\n\t${decorators.yellow(
-                  "One or more test failed, we will keep the namespace up for 30 more minutes",
+                `\n\n\t ${decorators.yellow(
+                  "📓 Logs are also available in the artifacts' pipeline in gitlab",
                 )}`,
               );
-              await network.upsertCronJob(30);
-              break;
-          }
-        } else {
-          // All test passed, just remove the network
-          console.log(`\n\t ${decorators.green("Deleting network")}`);
-          await network.stop();
+            } else {
+              console.log(`\n\t${decorators.magenta(logsPath)}`);
+            }
+            break;
         }
       }
     }
