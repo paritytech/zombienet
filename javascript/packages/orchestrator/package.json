@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/orchestrator",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,7 +47,7 @@
     "libp2p-crypto": "^0.21.2",
     "minimatch": "^5.1.0",
     "mocha": "^10.0.0",
-    "napi-maybe-compressed-blob": "0.0.2",
+    "napi-maybe-compressed-blob": "^0.0.5",
     "peer-id": "^0.16.0",
     "tmp-promise": "^3.0.2",
     "typescript": "^4.8.2",
