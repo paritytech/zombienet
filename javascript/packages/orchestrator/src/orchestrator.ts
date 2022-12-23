@@ -648,7 +648,9 @@ export async function start(
       await spawnNode(firstNode, network);
       await sleep(2000);
 
-      const [nodeIp, nodePort] = await client.getNodeInfo(getInstanceName(firstNode));
+      const [nodeIp, nodePort] = await client.getNodeInfo(
+        getInstanceName(firstNode),
+      );
 
       bootnodes.push(
         await generateBootnodeString(firstNode.key!, nodeIp, nodePort),

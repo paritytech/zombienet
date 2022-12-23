@@ -472,7 +472,7 @@ export function getInstanceName(nodeSetup: {
   name: string;
   chain: string;
 }): string {
-  return getUniqueName(`${nodeSetup.chain.split("-", 1)[0]}-${nodeSetup.name}`);
+  return `${nodeSetup.chain.split("-", 1)[0]}-${nodeSetup.name}`;
 }
 
 async function getLocalOverridePath(
