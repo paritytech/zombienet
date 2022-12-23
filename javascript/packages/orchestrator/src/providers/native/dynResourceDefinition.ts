@@ -1,6 +1,6 @@
 import { getRandomPort, makeDir } from "@zombienet/utils";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import { getUniqueName } from "../../configGenerator";
+import { getInstanceName } from "../../configGenerator";
 import {
   P2P_PORT,
   PROMETHEUS_PORT,
@@ -16,25 +16,25 @@ export async function genBootnodeDef(
   nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
-  const name = nodeSetup.name;
+  const instance = getInstanceName({ ...nodeSetup, name: "bootnode" });
   const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
 
-  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  const cfgPath = `${client.tmpDir}/${instance}/cfg`;
   await makeDir(cfgPath, true);
 
-  const dataPath = `${client.tmpDir}/${name}/data`;
+  const dataPath = `${client.tmpDir}/${instance}/data`;
   await makeDir(dataPath, true);
 
   const command = await genCmd(nodeSetup, cfgPath, dataPath, false);
 
   return {
     metadata: {
-      name: "bootnode",
+      name: instance,
       namespace: namespace,
       labels: {
         name: namespace,
-        instance: "bootnode",
+        instance,
         "zombie-role": "bootnode",
         app: "zombienet",
         "zombie-ns": namespace,
@@ -53,16 +53,16 @@ export async function genNodeDef(
   nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
-  const name = nodeSetup.name;
+  const instance = getInstanceName(nodeSetup);
   const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
-  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  const cfgPath = `${client.tmpDir}/${instance}/cfg`;
   await makeDir(cfgPath, true);
 
-  const dataPath = `${client.tmpDir}/${name}/data`;
+  const dataPath = `${client.tmpDir}/${instance}/data`;
   await makeDir(dataPath, true);
 
-  const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
+  const relayDataPath = `${client.tmpDir}/${instance}/relay-data`;
   await makeDir(relayDataPath, true);
 
   let computedCommand;
@@ -80,7 +80,7 @@ export async function genNodeDef(
 
   return {
     metadata: {
-      name: nodeSetup.name,
+      name: instance,
       namespace: namespace,
       labels: {
         "zombie-role": nodeSetup.zombieRole
@@ -91,7 +91,7 @@ export async function genNodeDef(
         app: "zombienet",
         "zombie-ns": namespace,
         name: namespace,
-        instance: nodeSetup.name,
+        instance,
       },
     },
     spec: {
@@ -159,7 +159,7 @@ export async function createTempNodeDef(
   fullCommand: string,
 ) {
   let node: Node = {
-    name: getUniqueName("temp"),
+    name: "temp",
     image,
     fullCommand: fullCommand,
     chain,

@@ -34,6 +34,7 @@ import {
 import {
   generateBootnodeSpec,
   generateNetworkSpec,
+  getInstanceName,
   zombieWrapperPath,
 } from "./configGenerator";
 import {
@@ -523,7 +524,7 @@ export async function start(
       if (options?.inCI) {
         const nodeIp = await client.getNodeIP(podDef.metadata.name);
         networkNode = new NetworkNode(
-          node.name,
+          podDef.metadata.name,
           WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
             "{{PORT}}",
             endpointPort.toString(),
@@ -549,7 +550,7 @@ export async function start(
         const listeningIp = networkSpec.settings.local_ip || LOCALHOST;
 
         networkNode = new NetworkNode(
-          node.name,
+          podDef.metadata.name,
           WS_URI_PATTERN.replace("{{IP}}", listeningIp).replace(
             "{{PORT}}",
             fwdPort.toString(),
@@ -585,7 +586,7 @@ export async function start(
         doubleBorder: true,
       });
       logTable.pushTo([
-        ["Pod", decorators.green(node.name)],
+        ["Pod", decorators.green(getInstanceName(node))],
         ["Status", decorators.green("Running")],
       ]);
       if (node.overrides && node.overrides.length > 0) {
@@ -647,7 +648,7 @@ export async function start(
       await spawnNode(firstNode, network);
       await sleep(2000);
 
-      const [nodeIp, nodePort] = await client.getNodeInfo(firstNode.name);
+      const [nodeIp, nodePort] = await client.getNodeInfo(getInstanceName(firstNode));
 
       bootnodes.push(
         await generateBootnodeString(firstNode.key!, nodeIp, nodePort),
@@ -701,7 +702,7 @@ export async function start(
           await sleep(2000);
 
           const [nodeIp, nodePort] = await client.getNodeInfo(
-            firstCollatorNode.name,
+            getInstanceName(firstCollatorNode),
           );
           // add bootnodes to chain spec
           await addBootNodes(parachain.specPath!, [

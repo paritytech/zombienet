@@ -1,7 +1,7 @@
 import { getRandomPort, makeDir } from "@zombienet/utils";
 import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import { getUniqueName } from "../../configGenerator";
+import { getInstanceName } from "../../configGenerator";
 import {
   INTROSPECTOR_POD_NAME,
   P2P_PORT,
@@ -19,24 +19,30 @@ export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
-  const container = await make_main_container(nodeSetup, volume_mounts);
+  const instance = getInstanceName({ ...nodeSetup, name: "bootnode" });
+  const [volume_mounts, devices] = await make_volume_mounts(instance);
+  const container = await make_main_container(
+    nodeSetup,
+    volume_mounts,
+    instance,
+  );
+
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: "bootnode",
+      name: instance,
       namespace: namespace,
       labels: {
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "bootnode",
+        "app.kubernetes.io/instance": instance,
         "zombie-role": "bootnode",
         app: "zombienet",
         "zombie-ns": namespace,
       },
     },
     spec: {
-      hostname: "bootnode",
+      hostname: instance,
       containers: [container],
       initContainers: [],
       restartPolicy: "OnFailure",
@@ -96,23 +102,24 @@ scrape_configs:
     ports,
     volumeMounts: volume_mounts,
   };
+  const instance = "prometheus";
 
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: "prometheus",
+      name: instance,
       namespace: namespace,
       labels: {
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "prometheus",
+        "app.kubernetes.io/instance": instance,
         "zombie-role": "prometheus",
         app: "zombienet",
         "zombie-ns": namespace,
       },
     },
     spec: {
-      hostname: "prometheus",
+      hostname: instance,
       containers: [containerDef],
       restartPolicy: "OnFailure",
       volumes: devices,
@@ -180,23 +187,24 @@ datasources:
     ports,
     volumeMounts: volume_mounts,
   };
+  const instance = "grafana";
 
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: "grafana",
+      name: instance,
       namespace: namespace,
       labels: {
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "grafana",
+        "app.kubernetes.io/instance": instance,
         "zombie-role": "grafana",
         app: "zombienet",
         "zombie-ns": namespace,
       },
     },
     spec: {
-      hostname: "grafana",
+      hostname: instance,
       containers: [containerDef],
       restartPolicy: "OnFailure",
       volumes: devices,
@@ -224,23 +232,24 @@ export async function getIntrospectorDef(
     ports,
     volumeMounts: [],
   };
+  const instance = INTROSPECTOR_POD_NAME;
 
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: INTROSPECTOR_POD_NAME,
+      name: instance,
       namespace: namespace,
       labels: {
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": INTROSPECTOR_POD_NAME,
-        "zombie-role": INTROSPECTOR_POD_NAME,
+        "app.kubernetes.io/instance": instance,
+        "zombie-role": "introspector",
         app: "zombienet",
         "zombie-ns": namespace,
       },
     },
     spec: {
-      hostname: INTROSPECTOR_POD_NAME,
+      hostname: instance,
       containers: [containerDef],
       restartPolicy: "OnFailure",
     },
@@ -306,23 +315,24 @@ export async function genTempoDef(namespace: string): Promise<any> {
     ports,
     volumeMounts: volume_mounts,
   };
+  const instance = "tempo";
 
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: "tempo",
+      name: instance,
       namespace: namespace,
       labels: {
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "tempo",
+        "app.kubernetes.io/instance": instance,
         "zombie-role": "tempo",
         app: "zombienet",
         "zombie-ns": namespace,
       },
     },
     spec: {
-      hostname: "tempo",
+      hostname: instance,
       containers: [containerDef],
       restartPolicy: "OnFailure",
       volumes: devices,
@@ -334,21 +344,26 @@ export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
-  const container = await make_main_container(nodeSetup, volume_mounts);
+  const instance = getInstanceName(nodeSetup);
+  const [volume_mounts, devices] = await make_volume_mounts(instance);
+  const container = await make_main_container(
+    nodeSetup,
+    volume_mounts,
+    instance,
+  );
 
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: nodeSetup.name,
+      name: instance,
       namespace: namespace,
       labels: {
         "zombie-role": nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
         "zombie-ns": namespace,
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": nodeSetup.name,
+        "app.kubernetes.io/instance": instance,
       },
       annotations: {
         "prometheus.io/scrape": "true",
@@ -356,7 +371,7 @@ export async function genNodeDef(
       },
     },
     spec: {
-      hostname: nodeSetup.name,
+      hostname: instance,
       containers: [container],
       initContainers: [],
       restartPolicy: "OnFailure",
@@ -395,6 +410,7 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
 async function make_main_container(
   nodeSetup: Node,
   volume_mounts: any[],
+  instance: string,
 ): Promise<any> {
   const ports = [
     {
@@ -424,7 +440,7 @@ async function make_main_container(
 
   let containerDef = {
     image: nodeSetup.image,
-    name: nodeSetup.name,
+    name: instance,
     imagePullPolicy: "Always",
     ports,
     env: nodeSetup.env,
@@ -456,7 +472,7 @@ export async function createTempNodeDef(
   fullCommand: string,
 ) {
   let node: Node = {
-    name: getUniqueName("temp"),
+    name: "temp",
     image,
     fullCommand: fullCommand,
     chain,

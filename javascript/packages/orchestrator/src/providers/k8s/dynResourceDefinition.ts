@@ -1,6 +1,6 @@
 import { getRandomPort, getSha256 } from "@zombienet/utils";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import { getUniqueName } from "../../configGenerator";
+import { getInstanceName } from "../../configGenerator";
 import {
   FINISH_MAGIC_FILE,
   P2P_PORT,
@@ -18,23 +18,29 @@ export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
+  const instance = getInstanceName({ ...nodeSetup, name: "bootnode " });
   const [volume_mounts, devices] = make_volume_mounts();
-  const container = await make_main_container(nodeSetup, volume_mounts);
+  const container = await make_main_container(
+    nodeSetup,
+    volume_mounts,
+    instance,
+  );
   const transferContainter = make_transfer_containter();
+
   return {
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: "bootnode",
+      name: instance,
       labels: {
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "bootnode",
+        "app.kubernetes.io/instance": instance,
         "zombie-role": "bootnode",
         app: "zombienet",
       },
     },
     spec: {
-      hostname: "bootnode",
+      hostname: instance,
       containers: [container],
       initContainers: [transferContainter],
       restartPolicy: "Never",
@@ -52,8 +58,13 @@ export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
+  const instance = getInstanceName(nodeSetup);
   const [volume_mounts, devices] = make_volume_mounts();
-  const container = await make_main_container(nodeSetup, volume_mounts);
+  const container = await make_main_container(
+    nodeSetup,
+    volume_mounts,
+    instance,
+  );
   const transferContainter = make_transfer_containter();
 
   const containersToRun = [container];
@@ -71,12 +82,12 @@ export async function genNodeDef(
     apiVersion: "v1",
     kind: "Pod",
     metadata: {
-      name: nodeSetup.name,
+      name: instance,
       labels: {
         "zombie-role": nodeSetup.validator ? "authority" : "full-node",
         app: "zombienet",
         "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": nodeSetup.name,
+        "app.kubernetes.io/instance": instance,
       },
       annotations: {
         "prometheus.io/scrape": "true",
@@ -84,7 +95,7 @@ export async function genNodeDef(
       },
     },
     spec: {
-      hostname: nodeSetup.name,
+      hostname: instance,
       containers: containersToRun,
       initContainers: [transferContainter],
       restartPolicy: "Never",
@@ -94,6 +105,7 @@ export async function genNodeDef(
         runAsUser: 1000,
         runAsGroup: 1000,
       },
+      imagePullSecrets: [{ name: "gitlab" }],
     },
   };
 }
@@ -111,6 +123,8 @@ function make_transfer_containter(): any {
       "ash",
       "-c",
       [
+        "sleep 60",
+        "&&",
         "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
         "&&",
         "echo downloaded",
@@ -144,6 +158,7 @@ function make_volume_mounts(): [any, any] {
 async function make_main_container(
   nodeSetup: Node,
   volume_mounts: any[],
+  instance: string,
 ): Promise<any> {
   const ports = [
     { containerPort: PROMETHEUS_PORT, name: "prometheus" },
@@ -161,7 +176,7 @@ async function make_main_container(
 
   const containerDef: any = {
     image: nodeSetup.image,
-    name: nodeSetup.name,
+    name: instance,
     imagePullPolicy: "Always",
     ports,
     env: nodeSetup.env,
@@ -234,7 +249,7 @@ export async function createTempNodeDef(
   chain: string,
   fullCommand: string,
 ) {
-  const nodeName = getUniqueName("temp");
+  const nodeName = "temp";
   let node: Node = {
     name: nodeName,
     key: getSha256(nodeName),

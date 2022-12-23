@@ -352,7 +352,9 @@ export async function generateNetworkSpec(
 
       let parachainSetup: Parachain = {
         id: parachain.id,
-        name: getUniqueName(parachain.id.toString()),
+        name: getUniqueName(
+          parachain.chain?.split("-", 1)[0] || parachain.id.toString(),
+        ),
         para,
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
@@ -466,6 +468,13 @@ export function getUniqueName(name: string): string {
   return uniqueName;
 }
 
+export function getInstanceName(nodeSetup: {
+  name: string;
+  chain: string;
+}): string {
+  return getUniqueName(`${nodeSetup.chain.split("-", 1)[0]}-${nodeSetup.name}`);
+}
+
 async function getLocalOverridePath(
   configBasePath: string,
   definedLocalPath: string,
@@ -509,7 +518,7 @@ async function getCollatorNodeFromConfig(
     ? collatorConfig.command
     : DEFAULT_ADDER_COLLATOR_BIN;
 
-  const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const collatorName = collatorConfig.name || "collator";
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
   const accountsForNode = await decoratedKeysGenerator(collatorName);
 
@@ -592,7 +601,7 @@ async function getNodeFromConfig(
       ? networkSpec.settings.prometheus
       : true;
 
-  const nodeName = getUniqueName(node.name);
+  const nodeName = node.name;
   const accountsForNode = await generateKeyForNode(nodeName);
   const ports =
     networkSpec.settings.provider !== "native"
