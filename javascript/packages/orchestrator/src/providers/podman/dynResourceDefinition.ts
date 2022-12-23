@@ -1,7 +1,7 @@
 import { getRandomPort, makeDir } from "@zombienet/utils";
 import { resolve } from "path";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import { getInstanceName } from "../../configGenerator";
+import { getInstanceName, getUniqueName } from "../../configGenerator";
 import {
   INTROSPECTOR_POD_NAME,
   P2P_PORT,
@@ -19,7 +19,10 @@ export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const instance = getInstanceName({ ...nodeSetup, name: "bootnode" });
+  const instance = getInstanceName({
+    chain: nodeSetup.chain,
+    name: getUniqueName("bootnode", nodeSetup.chain),
+  });
   const [volume_mounts, devices] = await make_volume_mounts(instance);
   const container = await make_main_container(
     nodeSetup,
@@ -344,7 +347,10 @@ export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const instance = getInstanceName(nodeSetup);
+  const instance = getInstanceName({
+    chain: nodeSetup.chain,
+    name: getUniqueName(nodeSetup.name, nodeSetup.chain),
+  });
   const [volume_mounts, devices] = await make_volume_mounts(instance);
   const container = await make_main_container(
     nodeSetup,

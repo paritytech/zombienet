@@ -455,14 +455,15 @@ interface UsedNames {
 
 let mUsedNames: UsedNames = {};
 
-export function getUniqueName(name: string): string {
+export function getUniqueName(name: string, mbKey?: string): string {
   let uniqueName;
-  if (!mUsedNames[name]) {
-    mUsedNames[name] = 1;
+  const key = mbKey ? `${mbKey}-${name}` : name;
+  if (!mUsedNames[key]) {
+    mUsedNames[key] = 1;
     uniqueName = name;
   } else {
-    uniqueName = `${name}-${mUsedNames[name]}`;
-    mUsedNames[name] += 1;
+    uniqueName = `${name}-${mUsedNames[key]}`;
+    mUsedNames[key] += 1;
   }
 
   return uniqueName;

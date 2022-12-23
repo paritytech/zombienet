@@ -1,6 +1,6 @@
 import { getRandomPort, makeDir } from "@zombienet/utils";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import { getInstanceName } from "../../configGenerator";
+import { getInstanceName, getUniqueName } from "../../configGenerator";
 import {
   P2P_PORT,
   PROMETHEUS_PORT,
@@ -16,7 +16,10 @@ export async function genBootnodeDef(
   nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
-  const instance = getInstanceName({ ...nodeSetup, name: "bootnode" });
+  const instance = getInstanceName({
+    chain: nodeSetup.chain,
+    name: getUniqueName("bootnode", nodeSetup.chain),
+  });
   const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
 
@@ -53,7 +56,10 @@ export async function genNodeDef(
   nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
-  const instance = getInstanceName(nodeSetup);
+  const instance = getInstanceName({
+    chain: nodeSetup.chain,
+    name: getUniqueName(nodeSetup.name, nodeSetup.chain),
+  });
   const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
   const cfgPath = `${client.tmpDir}/${instance}/cfg`;

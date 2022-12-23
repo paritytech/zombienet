@@ -1,6 +1,6 @@
 import { getRandomPort, getSha256 } from "@zombienet/utils";
 import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
-import { getInstanceName } from "../../configGenerator";
+import { getInstanceName, getUniqueName } from "../../configGenerator";
 import {
   FINISH_MAGIC_FILE,
   P2P_PORT,
@@ -18,7 +18,10 @@ export async function genBootnodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const instance = getInstanceName({ ...nodeSetup, name: "bootnode " });
+  const instance = getInstanceName({
+    chain: nodeSetup.chain,
+    name: getUniqueName("bootnode", nodeSetup.chain),
+  });
   const [volume_mounts, devices] = make_volume_mounts();
   const container = await make_main_container(
     nodeSetup,
@@ -58,7 +61,10 @@ export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const instance = getInstanceName(nodeSetup);
+  const instance = getInstanceName({
+    chain: nodeSetup.chain,
+    name: getUniqueName(nodeSetup.name, nodeSetup.chain),
+  });
   const [volume_mounts, devices] = make_volume_mounts();
   const container = await make_main_container(
     nodeSetup,
