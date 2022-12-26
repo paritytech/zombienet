@@ -111,7 +111,6 @@ export async function genNodeDef(
         runAsUser: 1000,
         runAsGroup: 1000,
       },
-      imagePullSecrets: [{ name: "gitlab" }],
     },
   };
 }
@@ -129,8 +128,6 @@ function make_transfer_containter(): any {
       "ash",
       "-c",
       [
-        "sleep 60",
-        "&&",
         "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
         "&&",
         "echo downloaded",
