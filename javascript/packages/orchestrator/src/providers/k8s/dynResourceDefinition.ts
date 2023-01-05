@@ -106,6 +106,7 @@ function make_transfer_containter(): any {
     volumeMounts: [
       { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
       { name: "tmp-data", mountPath: "/data", readOnly: false },
+      { name: "tmp-root", mountPath: "/", readOnly: false },
     ],
     command: [
       "ash",
@@ -129,12 +130,14 @@ function make_volume_mounts(): [any, any] {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
     { name: "tmp-data", mountPath: "/data", readOnly: false },
+    { name: "tmp-root", mountPath: "/", readOnly: false },
     { name: "tmp-relay-data", mountPath: "/relay-data", readOnly: false },
   ];
 
   const devices = [
     { name: "tmp-cfg" },
     { name: "tmp-data" },
+    { name: "tmp-root" },
     { name: "tmp-relay-data" },
   ];
 
