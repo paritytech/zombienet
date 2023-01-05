@@ -56,13 +56,15 @@ export async function genNodeDef(
   const name = nodeSetup.name;
   const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
   const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
-  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+
+  const rootDir = `${client.tmpDir}/${name}`;
+  const cfgPath = `${rootDir}/cfg`;
   await makeDir(cfgPath, true);
 
-  const dataPath = `${client.tmpDir}/${name}/data`;
+  const dataPath = `${rootDir}/data`;
   await makeDir(dataPath, true);
 
-  const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
+  const relayDataPath = `${rootDir}/relay-data`;
   await makeDir(relayDataPath, true);
 
   let computedCommand;
@@ -95,6 +97,7 @@ export async function genNodeDef(
       },
     },
     spec: {
+      rootDir,
       cfgPath,
       dataPath,
       ports,

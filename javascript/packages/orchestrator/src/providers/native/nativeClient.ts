@@ -277,10 +277,10 @@ export class NativeClient extends Client {
       // and extract to /data
       await makeDir(`${podDef.spec.dataPath}/chains`, true);
 
-      await downloadFile(dbSnapshot, `${podDef.spec.dataPath}/chains/db.tgz`);
+      await downloadFile(dbSnapshot, `${podDef.spec.rootDir}/db.tgz`);
       await this.runCommand([
         "-c",
-        `cd ${podDef.spec.dataPath}/chains && tar -xzvf db.tgz`,
+        `cd ${podDef.spec.rootDir} && tar -xzvf db.tgz`,
       ]);
     }
 
