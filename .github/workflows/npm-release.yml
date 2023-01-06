@@ -7,7 +7,7 @@ jobs:
     name: Build & Publish to NPM
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v3.3.0
       - run: npm install
         working-directory: "./javascript"
       - uses: actions/setup-node@v3
