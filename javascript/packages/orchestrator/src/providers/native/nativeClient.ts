@@ -130,7 +130,7 @@ export class NativeClient extends Client {
       return memo;
     }, memo);
 
-    if( pids.length > 0 ) {
+    if (pids.length > 0) {
       args.push(`kill -9 ${pids.join(" ")}`);
 
       await this.runCommand(args);

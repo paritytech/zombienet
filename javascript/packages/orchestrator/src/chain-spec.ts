@@ -379,8 +379,8 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
   let chainSpec;
   try {
     chainSpec = readAndParseChainSpec(specPath);
-  } catch(e: any) {
-    if(e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
+  } catch (e: any) {
+    if (e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
 
     // can't customize bootnodes
     console.log(
@@ -527,37 +527,36 @@ export function writeChainSpec(specPath: string, chainSpec: any) {
 }
 
 export async function isRawSpec(specPath: string): Promise<boolean> {
-  return new Promise( (res, _rej) => {
-    const stream = fs.createReadStream(specPath, { encoding: 'utf8' });
-    const parser = JSONStream.parse(['genesis','raw','top',/^0x/]);
+  return new Promise((res, _rej) => {
+    const stream = fs.createReadStream(specPath, { encoding: "utf8" });
+    const parser = JSONStream.parse(["genesis", "raw", "top", /^0x/]);
     stream.pipe(parser);
-    parser.on('data', (e: any) => {
-        debug(`data: ${e}`);
-        stream.destroy();
-        return res(true);
+    parser.on("data", (e: any) => {
+      debug(`data: ${e}`);
+      stream.destroy();
+      return res(true);
     });
-    stream.on('end', () => {
-        return res(false);
-    })
-  })
+    stream.on("end", () => {
+      return res(false);
+    });
+  });
 }
 
 export async function getChainIdFromSpec(specPath: string): Promise<string> {
-  return new Promise( (res, _rej) => {
-    const stream = fs.createReadStream(specPath, { encoding: 'utf8' });
-    const parser = JSONStream.parse(['id']);
+  return new Promise((res, _rej) => {
+    const stream = fs.createReadStream(specPath, { encoding: "utf8" });
+    const parser = JSONStream.parse(["id"]);
     stream.pipe(parser);
-    parser.on('data', (id: any) => {
-        debug(`data: ${id}`);
-        stream.destroy();
-        return res(id);
+    parser.on("data", (id: any) => {
+      debug(`data: ${id}`);
+      stream.destroy();
+      return res(id);
     });
-    stream.on('end', () => {
-        return res("");
-    })
-  })
+    stream.on("end", () => {
+      return res("");
+    });
+  });
 }
-
 
 export default {
   addAuraAuthority,

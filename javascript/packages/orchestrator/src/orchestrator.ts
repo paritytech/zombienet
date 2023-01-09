@@ -27,10 +27,10 @@ import {
   changeGenesisConfig,
   clearAuthorities,
   generateNominators,
+  getChainIdFromSpec,
   getNodeKey,
   readAndParseChainSpec,
   specHaveSessionsKeys,
-  getChainIdFromSpec,
 } from "./chain-spec";
 import {
   generateBootnodeSpec,
@@ -464,7 +464,7 @@ export async function start(
           localFilePath: parachainSpecPath,
           remoteFilePath: `${client.remoteDir}/${node.chain}-${paraId}.json`,
         });
-        parachainSpecId = await getChainIdFromSpec(parachainSpecPath)
+        parachainSpecId = await getChainIdFromSpec(parachainSpecPath);
       }
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({

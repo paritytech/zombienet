@@ -92,7 +92,7 @@ export async function generateParachainFiles(
 
     //const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
     chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
-    if (! await isRawSpec(chainSpecFullPathPlain)) {
+    if (!(await isRawSpec(chainSpecFullPathPlain))) {
       // fields
       const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
       const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
@@ -169,9 +169,15 @@ export async function generateParachainFiles(
       if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
       if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
       writeChainSpec(chainSpecFullPath, paraSpecRaw);
-    } catch (error:any) {
-      console.log(error);
-      console.log(error.code);
+    } catch (e: any) {
+      if (e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
+
+      // can't customize para_id
+      console.log(
+        `\n\t\t 🚧 ${decorators.yellow(
+          `Chain Spec file ${chainSpecFullPath} is TOO LARGE to customize (more than 2G).`,
+        )} 🚧`,
+      );
     }
 
     // add spec file to copy to all collators.
