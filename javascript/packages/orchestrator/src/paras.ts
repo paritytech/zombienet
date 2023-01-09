@@ -1,7 +1,6 @@
 import { decorators, getRandomPort } from "@zombienet/utils";
 import fs from "fs";
 import chainSpecFns from "./chain-spec";
-import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
@@ -227,7 +226,7 @@ export async function generateParachainFiles(
       commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
     let node: Node = {
-      name: getUniqueName("temp-collator"),
+      name: "temp-collator",
       validator: false,
       invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,

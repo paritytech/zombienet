@@ -352,7 +352,9 @@ export async function generateNetworkSpec(
 
       let parachainSetup: Parachain = {
         id: parachain.id,
-        name: getUniqueName(parachain.id.toString()),
+        name: getUniqueName(
+          parachain.chain?.split("-", 1)[0] || parachain.id.toString(),
+        ),
         para,
         cumulusBased: parachain.cumulus_based || false,
         addToGenesis:
@@ -453,17 +455,25 @@ interface UsedNames {
 
 let mUsedNames: UsedNames = {};
 
-export function getUniqueName(name: string): string {
+export function getUniqueName(name: string, mbKey?: string): string {
   let uniqueName;
-  if (!mUsedNames[name]) {
-    mUsedNames[name] = 1;
+  const key = mbKey ? `${mbKey}-${name}` : name;
+  if (!mUsedNames[key]) {
+    mUsedNames[key] = 1;
     uniqueName = name;
   } else {
-    uniqueName = `${name}-${mUsedNames[name]}`;
-    mUsedNames[name] += 1;
+    uniqueName = `${name}-${mUsedNames[key]}`;
+    mUsedNames[key] += 1;
   }
 
   return uniqueName;
+}
+
+export function getInstanceName(nodeSetup: {
+  name: string;
+  chain: string;
+}): string {
+  return `${nodeSetup.chain.split("-", 1)[0]}-${nodeSetup.name}`;
 }
 
 async function getLocalOverridePath(
@@ -509,7 +519,7 @@ async function getCollatorNodeFromConfig(
     ? collatorConfig.command
     : DEFAULT_ADDER_COLLATOR_BIN;
 
-  const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const collatorName = collatorConfig.name || "collator";
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
   const accountsForNode = await decoratedKeysGenerator(collatorName);
 
@@ -592,7 +602,7 @@ async function getNodeFromConfig(
       ? networkSpec.settings.prometheus
       : true;
 
-  const nodeName = getUniqueName(node.name);
+  const nodeName = node.name;
   const accountsForNode = await generateKeyForNode(nodeName);
   const ports =
     networkSpec.settings.provider !== "native"
