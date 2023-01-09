@@ -1,6 +1,6 @@
 import { decorators, getRandomPort } from "@zombienet/utils";
 import fs from "fs";
-import chainSpecFns from "./chain-spec";
+import chainSpecFns, { isRawSpec } from "./chain-spec";
 import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
@@ -90,20 +90,20 @@ export async function generateParachainFiles(
       );
     }
 
-    const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
-
-    const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
-    if (plainData.para_id) plainData.para_id = parachain.id;
-    if (plainData.paraId) plainData.paraId = parachain.id;
-    if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
-    if (plainData.genesis.runtime?.parachainInfo?.parachainId)
-      plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
-
-    writeChainSpec(chainSpecFullPathPlain, plainData);
-
+    //const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
     chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
-    // Check if the spec is in raw format
-    if (!plainData.genesis.raw) {
+    if (! await isRawSpec(chainSpecFullPathPlain)) {
+      // fields
+      const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
+      const relayChainSpec = readAndParseChainSpec(relayChainSpecFullPathPlain);
+      if (plainData.para_id) plainData.para_id = parachain.id;
+      if (plainData.paraId) plainData.paraId = parachain.id;
+      if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
+      if (plainData.genesis.runtime?.parachainInfo?.parachainId)
+        plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
+
+      writeChainSpec(chainSpecFullPathPlain, plainData);
+
       // clear auths
       await clearAuthorities(chainSpecFullPathPlain);
 
@@ -163,11 +163,16 @@ export async function generateParachainFiles(
       await fs.promises.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
     }
 
-    // ensure the correct para_id
-    const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
-    if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
-    if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
-    writeChainSpec(chainSpecFullPath, paraSpecRaw);
+    try {
+      // ensure the correct para_id
+      const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
+      if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
+      if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
+      writeChainSpec(chainSpecFullPath, paraSpecRaw);
+    } catch (error:any) {
+      console.log(error);
+      console.log(error.code);
+    }
 
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;
