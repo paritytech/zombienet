@@ -543,7 +543,7 @@ export async function isRawSpec(specPath: string): Promise<boolean> {
 }
 
 export async function getChainIdFromSpec(specPath: string): Promise<string> {
-  return new Promise((res, _rej) => {
+  return new Promise((res) => {
     const stream = fs.createReadStream(specPath, { encoding: "utf8" });
     const parser = JSONStream.parse(["id"]);
     stream.pipe(parser);
