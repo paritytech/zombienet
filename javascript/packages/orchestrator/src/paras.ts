@@ -90,7 +90,6 @@ export async function generateParachainFiles(
       );
     }
 
-    //const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
     chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
     if (!(await isRawSpec(chainSpecFullPathPlain))) {
       // fields
