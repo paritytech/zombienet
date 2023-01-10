@@ -130,9 +130,11 @@ export class NativeClient extends Client {
       return memo;
     }, memo);
 
-    args.push(`kill -9 ${pids.join(" ")}`);
+    if (pids.length > 0) {
+      args.push(`kill -9 ${pids.join(" ")}`);
 
-    await this.runCommand(args);
+      await this.runCommand(args);
+    }
   }
 
   async getNodeLogs(
