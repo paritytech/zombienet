@@ -527,7 +527,7 @@ export function writeChainSpec(specPath: string, chainSpec: any) {
 }
 
 export async function isRawSpec(specPath: string): Promise<boolean> {
-  return new Promise((res, _rej) => {
+  return new Promise((res) => {
     const stream = fs.createReadStream(specPath, { encoding: "utf8" });
     const parser = JSONStream.parse(["genesis", "raw", "top", /^0x/]);
     stream.pipe(parser);
