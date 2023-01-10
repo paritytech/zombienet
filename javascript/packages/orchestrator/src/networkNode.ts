@@ -72,7 +72,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async restart(timeout: number | null = null) {
     const client = getClient();
-    const args = ["exec", this.name, "--", "/bin/bash", "-c"];
+    const args = ["exec", this.name, "--", "$(which bash)", "-c"];
     const cmd = timeout
       ? `echo restart ${timeout} > /tmp/zombiepipe`
       : `echo restart > /tmp/zombiepipe`;
@@ -102,7 +102,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "exec",
       this.name,
       "--",
-      "/bin/bash",
+      "$(which bash)",
       "-c",
       "echo pause > /tmp/zombiepipe",
     ];
@@ -116,7 +116,7 @@ export class NetworkNode implements NetworkNodeInterface {
       "exec",
       this.name,
       "--",
-      "/bin/bash",
+      "$(which bash)",
       "-c",
       "echo resume > /tmp/zombiepipe",
     ];

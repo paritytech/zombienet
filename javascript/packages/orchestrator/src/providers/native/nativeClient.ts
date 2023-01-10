@@ -61,7 +61,7 @@ export class NativeClient extends Client {
   };
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
-    super(configPath, namespace, tmpDir, "/bin/bash", "native");
+    super(configPath, namespace, tmpDir, "$(which bash)", "native");
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
