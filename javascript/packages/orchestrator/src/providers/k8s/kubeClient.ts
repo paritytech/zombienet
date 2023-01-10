@@ -162,7 +162,7 @@ export class KubeClient extends Client {
         "-c",
         TRANSFER_CONTAINER_NAME,
         "--",
-        "$(which mkdir)",
+        "\"$(which mkdir)\"",
         "-p",
         `/data/chains/${chainSpecId}/keystore`,
       ]);
@@ -207,7 +207,7 @@ export class KubeClient extends Client {
       "-c",
       target,
       "--",
-      "$(which touch)",
+      "\"$(which touch)\"",
       FINISH_MAGIC_FILE,
     ]);
     debug(r);
@@ -397,7 +397,7 @@ export class KubeClient extends Client {
       debug(result);
 
       if (container) args.push("-c", container);
-      extraArgs = ["--", "$(which chmod)", "+x", podFilePath];
+      extraArgs = ["--", "\"$(which chmod)\"", "+x", podFilePath];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
       result = await this.runCommand([...args, ...extraArgs]);
       debug(result);
@@ -681,7 +681,7 @@ export class KubeClient extends Client {
       const baseArgs = ["exec", `Pod/${identifier}`, "--"];
       await this.runCommand([
         ...baseArgs,
-        "$(which chmod)",
+        "\"$(which chmod)\"",
         "+x",
         scriptPathInPod,
       ]);
