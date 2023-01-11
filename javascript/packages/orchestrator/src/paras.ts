@@ -55,9 +55,9 @@ export async function generateParachainFiles(
   );
 
   let chainSpecFullPath;
-  const chainSpecFileName = `${
-    parachain.chain ? parachain.chain + "-" : ""
-  }${parachain.name}-${chainName}.json`;
+  const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
+    parachain.name
+  }-${chainName}.json`;
 
   const chainSpecFullPathPlain = `${tmpDir}/${
     parachain.chain ? parachain.chain + "-" : ""
