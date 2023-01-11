@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/orchestrator",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,7 +36,7 @@
     "@polkadot/api": "^9.2.4",
     "@polkadot/keyring": "^10.1.6",
     "@polkadot/util-crypto": "^10.1.6",
-    "@zombienet/utils": "^0.0.11",
+    "@zombienet/utils": "^0.0.13",
     "axios": "^0.27.2",
     "chai": "^4.3.4",
     "debug": "^4.3.2",
@@ -49,6 +49,7 @@
     "mocha": "^10.0.0",
     "napi-maybe-compressed-blob": "^0.0.7",
     "peer-id": "^0.16.0",
+    "JSONStream": "^1.3.5",
     "tmp-promise": "^3.0.2",
     "typescript": "^4.8.2",
     "yaml": "^2.0.0-9"

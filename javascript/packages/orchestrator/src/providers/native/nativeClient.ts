@@ -61,7 +61,7 @@ export class NativeClient extends Client {
   };
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
-    super(configPath, namespace, tmpDir, "/bin/bash", "native");
+    super(configPath, namespace, tmpDir, "bash", "native");
     this.configPath = configPath;
     this.namespace = namespace;
     this.debug = true;
@@ -130,9 +130,11 @@ export class NativeClient extends Client {
       return memo;
     }, memo);
 
-    args.push(`kill -9 ${pids.join(" ")}`);
+    if (pids.length > 0) {
+      args.push(`kill -9 ${pids.join(" ")}`);
 
-    await this.runCommand(args);
+      await this.runCommand(args);
+    }
   }
 
   async getNodeLogs(

@@ -89,6 +89,10 @@ export class KubeClient extends Client {
 
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     await this.createResource(namespaceDef);
+
+    // ensure namespace isolation IFF we are running in CI
+    if (process.env.RUN_IN_CONTAINER === "1")
+      await this.createStaticResource("namespace-network-policy.yaml");
   }
 
   async spawnFromDef(
@@ -162,7 +166,7 @@ export class KubeClient extends Client {
         "-c",
         TRANSFER_CONTAINER_NAME,
         "--",
-        "/bin/mkdir",
+        "mkdir",
         "-p",
         `/data/chains/${chainSpecId}/keystore`,
       ]);
@@ -207,7 +211,7 @@ export class KubeClient extends Client {
       "-c",
       target,
       "--",
-      "/bin/touch",
+      "touch",
       FINISH_MAGIC_FILE,
     ]);
     debug(r);
@@ -397,7 +401,7 @@ export class KubeClient extends Client {
       debug(result);
 
       if (container) args.push("-c", container);
-      extraArgs = ["--", "/bin/chmod", "+x", podFilePath];
+      extraArgs = ["--", "chmod", "+x", podFilePath];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
       result = await this.runCommand([...args, ...extraArgs]);
       debug(result);
@@ -679,7 +683,7 @@ export class KubeClient extends Client {
 
       // set as executable
       const baseArgs = ["exec", `Pod/${identifier}`, "--"];
-      await this.runCommand([...baseArgs, "/bin/chmod", "+x", scriptPathInPod]);
+      await this.runCommand([...baseArgs, "chmod", "+x", scriptPathInPod]);
 
       // exec
       const result = await this.runCommand([
