@@ -92,7 +92,7 @@ export class KubeClient extends Client {
 
     // ensure namespace isolation IFF we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
-      await this.createStaticResource("namespace-network-policy.yaml");
+      await this.createStaticResource("namespace-network-policy.yaml", this.namespace);
   }
 
   async spawnFromDef(
