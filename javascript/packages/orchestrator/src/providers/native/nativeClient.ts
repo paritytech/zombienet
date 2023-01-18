@@ -57,6 +57,7 @@ export class NativeClient extends Client {
         // 9944 : 56045
         [original: number]: number;
       };
+      cmd?: string[];
     };
   };
 
@@ -358,6 +359,7 @@ export class NativeClient extends Client {
       nodeProcess.stdout.pipe(log);
       nodeProcess.stderr.pipe(log);
       this.processMap[name].pid = nodeProcess.pid;
+      this.processMap[name].cmd = resourseDef.spec.command;
 
       await this.wait_node_ready(name);
     }
@@ -419,5 +421,40 @@ export class NativeClient extends Client {
   async isPodMonitorAvailable(): Promise<boolean> {
     // NOOP
     return false;
+  }
+
+  getPauseArgs(name: string): string[] {
+    return ["-c", `kill -STOP ${this.processMap[name].pid!.toString()}`];
+  }
+
+  getResumeArgs(name: string): string[] {
+    return ["-c", `kill -CONT ${this.processMap[name].pid!.toString()}`];
+  }
+
+  async restartNode(name: string, timeout: number | null): Promise<boolean> {
+    // kill
+    const result = await this.runCommand(
+      ["-c", `kill -9 ${this.processMap[name].pid!.toString()}`],
+      { allowFail: true },
+    );
+    if (result.exitCode !== 0) return false;
+
+    // sleep
+    if (timeout) await sleep(timeout * 1000);
+
+    // start
+    const log = fs.createWriteStream(this.processMap[name].logs);
+    console.log(["-c", ...this.processMap[name].cmd!]);
+    const nodeProcess = spawn(this.command, [
+      "-c",
+      ...this.processMap[name].cmd!,
+    ]);
+    debug(nodeProcess.pid);
+    nodeProcess.stdout.pipe(log);
+    nodeProcess.stderr.pipe(log);
+    this.processMap[name].pid = nodeProcess.pid;
+
+    await this.wait_node_ready(name);
+    return true;
   }
 }
