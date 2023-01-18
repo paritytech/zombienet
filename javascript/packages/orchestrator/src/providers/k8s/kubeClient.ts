@@ -722,6 +722,24 @@ export class KubeClient extends Client {
     }
   }
 
+  getPauseArgs(name: string): string[] {
+    return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
+  }
+  getResumeArgs(name: string): string[] {
+    return ["exec", name, "--", "bash", "-c", "echo resume > /tmp/zombiepipe"];
+  }
+
+  async restartNode(name: string, timeout: number | null): Promise<boolean> {
+    const args = ["exec", name, "--", "bash", "-c"];
+    const cmd = timeout
+      ? `echo restart ${timeout} > /tmp/zombiepipe`
+      : `echo restart > /tmp/zombiepipe`;
+    args.push(cmd);
+
+    const result = await this.runCommand(args, { scoped: true });
+    return result.exitCode === 0;
+  }
+
   async spawnIntrospector(wsUri: string) {
     await this.createStaticResource("introspector-pod.yaml", this.namespace, {
       WS_URI: wsUri,
