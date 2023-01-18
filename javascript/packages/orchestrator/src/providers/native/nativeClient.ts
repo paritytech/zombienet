@@ -455,8 +455,6 @@ export class NativeClient extends Client {
     this.processMap[name].pid = nodeProcess.pid;
 
     await this.wait_node_ready(name);
-
-    console.log("true");
     return true;
   }
 }
