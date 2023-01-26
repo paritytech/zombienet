@@ -72,17 +72,13 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async restart(timeout: number | null = null) {
     const client = getClient();
-    const args = ["exec", this.name, "--", "bash", "-c"];
-    const cmd = timeout
-      ? `echo restart ${timeout} > /tmp/zombiepipe`
-      : `echo restart > /tmp/zombiepipe`;
-    args.push(cmd);
+    await client.restartNode(this.name, timeout);
 
-    const result = await client.runCommand(args, { scoped: true });
-    if (result.exitCode !== 0) return false;
-    // restart the port-fw if needed
     const url = new URL(this.wsUri);
-    if (parseInt(url.port, 10) !== RPC_WS_PORT) {
+    if (
+      parseInt(url.port, 10) !== RPC_WS_PORT &&
+      client.providerName !== "native"
+    ) {
       const fwdPort = await client.startPortForwarding(RPC_WS_PORT, this.name);
 
       this.wsUri = WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
@@ -98,28 +94,15 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async pause() {
     const client = getClient();
-    const args = [
-      "exec",
-      this.name,
-      "--",
-      "bash",
-      "-c",
-      "echo pause > /tmp/zombiepipe",
-    ];
+    const args = client.getPauseArgs(this.name);
+
     const result = await client.runCommand(args, { scoped: true });
     return result.exitCode === 0;
   }
 
   async resume() {
     const client = getClient();
-    const args = [
-      "exec",
-      this.name,
-      "--",
-      "bash",
-      "-c",
-      "echo resume > /tmp/zombiepipe",
-    ];
+    const args = client.getResumeArgs(this.name);
     const result = await client.runCommand(args, { scoped: true });
     return result.exitCode === 0;
   }

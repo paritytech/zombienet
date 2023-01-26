@@ -457,7 +457,8 @@ async function spawn(
     }
   }
 
-  const options = { monitor, spawnConcurrency, dir, force };
+  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  const options = { monitor, spawnConcurrency, dir, force, inCI };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
