@@ -267,7 +267,7 @@ export async function generateNetworkSpec(
             name: `${collatorGroup.name}-${i}`,
             image: collatorGroup.image || networkSpec.relaychain.defaultImage,
             command: collatorGroup.command,
-            args: sanitizeArgs(collatorGroup.args || [], {"listen-addr": 2}),
+            args: sanitizeArgs(collatorGroup.args || [], { "listen-addr": 2 }),
             validator: true, // groups are always validators
             invulnerable: false,
             balance: DEFAULT_BALANCE,
@@ -495,7 +495,7 @@ async function getCollatorNodeFromConfig(
 ): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args)
-    args = args.concat(sanitizeArgs(collatorConfig.args, {"listen-addr": 2}));
+    args = args.concat(sanitizeArgs(collatorConfig.args, { "listen-addr": 2 }));
 
   const env = [
     { name: "COLORBT_SHOW_HIDDEN", value: "1" },
@@ -644,9 +644,12 @@ async function getNodeFromConfig(
   return nodeSetup;
 }
 
-function sanitizeArgs(args: string[], extraArgsToRemove: { [key: string]: number } = {}): string[] {
+function sanitizeArgs(
+  args: string[],
+  extraArgsToRemove: { [key: string]: number } = {},
+): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
-const augmentedArgsToRemove = { ...ARGS_TO_REMOVE, ...extraArgsToRemove };
+  const augmentedArgsToRemove = { ...ARGS_TO_REMOVE, ...extraArgsToRemove };
   let removeNext = false;
   const separatorIndex = args.indexOf("--");
   const filteredArgs = args
