@@ -283,7 +283,18 @@ export async function genCmd(
   for (const [k, v] of Object.entries(portFlags)) {
     args.push(...[k, v.toString()]);
   }
-  args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+
+  const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
+  if (listenIndex >= 0) {
+    let listenAddrParts = args[listenIndex+1].split("/");
+    listenAddrParts[listenAddrParts.length - 2] = `${nodeSetup.p2pPort}`;
+    const listenAddr = listenAddrParts.join("/");
+    args[listenIndex+1] = listenAddr;
+  } else {
+    // no --listen-add args
+    args.push(...[`--listen-addr /ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+  }
+
 
   // set our base path
   const basePathFlagIndex = args.findIndex((arg) => arg === "--base-path");
