@@ -56,6 +56,7 @@
     "@zombienet/orchestrator": "^0.0.21",
     "@zombienet/utils": "^0.0.13",
     "axios": "^0.27.2",
+    "commander": "^10.0.0",
     "debug": "^4.3.2",
     "nunjucks": "^3.2.3",
     "progress": "^2.0.3",
