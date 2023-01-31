@@ -139,9 +139,13 @@ const latestPolkadotReleaseURL = async (
     if (err.code === "ENOTFOUND") {
       throw new Error("Network error.");
     } else if (err.response && err.response.status === 404) {
-      throw new Error("Could not find a release.");
+      throw new Error(
+        "Could not find a release. Error 404 (not found) detected",
+      );
     }
-    throw new Error("`latestPolkadotReleaseURL` error: " + err);
+    throw new Error(
+      `Error status${err?.response?.status}. Error message: ${err?.response}`,
+    );
   }
 };
 
