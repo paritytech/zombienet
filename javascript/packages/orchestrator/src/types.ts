@@ -179,7 +179,7 @@ export interface Node {
     rpcPort: number;
     prometheusPort: number;
     p2pPort: number;
-  }
+  };
 }
 
 export interface Collator {

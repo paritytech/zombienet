@@ -436,7 +436,7 @@ export async function generateBootnodeSpec(
     zombieRole: "bootnode",
     imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
-    externalPorts
+    externalPorts,
   };
 
   return nodeSetup;
@@ -532,7 +532,7 @@ async function getCollatorNodeFromConfig(
     parachainId: para_id,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
-    externalPorts
+    externalPorts,
   };
 
   return node;
@@ -614,7 +614,7 @@ async function getNodeFromConfig(
     zombieRole: "node",
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
-    externalPorts
+    externalPorts,
   };
 
   if (group) nodeSetup.group = group;
@@ -657,32 +657,34 @@ function sanitizeArgs(
   return filteredArgs;
 }
 
-
 async function getPorts(provider: string, nodeSetup: any): Promise<any> {
   let ports = DEFAULT_PORTS;
 
-  if( provider === "native") {
+  if (provider === "native") {
     ports = {
       p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
       wsPort: nodeSetup.ws_port || (await getRandomPort()),
       rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
       prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
-    }
+    };
   }
 
   return ports;
 }
 
-async function getExternalPorts(provider: string, processPorts: any, nodeSetup: any): Promise<any> {
-
-  if( provider === "native")  return processPorts;
+async function getExternalPorts(
+  provider: string,
+  processPorts: any,
+  nodeSetup: any,
+): Promise<any> {
+  if (provider === "native") return processPorts;
 
   const ports = {
     p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
     wsPort: nodeSetup.ws_port || (await getRandomPort()),
     rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
     prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
-  }
+  };
 
   return ports;
 }
