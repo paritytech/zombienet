@@ -411,7 +411,9 @@ export async function generateNetworkSpec(
 export async function generateBootnodeSpec(
   config: ComputedNetwork,
 ): Promise<Node> {
-  const ports = await getPorts(config.settings.provider, {});
+  const provider = config.settings.provider;
+  const ports = await getPorts(provider, {});
+  const externalPorts = await getExternalPorts(provider, ports, {});
 
   const nodeSetup: Node = {
     name: "bootnode",
@@ -434,6 +436,7 @@ export async function generateBootnodeSpec(
     zombieRole: "bootnode",
     imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts
   };
 
   return nodeSetup;
@@ -505,7 +508,9 @@ async function getCollatorNodeFromConfig(
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
   const accountsForNode = await decoratedKeysGenerator(collatorName);
 
-  const ports = await getPorts(networkSpec.settings.provider, collatorConfig);
+  const provider = networkSpec.settings.provider;
+  const ports = await getPorts(provider, collatorConfig);
+  const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
   const node: Node = {
     name: collatorName,
@@ -527,6 +532,7 @@ async function getCollatorNodeFromConfig(
     parachainId: para_id,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts
   };
 
   return node;
@@ -577,7 +583,10 @@ async function getNodeFromConfig(
 
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
-  const ports = await getPorts(networkSpec.settings.provider, node);
+
+  const provider = networkSpec.settings.provider;
+  const ports = await getPorts(provider, node);
+  const externalPorts = await getExternalPorts(provider, ports, node);
 
   // build node Setup
   const nodeSetup: Node = {
@@ -605,6 +614,7 @@ async function getNodeFromConfig(
     zombieRole: "node",
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts
   };
 
   if (group) nodeSetup.group = group;
@@ -649,16 +659,29 @@ function sanitizeArgs(
 
 
 async function getPorts(provider: string, nodeSetup: any): Promise<any> {
-
   let ports = DEFAULT_PORTS;
 
-  if( provider === "native" || provider === "podman") {
+  if( provider === "native") {
     ports = {
       p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
       wsPort: nodeSetup.ws_port || (await getRandomPort()),
       rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
       prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
     }
+  }
+
+  return ports;
+}
+
+async function getExternalPorts(provider: string, processPorts: any, nodeSetup: any): Promise<any> {
+
+  if( provider === "native")  return processPorts;
+
+  const ports = {
+    p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
+    wsPort: nodeSetup.ws_port || (await getRandomPort()),
+    rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
+    prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
   }
 
   return ports;
