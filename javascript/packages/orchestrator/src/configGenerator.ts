@@ -411,15 +411,7 @@ export async function generateNetworkSpec(
 export async function generateBootnodeSpec(
   config: ComputedNetwork,
 ): Promise<Node> {
-  const ports =
-    config.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: await getRandomPort(),
-          wsPort: await getRandomPort(),
-          rpcPort: await getRandomPort(),
-          prometheusPort: await getRandomPort(),
-        };
+  const ports = await getPorts(config.settings.provider, {});
 
   const nodeSetup: Node = {
     name: "bootnode",
@@ -513,16 +505,7 @@ async function getCollatorNodeFromConfig(
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
   const accountsForNode = await decoratedKeysGenerator(collatorName);
 
-  const ports =
-    networkSpec.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: collatorConfig.p2p_port || (await getRandomPort()),
-          wsPort: collatorConfig.ws_port || (await getRandomPort()),
-          rpcPort: collatorConfig.rpc_port || (await getRandomPort()),
-          prometheusPort:
-            collatorConfig.prometheus_port || (await getRandomPort()),
-        };
+  const ports = await getPorts(networkSpec.settings.provider, collatorConfig);
 
   const node: Node = {
     name: collatorName,
@@ -594,15 +577,7 @@ async function getNodeFromConfig(
 
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
-  const ports =
-    networkSpec.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: node.p2p_port || (await getRandomPort()),
-          wsPort: node.ws_port || (await getRandomPort()),
-          rpcPort: node.rpc_port || (await getRandomPort()),
-          prometheusPort: node.prometheus_port || (await getRandomPort()),
-        };
+  const ports = await getPorts(networkSpec.settings.provider, node);
 
   // build node Setup
   const nodeSetup: Node = {
@@ -670,4 +645,21 @@ function sanitizeArgs(
     });
 
   return filteredArgs;
+}
+
+
+async function getPorts(provider: string, nodeSetup: any): Promise<any> {
+
+  let ports = DEFAULT_PORTS;
+
+  if( provider === "native" || provider === "podman") {
+    ports = {
+      p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
+      wsPort: nodeSetup.ws_port || (await getRandomPort()),
+      rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
+      prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
+    }
+  }
+
+  return ports;
 }
