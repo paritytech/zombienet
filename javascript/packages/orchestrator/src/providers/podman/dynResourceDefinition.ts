@@ -396,7 +396,8 @@ async function make_main_container(
   nodeSetup: Node,
   volume_mounts: any[],
 ): Promise<any> {
-  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup.externalPorts!;
+  // @ts-ignore
+  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup.externalPorts ? nodeSetup.externalPorts : {};
   const ports = [
     {
       containerPort: PROMETHEUS_PORT,
