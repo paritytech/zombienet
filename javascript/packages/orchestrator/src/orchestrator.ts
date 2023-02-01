@@ -346,8 +346,6 @@ export async function start(
         );
       }
 
-
-
       if (networkSpec.hrmp_channels) {
         await addHrmpChannelsToGenesis(
           chainSpecFullPathPlain,
@@ -681,7 +679,7 @@ export async function start(
 
     const collatorPromiseGenerators = [];
     for (const parachain of networkSpec.parachains) {
-      if (!parachain.addToGenesis && parachain.registerPara && !networkSpec.relaychain.chainSpecPath) {
+      if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
         await registerParachain(
           parachain.id,
