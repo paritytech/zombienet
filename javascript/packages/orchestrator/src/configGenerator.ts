@@ -58,7 +58,7 @@ const isIterable = (obj: any) => {
 const configurationFileChecks = (config: LaunchConfig): void => {
   if ((config as any).hrmpChannels) {
     throw new Error(
-      "'hrmpChannel' value the given configuration file is deprecated; Please use 'hrmp_channel' instead;",
+      "'hrmpChannels' value the given configuration file is deprecated; Please use 'hrmp_channel' instead;",
     );
   }
 
