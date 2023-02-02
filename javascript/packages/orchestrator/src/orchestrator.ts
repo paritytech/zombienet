@@ -261,6 +261,38 @@ export async function start(
     const chainSpecContent = require(chainSpecFullPathPlain);
     client.chainId = chainSpecContent.id;
 
+    const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
+      const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
+      await makeDir(parachainFilesPath);
+      await generateParachainFiles(
+        namespace,
+        tmpDir.path,
+        parachainFilesPath,
+        chainName,
+        parachain,
+      );
+    };
+
+    const parachainPromiseGenerators = networkSpec.parachains.map(
+      (parachain: Parachain) => {
+        return () => parachainFilesPromiseGenerator(parachain);
+      },
+    );
+
+    await series(parachainPromiseGenerators, opts.spawnConcurrency);
+    for (const parachain of networkSpec.parachains) {
+      const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
+      const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
+      const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
+      if (parachain.addToGenesis)
+        await addParachainToGenesis(
+          chainSpecFullPathPlain,
+          parachain.id.toString(),
+          stateLocalFilePath,
+          wasmLocalFilePath,
+        );
+    }
+
     if (!chainSpecContent.genesis.raw) {
       // Chain spec customization logic
       const relayChainSpec = readAndParseChainSpec(chainSpecFullPathPlain);
@@ -312,37 +344,6 @@ export async function start(
           chainSpecFullPathPlain,
           networkSpec.relaychain.genesis,
         );
-      }
-
-      const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
-        const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        await makeDir(parachainFilesPath);
-        await generateParachainFiles(
-          namespace,
-          tmpDir.path,
-          parachainFilesPath,
-          chainName,
-          parachain,
-        );
-      };
-      const parachainPromiseGenerators = networkSpec.parachains.map(
-        (parachain: Parachain) => {
-          return () => parachainFilesPromiseGenerator(parachain);
-        },
-      );
-
-      await series(parachainPromiseGenerators, opts.spawnConcurrency);
-      for (const parachain of networkSpec.parachains) {
-        const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
-        const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-        if (parachain.addToGenesis)
-          await addParachainToGenesis(
-            chainSpecFullPathPlain,
-            parachain.id.toString(),
-            stateLocalFilePath,
-            wasmLocalFilePath,
-          );
       }
 
       if (networkSpec.hrmp_channels) {
