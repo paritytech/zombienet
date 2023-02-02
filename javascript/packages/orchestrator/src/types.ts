@@ -174,6 +174,12 @@ export interface Node {
   p2pPort: number;
   imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
   dbSnapshot?: string;
+  externalPorts?: {
+    wsPort: number;
+    rpcPort: number;
+    prometheusPort: number;
+    p2pPort: number;
+  };
 }
 
 export interface Collator {

@@ -396,23 +396,31 @@ async function make_main_container(
   nodeSetup: Node,
   volume_mounts: any[],
 ): Promise<any> {
+  // @ts-ignore
+  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup.externalPorts
+    ? nodeSetup.externalPorts
+    : {};
   const ports = [
     {
       containerPort: PROMETHEUS_PORT,
       name: "prometheus",
-      hostPort: await getRandomPort(),
+      hostPort: prometheusPort || (await getRandomPort()),
     },
     {
       containerPort: RPC_HTTP_PORT,
       name: "rpc",
-      hostPort: await getRandomPort(),
+      hostPort: rpcPort || (await getRandomPort()),
     },
     {
       containerPort: RPC_WS_PORT,
       name: "rpc-ws",
-      hostPort: await getRandomPort(),
+      hostPort: wsPort || (await getRandomPort()),
     },
-    { containerPort: P2P_PORT, name: "p2p", hostPort: await getRandomPort() },
+    {
+      containerPort: P2P_PORT,
+      name: "p2p",
+      hostPort: p2pPort || (await getRandomPort()),
+    },
   ];
 
   let computedCommand;

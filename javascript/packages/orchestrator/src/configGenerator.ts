@@ -411,15 +411,9 @@ export async function generateNetworkSpec(
 export async function generateBootnodeSpec(
   config: ComputedNetwork,
 ): Promise<Node> {
-  const ports =
-    config.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: await getRandomPort(),
-          wsPort: await getRandomPort(),
-          rpcPort: await getRandomPort(),
-          prometheusPort: await getRandomPort(),
-        };
+  const provider = config.settings.provider;
+  const ports = await getPorts(provider, {});
+  const externalPorts = await getExternalPorts(provider, ports, {});
 
   const nodeSetup: Node = {
     name: "bootnode",
@@ -442,6 +436,7 @@ export async function generateBootnodeSpec(
     zombieRole: "bootnode",
     imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts,
   };
 
   return nodeSetup;
@@ -513,16 +508,9 @@ async function getCollatorNodeFromConfig(
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
   const accountsForNode = await decoratedKeysGenerator(collatorName);
 
-  const ports =
-    networkSpec.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: collatorConfig.p2p_port || (await getRandomPort()),
-          wsPort: collatorConfig.ws_port || (await getRandomPort()),
-          rpcPort: collatorConfig.rpc_port || (await getRandomPort()),
-          prometheusPort:
-            collatorConfig.prometheus_port || (await getRandomPort()),
-        };
+  const provider = networkSpec.settings.provider;
+  const ports = await getPorts(provider, collatorConfig);
+  const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
   const node: Node = {
     name: collatorName,
@@ -544,6 +532,7 @@ async function getCollatorNodeFromConfig(
     parachainId: para_id,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts,
   };
 
   return node;
@@ -594,15 +583,10 @@ async function getNodeFromConfig(
 
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
-  const ports =
-    networkSpec.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: node.p2p_port || (await getRandomPort()),
-          wsPort: node.ws_port || (await getRandomPort()),
-          rpcPort: node.rpc_port || (await getRandomPort()),
-          prometheusPort: node.prometheus_port || (await getRandomPort()),
-        };
+
+  const provider = networkSpec.settings.provider;
+  const ports = await getPorts(provider, node);
+  const externalPorts = await getExternalPorts(provider, ports, node);
 
   // build node Setup
   const nodeSetup: Node = {
@@ -630,6 +614,7 @@ async function getNodeFromConfig(
     zombieRole: "node",
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts,
   };
 
   if (group) nodeSetup.group = group;
@@ -670,4 +655,36 @@ function sanitizeArgs(
     });
 
   return filteredArgs;
+}
+
+async function getPorts(provider: string, nodeSetup: any): Promise<any> {
+  let ports = DEFAULT_PORTS;
+
+  if (provider === "native") {
+    ports = {
+      p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
+      wsPort: nodeSetup.ws_port || (await getRandomPort()),
+      rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
+      prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
+    };
+  }
+
+  return ports;
+}
+
+async function getExternalPorts(
+  provider: string,
+  processPorts: any,
+  nodeSetup: any,
+): Promise<any> {
+  if (provider === "native") return processPorts;
+
+  const ports = {
+    p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
+    wsPort: nodeSetup.ws_port || (await getRandomPort()),
+    rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
+    prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
+  };
+
+  return ports;
 }
