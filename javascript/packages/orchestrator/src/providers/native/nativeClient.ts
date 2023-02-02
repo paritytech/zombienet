@@ -276,10 +276,14 @@ export class NativeClient extends Client {
     ]);
 
     if (dbSnapshot) {
-      await downloadFile(dbSnapshot, `${podDef.spec.rootDir}/db.tgz`);
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await makeDir(`${podDef.spec.dataPath}`, true);
+
+      await downloadFile(dbSnapshot, `${podDef.spec.dataPath}/db.tgz`);
       await this.runCommand([
         "-c",
-        `cd ${podDef.spec.rootDir} && tar -xzvf db.tgz`,
+        `cd ${podDef.spec.dataPath} && cd .. && tar -xzvf data/db.tgz`,
       ]);
     }
 

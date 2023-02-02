@@ -367,20 +367,20 @@ export class PodmanClient extends Client {
     ]);
 
     // initialize keystore
-    const rootPath = podDef.spec.volumes.find(
-      (vol: any) => vol.name === "tmp-root",
-    );
     const dataPath = podDef.spec.volumes.find(
       (vol: any) => vol.name === "tmp-data",
     );
-    debug("rootPath", rootPath);
     debug("dataPath", dataPath);
 
     if (dbSnapshot) {
-      await downloadFile(dbSnapshot, `${rootPath.hostPath.path}/db.tgz`);
+      // we need to get the snapshot from a public access
+      // and extract to /data
+      await makeDir(`${dataPath.hostPath.path}/chains`, true);
+
+      await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/db.tgz`);
       await execa("bash", [
         "-c",
-        `cd ${rootPath.hostPath.path}/chains && tar -xzvf db.tgz`,
+        `cd ${dataPath.hostPath.path} && cd .. && tar -xzvf data/db.tgz`,
       ]);
     }
 

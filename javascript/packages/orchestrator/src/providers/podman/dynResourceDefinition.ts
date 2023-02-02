@@ -369,15 +369,13 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const volume_mounts = [
     { name: "tmp-cfg", mountPath: "/cfg:U", readOnly: false },
     { name: "tmp-data", mountPath: "/data:U", readOnly: false },
-    { name: "tmp-root", mountPath: "/:U", readOnly: false },
     { name: "tmp-relay-data", mountPath: "/relay-data:U", readOnly: false },
   ];
 
   const client = getClient();
-  const rootPath = `${client.tmpDir}/${name}/`;
-  const cfgPath = `${rootPath}/cfg`;
-  const dataPath = `${rootPath}/data`;
-  const relayDataPath = `${rootPath}/relay-data`;
+  const cfgPath = `${client.tmpDir}/${name}/cfg`;
+  const dataPath = `${client.tmpDir}/${name}/data`;
+  const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
   await makeDir(cfgPath, true);
   await makeDir(dataPath, true);
   await makeDir(relayDataPath, true);
@@ -385,7 +383,6 @@ async function make_volume_mounts(name: string): Promise<[any, any]> {
   const devices = [
     { name: "tmp-cfg", hostPath: { type: "Directory", path: cfgPath } },
     { name: "tmp-data", hostPath: { type: "Directory", path: dataPath } },
-    { name: "tmp-root", hostPath: { type: "Directory", path: rootPath } },
     {
       name: "tmp-relay-data",
       hostPath: { type: "Directory", path: relayDataPath },
