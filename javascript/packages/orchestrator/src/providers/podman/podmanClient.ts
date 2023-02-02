@@ -380,7 +380,7 @@ export class PodmanClient extends Client {
       await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/db.tgz`);
       await execa("bash", [
         "-c",
-        `cd ${dataPath.hostPath.path} && cd .. && tar -xzvf data/db.tgz`,
+        `cd ${dataPath.hostPath.path}/..  && tar -xzvf data/db.tgz`,
       ]);
     }
 
