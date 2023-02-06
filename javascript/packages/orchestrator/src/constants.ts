@@ -95,7 +95,6 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
   "rpc-port": 2,
   "prometheus-port": 2,
   "node-key": 2,
-  "listen-addr": 2,
   d: 2,
   "base-path": 2,
 };
