@@ -2,7 +2,7 @@
 default_image = "docker.io/paritypr/polkadot-debug:master"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
-default_db_snapshot = "https://storage.googleapis.com/zombienet-db-snaps/chains-test.tgz"
+default_db_snapshot = "https://github.com/samelamin/cumulus/blob/chain-snapshots/docker/snapshots/chains-test-ed6f7df940effb8cc31d373822b4c1b301648223.tgz?raw=true"
 
 chain = "rococo-local"
 

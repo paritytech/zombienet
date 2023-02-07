@@ -144,19 +144,19 @@ export class KubeClient extends Client {
         [
           "mkdir",
           "-p",
-          "/data/chains",
+          "/data/",
           "&&",
           "wget",
           dbSnapshot,
           "-O",
-          "/data/chains/db.tgz",
+          "/data/db.tgz",
           "&&",
           "cd",
-          "/data/chains",
+          "/",
           "&&",
           "tar",
           "-xzvf",
-          "db.tgz",
+          "/data/db.tgz",
         ].join(" "),
       ]);
     }
