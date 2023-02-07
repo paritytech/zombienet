@@ -287,7 +287,7 @@ export async function genCmd(
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
     let listenAddrParts = args[listenIndex + 1].split("/");
-    listenAddrParts[listenAddrParts.length - 2] = `${nodeSetup.p2pPort}`;
+    listenAddrParts[4] = `${nodeSetup.p2pPort}`;
     const listenAddr = listenAddrParts.join("/");
     args[listenIndex + 1] = listenAddr;
   } else {
