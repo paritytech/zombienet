@@ -490,6 +490,9 @@ export class KubeClient extends Client {
       }
     }
 
+    // wait until fileserver is ready, fix race condition #700.
+    await this.wait_pod_ready("fileserver");
+
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
       await this.createStaticResource("baseline-resources.yaml");
