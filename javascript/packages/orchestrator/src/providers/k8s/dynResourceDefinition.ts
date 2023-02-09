@@ -106,6 +106,7 @@ function make_transfer_containter(): any {
     volumeMounts: [
       { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
       { name: "tmp-data", mountPath: "/data", readOnly: false },
+      { name: "tmp-relay-data", mountPath: "/relay-data", readOnly: false },
     ],
     command: [
       "ash",
