@@ -33,9 +33,9 @@ async function registerParachain(
     const sudo = keyring.addFromUri(seed);
     let api: ApiPromise = await connect(apiUrl);
 
-    let nonce = (
-      (await api.query.system.account(sudo.address)) as any
-    ).nonce.toNumber();
+    let nonce = ((await api.query.system.account(
+      sudo.address,
+    )) as any).nonce.toNumber();
     const wasm_data = readDataFile(wasmPath);
     const genesis_state = readDataFile(statePath);
 

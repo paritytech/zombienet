@@ -42,8 +42,14 @@ export async function genCumulusCollatorCmd(
   relayDataPath: string = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
-  const { name, chain, parachainId, key, validator, commandWithArgs } =
-    nodeSetup;
+  const {
+    name,
+    chain,
+    parachainId,
+    key,
+    validator,
+    commandWithArgs,
+  } = nodeSetup;
 
   // command with args
   if (commandWithArgs) {

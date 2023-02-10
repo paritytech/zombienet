@@ -4,8 +4,7 @@ export async function series(
 ) {
   let results: any = null;
 
-  functionsThatGeneratePromisesThatRunInSeries =
-    functionsThatGeneratePromisesThatRunInSeries.slice();
+  functionsThatGeneratePromisesThatRunInSeries = functionsThatGeneratePromisesThatRunInSeries.slice();
 
   return new Promise((resolve, reject) => {
     const next = (result?: any) => {
