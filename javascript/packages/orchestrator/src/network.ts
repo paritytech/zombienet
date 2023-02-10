@@ -154,13 +154,8 @@ export class Network {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
     fs.mkdirSync(logsPath);
-    const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
-      (memo: NetworkNode[], key) => {
-        const paraId = parseInt(key, 10);
-        memo.concat(this.paras[paraId].nodes);
-        return memo;
-      },
-      [],
+    const paraNodes: NetworkNode[] = Object.values(this.paras).reduce(
+      (memo: NetworkNode[], value) => memo.concat(value.nodes), [],
     );
 
     const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
