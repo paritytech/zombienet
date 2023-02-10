@@ -128,12 +128,10 @@ function _extractMetrics(text: string): Metrics {
 
     // store the metric with and without the chain
     if (labelStrings.length > 0) {
-      rawMetrics[ns][
-        `${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`
-      ] = metricValue;
-      rawMetrics["_raw"][
-        `${parsedLine.name}{${labelStrings.join(",")}}`
-      ] = metricValue;
+      rawMetrics[ns][`${rawMetricNameWithOutNs}{${labelStrings.join(",")}}`] =
+        metricValue;
+      rawMetrics["_raw"][`${parsedLine.name}{${labelStrings.join(",")}}`] =
+        metricValue;
     } else {
       rawMetrics[ns][rawMetricNameWithOutNs] = metricValue;
       rawMetrics["_raw"][parsedLine.name] = metricValue;

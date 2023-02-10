@@ -2,12 +2,8 @@ import Mocha from "mocha";
 
 import { CreateLogTable, decorators } from "@zombienet/utils";
 
-const {
-  EVENT_RUN_END,
-  EVENT_TEST_FAIL,
-  EVENT_TEST_PASS,
-  EVENT_TEST_BEGIN,
-} = Mocha.Runner.constants;
+const { EVENT_RUN_END, EVENT_TEST_FAIL, EVENT_TEST_PASS, EVENT_TEST_BEGIN } =
+  Mocha.Runner.constants;
 
 interface TestReporterProps {
   runner: Mocha.Runner;

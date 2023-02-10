@@ -112,9 +112,7 @@ export function getRandom(arr: string[], n: number) {
   return result;
 }
 
-export function getFilePathNameExt(
-  filePath: string,
-): {
+export function getFilePathNameExt(filePath: string): {
   fullPath: string;
   fileName: string;
   extension: string;

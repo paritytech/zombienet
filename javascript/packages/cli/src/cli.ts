@@ -182,13 +182,8 @@ async function convertInput(filePath: string) {
 
   const convertedJson = await readInputFile(extension, filePath);
 
-  const {
-    relaychain,
-    parachains,
-    simpleParachains,
-    hrmpChannels,
-    types,
-  } = convertedJson;
+  const { relaychain, parachains, simpleParachains, hrmpChannels, types } =
+    convertedJson;
 
   let jsonOutput: PolkadotLaunchConfig;
   const nodes: NodeConfig[] = [];
@@ -333,10 +328,9 @@ program
     ),
   )
   .addOption(
-    new Option(
-      "-p, --provider <provider>",
-      "Override provider to use",
-    ).choices(["podman", "kubernetes", "native"]),
+    new Option("-p, --provider <provider>", "Override provider to use").choices(
+      ["podman", "kubernetes", "native"],
+    ),
   )
   .addOption(
     new Option(

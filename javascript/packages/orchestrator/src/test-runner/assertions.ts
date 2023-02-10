@@ -212,13 +212,8 @@ const CustomJs = ({
       }, {}),
       nodesByName: Object.keys(network.nodesByName).reduce(
         (memo: any, nodeName) => {
-          const {
-            name,
-            wsUri,
-            prometheusUri,
-            userDefinedTypes,
-            parachainId,
-          } = network.nodesByName[nodeName];
+          const { name, wsUri, prometheusUri, userDefinedTypes, parachainId } =
+            network.nodesByName[nodeName];
           memo[nodeName] = { name, wsUri, prometheusUri, userDefinedTypes };
           if (parachainId) memo[nodeName].parachainId = parachainId;
           return memo;
