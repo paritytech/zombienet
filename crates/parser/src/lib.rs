@@ -37,7 +37,7 @@ fn parse_name(pair: Pair<Rule>) -> Result<NodeName, ParserError> {
 fn parse_within(pair: Pair<Rule>) -> Result<Duration, ParserError> {
     let within = pair.into_inner().as_str();
     Ok(Duration::from_secs(within.parse::<u64>().map_err(
-        |_| ParserError::ParseError(format!("Can't parse {} as u64", within)),
+        |_| ParserError::ParseError(format!("Can't parse {within} as u64")),
     )?))
 }
 
@@ -45,14 +45,14 @@ fn parse_para_id(pair: Pair<Rule>) -> Result<ParaId, ParserError> {
     let para_id_str = pair.into_inner().as_str();
     para_id_str
         .parse::<u16>()
-        .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u16", para_id_str)))
+        .map_err(|_| ParserError::ParseError(format!("Can't parse {para_id_str} as u16")))
 }
 
 fn parse_taget_value(pair: Pair<Rule>) -> Result<u64, ParserError> {
     let target_str = pair.as_str();
     target_str
         .parse::<u64>()
-        .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u64", target_str)))
+        .map_err(|_| ParserError::ParseError(format!("Can't parse {target_str} as u64")))
 }
 
 fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
@@ -66,14 +66,14 @@ fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
         Rule::op_eq => ast::Operator::Equal,
         Rule::op_ineq => ast::Operator::NotEqual,
         _ => {
-            return Err(ParserError::UnreachableRule(format!("{:?}", op_rule)));
+            return Err(ParserError::UnreachableRule(format!("{op_rule:?}")));
         }
     };
 
     let target_value_str = get_pair(&mut inner_pairs, "target_value")?.as_str();
     let target_value = target_value_str
         .parse::<u64>()
-        .map_err(|_| ParserError::ParseError(format!("Can't parse {} as u64", target_value_str)))?;
+        .map_err(|_| ParserError::ParseError(format!("Can't parse {target_value_str} as u64")))?;
 
     Ok(ast::Comparison { op, target_value })
 }
@@ -161,7 +161,7 @@ fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<Assertion
     let file_path_str = get_pair(&mut pairs, "file_path")?.as_str();
     let file_path: PathBuf = file_path_str
         .try_into()
-        .map_err(|_| errors::ParserError::ParseError(format!("Invalid path: {}", file_path_str)))?;
+        .map_err(|_| errors::ParserError::ParseError(format!("Invalid path: {file_path_str}")))?;
 
     let mut args: Option<String> = None;
     let mut cmp: Option<Comparison> = None;
@@ -581,7 +581,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
 
                 let after: Option<Duration> = if let Some(after_rule) = pairs.next() {
                     Some(Duration::from_secs(after_rule.as_str().parse().map_err(
-                        |_| ParserError::ParseError(format!("Invalid after value, {}", after_rule)),
+                        |_| ParserError::ParseError(format!("Invalid after value, {after_rule}")),
                     )?))
                 } else {
                     None
@@ -629,8 +629,7 @@ fn get_pair<'a>(
     match pairs.next() {
         Some(p) => Ok(p),
         None => Err(ParserError::Unexpected(format!(
-            "Pair {} should exists",
-            rule_name
+            "Pair {rule_name} should exists"
         ))),
     }
 }
