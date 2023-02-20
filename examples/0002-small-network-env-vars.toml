@@ -1,3 +1,4 @@
+# examples/0002-small-network-paras.toml
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 default_command = "polkadot"
