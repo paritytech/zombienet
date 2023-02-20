@@ -339,12 +339,12 @@ export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 <div style="break-before: page; page-break-before: always;"></div><h1 id="teardown"><a class="header" href="#teardown">Teardown</a></h1>
 <p>You can teardown the network (and cleanup the used resources) by terminating the process (<code>Ctrl+c</code>).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
-<p>The other goal of ZombieNet is provide a way to perform test/assertions agins the spawned network, using a set of <code>natural language expressions</code> that allow to make assertions based on metrics, logs and some <code>built-in</code> function that query the network using <code>polkadot.js</code>.
+<p>The other goal of ZombieNet is to provide a way to perform test/assertions against the spawned network, using a set of <code>natural language expressions</code> that allow making assertions based on metrics, logs and some <code>built-in</code> function that query the network using <code>polkadot.js</code>.
 Those assertions should be defined in a <em>feature test</em>, and the <code>dsl</code> and format is documented in <a href="cli/./test-dsl-definition-spec.html">here</a>.</p>
-<p>The following is an small example to spawn a network (using the previos <code>simple network definition</code>) and assert that:</p>
+<p>The following is a small example to spawn a network (using the previous <code>simple network definition</code>) and assert that:</p>
 <ul>
 <li>Both <code>nodes</code> are running</li>
-<li>The definded <code>parachain</code> is registered</li>
+<li>The defined <code>parachain</code> is registered</li>
 <li>The defined <code>parachain</code> is producing blocks and produced at least 10 within 200 seconds.</li>
 </ul>
 <pre><code class="language-feature">Description: Simple Network Smoke Test
@@ -357,7 +357,7 @@ bob: is up
 alice: parachain 100 is registered within 225 seconds
 alice: parachain 100 block height is at least 10 within 200 seconds
 </code></pre>
-<p>Another examples are provided in the <a href="https://github.com/paritytech/zombienet/tree/main/examples">examples</a> directory.</p>
+<p>Other examples are provided in the <a href="https://github.com/paritytech/zombienet/tree/main/examples">examples</a> directory.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="zombienet-guide"><a class="header" href="#zombienet-guide">Zombienet guide</a></h1>
 <h2 id="intro"><a class="header" href="#intro">Intro</a></h2>
 <p>Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that work across supported <code>providers</code> (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create a smooth experience for parachain developers, giving them the confidence and simplicity to build and ship.</p>
