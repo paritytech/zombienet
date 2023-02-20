@@ -308,7 +308,7 @@ id = 100
 </code></pre>
 <p>Both the <code>prometheus</code> and the <code>node</code> links are accessible in your local machine to get the <code>metrics</code> or connect to the node.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="using-env-vars"><a class="header" href="#using-env-vars">Using env vars</a></h1>
-<p>ZombieNet can also make <em>replacements</em> in the network config using <code>env</code> variables. To define a replacement yo need to use the <code>{{ENV_VAR_NAME}}</code> syntax.</p>
+<p>ZombieNet can also make <em>replacements</em> in the network config using <code>env</code> variables. To define a replacement you need to use the <code>{{ENV_VAR_NAME}}</code> syntax.</p>
 <p>For example, from the previous example but using <code>env</code> variables could be:</p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
