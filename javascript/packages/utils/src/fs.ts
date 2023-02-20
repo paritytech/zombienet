@@ -102,7 +102,7 @@ const parseConfigFile = (
   let firstChar;
   for (let line of lines) {
     // Avoid any lines with comments or empty lines
-    if (!line && ["#", "/", " "].includes(line[0])) {
+    if (!line || ["#", "/", " "].includes(line[0])) {
       continue;
     } else {
       firstChar = line[0];
