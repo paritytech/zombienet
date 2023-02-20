@@ -242,7 +242,7 @@ Please add the dir to your $PATH by running the command:
  export PATH=/home/&lt;username&gt;/zombienet/dist:$PATH
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="spawning"><a class="header" href="#spawning">Spawning</a></h1>
-<p>One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but poweful <em>cli</em> that allow you to declare the desired network in <code>toml</code> or <code>json</code> format. You can check the <a href="cli/../network-definition-spec.html">definition spec</a> to view the available options.</p>
+<p>One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but powerful <em>cli</em> that allows you to declare the desired network in <code>toml</code> or <code>json</code> format. You can check the <a href="cli/../network-definition-spec.html">definition spec</a> to view the available options.</p>
 <p>A <strong>minimal</strong> configuration example with two validators and one parachain:</p>
 <pre><code class="language-toml">[settings]
 timeout = 1000
@@ -306,7 +306,7 @@ id = 100
 └─────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────┘
 
 </code></pre>
-<p>Both the <code>prometheus</code> and the <code>node</code> links are accesibles in your local machine to get the <code>metrics</code> or connect to the node.</p>
+<p>Both the <code>prometheus</code> and the <code>node</code> links are accessible in your local machine to get the <code>metrics</code> or connect to the node.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="using-env-vars"><a class="header" href="#using-env-vars">Using env vars</a></h1>
 <p>ZombieNet can also make <em>replacements</em> in the network config using <code>env</code> variables. To define a replacement yo need to use the <code>{{ENV_VAR_NAME}}</code> syntax.</p>
 <p>For example, from the previous example but using <code>env</code> variables could be:</p>
