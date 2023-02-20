@@ -1,6 +1,6 @@
 # Testing
 
-The other goal of ZombieNet is to provide a way to perform test/assertions aginst the spawned network, using a set of `natural language expressions` that allow making assertions based on metrics, logs and some `built-in` function that query the network using `polkadot.js`.
+The other goal of ZombieNet is to provide a way to perform test/assertions against the spawned network, using a set of `natural language expressions` that allow making assertions based on metrics, logs and some `built-in` function that query the network using `polkadot.js`.
 Those assertions should be defined in a _feature test_, and the `dsl` and format is documented in [here](./test-dsl-definition-spec.md).
 
 The following is a small example to spawn a network (using the previous `simple network definition`) and assert that:
