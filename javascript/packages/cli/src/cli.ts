@@ -489,7 +489,7 @@ async function test(
     console.log(
       `\n ${decorators.red(
         "Error:",
-      )} File extension is not correct. Extension for tests should be '.${extension}'.\n`,
+      )} File extension is not correct. Extension for tests should be '.zndsl'.\n`,
     );
   }
 
