@@ -442,12 +442,14 @@ export class KubeClient extends Client {
   }
 
   async destroyNamespace() {
-    await this.runCommand(
-      ["delete", "podmonitor", this.namespace, "-n", "monitoring"],
-      {
-        scoped: false,
-      },
-    );
+    if (this.podMonitorAvailable) {
+      await this.runCommand(
+        ["delete", "podmonitor", this.namespace, "-n", "monitoring"],
+        {
+          scoped: false,
+        },
+      );
+    }
 
     await this.runCommand(["delete", "namespace", this.namespace], {
       scoped: false,
