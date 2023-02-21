@@ -144,19 +144,23 @@ export class KubeClient extends Client {
         [
           "mkdir",
           "-p",
-          "/data/chains",
+          "/data/",
+          "&&",
+          "mkdir",
+          "-p",
+          "/relay-data/",
           "&&",
           "wget",
           dbSnapshot,
           "-O",
-          "/data/chains/db.tgz",
+          "/data/db.tgz",
           "&&",
           "cd",
-          "/data/chains",
+          "/",
           "&&",
           "tar",
           "-xzvf",
-          "db.tgz",
+          "/data/db.tgz",
         ].join(" "),
       ]);
     }
@@ -489,6 +493,9 @@ export class KubeClient extends Client {
         if (file) await this.createStaticResource(file, this.namespace);
       }
     }
+
+    // wait until fileserver is ready, fix race condition #700.
+    await this.wait_pod_ready("fileserver");
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")

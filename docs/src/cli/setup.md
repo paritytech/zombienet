@@ -1,10 +1,10 @@
 # Setup
 
-This command will help you to easily download latest artifacts and make them executablein order to use them with zombienet
+This command will help you to easily download latest artifacts and make them executable in order to use them with zombienet
 
 ## Download and install needed artifacts
 
-For easier and faster setup of local environment, upi can run:
+For easier and faster setup of local environment, you can run:
 
 ```bash
 ❯ zombienet setup
