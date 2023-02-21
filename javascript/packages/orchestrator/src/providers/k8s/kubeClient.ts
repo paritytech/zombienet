@@ -354,6 +354,7 @@ export class KubeClient extends Client {
 
   async updateResource(
     filename: string,
+    scopeNamespace?: string,
     replacements: ReplaceMapping = {},
   ): Promise<void> {
     const filePath = resolve(__dirname, `../../../static-configs/${filename}`);
@@ -368,8 +369,10 @@ export class KubeClient extends Client {
         replacements[replaceKey],
       );
     }
-
-    await this.runCommand(["apply", "-f", "-"], { resourceDef, scoped: false });
+    const cmd = scopeNamespace
+      ? ["-n", scopeNamespace, "apply", "-f", "-"]
+      : ["apply", "-f", "-"];
+    await this.runCommand(cmd, { resourceDef, scoped: false });
   }
 
   async copyFileToPod(
@@ -439,6 +442,13 @@ export class KubeClient extends Client {
   }
 
   async destroyNamespace() {
+    await this.runCommand(
+      ["delete", "podmonitor", this.namespace, "-n", "monitoring"],
+      {
+        scoped: false,
+      },
+    );
+
     await this.runCommand(["delete", "namespace", this.namespace], {
       scoped: false,
     });
@@ -534,13 +544,17 @@ export class KubeClient extends Client {
       if (this.podMonitorAvailable) {
         const [hr, min] = addMinutes(minutes, now);
         let schedule = `${min} ${hr} * * *`;
-        await this.updateResource("job-delete-podmonitor.yaml", { schedule });
+        await this.updateResource(
+          "job-delete-podmonitor.yaml",
+          this.namespace,
+          { schedule },
+        );
       }
 
       minutes += 1;
       const [hr, min] = addMinutes(minutes, now);
       const nsSchedule = `${min} ${hr} * * *`;
-      await this.updateResource("job-delete-namespace.yaml", {
+      await this.updateResource("job-delete-namespace.yaml", this.namespace, {
         schedule: nsSchedule,
       });
     }
