@@ -353,9 +353,14 @@ export async function generateNetworkSpec(
 
       // IF is defined use that value
       // else check if the command is one off undying/adder otherwise true
-      const isCumulusBased = (parachain.cumulus_based !== undefined) ? parachain.cumulus_based :
-        [DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(collators[0].command!) ? false :
-        true;
+      const isCumulusBased =
+        parachain.cumulus_based !== undefined
+          ? parachain.cumulus_based
+          : [DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
+              collators[0].command!,
+            )
+          ? false
+          : true;
 
       let parachainSetup: Parachain = {
         id: parachain.id,
