@@ -36,6 +36,7 @@ const DEFAULT_CHAIN_SPEC_COMMAND =
 const DEFAULT_GENESIS_GENERATE_SUBCOMMAND = "export-genesis-state";
 const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
+const UNDYING_COLLATOR_BIN = "undying-collator";
 const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-parachain";
 const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
 const DEFAULT_MAX_NOMINATIONS = 24; // kusama value is 24
@@ -150,4 +151,5 @@ export {
   DEV_ACCOUNTS,
   DEFAULT_BALANCE,
   ARGS_TO_REMOVE,
+  UNDYING_COLLATOR_BIN
 };
