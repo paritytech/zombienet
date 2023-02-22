@@ -356,11 +356,9 @@ export async function generateNetworkSpec(
       const isCumulusBased =
         parachain.cumulus_based !== undefined
           ? parachain.cumulus_based
-          : [DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
+          : ![DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
               collators[0].command!,
-            )
-          ? false
-          : true;
+            );
 
       let parachainSetup: Parachain = {
         id: parachain.id,
