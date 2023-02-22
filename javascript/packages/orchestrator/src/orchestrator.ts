@@ -837,6 +837,29 @@ export async function start(
       }
     }
 
+    // sleep to give time to last node process' to start
+    await sleep(2000);
+
+    // wait until all the node's are up
+    const nodeChecker = async (node: NetworkNode) => {
+      debug(`\t checking node: ${node.name}`);
+      const ready = await node.getMetric(
+        "process_start_time_seconds",
+        "isAtLeast",
+        1,
+        60 * 10,
+      );
+      debug(`\t ${node.name} ready ${ready}`);
+    };
+    const nodeCheckGenerators = Object.values(network.nodesByName).map(
+      (node: NetworkNode) => {
+        return () => nodeChecker(node);
+      },
+    );
+
+    await series(nodeCheckGenerators, 10);
+    debug("All nodes checked ok");
+
     // cleanup global timeout
     network.launched = true;
     clearTimeout(timeoutTimer);
