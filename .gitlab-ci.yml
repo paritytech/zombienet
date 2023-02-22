@@ -478,6 +478,7 @@ paras:
     - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
     - export BIFROST_COL_IMAGE=docker.io/bifrostnetwork/bifrost:latest
     - export MOONBEAM_COL_IMAGE=docker.io/purestake/moonbeam:v0.26
+    - export OAK_COL_IMAGE=docker.io/oaknetwork/turing:latest
 
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh

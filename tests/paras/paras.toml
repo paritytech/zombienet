@@ -35,6 +35,16 @@ cumulus_based = true
   args = ["-lparachain=debug"]
 
 
+[[parachains]]
+id = 2002
+chain = "turing-dev"
+cumulus_based = true
+
+  [parachains.collator]
+  name = "alister"
+  image = "{{OAK_COL_IMAGE}}"
+  command = "oak-collator"
+  args = ["-lparachain=debug"]
 
 [types.Header]
 number = "u64"
