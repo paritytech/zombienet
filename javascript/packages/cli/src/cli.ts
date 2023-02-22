@@ -482,6 +482,17 @@ async function test(
   _opts: any,
 ) {
   const opts = program.opts();
+
+  let extension = testFile.slice(testFile.lastIndexOf(".") + 1);
+
+  if (extension !== "zndsl") {
+    console.log(
+      `\n ${decorators.red(
+        "Error:",
+      )} File extension is not correct. Extension for tests should be '.zndsl'.\n`,
+    );
+  }
+
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
   // use `k8s` as default
