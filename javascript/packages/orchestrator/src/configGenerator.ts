@@ -354,7 +354,7 @@ export async function generateNetworkSpec(
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),
         para,
-        cumulusBased: parachain.cumulus_based || false,
+        cumulusBased: parachain.cumulus_based || true,
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
