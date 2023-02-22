@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/utils",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Useful utilities for ZombieNet Framework",
   "main": "dist/index.js",
   "author": "Parity Technologies <admin@parity.io>",
