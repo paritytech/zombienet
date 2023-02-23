@@ -287,7 +287,7 @@ id = 100
 <p>In general all the config fields that start with <code>default_*</code> can be overridden in the <code>nodes</code> or <code>collators</code> config.</p>
 <h3 id="example-4---small-network-with-cumulus-based-collator"><a class="header" href="#example-4---small-network-with-cumulus-based-collator">Example 4 - Small network with cumulus based collator</a></h3>
 <p>Until now we've been using the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator.</p>
-<p>Continuing with the example we are using, we need to change the <code>image</code> and <code>command</code> of the collator, and also set the config key <code>cumulus_based</code> to true.</p>
+<p>Continuing with the example we are using, we need to change the <code>image</code> and <code>command</code> of the collator. The config key <code>cumulus_based</code> is set to true by default so there is no point to be added at this example.</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
@@ -308,7 +308,6 @@ chain = &quot;rococo-local&quot;
 
 [[parachains]]
 id = 100
-cumulus_based = true
 
   [parachains.collator]
   name = &quot;collator01&quot;
