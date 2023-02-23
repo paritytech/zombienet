@@ -71,7 +71,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 
   - `*id`: (Number) The id to assign to this parachain. Must be unique.
   - `add_to_genesis`: (Boolean) flag to add parachain to genesis or register in runtime.
-  - `cumulus_based`: (Boolean) flag to use `cumulus` command generation.
+  - `cumulus_based`: (Boolean) flag to use `cumulus` command generation; Set to `true` by default.
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.

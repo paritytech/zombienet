@@ -23,6 +23,7 @@ import {
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  UNDYING_COLLATOR_BIN,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
@@ -350,11 +351,20 @@ export async function generateNetworkSpec(
         computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
+      // IF is defined use that value
+      // else check if the command is one off undying/adder otherwise true
+      const isCumulusBased =
+        parachain.cumulus_based !== undefined
+          ? parachain.cumulus_based
+          : ![DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
+              collators[0].command!,
+            );
+
       let parachainSetup: Parachain = {
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),
         para,
-        cumulusBased: parachain.cumulus_based || false,
+        cumulusBased: isCumulusBased,
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
