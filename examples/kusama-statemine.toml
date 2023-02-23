@@ -23,7 +23,6 @@ chain = "kusama-local"
 [[parachains]]
 id = 1000
 chain = "statemine-local"
-cumulus_based = true
 
   [[parachains.collators]]
   name = "collator1"

@@ -196,7 +196,7 @@ In general all the config fields that start with `default_*` can be overridden i
 
 Until now we've been using the _parachain tests collators_ that are built from the `polkadot` repo. In this example we will set the config to use a `cumulus` based collator.
 
-Continuing with the example we are using, we need to change the `image` and `command` of the collator, and also set the config key `cumulus_based` to true.
+Continuing with the example we are using, we need to change the `image` and `command` of the collator. The config key `cumulus_based` is set to true by default so there is no point to be added at this example.
 
 [small network cumulus](https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml)
 
@@ -220,7 +220,6 @@ chain = "rococo-local"
 
 [[parachains]]
 id = 100
-cumulus_based = true
 
   [parachains.collator]
   name = "collator01"
