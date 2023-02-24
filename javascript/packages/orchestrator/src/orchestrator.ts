@@ -847,7 +847,7 @@ export async function start(
         "process_start_time_seconds",
         "isAtLeast",
         1,
-        60 * 10,
+        60 * 5,
       );
       debug(`\t ${node.name} ready ${ready}`);
     };
