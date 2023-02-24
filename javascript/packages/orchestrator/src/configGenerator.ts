@@ -695,10 +695,9 @@ async function getExternalPorts(
   return ports;
 }
 
-
-  // enable --prometheus-external by default
-  const prometheusExternal = (networkSpec: any): boolean => {
-    return networkSpec.settings?.prometheus !== undefined
-      ? networkSpec.settings.prometheus
-      : true;
-  }
+// enable --prometheus-external by default
+const prometheusExternal = (networkSpec: any): boolean => {
+  return networkSpec.settings?.prometheus !== undefined
+    ? networkSpec.settings.prometheus
+    : true;
+};
