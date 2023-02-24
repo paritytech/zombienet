@@ -696,6 +696,7 @@ async function getExternalPorts(
 }
 
 // enable --prometheus-external by default
+// TODO: fix the `any` to an actual interface
 const prometheusExternal = (networkSpec: any): boolean => {
   return networkSpec.settings?.prometheus !== undefined
     ? networkSpec.settings.prometheus
