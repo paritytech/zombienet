@@ -537,6 +537,7 @@ async function getCollatorNodeFromConfig(
     bootnodes,
     env,
     telemetryUrl: "",
+    prometheus: prometheusExternal(networkSpec),
     overrides: [],
     zombieRole: cumulusBased ? "cumulus-collator" : "collator",
     parachainId: para_id,
@@ -586,12 +587,6 @@ async function getNodeFromConfig(
   // set explicit to not be validators.
   const isValidator = node.validator !== false;
 
-  // enable --prometheus-external by default
-  const prometheusExternal =
-    networkSpec.settings?.prometheus !== undefined
-      ? networkSpec.settings.prometheus
-      : true;
-
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
 
@@ -618,7 +613,7 @@ async function getNodeFromConfig(
       ? "ws://telemetry:8000/submit 0"
       : "",
     telemetry: networkSpec.settings?.telemetry ? true : false,
-    prometheus: prometheusExternal,
+    prometheus: prometheusExternal(networkSpec),
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
@@ -699,3 +694,11 @@ async function getExternalPorts(
 
   return ports;
 }
+
+
+  // enable --prometheus-external by default
+  const prometheusExternal = (networkSpec: any): boolean => {
+    return networkSpec.settings?.prometheus !== undefined
+      ? networkSpec.settings.prometheus
+      : true;
+  }
