@@ -41,7 +41,7 @@ cumulus_based = true
   [parachains.collator]
   name = "alister"
   image = "{{OAK_COL_IMAGE}}"
-  command = "/oak/oak-collator"
+  command = "cat / && /oak/oak-collator"
   args = ["-lparachain=debug"]
 
 [types.Header]
