@@ -7,7 +7,7 @@ Roadmap Zombienet v2
 - Create [helm chart](https://helm.sh/docs/topics/charts/) to allow other use zombienet in k8s
 - Auth system to not use k8s users
 - Create GitHub Action and publish in NPM marketplace (Completed)
-- Rename `@paritytech/zombienet` npm package to `zombienet`. Keep all zombienet modules under `@zombienet/*` org
+- Rename `@paritytech/zombienet` npm package to `zombienet`. Keep all zombienet modules under `@zombienet/*` org (Completed)
 
 ## Internal teams
 - Add more teams (wip)
