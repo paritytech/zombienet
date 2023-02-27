@@ -708,7 +708,8 @@ const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
     cmd = parachain.collator_groups[0].command;
   }
 
-  cmd = cmd || "";
+  cmd = cmd || DEFAULT_ADDER_COLLATOR_BIN; // no command defined we use the default adder-collator.
+  debug(`cmd is ${cmd}`);
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;
 };
