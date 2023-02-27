@@ -240,14 +240,14 @@ export async function generateNetworkSpec(
         parachain.cumulus_based !== undefined
           ? parachain.cumulus_based
           : ![DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
-              getFirstCollatorCommand(parachain)
+              getFirstCollatorCommand(parachain),
             );
 
       // collator could by defined in groups or
       // just using one collator definiton
       const collators = [];
       const collatorConfigs = parachain.collator ? [parachain.collator] : [];
-      if(parachain.collators) collatorConfigs.push(...parachain.collators);
+      if (parachain.collators) collatorConfigs.push(...parachain.collators);
 
       for (const collatorConfig of collatorConfigs) {
         collators.push(
@@ -696,18 +696,19 @@ const prometheusExternal = (networkSpec: ComputedNetwork): boolean => {
     : true;
 };
 
-
 const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
   let cmd;
-  if(parachain.collator) {
+  if (parachain.collator) {
     cmd = parachain.collator.command_with_args || parachain.collator.command;
-  } else if(parachain.collators?.length) {
-    cmd = parachain.collators[0].command_with_args || parachain.collators[0].command;
-  } else if(parachain.collator_groups?.length) {
+  } else if (parachain.collators?.length) {
+    cmd =
+      parachain.collators[0].command_with_args ||
+      parachain.collators[0].command;
+  } else if (parachain.collator_groups?.length) {
     cmd = parachain.collator_groups[0].command;
   }
 
   cmd = cmd || "";
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;
-}
+};

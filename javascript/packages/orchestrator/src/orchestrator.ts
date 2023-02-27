@@ -859,7 +859,8 @@ export async function start(
     );
 
     const nodesOk = await series(nodeCheckGenerators, 10);
-    if(! (nodesOk as any[]).every(Boolean)) throw new Error("At least one of the nodes fails to start");
+    if (!(nodesOk as any[]).every(Boolean))
+      throw new Error("At least one of the nodes fails to start");
     debug("All nodes checked ok");
 
     // cleanup global timeout
