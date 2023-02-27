@@ -850,6 +850,7 @@ export async function start(
         60 * 5,
       );
       debug(`\t ${node.name} ready ${ready}`);
+      return ready;
     };
     const nodeCheckGenerators = Object.values(network.nodesByName).map(
       (node: NetworkNode) => {
@@ -857,7 +858,8 @@ export async function start(
       },
     );
 
-    await series(nodeCheckGenerators, 10);
+    const nodesOk = await series(nodeCheckGenerators, 10);
+    if(! (nodesOk as any[]).every(Boolean)) throw new Error("At least one of the nodes fails to start");
     debug("All nodes checked ok");
 
     // cleanup global timeout
