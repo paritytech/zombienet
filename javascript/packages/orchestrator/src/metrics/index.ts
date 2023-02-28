@@ -103,6 +103,10 @@ export function getMetricName(metricName: string): string {
   return metricNameTouse;
 }
 
+export function getProcessStartTimeKey() {
+  return "substrate_process_start_time_seconds";
+}
+
 function _extractMetrics(text: string): Metrics {
   let rawMetrics: Metrics = {};
   rawMetrics["_raw"] = {};
