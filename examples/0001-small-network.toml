@@ -18,5 +18,6 @@ id = 100
 
   [parachains.collator]
   name = "collator01"
-  image = "docker.io/paritypr/colander:master"
-  command = "adder-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]

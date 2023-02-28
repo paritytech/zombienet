@@ -16,13 +16,3 @@ chain = "rococo-local"
   image = "docker.io/paritypr/polkadot-debug:5236-0.9.18-c55660e9-be16bd72"
   validator = true
   args = ["--database=paritydb-experimental"]
-
-[[parachains]]
-id = 100
-
-  [parachains.collator]
-  name = "parachain01"
-  image = "docker.io/parity/polkadot-parachain:latest"
-  command_with_args = "polkadot-parachain --collator --alice --force-authoring --tmp -- --parachain-id 100 --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe --unsafe-ws-external -- --execution wasm --chain /cfg/rococo-local.json --bootnodes /dns/bootnode/tcp/30333/ws/p2p/12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp"
-  # command = "polkadot-parachain"
-  # args = ["-lparachain=debug"]

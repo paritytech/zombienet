@@ -21,5 +21,5 @@ id = 100
     count = 2
     [parachains.collator_groups.collator]
     name = "collator"
-    command = "adder-collator"
+    command = "polkadot-parachain"
     image = "docker.io/paritypr/colander:master"
