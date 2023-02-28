@@ -21,7 +21,8 @@ chain = "rococo-local"
 id = 100
 
   [parachains.collator]
-  name = "collator01"
+  name = "parachain01"
   image = "docker.io/parity/polkadot-parachain:latest"
-  command = "polkadot-parachain"
-  args = ["-lparachain=debug"]
+  command_with_args = "polkadot-parachain --collator --alice --force-authoring --tmp -- --parachain-id 100 --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe --unsafe-ws-external -- --execution wasm --chain /cfg/rococo-local.json --bootnodes /dns/bootnode/tcp/30333/ws/p2p/12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp"
+  # command = "polkadot-parachain"
+  # args = ["-lparachain=debug"]
