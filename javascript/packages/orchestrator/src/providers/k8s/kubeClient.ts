@@ -1,9 +1,9 @@
-import { sleep } from "@zombienet/utils";
 import {
   addMinutes,
   CreateLogTable,
   decorators,
   getSha256,
+  sleep,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
@@ -513,12 +513,15 @@ export class KubeClient extends Client {
     let fileServerOk = false;
     let attempts = 0;
     // try 5 times at most
-    for( attempts; attempts < 5; attempts++) {
-      if( await this.checkFileServer()) fileServerOk = true;
+    for (attempts; attempts < 5; attempts++) {
+      if (await this.checkFileServer()) fileServerOk = true;
       else sleep(1 * 1000);
     }
 
-    if(! fileServerOk) throw new Error(`Can't connect to fileServer, after ${attempts} attempts`);
+    if (!fileServerOk)
+      throw new Error(
+        `Can't connect to fileServer, after ${attempts} attempts`,
+      );
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
@@ -526,13 +529,7 @@ export class KubeClient extends Client {
   }
 
   async checkFileServer(): Promise<boolean> {
-    const args = [
-      "exec",
-      "Pod/fileserver",
-      "--",
-      "curl",
-      `http://localhost/`,
-    ];
+    const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
     debug("checking fileserver", args);
     let result = await this.runCommand(args);
     debug("result", result);
