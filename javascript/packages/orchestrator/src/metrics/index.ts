@@ -118,8 +118,8 @@ function _extractMetrics(text: string): Metrics {
 
     // get the namespace of the key
     const parts = parsedLine.name.split("_");
-    const ns = parts[0];
-    const rawMetricNameWithOutNs = parts.slice(1).join("_");
+    const ns = parts[0] === 'moonbeam' ? `${parts[0]}_${parts[1]}` : parts[0];
+    const rawMetricNameWithOutNs = parts[0] === 'moonbeam' ? parts.slice(2).join("_") : parts.slice(1).join("_");
 
     let labelStrings = [];
     let labelStringsWithOutChain = [];
