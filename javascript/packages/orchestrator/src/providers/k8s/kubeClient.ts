@@ -3,6 +3,7 @@ import {
   CreateLogTable,
   decorators,
   getSha256,
+  sleep,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
@@ -508,12 +509,32 @@ export class KubeClient extends Client {
 
     // wait until fileserver is ready, fix race condition #700.
     await this.wait_pod_ready("fileserver");
+    sleep(3 * 1000);
+    let fileServerOk = false;
+    let attempts = 0;
+    // try 5 times at most
+    for (attempts; attempts < 5; attempts++) {
+      if (await this.checkFileServer()) fileServerOk = true;
+      else sleep(1 * 1000);
+    }
+
+    if (!fileServerOk)
+      throw new Error(
+        `Can't connect to fileServer, after ${attempts} attempts`,
+      );
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
       await this.createStaticResource("baseline-resources.yaml");
   }
 
+  async checkFileServer(): Promise<boolean> {
+    const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
+    debug("checking fileserver", args);
+    let result = await this.runCommand(args);
+    debug("result", result);
+    return result.stdout.includes("Welcome to nginx");
+  }
   async spawnBackchannel() {}
 
   async setupCleaner(): Promise<NodeJS.Timer> {
