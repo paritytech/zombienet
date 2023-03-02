@@ -1,5 +1,6 @@
+# examples/0001-small-network.toml
 [relaychain]
-default_image = "docker.io/paritypr/polkadot-debug:master"
+default_image = "docker.io/parity/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
 

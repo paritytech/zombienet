@@ -6,15 +6,63 @@ Zombienet was designed to be a flexible and easy to use tool, allowing users to 
 
 In this guide we will go through simple use cases as well as more complex ones, describing the trade-offs made and the _current_ constraints for both network configurations and test specifications.
 
+---
+
+### Example 0 - Different configuration file types (2 validators)
+
+In this example, is shown the alternateive options of a configuration file. The different extensions supported are: `yaml`, `json` and of course `.toml`.
+This simple config exists only in order to show how the same configuration exists in 3 different formats, and thus uses only 1 relay chain (`rococo-local`) with 2 nodes (`alice` and `bob`);
+
+The configuration files are:
+
+- [0000-test-config-small-network.json](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.json);
+- [0000-test-config-small-network.yaml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml);
+- [0000-test-config-small-network.toml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml);
+
+and the test files for running each confgiration are:
+
+- [0000-test-json-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl);
+- [0000-test-yaml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl);
+- [0000-test-toml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-toml-config-small-network.zndsl);
+
+respectively.
+
+Each `.zndsl` file contains at the `header` part of the file the:
+
+```toml
+Network: ./0000-test-config-small-network.json
+```
+
+that describes which config file will be used for the test.
+
+To run the three tests (assuming the native provider is used) just execute the following commands for each test:
+
+```bash
+./zombienet -p native test ./examples/0000-test-json-config-small-network.zndsl
+```
+
+```bash
+./zombienet -p native test ./examples/0000-test-yaml-config-small-network.zndsl
+```
+
+```bash
+./zombienet -p native test ./examples/0000-test-toml-config-small-network.zndsl
+```
+
+> Note: remember to use `-p podman` for Podman as provider, while no `-p` option as default is the `kubernetes` one.
+
+---
+
 ### Example 1 - Small network (2 validators/ 1 parachain)
 
 In this example [small-network](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml), we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the _default_ image, command and args.
 
 ```toml
 [relaychain]
-default_image = "docker.io/paritypr/polkadot-debug:master"
+default_image = "docker.io/parity/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
+
 chain = "rococo-local"
 
   [[relaychain.nodes]]
@@ -30,14 +78,15 @@ id = 100
 
   [parachains.collator]
   name = "collator01"
-  image = "docker.io/paritypr/colander:master"
-  command = "adder-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
 ```
 
 Using kubernetes as provider we can simply spawn this network by running:
 
 ```bash
-./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
+./zombienet-linux -p native spawn examples/0001-small-network.toml
 ```
 
 You will see how `zombienet` starts creating the needed resources to launch the network.
@@ -54,16 +103,10 @@ In Zombienet the tests are defined in the `*.zndsl` file, which uses a _simple_ 
 
 [0001-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.zndsl)
 
-```
+```toml
 Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
-
-
-# well known functions
-alice: is up
-bob: is up
-alice: parachain 100 is registered within 225 seconds
 
 # metrics
 alice: reports node_roles is 4
@@ -80,6 +123,10 @@ bob: count of log lines maching "Error" is 0 within 10 seconds
 # system events
 bob: system event contains "A candidate was included" within 20 seconds
 alice: system event matches glob "*was backed*" within 10 seconds
+
+#parachain tests
+alice: parachain 100 is registered within 225 seconds
+alice: parachain 100 block height is at least 10 within 200 seconds
 ```
 
 Now, run the tests with the following command to get both the _launching_ output and the test reports:
@@ -291,11 +338,6 @@ For example:
 Description: Big Network test
 Network: ./0005-big-network.toml
 Creds: config
-
-
-# well known functions using groups
-a: is up
-b: is up
 
 # metrics
 a: reports node_roles is 4

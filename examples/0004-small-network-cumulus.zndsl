@@ -2,16 +2,6 @@ Description: Small Network test
 Network: ./0004-small-network-cumulus.toml
 Creds: config
 
-{% set nodes = ["alice", "bob"] %}
-{% for node in nodes %}
-{{node}}: is up
-{% endfor %}
-
-# well known functions
-alice: is up
-bob: is up
-alice: parachain 100 is registered within 225 seconds
-
 # Tracing
 # alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]
 

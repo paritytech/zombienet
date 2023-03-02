@@ -2,10 +2,6 @@ Description: Small Network test
 Network: ./0000-test-config-small-network.toml
 Creds: config
 
-# well known functions
-alice: is up
-bob: is up
-
 # metrics
 alice: reports node_roles is 4
 alice: reports sub_libp2p_is_major_syncing is 0
