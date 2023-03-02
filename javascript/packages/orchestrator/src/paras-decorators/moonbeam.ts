@@ -119,11 +119,14 @@ async function addParaCustom(specPath: string, node: Node) {
   if (!runtimeConfig?.parachainStaking) return;
 
   const { eth_account } = node.accounts;
-  const stakingBond =  paraStakingBond || BigInt('1000000000000000000000');
-  const reservedBalance = BigInt('100000000000000000000');
+  const stakingBond = paraStakingBond || BigInt("1000000000000000000000");
+  const reservedBalance = BigInt("100000000000000000000");
 
   // Ensure collator account has enough balance to bond and add candidate
-  runtimeConfig.balances.balances.push([eth_account.address, stakingBond + reservedBalance]);
+  runtimeConfig.balances.balances.push([
+    eth_account.address,
+    stakingBond + reservedBalance,
+  ]);
 
   runtimeConfig.parachainStaking.candidates.push([
     eth_account.address,
