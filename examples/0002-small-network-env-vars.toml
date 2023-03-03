@@ -1,7 +1,6 @@
 # examples/0002-small-network-env-vars.toml
 [relaychain]
-# default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
-default_image = "docker.io/parity/polkadot:latest"
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
 
@@ -14,6 +13,7 @@ chain = "rococo-local"
   [[relaychain.nodes]]
   name = "bob"
   validator = true
+  image= "{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}" 
 
 [[parachains]]
 id = 100

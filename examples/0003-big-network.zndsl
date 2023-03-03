@@ -1,5 +1,5 @@
 Description: Big Network test
-Network: ./0005-big-network.toml
+Network: ./0003-big-network.toml
 Creds: config
 
 # metrics
