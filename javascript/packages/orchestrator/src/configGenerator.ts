@@ -302,9 +302,7 @@ export async function generateNetworkSpec(
 
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
-        : firstCollator.command
-        ? firstCollator.command
-        : DEFAULT_ADDER_COLLATOR_BIN;
+        : firstCollator.command || DEFAULT_COLLATOR_IMAGE;
 
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
