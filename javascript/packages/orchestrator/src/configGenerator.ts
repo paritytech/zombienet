@@ -9,6 +9,7 @@ import {
 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
+  DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_BALANCE,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
