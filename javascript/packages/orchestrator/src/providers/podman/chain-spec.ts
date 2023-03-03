@@ -103,6 +103,8 @@ export async function getChainSpecRaw(
   let isValid = false;
   try {
     let content = require(chainFullPath);
+    const chainSpecContentTest = fs.readFileSync(chainFullPath);
+    const chainSpecContent = JSON.parse(chainSpecContentTest.toString());
     isValid = true;
   } catch (_) {}
 

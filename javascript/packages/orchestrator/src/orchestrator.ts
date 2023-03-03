@@ -261,7 +261,8 @@ export async function start(
 
     // Check if the chain spec is in raw format
     // Could be if the chain_spec_path was set
-    const chainSpecContent = require(chainSpecFullPathPlain);
+    const chainSpecContentTest = fs.readFileSync(chainSpecFullPathPlain);
+    const chainSpecContent = JSON.parse(chainSpecContentTest.toString());
     client.chainId = chainSpecContent.id;
 
     const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
