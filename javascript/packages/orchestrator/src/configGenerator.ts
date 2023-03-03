@@ -9,7 +9,6 @@ import {
 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
-  DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_BALANCE,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
@@ -504,7 +503,7 @@ async function getCollatorNodeFromConfig(
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
-    : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
+    : collatorConfig.command || DEFAULT_COLLATOR_IMAGE;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
@@ -707,7 +706,7 @@ const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
     cmd = parachain.collator_groups[0].command;
   }
 
-  cmd = cmd || DEFAULT_ADDER_COLLATOR_BIN; // no command defined we use the default adder-collator.
+  cmd = cmd || DEFAULT_COLLATOR_IMAGE; // no command defined we use the default polkadot-parachain.
   debug(`cmd is ${cmd}`);
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;
