@@ -302,8 +302,8 @@ export async function generateNetworkSpec(
 
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
-        : firstCollator.command || DEFAULT_COLLATOR_IMAGE;
-      DEFAULT_COLLATOR_IMAGE;
+        : firstCollator.command || DEFAULT_CUMULUS_COLLATOR_BIN;
+
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
           process.cwd(),
@@ -501,7 +501,7 @@ async function getCollatorNodeFromConfig(
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
-    : collatorConfig.command || DEFAULT_COLLATOR_IMAGE;
+    : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
@@ -702,7 +702,7 @@ const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
     cmd = parachain.collator_groups[0].command;
   }
 
-  cmd = cmd || DEFAULT_COLLATOR_IMAGE; // no command defined we use the default polkadot-parachain.
+  cmd = cmd || DEFAULT_CUMULUS_COLLATOR_BIN; // no command defined we use the default polkadot-parachain.
   debug(`cmd is ${cmd}`);
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;
