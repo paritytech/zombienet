@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="requirements/kubernetes.html"><strong aria-hidden="true">2.1.</strong> Kubernetes requirements</a></li><li class="chapter-item expanded "><a href="requirements/podman.html"><strong aria-hidden="true">2.2.</strong> Podman requirements</a></li><li class="chapter-item expanded "><a href="requirements/native.html"><strong aria-hidden="true">2.3.</strong> Native requirements</a></li></ol></li><li class="chapter-item expanded "><a href="features/index.html"><strong aria-hidden="true">3.</strong> Features by providers</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="features/kubernetes.html"><strong aria-hidden="true">3.1.</strong> Kubernetes</a></li><li class="chapter-item expanded "><a href="features/podman.html"><strong aria-hidden="true">3.2.</strong> Podman</a></li><li class="chapter-item expanded "><a href="features/native.html"><strong aria-hidden="true">3.3.</strong> Native</a></li></ol></li><li class="chapter-item expanded "><a href="cli/index.html"><strong aria-hidden="true">4.</strong> Cli usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/setup.html"><strong aria-hidden="true">4.1.</strong> Setup</a></li><li class="chapter-item expanded "><a href="cli/spawn.html"><strong aria-hidden="true">4.2.</strong> Spawning</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/env_vars.html"><strong aria-hidden="true">4.2.1.</strong> Using env vars</a></li><li class="chapter-item expanded "><a href="cli/teardown.html"><strong aria-hidden="true">4.2.2.</strong> Teardown</a></li></ol></li><li class="chapter-item expanded "><a href="cli/testing.html"><strong aria-hidden="true">4.3.</strong> Testing</a></li></ol></li><li class="chapter-item expanded "><a href="guide.html"><strong aria-hidden="true">5.</strong> Guide</a></li><li class="chapter-item expanded "><a href="network-definition-spec.html"><strong aria-hidden="true">6.</strong> Network definition spec</a></li><li class="chapter-item expanded "><a href="cli/test-dsl-definition-spec.html"><strong aria-hidden="true">7.</strong> Testing DSL spec</a></li><li class="chapter-item expanded "><a href="development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li class="chapter-item expanded "><a href="acknowledgement.html"><strong aria-hidden="true">9.</strong> Acknowledgement</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="requirements/kubernetes.html"><strong aria-hidden="true">2.1.</strong> Kubernetes requirements</a></li><li class="chapter-item expanded "><a href="requirements/podman.html"><strong aria-hidden="true">2.2.</strong> Podman requirements</a></li><li class="chapter-item expanded "><a href="requirements/native.html"><strong aria-hidden="true">2.3.</strong> Native requirements</a></li></ol></li><li class="chapter-item expanded "><a href="features/index.html"><strong aria-hidden="true">3.</strong> Features by providers</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="features/kubernetes.html"><strong aria-hidden="true">3.1.</strong> Kubernetes</a></li><li class="chapter-item expanded "><a href="features/podman.html"><strong aria-hidden="true">3.2.</strong> Podman</a></li><li class="chapter-item expanded "><a href="features/native.html"><strong aria-hidden="true">3.3.</strong> Native</a></li></ol></li><li class="chapter-item expanded "><a href="cli/index.html"><strong aria-hidden="true">4.</strong> Cli usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/setup.html"><strong aria-hidden="true">4.1.</strong> Setup</a></li><li class="chapter-item expanded "><a href="cli/spawn.html"><strong aria-hidden="true">4.2.</strong> Spawning</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="cli/env_vars.html"><strong aria-hidden="true">4.2.1.</strong> Using env vars</a></li><li class="chapter-item expanded "><a href="cli/teardown.html"><strong aria-hidden="true">4.2.2.</strong> Teardown</a></li></ol></li><li class="chapter-item expanded "><a href="cli/testing.html"><strong aria-hidden="true">4.3.</strong> Testing</a></li></ol></li><li class="chapter-item expanded "><a href="guide.html"><strong aria-hidden="true">5.</strong> Guide (examples)</a></li><li class="chapter-item expanded "><a href="network-definition-spec.html"><strong aria-hidden="true">6.</strong> Network definition spec</a></li><li class="chapter-item expanded "><a href="cli/test-dsl-definition-spec.html"><strong aria-hidden="true">7.</strong> Testing DSL spec</a></li><li class="chapter-item expanded "><a href="development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li class="chapter-item expanded "><a href="acknowledgement.html"><strong aria-hidden="true">9.</strong> Acknowledgement</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -362,12 +362,47 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 <h2 id="intro"><a class="header" href="#intro">Intro</a></h2>
 <p>Zombienet was designed to be a flexible and easy to use tool, allowing users to describe complex network configurations that work across supported <code>providers</code> (e.g k8s, podman, native) and write tests in an intuitive way. The end goal is to create a smooth experience for parachain developers, giving them the confidence and simplicity to build and ship.</p>
 <p>In this guide we will go through simple use cases as well as more complex ones, describing the trade-offs made and the <em>current</em> constraints for both network configurations and test specifications.</p>
+<hr />
+<h3 id="example-0---different-configuration-file-types-2-validators"><a class="header" href="#example-0---different-configuration-file-types-2-validators">Example 0 - Different configuration file types (2 validators)</a></h3>
+<hr />
+<p>In this example, is shown the alternateive options of a configuration file. The different extensions supported are: <code>yaml</code>, <code>json</code> and of course <code>.toml</code>.
+This simple config exists only in order to show how the same configuration exists in 3 different formats, and thus uses only 1 relay chain (<code>rococo-local</code>) with 2 nodes (<code>alice</code> and <code>bob</code>);</p>
+<p>The configuration files are:</p>
+<ul>
+<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.json">0000-test-config-small-network.json</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml">0000-test-config-small-network.yaml</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml">0000-test-config-small-network.toml</a>;</li>
+</ul>
+<p>and the test files for running each confgiration are:</p>
+<ul>
+<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl">0000-test-json-config-small-network.zndsl</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl">0000-test-yaml-config-small-network.zndsl</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-toml-config-small-network.zndsl">0000-test-toml-config-small-network.zndsl</a>;</li>
+</ul>
+<p>respectively.</p>
+<p>Each <code>.zndsl</code> file contains at the <code>header</code> part of the file the:</p>
+<pre><code class="language-toml">Network: ./0000-test-config-small-network.json
+</code></pre>
+<p>that describes which config file will be used for the test.</p>
+<p>To run the three tests (assuming the native provider is used) just execute the following commands for each test:</p>
+<pre><code class="language-bash">./zombienet-linux -p native test examples/0000-test-json-config-small-network.zndsl
+</code></pre>
+<pre><code class="language-bash">./zombienet-linux -p native test examples/0000-test-yaml-config-small-network.zndsl
+</code></pre>
+<pre><code class="language-bash">./zombienet-linux -p native test examples/0000-test-toml-config-small-network.zndsl
+</code></pre>
+<blockquote>
+<p>Note: remember to use <code>-p podman</code> for Podman as provider, while no <code>-p</code> option as default is the <code>kubernetes</code> one.</p>
+</blockquote>
+<hr />
 <h3 id="example-1---small-network-2-validators-1-parachain"><a class="header" href="#example-1---small-network-2-validators-1-parachain">Example 1 - Small network (2 validators/ 1 parachain)</a></h3>
+<hr />
 <p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
+default_image = &quot;docker.io/parity/polkadot:latest&quot;
 default_command = &quot;polkadot&quot;
 default_args = [ &quot;-lparachain=debug&quot; ]
+
 chain = &quot;rococo-local&quot;
 
   [[relaychain.nodes]]
@@ -383,29 +418,26 @@ id = 100
 
   [parachains.collator]
   name = &quot;collator01&quot;
-  image = &quot;docker.io/paritypr/colander:master&quot;
-  command = &quot;adder-collator&quot;
+  image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
+  command = &quot;polkadot-parachain&quot;
+  args = [&quot;-lparachain=debug&quot;]
 </code></pre>
 <p>Using kubernetes as provider we can simply spawn this network by running:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
+</code></pre>
+<p>or simplier, since kubernetes is the default provider as:</p>
+<pre><code class="language-bash">./zombienet-linux spawn examples/0001-small-network.toml
 </code></pre>
 <p>You will see how <code>zombienet</code> starts creating the needed resources to launch the network.
 At the end of the process a list of <code>nodes</code> (with direct access links) will be printed. So, you can now connect to one of the <code>nodes</code>.</p>
 <p><img src="./imgs/small-network-banner.png" alt="small network banner" /></p>
 <p><img src="./imgs/small-network-web.png" alt="small network node" /></p>
-<hr />
 <p>Now we've explored how to launch a network, let's add a test file to ensure that it works as expected.
 In Zombienet the tests are defined in the <code>*.zndsl</code> file, which uses a <em>simple</em> <a href="./cli/test-dsl-definition-spec.html">DSL</a> to write test assertions.</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.zndsl">0001-small-network.zndsl</a></p>
-<pre><code>Description: Small Network test
+<pre><code class="language-toml">Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
-
-
-# well known functions
-alice: is up
-bob: is up
-alice: parachain 100 is registered within 225 seconds
 
 # metrics
 alice: reports node_roles is 4
@@ -422,20 +454,27 @@ bob: count of log lines maching &quot;Error&quot; is 0 within 10 seconds
 # system events
 bob: system event contains &quot;A candidate was included&quot; within 20 seconds
 alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
+
+#parachain tests
+alice: parachain 100 is registered within 225 seconds
+alice: parachain 100 block height is at least 10 within 200 seconds
 </code></pre>
 <p>Now, run the tests with the following command to get both the <em>launching</em> output and the test reports:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes test examples/0001-small-network.zndsl
 </code></pre>
-<p><img src="./imgs/small-network-test-report.png" alt="test report" /></p>
+<p><img src="./imgs/small-network-test-report-new.png" alt="test report" /></p>
+<hr />
 <h3 id="example-2---small-network-with-replacements"><a class="header" href="#example-2---small-network-with-replacements">Example 2 - Small network with replacements</a></h3>
+<hr />
 <p>In Example 1, we used some <em>hardcoded</em> default values but sometimes it's more useful to be able to change them dynamically.
 For example, if you are building images in your <code>CI</code> and those images have an unique tag. To address these cases, Zombienet uses a templating language called <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a> that allows defining environment variables which then can get updated at <em>runtime</em>.</p>
-<p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment:</p>
+<p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment. An interesting addon test that needs to be noticed here, is that the bob validator, is using a different version of polkadot (v0.9.37) instead of the latest (which at the time of writing this documentation was v0.9.39):</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
 default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
 default_command = &quot;polkadot&quot;
 default_args = [ &quot;-lparachain=debug&quot; ]
+
 chain = &quot;rococo-local&quot;
 
   [[relaychain.nodes]]
@@ -445,6 +484,7 @@ chain = &quot;rococo-local&quot;
   [[relaychain.nodes]]
   name = &quot;bob&quot;
   validator = true
+  image= &quot;{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}&quot;
 
 [[parachains]]
 id = 100
@@ -452,94 +492,29 @@ id = 100
   [parachains.collator]
   name = &quot;collator01&quot;
   image = &quot;{{ZOMBIENET_COL_IMAGE}}&quot;
-  command = &quot;adder-collator&quot;
+  command = &quot;polkadot-parachain&quot;
 </code></pre>
-<p>To spawn this network now we need to define the <code>ZOMBIENET_INTEGRATION_TEST_IMAGE</code> and <code>ZOMBIENET_COL_IMAGE</code> environment variables.
-For example:</p>
-<pre><code class="language-bash">export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
-export ZOMBIENET_COL_IMAGE=docker.io/paritypr/colander:master
+<p>To spawn this network now we need to define the <code>ZOMBIENET_INTEGRATION_TEST_IMAGE</code>, <code>ZOMBIENET_ALTERNATIVE_TEST_IMAGE</code> and <code>ZOMBIENET_COL_IMAGE</code> environment variables.</p>
+<p>For example:</p>
+<pre><code class="language-bash">export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/parity/polkadot:latest
+export ZOMBIENET_ALTERNATIVE_TEST_IMAGE=docker.io/parity/polkadot:v0.9.37
+export ZOMBIENET_COL_IMAGE=docker.io/parity/polkadot-parachain:latest
 </code></pre>
 <p>Now we can run this command to spawn the network:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0002-small-network-env-vars.toml
 </code></pre>
 <p>And again we get the network info with direct links:</p>
-<p><img src="./imgs/small-network-envs-launch.png" alt="network info" /></p>
-<h3 id="example-3---small-network-with-custom-images-per-node"><a class="header" href="#example-3---small-network-with-custom-images-per-node">Example 3 - Small network with custom images per node</a></h3>
-<p>Continuing with our <code>small network</code> example, this time we will be <em>overriding</em> some of the default methods to allow developers to use and test different configurations, such as different <code>images</code> or <code>arguments</code>.</p>
-<p>As an example, this config will use different <code>images</code> and <code>dbs</code> between the nodes.</p>
-<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0003-small-network-custom.toml">small network custom</a></p>
-<pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
-
-chain = &quot;rococo-local&quot;
-
-  [[relaychain.nodes]]
-  name = &quot;alice&quot;
-  validator = true
-
-  [[relaychain.nodes]]
-  name = &quot;bob&quot;
-  image = &quot;docker.io/paritypr/polkadot-debug:5236-0.9.18-c55660e9-be16bd72&quot;
-  validator = true
-  args = [&quot;--database=paritydb-experimental&quot;]
-
-[[parachains]]
-id = 100
-
-  [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;docker.io/paritypr/colander:master&quot;
-  command = &quot;adder-collator&quot;
-</code></pre>
-<p>We start by launching our simulated network using <code>zombienet</code>:</p>
-<pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0003-small-network-custom.toml
-</code></pre>
-<p>And we get the <em>information</em> about the network.</p>
-<p><img src="./imgs/small-network-custom-launch.png" alt="network info" /></p>
-<p><strong>But</strong> if we scroll up the output we can see that <code>bob</code> is using the custom image and argument we set.</p>
-<p><img src="./imgs/bob-custom.png" alt="bob custom image and command" /></p>
-<p>In general all the config fields that start with <code>default_*</code> can be overridden in the <code>nodes</code> or <code>collators</code> config.</p>
-<h3 id="example-4---small-network-with-cumulus-based-collator"><a class="header" href="#example-4---small-network-with-cumulus-based-collator">Example 4 - Small network with cumulus based collator</a></h3>
-<p>Until now we've been using the <em>parachain tests collators</em> that are built from the <code>polkadot</code> repo. In this example we will set the config to use a <code>cumulus</code> based collator.</p>
-<p>Continuing with the example we are using, we need to change the <code>image</code> and <code>command</code> of the collator. The config key <code>cumulus_based</code> is set to true by default so there is no point to be added at this example.</p>
-<p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml">small network cumulus</a></p>
-<pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
-
-chain = &quot;rococo-local&quot;
-
-  [[relaychain.nodes]]
-  name = &quot;alice&quot;
-  validator = true
-
-  [[relaychain.nodes]]
-  name = &quot;bob&quot;
-  image = &quot;docker.io/paritypr/polkadot-debug:5236-0.9.18-c55660e9-be16bd72&quot;
-  validator = true
-  args = [&quot;--database=paritydb-experimental&quot;]
-
-[[parachains]]
-id = 100
-
-  [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
-  command = &quot;polkadot-parachain&quot;
-</code></pre>
-<p>And again, we just <em>launch</em> the network using the following command:</p>
-<pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml
-</code></pre>
-<p>And get the network information but this time using a <code>cumulus based</code> collator.</p>
-<p><img src="./imgs/cumulus-launch.png" alt="cumulus launch" /></p>
-<h3 id="example-5---big-networks-with-groups"><a class="header" href="#example-5---big-networks-with-groups">Example 5 - Big networks with groups</a></h3>
+<h2 id=""><a class="header" href="#"><img src="./imgs/small-network-envs-launch.png" alt="network info" /></a></h2>
+<p>This example shows that we can use custom environmental variables in our config file in order to dynamically alter the configuration of the network.</p>
+<p>In addition that the validators support the capability of running different versions of the image.</p>
+<blockquote>
+<p>Note: In general all the config fields that start with <code>default_*</code> can be overridden in the <code>nodes</code> or <code>collators</code> config.</p>
+</blockquote>
+<h3 id="example-3---big-networks-with-groups"><a class="header" href="#example-3---big-networks-with-groups">Example 3 - Big networks with groups</a></h3>
 <p>Sometimes you need to launch and test bigger networks and defining nodes one by one is a very <em>manual</em> and error prone task. For this use cases Zombienet allows to define <code>groups</code> of nodes, for both <code>validators</code> and <code>collators</code>.</p>
 <p>Using the <code>small network</code> example as base, we can add <code>groups</code> to spawn a bigger network.</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/paritypr/polkadot-debug:master&quot;
+default_image = &quot;docker.io/paritypr/polkadot:latest&quot;
 default_command = &quot;polkadot&quot;
 default_args = [ &quot;-lparachain=debug&quot; ]
 
@@ -561,33 +536,28 @@ id = 100
     count = 2
     [parachains.collator_groups.collator]
     name = &quot;collator&quot;
-    command = &quot;adder-collator&quot;
-    image = &quot;docker.io/paritypr/colander:master&quot;
+    command = &quot;polkadot-parachain&quot;
+    image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
 </code></pre>
 <p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, then Zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>).
 Again, the groups use the <code>default_*</code> fields if they are not overridden in the group definition.</p>
 <p>This time for <code>spawning</code> the network we will use the <em>concurrency</em> (<code>-c</code>) flag to spawn the nodes in batches and speed up the process.</p>
-<pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 spawn examples/0005-big-network.toml
+<pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 spawn examples/0003-big-network.toml
 </code></pre>
 <p>And this time we get also a bigger output...</p>
 <p><img src="./imgs/big-launch.png" alt="big network" /></p>
 <p>You can use the <em>group name</em> in the testing definition to make the same assertion on all the <code>nodes</code>/<code>collators</code> of the group.
 For example:</p>
 <pre><code>Description: Big Network test
-Network: ./0005-big-network.toml
+Network: ./0003-big-network.toml
 Creds: config
-
-
-# well known functions using groups
-a: is up
-b: is up
 
 # metrics
 a: reports node_roles is 4
 b: reports sub_libp2p_is_major_syncing is 0
 </code></pre>
 <p>And now we can run the test and get the report</p>
-<pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.zndsl
+<pre><code class="language-bash">./zombienet-linux -p kubernetes -c 5 test examples/0003-big-network.zndsl
 </code></pre>
 <p><img src="./imgs/big-test.png" alt="big network test" /></p>
 <hr />
@@ -624,7 +594,7 @@ For example:</p>
 </code></pre>
 <h4 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h4>
 <p>Zombienet provides an easy way to follow the spawning process by enabling the debug logs using the <code>DEBUG</code> environment variable to manage the output.</p>
-<pre><code class="language-bash">DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.zndsl
+<pre><code class="language-bash">DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0003-big-network.zndsl
 </code></pre>
 <hr />
 <h2 id="podman-infra"><a class="header" href="#podman-infra">Podman infra</a></h2>
