@@ -24,6 +24,7 @@ add_to_genesis = false
   [parachains.collator]
   name = "collator01"
   image = "{{COL_IMAGE}}"
+  command = "adder-collator"
 
 [types.Header]
 number = "u64"

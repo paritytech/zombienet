@@ -15,6 +15,7 @@ import {
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
+  DEFAULT_CUMULUS_COLLATOR_BIN,
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
@@ -302,9 +303,7 @@ export async function generateNetworkSpec(
 
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
-        : firstCollator.command
-        ? firstCollator.command
-        : DEFAULT_ADDER_COLLATOR_BIN;
+        : firstCollator.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
@@ -503,9 +502,7 @@ async function getCollatorNodeFromConfig(
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
-    : collatorConfig.command
-    ? collatorConfig.command
-    : DEFAULT_ADDER_COLLATOR_BIN;
+    : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
@@ -620,9 +617,7 @@ async function getNodeFromConfig(
 
   const dbSnapshot = node.db_snapshot
     ? node.db_snapshot
-    : networkSpec.relaychain.defaultDbSnapshot
-    ? networkSpec.relaychain.defaultDbSnapshot
-    : null;
+    : networkSpec.relaychain.defaultDbSnapshot || null;
 
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
   return nodeSetup;
@@ -708,7 +703,7 @@ const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
     cmd = parachain.collator_groups[0].command;
   }
 
-  cmd = cmd || DEFAULT_ADDER_COLLATOR_BIN; // no command defined we use the default adder-collator.
+  cmd = cmd || DEFAULT_CUMULUS_COLLATOR_BIN; // no command defined we use the default polkadot-parachain.
   debug(`cmd is ${cmd}`);
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;

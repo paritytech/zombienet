@@ -1,11 +1,6 @@
 Description: Big Network test
-Network: ./0005-big-network.toml
+Network: ./0003-big-network.toml
 Creds: config
-
-
-# well known functions using groups and specific node
-a: is up
-b: is up
 
 # metrics
 a: reports node_roles is 4
