@@ -15,6 +15,7 @@ import {
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
+  DEFAULT_CUMULUS_COLLATOR_BIN,
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
@@ -239,7 +240,7 @@ export async function generateNetworkSpec(
       const isCumulusBased =
         parachain.cumulus_based !== undefined
           ? parachain.cumulus_based
-          : ![DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
+          : ![DEFAULT_CUMULUS_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
               getFirstCollatorCommand(parachain),
             );
 
@@ -503,9 +504,7 @@ async function getCollatorNodeFromConfig(
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
-    : collatorConfig.command
-    ? collatorConfig.command
-    : DEFAULT_ADDER_COLLATOR_BIN;
+    : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
