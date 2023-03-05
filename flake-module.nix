@@ -26,20 +26,17 @@
           # uncomment if need to debug build
           #npmFlags = "--verbose";
 
-          npmDepsHash = "sha256-DPu99IM0dRT8B0+FqG2mN/BMea61/uNvNvmvjAypC08=";
-          # unfortunately current fetcher(written in rust) has bugs for workspaes, so this is ugly workaround, creating issue on nixpkgs
+          npmDepsHash = "sha256-kERCSeGAkc0caAahT7fsQzAPL5Bq/rdMgnEhNvCD97I=";
+          # unfortunately current fetcher(written in rust) has bugs for workspaes, so this is ugly workaround https://github.com/NixOS/nixpkgs/issues/219673
           preInstall = ''
             echo "Generating `dist` of `workspace`"
             npm run build --workspace=packages/utils          
             npm run build --workspace=packages/orchestrator
-            npm run build --workspace=packages/cli
           '';
           postInstall = ''
             echo "Copying `dist` of `workspace` to output"
             cp --recursive packages/orchestrator/dist/ $out/lib/node_modules/zombienet/node_modules/@zombienet/orchestrator/dist/
-            cp --recursive packages/orchestrator/dist/ $out/lib/node_modules/zombienet/node_modules/@zombienet/orchestrator/dist/
-            cp --recursive packages/utils/dist/ $out/lib/node_modules/zombienet/packages/utils/dist/
-            cp --recursive packages/utils/dist/ $out/lib/node_modules/zombienet/packages/utils/dist/
+            cp --recursive packages/utils/dist/ $out/lib/node_modules/zombienet/node_modules/@zombienet/utils/dist/
           '';
         };
       };
