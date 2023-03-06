@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: prometheus
+  namespace: zombie-4ce106de
+  labels:
+    app.kubernetes.io/name: zombie-4ce106de
+    app.kubernetes.io/instance: prometheus
+    zombie-role: prometheus
+    app: zombienet
+    zombie-ns: zombie-4ce106de
+spec:
+  hostname: prometheus
+  containers:
+    - image: docker.io/prom/prometheus
+      name: prometheus
+      imagePullPolicy: Always
+      ports:
+        - containerPort: 9090
+          name: prometheus_endpoint
+          hostPort: 43733
+      volumeMounts:
+        - name: prom-cfg
+          mountPath: /etc/prometheus
+          readOnly: false
+        - name: prom-data
+          mountPath: /data
+          readOnly: false
+  restartPolicy: OnFailure
+  volumes:
+    - name: prom-cfg
+      hostPath:
+        type: Directory
+        path: ./test-dir/prometheus/etc
+    - name: prom-data
+      hostPath:
+        type: Directory
+        path: ./test-dir/prometheus/data
