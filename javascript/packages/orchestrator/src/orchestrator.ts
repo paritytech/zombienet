@@ -376,7 +376,8 @@ export async function start(
 
     // ensure chain raw is ok
     try {
-      const chainRawContent = require(chainSpecFullPath);
+      const chainsSpecString = fs.readFileSync(chainSpecFullPath).toString();
+      const chainRawContent = JSON.parse(chainsSpecString);
       debug(`Chain name: ${chainRawContent.name}`);
 
       new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
@@ -661,7 +662,6 @@ export async function start(
       // add bootnodes to chain spec
       await addBootNodes(chainSpecFullPath, bootnodes);
       // flush require cache since we change the chain-spec
-      delete require.cache[require.resolve(chainSpecFullPath)];
 
       if (client.providerName === "kubernetes") {
         // cache the chainSpec with bootnodes

@@ -8,7 +8,7 @@ import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 const debug = require("debug")("zombie::native::chain-spec");
 
-const fs = require("fs").promises;
+const { readFileSync, promises } = require("fs");
 
 export async function setupChainSpec(
   namespace: string,
@@ -22,7 +22,7 @@ export async function setupChainSpec(
   const client = getClient();
   if (chainConfig.chainSpecPath) {
     // copy file to temp to use
-    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
+    await promises.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
     if (chainConfig.chainSpecCommand) {
       const { defaultImage, chainSpecCommand } = chainConfig;
@@ -41,7 +41,7 @@ export async function setupChainSpec(
 
       const podDef = await genNodeDef(namespace, node);
       await client.spawnFromDef(podDef);
-      await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);
+      await promises.copyFile(plainChainSpecOutputFilePath, chainFullPath);
     }
   }
 }
@@ -90,11 +90,7 @@ export async function getChainSpecRaw(
   // let's add some extra checks here to ensure we are ok.
   let isValid = false;
   try {
-    console.log('----- 1:', fs.readFileSync(chainFullPath));
-    const chainSpecContentTest = fs.readFileSync(chainFullPath);
-    console.log('----- 2:');
-    const chainSpecContent = JSON.parse(chainSpecContentTest.toString());
-    console.log('----- 3:');
+    JSON.parse(readFileSync(chainFullPath).toString());
     isValid = true;
   } catch (e) {
     debug(e);
