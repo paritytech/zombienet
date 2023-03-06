@@ -1,4 +1,5 @@
 import { sleep } from "@zombienet/utils";
+import { promises as fsPromises, writeFileSync } from "fs";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
@@ -6,9 +7,8 @@ import {
 } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-const debug = require("debug")("zombie::kube::chain-spec");
 
-const { writeFileSync, promises } = require("fs");
+const debug = require("debug")("zombie::kube::chain-spec");
 
 export async function setupChainSpec(
   namespace: string,
@@ -21,7 +21,7 @@ export async function setupChainSpec(
   // 2: User provide the chainSpecCommand (without the --raw option)
   const client = getClient();
   if (chainConfig.chainSpecPath) {
-    await promises.copyFile(chainConfig.chainSpecPath, chainFullPath);
+    await fsPromises.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
     if (chainConfig.chainSpecCommand) {
       const { defaultImage, chainSpecCommand } = chainConfig;

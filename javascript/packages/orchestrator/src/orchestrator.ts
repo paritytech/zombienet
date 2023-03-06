@@ -375,12 +375,11 @@ export async function start(
 
     // ensure chain raw is ok
     try {
-      const chainsSpecString = fs.readFileSync(chainSpecFullPath).toString();
-      const chainRawContent = JSON.parse(chainsSpecString);
-      debug(`Chain name: ${chainRawContent.name}`);
+      const chainSpecContent = readAndParseChainSpec(chainSpecFullPathPlain);
+      debug(`Chain name: ${chainSpecContent.name}`);
 
       new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
-        [`Chain name: ${decorators.green(chainRawContent.name)}`],
+        [`Chain name: ${decorators.green(chainSpecContent.name)}`],
       ]);
     } catch (err) {
       console.log(
