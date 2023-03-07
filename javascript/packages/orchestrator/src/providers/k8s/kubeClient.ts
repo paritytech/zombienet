@@ -402,7 +402,14 @@ export class KubeClient extends Client {
           identifier,
         ];
         if (container) args.push("-c", container);
-        args.push("-i", "--", "/cfg/coreutils tee", podFilePath, ">", "/dev/null");
+        args.push(
+          "-i",
+          "--",
+          "/cfg/coreutils tee",
+          podFilePath,
+          ">",
+          "/dev/null",
+        );
         debug("copyFileToPod", args);
         const result = await execa("cat", args);
       }
