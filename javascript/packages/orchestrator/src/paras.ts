@@ -238,7 +238,6 @@ export async function generateParachainFiles(
     else if (client.providerName == "podman")
       commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
-
     let node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,

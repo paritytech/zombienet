@@ -221,7 +221,7 @@ export class KubeClient extends Client {
       "--",
       "sh",
       "-c",
-      `/cfg/coreutils touch ${FINISH_MAGIC_FILE}`
+      `/cfg/coreutils touch ${FINISH_MAGIC_FILE}`,
     ]);
     debug(r);
   }
@@ -384,7 +384,7 @@ export class KubeClient extends Client {
     unique: boolean = false,
   ) {
     if (unique) {
-      if( container === TRANSFER_CONTAINER_NAME) {
+      if (container === TRANSFER_CONTAINER_NAME) {
         const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
         if (container) args.push("-c", container);
         await this.runCommand(args);
@@ -392,7 +392,16 @@ export class KubeClient extends Client {
       } else {
         // we are copying to the main container and could be the case that tar
         // isn't available
-        const args = [localFilePath, "|", this.command, "exec", "-i", "-n", this.namespace, identifier];
+        const args = [
+          localFilePath,
+          "|",
+          this.command,
+          "exec",
+          "-i",
+          "-n",
+          this.namespace,
+          identifier,
+        ];
         if (container) args.push("-c", container);
         args.push("--", "/cfg/coreutils tee", podFilePath, ">", "/dev/null");
         debug("copyFileToPod", args);
@@ -435,7 +444,6 @@ export class KubeClient extends Client {
     localFilePath: string,
     container: string | undefined = undefined,
   ) {
-
     // /cat demo.txt | kubectl -n zombie-4bb2522de792f15656518846a908b8e7 exec  alice -- bash -c "/cfg/bat > /tmp/a.txt"
     // return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
     const args = ["exec", identifier];
