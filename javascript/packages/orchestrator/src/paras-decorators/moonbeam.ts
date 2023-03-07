@@ -128,6 +128,10 @@ async function addParaCustom(specPath: string, node: Node) {
   writeChainSpec(specPath, chainSpec);
 }
 
+function getProcessStartTimeKey() {
+  return "moonbeam_substrate_process_start_time_seconds";
+}
+
 export default {
   specHaveSessionsKeys,
   addAuthority,
@@ -136,4 +140,5 @@ export default {
   addParaCustom,
   getAuthorityKeys,
   getNodeKey,
+  getProcessStartTimeKey,
 };

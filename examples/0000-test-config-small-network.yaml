@@ -1,7 +1,7 @@
 # some comment - next line is empty for testing parser
 
 relaychain:
-  default_image: 'docker.io/paritypr/polkadot-debug:master'
+  default_image: 'docker.io/parity/polkadot:latest'
   default_command: polkadot
   default_args:
     - '-lparachain=debug'
@@ -10,7 +10,7 @@ relaychain:
     - name: alice
       validator: true
     - name: bob
-      image: 'docker.io/paritypr/polkadot-debug:5236-0.9.18-c55660e9-be16bd72'
+      image: 'docker.io/parity/polkadot:latest'
       validator: true
       args:
         - '--database=paritydb-experimental'

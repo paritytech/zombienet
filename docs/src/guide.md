@@ -6,15 +6,67 @@ Zombienet was designed to be a flexible and easy to use tool, allowing users to 
 
 In this guide we will go through simple use cases as well as more complex ones, describing the trade-offs made and the _current_ constraints for both network configurations and test specifications.
 
+---
+
+### Example 0 - Different configuration file types (2 validators)
+
+---
+
+In this example, is shown the alternateive options of a configuration file. The different extensions supported are: `yaml`, `json` and of course `.toml`.
+This simple config exists only in order to show how the same configuration exists in 3 different formats, and thus uses only 1 relay chain (`rococo-local`) with 2 nodes (`alice` and `bob`);
+
+The configuration files are:
+
+- [0000-test-config-small-network.json](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.json);
+- [0000-test-config-small-network.yaml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml);
+- [0000-test-config-small-network.toml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml);
+
+and the test files for running each confgiration are:
+
+- [0000-test-json-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl);
+- [0000-test-yaml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl);
+- [0000-test-toml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-toml-config-small-network.zndsl);
+
+respectively.
+
+Each `.zndsl` file contains at the `header` part of the file the:
+
+```toml
+Network: ./0000-test-config-small-network.json
+```
+
+that describes which config file will be used for the test.
+
+To run the three tests (assuming the native provider is used) just execute the following commands for each test:
+
+```bash
+./zombienet-linux -p native test examples/0000-test-json-config-small-network.zndsl
+```
+
+```bash
+./zombienet-linux -p native test examples/0000-test-yaml-config-small-network.zndsl
+```
+
+```bash
+./zombienet-linux -p native test examples/0000-test-toml-config-small-network.zndsl
+```
+
+> Note: remember to use `-p podman` for Podman as provider, while no `-p` option as default is the `kubernetes` one.
+
+---
+
 ### Example 1 - Small network (2 validators/ 1 parachain)
+
+---
 
 In this example [small-network](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml), we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the _default_ image, command and args.
 
 ```toml
 [relaychain]
-default_image = "docker.io/paritypr/polkadot-debug:master"
+default_image = "docker.io/parity/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
+
 chain = "rococo-local"
 
   [[relaychain.nodes]]
@@ -30,14 +82,21 @@ id = 100
 
   [parachains.collator]
   name = "collator01"
-  image = "docker.io/paritypr/colander:master"
-  command = "adder-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
 ```
 
 Using kubernetes as provider we can simply spawn this network by running:
 
 ```bash
 ./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
+```
+
+or simplier, since kubernetes is the default provider as:
+
+```bash
+./zombienet-linux spawn examples/0001-small-network.toml
 ```
 
 You will see how `zombienet` starts creating the needed resources to launch the network.
@@ -47,23 +106,15 @@ At the end of the process a list of `nodes` (with direct access links) will be p
 
 ![small network node](./imgs/small-network-web.png)
 
----
-
 Now we've explored how to launch a network, let's add a test file to ensure that it works as expected.
 In Zombienet the tests are defined in the `*.zndsl` file, which uses a _simple_ [DSL](./cli/test-dsl-definition-spec.md) to write test assertions.
 
 [0001-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.zndsl)
 
-```
+```toml
 Description: Small Network test
 Network: ./0001-small-network.toml
 Creds: config
-
-
-# well known functions
-alice: is up
-bob: is up
-alice: parachain 100 is registered within 225 seconds
 
 # metrics
 alice: reports node_roles is 4
@@ -80,6 +131,10 @@ bob: count of log lines maching "Error" is 0 within 10 seconds
 # system events
 bob: system event contains "A candidate was included" within 20 seconds
 alice: system event matches glob "*was backed*" within 10 seconds
+
+#parachain tests
+alice: parachain 100 is registered within 225 seconds
+alice: parachain 100 block height is at least 10 within 200 seconds
 ```
 
 Now, run the tests with the following command to get both the _launching_ output and the test reports:
@@ -88,14 +143,18 @@ Now, run the tests with the following command to get both the _launching_ output
 ./zombienet-linux -p kubernetes test examples/0001-small-network.zndsl
 ```
 
-![test report](./imgs/small-network-test-report.png)
+![test report](./imgs/small-network-test-report-new.png)
+
+---
 
 ### Example 2 - Small network with replacements
+
+---
 
 In Example 1, we used some _hardcoded_ default values but sometimes it's more useful to be able to change them dynamically.
 For example, if you are building images in your `CI` and those images have an unique tag. To address these cases, Zombienet uses a templating language called [Nunjucks](https://mozilla.github.io/nunjucks/) that allows defining environment variables which then can get updated at _runtime_.
 
-Following the previous example, we will replace the _images_ with variables that will read the value from the environment:
+Following the previous example, we will replace the _images_ with variables that will read the value from the environment. An interesting addon test that needs to be noticed here, is that the bob validator, is using a different version of polkadot (v0.9.37) instead of the latest (which at the time of writing this documentation was v0.9.39):
 
 [0002-small-network-env-vars.toml](https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml)
 
@@ -104,6 +163,7 @@ Following the previous example, we will replace the _images_ with variables that
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
+
 chain = "rococo-local"
 
   [[relaychain.nodes]]
@@ -113,6 +173,7 @@ chain = "rococo-local"
   [[relaychain.nodes]]
   name = "bob"
   validator = true
+  image= "{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}"
 
 [[parachains]]
 id = 100
@@ -120,15 +181,17 @@ id = 100
   [parachains.collator]
   name = "collator01"
   image = "{{ZOMBIENET_COL_IMAGE}}"
-  command = "adder-collator"
+  command = "polkadot-parachain"
 ```
 
-To spawn this network now we need to define the `ZOMBIENET_INTEGRATION_TEST_IMAGE` and `ZOMBIENET_COL_IMAGE` environment variables.
+To spawn this network now we need to define the `ZOMBIENET_INTEGRATION_TEST_IMAGE`, `ZOMBIENET_ALTERNATIVE_TEST_IMAGE` and `ZOMBIENET_COL_IMAGE` environment variables.
+
 For example:
 
 ```bash
-export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
-export ZOMBIENET_COL_IMAGE=docker.io/paritypr/colander:master
+export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/parity/polkadot:latest
+export ZOMBIENET_ALTERNATIVE_TEST_IMAGE=docker.io/parity/polkadot:v0.9.37
+export ZOMBIENET_COL_IMAGE=docker.io/parity/polkadot-parachain:latest
 ```
 
 Now we can run this command to spawn the network:
@@ -139,105 +202,15 @@ Now we can run this command to spawn the network:
 
 And again we get the network info with direct links:
 
-![network info](./imgs/small-network-envs-launch.png)
+## ![network info](./imgs/small-network-envs-launch.png)
 
-### Example 3 - Small network with custom images per node
+This example shows that we can use custom environmental variables in our config file in order to dynamically alter the configuration of the network.
 
-Continuing with our `small network` example, this time we will be _overriding_ some of the default methods to allow developers to use and test different configurations, such as different `images` or `arguments`.
+In addition that the validators support the capability of running different versions of the image.
 
-As an example, this config will use different `images` and `dbs` between the nodes.
+> Note: In general all the config fields that start with `default_*` can be overridden in the `nodes` or `collators` config.
 
-[small network custom](https://github.com/paritytech/zombienet/blob/main/examples/0003-small-network-custom.toml)
-
-```toml
-[relaychain]
-default_image = "docker.io/paritypr/polkadot-debug:master"
-default_command = "polkadot"
-default_args = [ "-lparachain=debug" ]
-
-chain = "rococo-local"
-
-  [[relaychain.nodes]]
-  name = "alice"
-  validator = true
-
-  [[relaychain.nodes]]
-  name = "bob"
-  image = "docker.io/paritypr/polkadot-debug:5236-0.9.18-c55660e9-be16bd72"
-  validator = true
-  args = ["--database=paritydb-experimental"]
-
-[[parachains]]
-id = 100
-
-  [parachains.collator]
-  name = "collator01"
-  image = "docker.io/paritypr/colander:master"
-  command = "adder-collator"
-```
-
-We start by launching our simulated network using `zombienet`:
-
-```bash
-./zombienet-linux -p kubernetes spawn examples/0003-small-network-custom.toml
-```
-
-And we get the _information_ about the network.
-
-![network info](./imgs/small-network-custom-launch.png)
-
-**But** if we scroll up the output we can see that `bob` is using the custom image and argument we set.
-
-![bob custom image and command](./imgs/bob-custom.png)
-
-In general all the config fields that start with `default_*` can be overridden in the `nodes` or `collators` config.
-
-### Example 4 - Small network with cumulus based collator
-
-Until now we've been using the _parachain tests collators_ that are built from the `polkadot` repo. In this example we will set the config to use a `cumulus` based collator.
-
-Continuing with the example we are using, we need to change the `image` and `command` of the collator. The config key `cumulus_based` is set to true by default so there is no point to be added at this example.
-
-[small network cumulus](https://github.com/paritytech/zombienet/blob/main/examples/0004-small-network-cumulus.toml)
-
-```toml
-[relaychain]
-default_image = "docker.io/paritypr/polkadot-debug:master"
-default_command = "polkadot"
-default_args = [ "-lparachain=debug" ]
-
-chain = "rococo-local"
-
-  [[relaychain.nodes]]
-  name = "alice"
-  validator = true
-
-  [[relaychain.nodes]]
-  name = "bob"
-  image = "docker.io/paritypr/polkadot-debug:5236-0.9.18-c55660e9-be16bd72"
-  validator = true
-  args = ["--database=paritydb-experimental"]
-
-[[parachains]]
-id = 100
-
-  [parachains.collator]
-  name = "collator01"
-  image = "docker.io/parity/polkadot-parachain:latest"
-  command = "polkadot-parachain"
-```
-
-And again, we just _launch_ the network using the following command:
-
-```bash
-./zombienet-linux -p kubernetes spawn examples/0004-small-network-cumulus.toml
-```
-
-And get the network information but this time using a `cumulus based` collator.
-
-![cumulus launch](./imgs/cumulus-launch.png)
-
-### Example 5 - Big networks with groups
+### Example 3 - Big networks with groups
 
 Sometimes you need to launch and test bigger networks and defining nodes one by one is a very _manual_ and error prone task. For this use cases Zombienet allows to define `groups` of nodes, for both `validators` and `collators`.
 
@@ -245,7 +218,7 @@ Using the `small network` example as base, we can add `groups` to spawn a bigger
 
 ```toml
 [relaychain]
-default_image = "docker.io/paritypr/polkadot-debug:master"
+default_image = "docker.io/paritypr/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
 
@@ -267,8 +240,8 @@ id = 100
     count = 2
     [parachains.collator_groups.collator]
     name = "collator"
-    command = "adder-collator"
-    image = "docker.io/paritypr/colander:master"
+    command = "polkadot-parachain"
+    image = "docker.io/parity/polkadot-parachain:latest"
 ```
 
 We use `node_groups` and `collator_groups` to define the groups we want to spawn, then Zombienet will spawn the desired `count` and will name the `nodes`/`collators` with the _index_ suffix (e.g `a-1`).
@@ -277,7 +250,7 @@ Again, the groups use the `default_*` fields if they are not overridden in the g
 This time for `spawning` the network we will use the _concurrency_ (`-c`) flag to spawn the nodes in batches and speed up the process.
 
 ```bash
-./zombienet-linux -p kubernetes -c 5 spawn examples/0005-big-network.toml
+./zombienet-linux -p kubernetes -c 5 spawn examples/0003-big-network.toml
 ```
 
 And this time we get also a bigger output...
@@ -289,13 +262,8 @@ For example:
 
 ```
 Description: Big Network test
-Network: ./0005-big-network.toml
+Network: ./0003-big-network.toml
 Creds: config
-
-
-# well known functions using groups
-a: is up
-b: is up
 
 # metrics
 a: reports node_roles is 4
@@ -305,7 +273,7 @@ b: reports sub_libp2p_is_major_syncing is 0
 And now we can run the test and get the report
 
 ```bash
-./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.zndsl
+./zombienet-linux -p kubernetes -c 5 test examples/0003-big-network.zndsl
 ```
 
 ![big network test](./imgs/big-test.png)
@@ -364,7 +332,7 @@ For example:
 Zombienet provides an easy way to follow the spawning process by enabling the debug logs using the `DEBUG` environment variable to manage the output.
 
 ```bash
-DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0005-big-network.zndsl
+DEBUG=zombie* ./zombienet-linux -p kubernetes -c 5 test examples/0003-big-network.zndsl
 ```
 
 ---

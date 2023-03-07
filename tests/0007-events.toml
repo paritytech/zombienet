@@ -20,4 +20,5 @@ add_to_genesis = true
   [parachains.collator]
   name = "collator01"
   image = "{{COL_IMAGE}}"
+  command = "adder-collator"
   #command = "../polkadot/target/testnet/adder-collator"
