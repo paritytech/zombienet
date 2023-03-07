@@ -46,6 +46,7 @@ const GENESIS_WASM_FILENAME = "genesis-wasm";
 
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
+const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "waiting for copy files to finish"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
 const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 const ZOMBIE_BUCKET = "zombienet-logs";
 const WS_URI_PATTERN = "ws://{{IP}}:{{PORT}}";
@@ -152,4 +153,5 @@ export {
   DEFAULT_BALANCE,
   ARGS_TO_REMOVE,
   UNDYING_COLLATOR_BIN,
+  K8S_WAIT_UNTIL_SCRIPT_SUFIX,
 };

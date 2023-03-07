@@ -218,8 +218,9 @@ export class KubeClient extends Client {
       "-c",
       target,
       "--",
-      "touch",
-      FINISH_MAGIC_FILE,
+      "sh",
+      "-c",
+      `/cfg/coreutils touch ${FINISH_MAGIC_FILE}`
     ]);
     debug(r);
   }
@@ -349,7 +350,6 @@ export class KubeClient extends Client {
       resourceDef,
       scoped: false,
     });
-    // await this.kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
   async updateResource(
@@ -383,10 +383,20 @@ export class KubeClient extends Client {
     unique: boolean = false,
   ) {
     if (unique) {
-      const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
-      if (container) args.push("-c", container);
-      await this.runCommand(args);
-      debug("copyFileToPod", args);
+      if( container === TRANSFER_CONTAINER_NAME) {
+        const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
+        if (container) args.push("-c", container);
+        await this.runCommand(args);
+        debug("copyFileToPod", args);
+      } else {
+        // we are copying to the main container and could be the case that tar
+        // isn't available
+        const args = [localFilePath, "|", this.command, "exec", "-i", "-n", this.namespace, identifier];
+        if (container) args.push("-c", container);
+        args.push("--", "/cfg/coreutils tee", podFilePath, ">", "/dev/null");
+        debug("copyFileToPod", args);
+        const result = await execa("cat", args);
+      }
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
       const fileHash = getSha256(fileBuffer.toString());
@@ -424,11 +434,19 @@ export class KubeClient extends Client {
     localFilePath: string,
     container: string | undefined = undefined,
   ) {
-    const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
+
+    // /cat demo.txt | kubectl -n zombie-4bb2522de792f15656518846a908b8e7 exec  alice -- bash -c "/cfg/bat > /tmp/a.txt"
+    // return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
+    const args = ["exec", identifier];
     if (container) args.push("-c", container);
+    args.push("--", "bash", "-c", `/cfg/coreutils cat ${podFilePath}`);
+    // const args = ["exec", identifier, "--", "bash", "-c", `/cfg/bat ${podFilePath}` ]
+    // const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
+
     debug("copyFileFromPod", args);
     const result = await this.runCommand(args);
-    debug(result);
+    debug(result.exitCode);
+    await fs.writeFile(localFilePath, result.stdout);
   }
 
   async runningOnMinikube(): Promise<boolean> {
@@ -676,7 +694,9 @@ export class KubeClient extends Client {
 
       const finalArgs = [...augmentedCmd, ...args];
       debug("finalArgs", finalArgs);
-      const result = await execa("kubectl", finalArgs, {
+
+      const cmd = opts?.mainCmd || this.command;
+      const result = await execa(cmd, finalArgs, {
         input: opts?.resourceDef,
       });
 

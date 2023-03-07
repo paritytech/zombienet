@@ -11,6 +11,7 @@ export interface RunCommandOptions {
   resourceDef?: string;
   scoped?: boolean;
   allowFail?: boolean;
+  mainCmd?: string;
 }
 
 export abstract class Client {
