@@ -17,19 +17,18 @@ export async function generateBootnodeString(
   );
   let peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes);
 
-
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
     let listenAddrParts = args[listenIndex + 1].split("/");
     listenAddrParts[2] = ip;
     listenAddrParts[4] = port.toString();
-    multiaddress = `${listenAddrParts.join("/")}/p2p/${peerId.toB58String()}`
+    multiaddress = `${listenAddrParts.join("/")}/p2p/${peerId.toB58String()}`;
   } else {
     multiaddress = `/ip4/${ip}/tcp/${port}/${
       useWs ? "ws/" : "/"
     }p2p/${peerId.toB58String()}`;
   }
 
-  console.log("multiaddress",multiaddress);
+  console.log("multiaddress", multiaddress);
   return multiaddress;
 }
