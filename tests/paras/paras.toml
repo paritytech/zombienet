@@ -48,11 +48,11 @@ id = 2003
 chain = "turing-dev"
 cumulus_based = true
 
-[parachains.collator]
-name = "alicia"
-image = "{{EQUIL_COL_IMAGE}}"
-command = "/usr/local/bin/paranode"
-args = ["--chain", "/etc/chainspec.json", "-d", "/data", "-lparachain=debug"]
+  [parachains.collator]
+  name = "alicia"
+  image = "{{EQUIL_COL_IMAGE}}"
+  command = "/usr/local/bin/paranode"
+  args = ["-lparachain=debug"]
 
 [types.Header]
 number = "u64"
