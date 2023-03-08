@@ -41,7 +41,7 @@ cumulus_based = true
   name = "alicia"
   image = "{{EQUIL_COL_IMAGE}}"
   command = "/usr/local/bin/paranode"
-  args = ["--chain", "/etc/chainspec.json", "-d", "/data", "-lparachain=debug"]
+  args = ["-lparachain=debug"]
 
 [types.Header]
 number = "u64"
