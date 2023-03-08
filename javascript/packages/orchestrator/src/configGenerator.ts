@@ -9,7 +9,6 @@ import {
 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
-  DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_BALANCE,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
@@ -240,7 +239,7 @@ export async function generateNetworkSpec(
       const isCumulusBased =
         parachain.cumulus_based !== undefined
           ? parachain.cumulus_based
-          : ![DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
+          : ![DEFAULT_COLLATOR_IMAGE, UNDYING_COLLATOR_BIN].includes(
               getFirstCollatorCommand(parachain),
             );
 
