@@ -509,6 +509,7 @@ export async function start(
       const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
       const nodeMultiAddress = await generateBootnodeString(
         node.key!,
+        node.args,
         nodeIp,
         nodePort,
       );
@@ -655,7 +656,12 @@ export async function start(
       const [nodeIp, nodePort] = await client.getNodeInfo(firstNode.name);
 
       bootnodes.push(
-        await generateBootnodeString(firstNode.key!, nodeIp, nodePort),
+        await generateBootnodeString(
+          firstNode.key!,
+          firstNode.args,
+          nodeIp,
+          nodePort,
+        ),
       );
       // add bootnodes to chain spec
       await addBootNodes(chainSpecFullPath, bootnodes);
@@ -711,6 +717,7 @@ export async function start(
           await addBootNodes(parachain.specPath!, [
             await generateBootnodeString(
               firstCollatorNode.key!,
+              firstCollatorNode.args,
               nodeIp,
               nodePort,
             ),

@@ -292,7 +292,7 @@ export async function genCmd(
     args[listenIndex + 1] = listenAddr;
   } else {
     // no --listen-add args
-    args.push(...[`--listen-addr /ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
   }
 
   // set our base path

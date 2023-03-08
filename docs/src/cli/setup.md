@@ -27,13 +27,13 @@ e.g.
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/<current_directory>/dist:$PATH
 ```
 
-Command example:
+Command example (Linux):
 
 ```bash
 ➜ zombienet setup polkadot polkadot-parachain
 ```
 
-Output example:
+Output example (Linux):
 
 ```bash
 Setup will start to download binaries:
@@ -53,3 +53,5 @@ Giving permissions to "polkadot"
 Please add the dir to your $PATH by running the command:
  export PATH=/home/<username>/zombienet/dist:$PATH
 ```
+
+> Note for MacOs users: As of the time of this writing, polkadot binary is not currently supported for MacOs. As a result users of MacOS need to clone the [Polkadot repo](https://github.com/paritytech/polkadot),create a release and add it in your PATH manually (setup will advice you so as well).
