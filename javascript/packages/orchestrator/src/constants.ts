@@ -21,7 +21,7 @@ const DEFAULT_PORTS = {
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 const DEFAULT_COMMAND = "polkadot";
-const DEFAULT_IMAGE = "parity/substrate:latest";
+const DEFAULT_IMAGE = "parity/polkadot:latest";
 const DEFAULT_ARGS: string[] = [];
 const DEFAULT_CHAIN = "rococo-local";
 const DEFAULT_BOOTNODE_PEER_ID =
@@ -38,7 +38,7 @@ const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
 const UNDYING_COLLATOR_BIN = "undying-collator";
 const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-parachain";
-const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
+const DEFAULT_COLLATOR_IMAGE = " parity/polkadot-parachain:latest";
 const DEFAULT_MAX_NOMINATIONS = 24; // kusama value is 24
 const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 const GENESIS_STATE_FILENAME = "genesis-state";
@@ -46,6 +46,7 @@ const GENESIS_WASM_FILENAME = "genesis-wasm";
 
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
+const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "waiting for copy files to finish"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
 const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 const ZOMBIE_BUCKET = "zombienet-logs";
 const WS_URI_PATTERN = "ws://{{IP}}:{{PORT}}";
@@ -152,4 +153,5 @@ export {
   DEFAULT_BALANCE,
   ARGS_TO_REMOVE,
   UNDYING_COLLATOR_BIN,
+  K8S_WAIT_UNTIL_SCRIPT_SUFIX,
 };

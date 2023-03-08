@@ -3,6 +3,7 @@ import {
   CreateLogTable,
   decorators,
   getSha256,
+  sleep,
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
@@ -218,8 +219,9 @@ export class KubeClient extends Client {
       "-c",
       target,
       "--",
-      "touch",
-      FINISH_MAGIC_FILE,
+      "sh",
+      "-c",
+      `/cfg/coreutils touch ${FINISH_MAGIC_FILE}`,
     ]);
     debug(r);
   }
@@ -349,7 +351,6 @@ export class KubeClient extends Client {
       resourceDef,
       scoped: false,
     });
-    // await this.kubectl(["apply", "-f", "-"], resourceDef, true);
   }
 
   async updateResource(
@@ -383,10 +384,35 @@ export class KubeClient extends Client {
     unique: boolean = false,
   ) {
     if (unique) {
-      const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
-      if (container) args.push("-c", container);
-      await this.runCommand(args);
-      debug("copyFileToPod", args);
+      if (container === TRANSFER_CONTAINER_NAME) {
+        const args = ["cp", localFilePath, `${identifier}:${podFilePath}`];
+        if (container) args.push("-c", container);
+        await this.runCommand(args);
+        debug("copyFileToPod", args);
+      } else {
+        // we are copying to the main container and could be the case that tar
+        // isn't available
+        const args = [
+          localFilePath,
+          "|",
+          this.command,
+          "exec",
+          "-n",
+          this.namespace,
+          identifier,
+        ];
+        if (container) args.push("-c", container);
+        args.push(
+          "-i",
+          "--",
+          "/cfg/coreutils tee",
+          podFilePath,
+          ">",
+          "/dev/null",
+        );
+        debug("copyFileToPod", args.join(" "));
+        const result = await execa("cat", [args.join(" ")], { shell: true });
+      }
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
       const fileHash = getSha256(fileBuffer.toString());
@@ -424,11 +450,18 @@ export class KubeClient extends Client {
     localFilePath: string,
     container: string | undefined = undefined,
   ) {
-    const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
+    // /cat demo.txt | kubectl -n zombie-4bb2522de792f15656518846a908b8e7 exec  alice -- bash -c "/cfg/bat > /tmp/a.txt"
+    // return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
+    const args = ["exec", identifier];
     if (container) args.push("-c", container);
+    args.push("--", "bash", "-c", `/cfg/coreutils cat ${podFilePath}`);
+    // const args = ["exec", identifier, "--", "bash", "-c", `/cfg/bat ${podFilePath}` ]
+    // const args = ["cp", `${identifier}:${podFilePath}`, localFilePath];
+
     debug("copyFileFromPod", args);
     const result = await this.runCommand(args);
-    debug(result);
+    debug(result.exitCode);
+    await fs.writeFile(localFilePath, result.stdout);
   }
 
   async runningOnMinikube(): Promise<boolean> {
@@ -508,12 +541,32 @@ export class KubeClient extends Client {
 
     // wait until fileserver is ready, fix race condition #700.
     await this.wait_pod_ready("fileserver");
+    sleep(3 * 1000);
+    let fileServerOk = false;
+    let attempts = 0;
+    // try 5 times at most
+    for (attempts; attempts < 5; attempts++) {
+      if (await this.checkFileServer()) fileServerOk = true;
+      else sleep(1 * 1000);
+    }
+
+    if (!fileServerOk)
+      throw new Error(
+        `Can't connect to fileServer, after ${attempts} attempts`,
+      );
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
       await this.createStaticResource("baseline-resources.yaml");
   }
 
+  async checkFileServer(): Promise<boolean> {
+    const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
+    debug("checking fileserver", args);
+    let result = await this.runCommand(args);
+    debug("result", result);
+    return result.stdout.includes("Welcome to nginx");
+  }
   async spawnBackchannel() {}
 
   async setupCleaner(): Promise<NodeJS.Timer> {
@@ -676,7 +729,9 @@ export class KubeClient extends Client {
 
       const finalArgs = [...augmentedCmd, ...args];
       debug("finalArgs", finalArgs);
-      const result = await execa("kubectl", finalArgs, {
+
+      const cmd = opts?.mainCmd || this.command;
+      const result = await execa(cmd, finalArgs, {
         input: opts?.resourceDef,
       });
 

@@ -69,6 +69,9 @@ import {
   Parachain,
 } from "./types";
 
+import { getProcessStartTimeKey } from "./metrics";
+import { decorate } from "./paras-decorators";
+
 const debug = require("debug")("zombie");
 
 // Hide some warning messages that are coming from Polkadot JS API.
@@ -506,6 +509,7 @@ export async function start(
       const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
       const nodeMultiAddress = await generateBootnodeString(
         node.key!,
+        node.args,
         nodeIp,
         nodePort,
       );
@@ -575,6 +579,7 @@ export async function start(
             parachain?.statePath,
           );
         networkNode.parachainId = paraId;
+        networkNode.para = parachain?.para;
         network.addNode(networkNode, Scope.PARA);
       } else {
         network.addNode(networkNode, Scope.RELAY);
@@ -651,7 +656,12 @@ export async function start(
       const [nodeIp, nodePort] = await client.getNodeInfo(firstNode.name);
 
       bootnodes.push(
-        await generateBootnodeString(firstNode.key!, nodeIp, nodePort),
+        await generateBootnodeString(
+          firstNode.key!,
+          firstNode.args,
+          nodeIp,
+          nodePort,
+        ),
       );
       // add bootnodes to chain spec
       await addBootNodes(chainSpecFullPath, bootnodes);
@@ -708,6 +718,7 @@ export async function start(
           await addBootNodes(parachain.specPath!, [
             await generateBootnodeString(
               firstCollatorNode.key!,
+              firstCollatorNode.args,
               nodeIp,
               nodePort,
             ),
@@ -838,18 +849,19 @@ export async function start(
     }
 
     // sleep to give time to last node process' to start
-    await sleep(2000);
+    await sleep(2 * 1000);
 
     // wait until all the node's are up
     const nodeChecker = async (node: NetworkNode) => {
-      debug(`\t checking node: ${node.name}`);
-      const ready = await node.getMetric(
-        "process_start_time_seconds",
-        "isAtLeast",
-        1,
-        60 * 5,
+      const metricToQuery = node.para
+        ? decorate(node.para, [getProcessStartTimeKey])[0]()
+        : getProcessStartTimeKey();
+      debug(
+        `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
       );
+      const ready = await node.getMetric(metricToQuery, "isAtLeast", 1, 60 * 5);
       debug(`\t ${node.name} ready ${ready}`);
+      return ready;
     };
     const nodeCheckGenerators = Object.values(network.nodesByName).map(
       (node: NetworkNode) => {
@@ -857,7 +869,9 @@ export async function start(
       },
     );
 
-    await series(nodeCheckGenerators, 10);
+    const nodesOk = await series(nodeCheckGenerators, 10);
+    if (!(nodesOk as any[]).every(Boolean))
+      throw new Error("At least one of the nodes fails to start");
     debug("All nodes checked ok");
 
     // cleanup global timeout
