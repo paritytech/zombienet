@@ -7,3 +7,6 @@ bins
 **/target/
 *.swp
 .vscode
+
+# nix
+result

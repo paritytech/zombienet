@@ -100,7 +100,7 @@ export async function getChainSpecRaw(
         "exec",
         podName,
         "--",
-        "ls",
+        "/cfg/coreutils ls",
         "/tmp/zombie-tmp-done",
       ]);
       // we can go ahead
@@ -133,7 +133,7 @@ export async function getChainSpecRaw(
         "exec",
         podName,
         "--",
-        "cat",
+        "/cfg/coreutils cat",
         remoteChainSpecRawFullPath,
       ]);
       if (result.exitCode === 0 && result.stdout.length > 0) {
