@@ -34,7 +34,7 @@ chain = "bifrost-kusama-local"
 
 [[parachains]]
 id = 2003
-chain = "turing-dev"
+chain = "dev"
 cumulus_based = true
 
   [parachains.collator]
