@@ -7,12 +7,14 @@ if [ -f /cfg/coreutils ]; then
     MKNOD="/cfg/coreutils mknod"
     LS="/cfg/coreutils ls"
     KILL="/cfg/coreutils kill"
+    SLEEP="/cfg/coreutils sleep"
 else
     RM="rm"
     MKFIFO="mkfifo"
     MKNOD="mknod"
     LS="ls"
     KILL="kill"
+    SLEEP="sleep"
 fi
 
 
