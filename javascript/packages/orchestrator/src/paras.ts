@@ -6,6 +6,7 @@ import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  K8S_WAIT_UNTIL_SCRIPT_SUFIX,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
 import { decorate } from "./paras-decorators";
@@ -232,7 +233,9 @@ export async function generateParachainFiles(
     }
 
     // Native provider doesn't need to wait
-    if (client.providerName !== "native")
+    if (client.providerName == "kubernetes")
+      commands.push(K8S_WAIT_UNTIL_SCRIPT_SUFIX);
+    else if (client.providerName == "podman")
       commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
     let node: Node = {

@@ -1,6 +1,21 @@
 #!/bin/bash
 set -uxo pipefail
 
+if [ -f /cfg/coreutils ]; then
+    RM="/cfg/coreutils rm"
+    MKFIFO="/cfg/coreutils mkfifo"
+    MKNOD="/cfg/coreutils mknod"
+    LS="/cfg/coreutils ls"
+    KILL="/cfg/coreutils kill"
+    SLEEP="/cfg/coreutils sleep"
+else
+    RM="rm"
+    MKFIFO="mkfifo"
+    MKNOD="mknod"
+    LS="ls"
+    KILL="kill"
+    SLEEP="sleep"
+fi
 
 
 # add /cfg as first `looking dir` to allow to overrides commands.
@@ -8,11 +23,11 @@ export PATH="{{REMOTE_DIR}}":$PATH
 
 # setup pipe
 pipe=/tmp/zombiepipe
-trap "rm -f $pipe" EXIT
+trap "$RM -f $pipe" EXIT
 
 # try mkfifo first and allow to fail
 if [[ ! -p $pipe ]]; then
-    mkfifo $pipe
+    $MKFIFO $pipe
 fi
 
 # set immediately exit on any non 0 exit code
@@ -20,7 +35,7 @@ set -e
 
 # if fails try mknod
 if [[ ! -p $pipe ]]; then
-    mknod $pipe p
+    $MKNOD $pipe p
 fi
 
 # init empty
@@ -31,12 +46,12 @@ CMD=($@)
 
 restart() {
     if [ ! -z "${child_pid}" ]; then
-        kill -9 "$child_pid"
+        $KILL -9 "$child_pid"
     fi
 
     # check if we have timeout
     if [[ "$1" ]]; then
-        sleep "$1"
+        $SLEEP "$1"
     fi
 
     # start the process again
@@ -46,13 +61,13 @@ restart() {
 
 pause() {
     if [ ! -z "${child_pid}" ]; then
-        kill -STOP "$child_pid"
+        $KILL -STOP "$child_pid"
     fi
 }
 
 resume() {
     if [ ! -z "${child_pid}" ]; then
-        kill -CONT "$child_pid"
+        $KILL -CONT "$child_pid"
     fi
 }
 
@@ -61,7 +76,7 @@ resume() {
 child_pid="$!"
 
 # check if the process is running
-if ! ls /proc/$child_pid > /dev/null 2>&1 ; then
+if ! $LS /proc/$child_pid > /dev/null 2>&1 ; then
     exit 1
 fi;
 
@@ -86,7 +101,7 @@ done
 
 # exit
 if [ ! -z "${child_pid}" ]; then
-    kill -9 "$child_pid"
+    $KILL -9 "$child_pid"
 fi
 
 exit 0
