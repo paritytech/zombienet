@@ -507,7 +507,6 @@ export async function start(
       );
 
       const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
-      console.log("node", node);
       const nodeMultiAddress = await generateBootnodeString(
         node.key!,
         node.args,

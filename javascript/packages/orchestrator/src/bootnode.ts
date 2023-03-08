@@ -29,6 +29,5 @@ export async function generateBootnodeString(
     }p2p/${peerId.toB58String()}`;
   }
 
-  console.log("multiaddress", multiaddress);
   return multiaddress;
 }
