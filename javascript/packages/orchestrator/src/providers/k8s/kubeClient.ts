@@ -410,8 +410,8 @@ export class KubeClient extends Client {
           ">",
           "/dev/null",
         );
-        debug("copyFileToPod", args);
-        const result = await execa("cat", args);
+        debug("copyFileToPod", args.join(" "));
+        const result = await execa("cat", [args.join(" ")], {shell: true});
       }
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
