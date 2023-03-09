@@ -212,7 +212,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
         Err(e) => return Err(errors::ParserError::ParseError(e.to_string())),
     };
 
-    let mut network: Option<String> = None;
+    let mut networks: Vec<String> = vec![];
     let mut creds: Option<String> = None;
     let mut description: Option<String> = None;
     let mut assertions: Vec<Assertion> = vec![];
@@ -233,7 +233,10 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 description = Some(record.into_inner().as_str().to_owned());
             }
             Rule::network => {
-                network = Some(record.into_inner().as_str().to_owned());
+                let mut pairs = record.into_inner();
+                let file_path = get_pair(&mut pairs, "file_path")?.as_str();
+
+                networks.push(file_path.to_owned());
             }
             Rule::creds => {
                 let mut pairs = record.into_inner();
@@ -604,7 +607,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
         }
     }
 
-    if network.is_none() || creds.is_none() {
+    if networks.is_empty() || creds.is_none() {
         return Err(errors::ParserError::MissingFields(String::from(
             "Missing Network/Creds field",
         )));
@@ -613,7 +616,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
     // unwrap here should be face because of the above test.
     let test_def = TestDefinition {
         description,
-        network: network.unwrap(),
+        networks,
         creds: creds.unwrap(),
         assertions,
     };
