@@ -20,7 +20,7 @@ export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
   parachainFilesPath: string,
-  chainName: string, //relay chain name
+  relayChainName: string,
   parachain: Parachain,
   relayChainSpecIsRaw: boolean,
 ): Promise<void> {
@@ -59,16 +59,16 @@ export async function generateParachainFiles(
   let chainSpecFullPath;
   const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
     parachain.name
-  }-${chainName}.json`;
+  }-${relayChainName}.json`;
 
   const chainSpecFullPathPlain = `${tmpDir}/${
     parachain.chain ? parachain.chain + "-" : ""
-  }${parachain.name}-${chainName}-plain.json`;
+  }${parachain.name}-${relayChainName}-plain.json`;
 
   if (parachain.cumulusBased) {
     // need to create the parachain spec
     // file name template is [para chain-]<para name>-<relay chain>
-    const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
+    const relayChainSpecFullPathPlain = `${tmpDir}/${relayChainName}-plain.json`;
 
     // Check if the chain-spec file is provided.
     if (parachain.chainSpecPath) {
@@ -89,7 +89,7 @@ export async function generateParachainFiles(
           } --disable-default-bootnode`,
           defaultImage: parachain.collators[0].image,
         },
-        chainName,
+        relayChainName,
         chainSpecFullPathPlain,
       );
     }
@@ -152,7 +152,7 @@ export async function generateParachainFiles(
         parachain.collators[0].image,
         `${parachain.chain ? parachain.chain + "-" : ""}${
           parachain.name
-        }-${chainName}`,
+        }-${relayChainName}`,
         parachain.collators[0].command!,
         chainSpecFullPath,
       );
@@ -256,7 +256,7 @@ export async function generateParachainFiles(
       invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
-      chain: chainName,
+      chain: relayChainName,
       bootnodes: [],
       args: [],
       env: [],
