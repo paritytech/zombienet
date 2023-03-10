@@ -268,8 +268,8 @@ export async function generateNetworkSpec(
         for (let i = 0; i < collatorGroup.count; i++) {
           let node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
-            image: collatorGroup.image || networkSpec.relaychain.defaultImage,
-            command: collatorGroup.command,
+            image: collatorGroup.image || DEFAULT_COLLATOR_IMAGE,
+            command: collatorGroup.command || DEFAULT_CUMULUS_COLLATOR_BIN,
             args: sanitizeArgs(collatorGroup.args || [], { "listen-addr": 2 }),
             validator: true, // groups are always validators
             invulnerable: false,
@@ -691,7 +691,7 @@ const prometheusExternal = (networkSpec: ComputedNetwork): boolean => {
     : true;
 };
 
-const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
+export function getFirstCollatorCommand(parachain: ParachainConfig): string {
   let cmd;
   if (parachain.collator) {
     cmd = parachain.collator.command_with_args || parachain.collator.command;
@@ -707,4 +707,4 @@ const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
   debug(`cmd is ${cmd}`);
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;
-};
+}

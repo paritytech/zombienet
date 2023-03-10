@@ -20,8 +20,9 @@ export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
   parachainFilesPath: string,
-  chainName: string,
+  chainName: string, //relay chain name
   parachain: Parachain,
+  relayChainSpecIsRaw: boolean,
 ): Promise<void> {
   let [
     addAuraAuthority,
@@ -65,11 +66,13 @@ export async function generateParachainFiles(
   }${parachain.name}-${chainName}-plain.json`;
 
   if (parachain.cumulusBased) {
-    // need to create the parachain spec parachain file name is [para chain-]<para name>-<relay chain>
+    // need to create the parachain spec
+    // file name template is [para chain-]<para name>-<relay chain>
     const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
 
     // Check if the chain-spec file is provided.
     if (parachain.chainSpecPath) {
+      debug("parachain chain spec provided");
       await fs.promises.copyFile(
         parachain.chainSpecPath,
         chainSpecFullPathPlain,
@@ -183,8 +186,17 @@ export async function generateParachainFiles(
     parachain.specPath = chainSpecFullPath;
   }
 
+  // state and wasm files are only needed:
+  // IFF the relaychain is NOT RAW or
+  // IFF the relaychain is raw and addToGenesis is false for the parachain
+  const stateAndWasmAreNeeded = !(
+    relayChainSpecIsRaw && parachain.addToGenesis
+  );
   // check if we need to create files
-  if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
+  if (
+    stateAndWasmAreNeeded &&
+    (parachain.genesisStateGenerator || parachain.genesisWasmGenerator)
+  ) {
     const filesToCopyToNodes: fileMap[] = [];
     if (parachain.cumulusBased && chainSpecFullPath)
       filesToCopyToNodes.push({

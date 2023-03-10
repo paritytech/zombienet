@@ -109,6 +109,24 @@ export async function start(
     );
     debug(JSON.stringify(networkSpec, null, 4));
 
+    // get provider fns
+    const provider = networkSpec.settings.provider;
+    if (!Providers.has(provider)) {
+      throw new Error(
+        "Invalid provider config. You must one of: " +
+          Array.from(Providers.keys()).join(", "),
+      );
+    }
+
+    const {
+      genBootnodeDef,
+      genNodeDef,
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+      replaceNetworkRef,
+    } = Providers.get(networkSpec.settings.provider);
+
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
       if (network && !network.launched) {
@@ -157,24 +175,6 @@ export async function start(
       ".json",
       "-plain.json",
     );
-
-    // get provider fns
-    const provider = networkSpec.settings.provider;
-    if (!Providers.has(provider)) {
-      throw new Error(
-        "Invalid provider config. You must one of: " +
-          Array.from(Providers.keys()).join(", "),
-      );
-    }
-
-    const {
-      genBootnodeDef,
-      genNodeDef,
-      initClient,
-      setupChainSpec,
-      getChainSpecRaw,
-      replaceNetworkRef,
-    } = Providers.get(networkSpec.settings.provider);
 
     const client = initClient(credentials, namespace, tmpDir.path);
 
@@ -247,7 +247,7 @@ export async function start(
     await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
-    // create or copy chain spec
+    // create or copy relay chain spec
     await setupChainSpec(
       namespace,
       networkSpec.relaychain,
@@ -262,6 +262,7 @@ export async function start(
     // Check if the chain spec is in raw format
     // Could be if the chain_spec_path was set
     const chainSpecContent = require(chainSpecFullPathPlain);
+    const relayChainSpecIsRaw = Boolean(chainSpecContent.genesis?.raw);
     client.chainId = chainSpecContent.id;
 
     const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
@@ -273,6 +274,7 @@ export async function start(
         parachainFilesPath,
         chainName,
         parachain,
+        relayChainSpecIsRaw,
       );
     };
 
@@ -287,7 +289,7 @@ export async function start(
       const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
       const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
       const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-      if (parachain.addToGenesis)
+      if (parachain.addToGenesis && !relayChainSpecIsRaw)
         await addParachainToGenesis(
           chainSpecFullPathPlain,
           parachain.id.toString(),
@@ -296,7 +298,7 @@ export async function start(
         );
     }
 
-    if (!chainSpecContent.genesis.raw) {
+    if (!relayChainSpecIsRaw) {
       // Chain spec customization logic
       const relayChainSpec = readAndParseChainSpec(chainSpecFullPathPlain);
       const keyType = specHaveSessionsKeys(relayChainSpec) ? "session" : "aura";
