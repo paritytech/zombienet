@@ -10,6 +10,18 @@ import { Node } from "./types";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
+interface ParachainArgsInterface {
+  [key: string]: boolean;
+}
+
+interface PortsInterface {
+  [key: string]: number;
+}
+
+interface ParachainCollatorsInterface {
+  [key: number]: number;
+}
+
 function parseCmdWithArguments(
   commandWithArgs: string,
   useWrapper = true,
@@ -50,7 +62,7 @@ export async function genCumulusCollatorCmd(
     return parseCmdWithArguments(commandWithArgs, useWrapper);
   }
 
-  const parachainAddedArgs: any = {
+  const parachainAddedArgs: ParachainArgsInterface = {
     "--name": true,
     "--collator": true,
     "--base-path": true,
@@ -96,7 +108,7 @@ export async function genCumulusCollatorCmd(
 
   if (validator) fullCmd.push(...["--collator"]);
 
-  const collatorPorts: any = {
+  const collatorPorts: PortsInterface = {
     "--port": 0,
     "--ws-port": 0,
     "--rpc-port": 0,
@@ -321,7 +333,8 @@ export async function genCmd(
 }
 
 // helper
-const parachainCollators: any = {};
+const parachainCollators: ParachainCollatorsInterface =
+  {} as ParachainCollatorsInterface;
 function getCollatorIndex(paraId: number): number {
   if (parachainCollators[paraId] >= 0)
     parachainCollators[paraId] = parachainCollators[paraId] + 1;
