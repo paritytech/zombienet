@@ -414,7 +414,7 @@ async function spawn(
   const dir = opts.dir || "";
   const force = opts.force || false;
   const monitor = opts.monitor || false;
-  const spawnConcurrency = opts.spawnConcurrency || 1;
+  const spawnConcurrency = opts.spawnConcurrency || 4;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
