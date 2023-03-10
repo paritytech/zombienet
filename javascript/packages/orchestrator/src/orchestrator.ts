@@ -8,6 +8,9 @@ import {
   getSha256,
   loadTypeDef,
   makeDir,
+  PARACHAIN_NOT_FOUND,
+  POLKADOT_NOT_FOUND,
+  POLKADOT_NOT_FOUND_DESCRIPTION,
   series,
   sleep,
 } from "@zombienet/utils";
@@ -887,9 +890,18 @@ export async function start(
     );
 
     return network;
-  } catch (error) {
+  } catch (error: any) {
+    let errDetails;
+    if (
+      error?.stderr?.includes(POLKADOT_NOT_FOUND) ||
+      error?.stderr?.includes(PARACHAIN_NOT_FOUND)
+    ) {
+      errDetails = POLKADOT_NOT_FOUND_DESCRIPTION;
+    }
     console.log(
-      `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
+      `${decorators.red("Error: ")} \t ${decorators.bright(
+        error,
+      )}\n\n${decorators.magenta(errDetails)}`,
     );
     if (network) {
       await network.dumpLogs();
