@@ -20,8 +20,9 @@ export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
   parachainFilesPath: string,
-  chainName: string,
+  relayChainName: string,
   parachain: Parachain,
+  relayChainSpecIsRaw: boolean,
 ): Promise<void> {
   let [
     addAuraAuthority,
@@ -58,18 +59,20 @@ export async function generateParachainFiles(
   let chainSpecFullPath;
   const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
     parachain.name
-  }-${chainName}.json`;
+  }-${relayChainName}.json`;
 
   const chainSpecFullPathPlain = `${tmpDir}/${
     parachain.chain ? parachain.chain + "-" : ""
-  }${parachain.name}-${chainName}-plain.json`;
+  }${parachain.name}-${relayChainName}-plain.json`;
 
   if (parachain.cumulusBased) {
-    // need to create the parachain spec parachain file name is [para chain-]<para name>-<relay chain>
-    const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
+    // need to create the parachain spec
+    // file name template is [para chain-]<para name>-<relay chain>
+    const relayChainSpecFullPathPlain = `${tmpDir}/${relayChainName}-plain.json`;
 
     // Check if the chain-spec file is provided.
     if (parachain.chainSpecPath) {
+      debug("parachain chain spec provided");
       await fs.promises.copyFile(
         parachain.chainSpecPath,
         chainSpecFullPathPlain,
@@ -86,7 +89,7 @@ export async function generateParachainFiles(
           } --disable-default-bootnode`,
           defaultImage: parachain.collators[0].image,
         },
-        chainName,
+        relayChainName,
         chainSpecFullPathPlain,
       );
     }
@@ -149,7 +152,7 @@ export async function generateParachainFiles(
         parachain.collators[0].image,
         `${parachain.chain ? parachain.chain + "-" : ""}${
           parachain.name
-        }-${chainName}`,
+        }-${relayChainName}`,
         parachain.collators[0].command!,
         chainSpecFullPath,
       );
@@ -183,8 +186,17 @@ export async function generateParachainFiles(
     parachain.specPath = chainSpecFullPath;
   }
 
+  // state and wasm files are only needed:
+  // IFF the relaychain is NOT RAW or
+  // IFF the relaychain is raw and addToGenesis is false for the parachain
+  const stateAndWasmAreNeeded = !(
+    relayChainSpecIsRaw && parachain.addToGenesis
+  );
   // check if we need to create files
-  if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
+  if (
+    stateAndWasmAreNeeded &&
+    (parachain.genesisStateGenerator || parachain.genesisWasmGenerator)
+  ) {
     const filesToCopyToNodes: fileMap[] = [];
     if (parachain.cumulusBased && chainSpecFullPath)
       filesToCopyToNodes.push({
@@ -244,7 +256,7 @@ export async function generateParachainFiles(
       invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
-      chain: chainName,
+      chain: relayChainName,
       bootnodes: [],
       args: [],
       env: [],

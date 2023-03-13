@@ -48,7 +48,9 @@ export function filterConsole(excludePatterns: string[], options?: any) {
   };
 
   const { console: consoleObject, methods } = options;
-  const originalMethods = methods.map((method: any) => consoleObject[method]);
+  const originalMethods = methods.map(
+    (method: string) => consoleObject[method],
+  );
 
   const check = (output: string) => {
     for (const pattern of excludePatterns) {
