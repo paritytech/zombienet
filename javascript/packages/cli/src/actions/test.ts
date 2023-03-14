@@ -13,13 +13,13 @@ import { AVAILABLE_PROVIDERS } from "../constants";
  * built-in function that query the network using polkadot.js
  * Read more here: https://paritytech.github.io/zombienet/cli/testing.html
  * @param testFile
- * @param runningNetworkSpec
+ * @param runningNetworksSpec
  * @param opts (commander)
  * @param program (commander)
  */
 export async function test(
   testFile: string,
-  runningNetworkSpec: string | undefined,
+  runningNetworksSpec: string[],
   cmdOpts: any,
   program: any,
 ) {
@@ -67,7 +67,7 @@ export async function test(
     inCI,
     opts.spawnConcurrency,
     false,
-    runningNetworkSpec,
+    runningNetworksSpec,
     dir,
   );
 }

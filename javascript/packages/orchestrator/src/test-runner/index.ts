@@ -11,6 +11,7 @@ import path from "path";
 import { Network, rebuildNetwork } from "../network";
 import { start } from "../orchestrator";
 import { Providers } from "../providers";
+import { setClient } from "../providers/client";
 import { LaunchConfig, TestDefinition } from "../types";
 import assertions from "./assertions";
 import commands from "./commands";
@@ -24,6 +25,29 @@ const mocha = new Mocha();
 
 export interface BackchannelMap {
   [propertyName: string]: any;
+}
+
+function findNetwork(
+  networks: Network[],
+  nodeOrGroupName?: string,
+): Network | undefined {
+  if (!nodeOrGroupName) {
+    return networks[0];
+  }
+
+  const network = networks.find((network) => {
+    try {
+      network.getNodes(nodeOrGroupName);
+      return true;
+    } catch {
+      // continue searching
+    }
+  });
+
+  if (!network)
+    throw new Error(`Node or Group: ${nodeOrGroupName} not present`);
+
+  return network;
 }
 
 function showNetworkLogsLocation(
@@ -92,27 +116,33 @@ export async function run(
   inCI = false,
   concurrency = 1,
   silent = false,
-  runningNetworkSpecPath: string | undefined,
+  runningNetworksSpec: string[] | undefined,
   dir: string | undefined,
 ) {
   setSilent(silent);
-  let network: Network;
+  const networks: Network[] = [];
   const backchannelMap: BackchannelMap = {};
 
   let suiteName: string = testName;
   if (testDef.description) suiteName += `( ${testDef.description} )`;
 
-  // read network file
-  const networkConfigFilePath = fs.existsSync(testDef.network)
-    ? testDef.network
-    : path.resolve(configBasePath, testDef.network);
+  const networkConfigs: LaunchConfig[] = [];
+  for (let networkConfigFilePath of testDef.networks) {
+    // read network file
+    if (!fs.existsSync(networkConfigFilePath))
+      networkConfigFilePath = path.resolve(
+        configBasePath,
+        networkConfigFilePath,
+      );
+    const networkConfig = readNetworkConfig(networkConfigFilePath);
 
-  const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
+    // set the provider
+    if (!networkConfig.settings)
+      networkConfig.settings = { provider, timeout: DEFAULT_GLOBAL_TIMEOUT };
+    else networkConfig.settings.provider = provider;
 
-  // set the provider
-  if (!config.settings)
-    config.settings = { provider, timeout: DEFAULT_GLOBAL_TIMEOUT };
-  else config.settings.provider = provider;
+    networkConfigs.push(networkConfig);
+  }
 
   // find creds file
   const credsFile = inCI ? "config" : testDef.creds;
@@ -134,52 +164,66 @@ export async function run(
     if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
 
-  if (!creds && config.settings.provider === "kubernetes")
-    throw new Error(`Invalid credential file path: ${credsFile}`);
+  for (const networkConfig of networkConfigs) {
+    if (!creds && networkConfig.settings.provider === "kubernetes")
+      throw new Error(`Invalid credential file path: ${credsFile}`);
+  }
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);
 
   suite.beforeAll("launching", async function () {
-    const launchTimeout = config.settings?.timeout || 500;
-    this.timeout(launchTimeout * 1000);
-    try {
-      if (!runningNetworkSpecPath) {
-        console.log(`\n\n\t Launching network... this can take a while.`);
-        network = await start(creds!, config, {
-          spawnConcurrency: concurrency,
-          inCI,
-          silent,
-          dir,
-        });
-      } else {
-        const runningNetworkSpec: any = require(runningNetworkSpecPath);
-        if (provider !== runningNetworkSpec.client.providerName)
-          throw new Error(
-            `Invalid provider, the provider set doesn't match with the running network definition`,
+    for (const [networkConfigIdx, networkConfig] of networkConfigs.entries()) {
+      const launchTimeout = networkConfig.settings?.timeout || 500;
+      this.timeout(launchTimeout * 1000);
+
+      const runningNetworkSpecPath =
+        runningNetworksSpec && runningNetworksSpec[networkConfigIdx];
+      try {
+        if (runningNetworkSpecPath)
+          console.log("runningNetworkSpecPath", runningNetworkSpecPath);
+
+        let network: Network;
+        if (!runningNetworkSpecPath) {
+          console.log(
+            `\n\n\t Launching network ${testDef.networks[networkConfigIdx]} ... this can take a while.`,
           );
+          network = await start(creds!, networkConfig, {
+            spawnConcurrency: concurrency,
+            inCI,
+            silent,
+            dir,
+          });
+        } else {
+          const runningNetworkSpec: any = require(runningNetworkSpecPath);
+          if (provider !== runningNetworkSpec.client.providerName)
+            throw new Error(
+              `Invalid provider, the provider set doesn't match with the running network definition`,
+            );
 
-        const { client, namespace, tmpDir } = runningNetworkSpec;
-        // initialize the Client
-        const initClient = Providers.get(
-          runningNetworkSpec.client.providerName,
-        ).initClient(client.configPath, namespace, tmpDir);
-        // initialize the network
-        network = rebuildNetwork(initClient, runningNetworkSpec);
+          const { client, namespace, tmpDir } = runningNetworkSpec;
+          // initialize the Client
+          const initClient = Providers.get(
+            runningNetworkSpec.client.providerName,
+          ).initClient(client.configPath, namespace, tmpDir);
+          // initialize the network
+          network = rebuildNetwork(initClient, runningNetworkSpec);
+        }
+
+        networks.push(network);
+        network.showNetworkInfo(networkConfig.settings.provider);
+      } catch (err) {
+        console.log(
+          `\n${decorators.red(
+            "Error launching the network!",
+          )} \t ${decorators.bright(err)}`,
+        );
+        exitMocha(100);
       }
-
-      network.showNetworkInfo(config.settings.provider);
-
-      await sleep(5 * 1000);
-      return;
-    } catch (err) {
-      console.log(
-        `\n${decorators.red(
-          "Error launching the network!",
-        )} \t ${decorators.bright(err)}`,
-      );
-      exitMocha(100);
     }
+
+    await sleep(5 * 1000);
+    return;
   });
 
   suite.afterAll("teardown", async function () {
@@ -193,12 +237,18 @@ export async function run(
       );
     }
 
-    if (network && !network.wasRunning) {
-      console.log("\n");
-      const logsPath = await network.dumpLogs(false);
-      console.log(`\n\t ${decorators.green("Deleting network")}`);
-      await network.stop();
-      showNetworkLogsLocation(network, logsPath, inCI);
+    for (const [networkIdx, network] of networks.entries()) {
+      if (network && !network.wasRunning) {
+        console.log("\n");
+        const logsPath = await network.dumpLogs(false);
+        console.log(
+          `\n\t ${decorators.green(
+            `Deleting network ${testDef.networks[networkIdx]}`,
+          )}`,
+        );
+        await network.stop();
+        showNetworkLogsLocation(network, logsPath, inCI);
+      }
     }
     return;
   });
@@ -217,10 +267,14 @@ export async function run(
     }
 
     const testFn = generator(assertion.parsed.args);
-    const test = new Test(
-      assertion.original_line,
-      async () => await testFn(network, backchannelMap, configBasePath),
-    );
+    const test = new Test(assertion.original_line, async () => {
+      // Find the first network that contains the node and run the test on it.
+      const network = findNetwork(networks, assertion.parsed.args.node_name);
+
+      setClient(network?.client);
+      await testFn(network, backchannelMap, configBasePath);
+      return;
+    });
     suite.addTest(test);
     test.timeout(0);
   }
