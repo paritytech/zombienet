@@ -153,7 +153,7 @@ export class Network {
   async dumpLogs(showLogPath: boolean = true): Promise<string> {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
-    fs.mkdirSync(logsPath);
+    if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
     const paraNodes: NetworkNode[] = Object.values(this.paras).reduce(
       (memo: NetworkNode[], value) => memo.concat(value.nodes),
       [],

@@ -131,10 +131,17 @@ export class NativeClient extends Client {
       return memo;
     }, memo);
 
-    if (pids.length > 0) {
-      args.push(`kill -9 ${pids.join(" ")}`);
+    const result = await this.runCommand(
+      ["bash", "-c", `ps ax| awk '{print $1}'| grep -E '${pids.join("|")}'`],
+      { allowFail: true },
+    );
+    if (result.exitCode === 0) {
+      const pidsToKill = result.stdout.split("\n");
+      if (pidsToKill.length > 0) {
+        args.push(`kill -9 ${pids.join(" ")}`);
 
-      await this.runCommand(args);
+        await this.runCommand(args);
+      }
     }
   }
 

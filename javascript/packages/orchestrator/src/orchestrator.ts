@@ -264,8 +264,9 @@ export async function start(
 
     // Check if the chain spec is in raw format
     // Could be if the chain_spec_path was set
-    const chainSpecContent = require(chainSpecFullPathPlain);
+    const chainSpecContent = readAndParseChainSpec(chainSpecFullPathPlain);
     const relayChainSpecIsRaw = Boolean(chainSpecContent.genesis?.raw);
+
     client.chainId = chainSpecContent.id;
 
     const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
@@ -380,11 +381,11 @@ export async function start(
 
     // ensure chain raw is ok
     try {
-      const chainRawContent = require(chainSpecFullPath);
-      debug(`Chain name: ${chainRawContent.name}`);
+      const chainSpecContent = readAndParseChainSpec(chainSpecFullPathPlain);
+      debug(`Chain name: ${chainSpecContent.name}`);
 
       new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
-        [`Chain name: ${decorators.green(chainRawContent.name)}`],
+        [`Chain name: ${decorators.green(chainSpecContent.name)}`],
       ]);
     } catch (err) {
       console.log(
@@ -671,7 +672,6 @@ export async function start(
       // add bootnodes to chain spec
       await addBootNodes(chainSpecFullPath, bootnodes);
       // flush require cache since we change the chain-spec
-      delete require.cache[require.resolve(chainSpecFullPath)];
 
       if (client.providerName === "kubernetes") {
         // cache the chainSpec with bootnodes
