@@ -358,7 +358,7 @@ program
   .description("Run tests on the network defined")
   .argument("<testFile>", "ZNDSL file (.zndsl) describing the tests")
   .argument(
-    "[runningNetworkSpec]",
+    "[runningNetworksSpec...]",
     "Path to the network spec json, for using a running network for running the test",
   )
   .action(test);
@@ -478,8 +478,7 @@ async function spawn(
  */
 async function test(
   testFile: string,
-  runningNetworkSpec: string | undefined,
-  _opts: any,
+  runningNetworksSpec: string[],
 ) {
   const opts = program.opts();
 
@@ -503,8 +502,8 @@ async function test(
 
   const configBasePath = path.dirname(testFile);
   const env = new Environment(new RelativeLoader([configBasePath]));
-  const temmplateContent = fs.readFileSync(testFile).toString();
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = fs.readFileSync(testFile).toString();
+  const content = env.renderString(templateContent, process.env);
 
   const testName = getTestNameFromFileName(testFile);
 
@@ -523,7 +522,7 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
-    runningNetworkSpec,
+    runningNetworksSpec,
   );
 }
 

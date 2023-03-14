@@ -282,7 +282,7 @@ export interface MultiAddressByNode {
 }
 
 export interface TestDefinition {
-  network: string;
+  networks: string[];
   creds: string;
   description?: string;
   assertions: Assertion[];

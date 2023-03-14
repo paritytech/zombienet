@@ -100,6 +100,5 @@ export function getClient(): Client {
 }
 
 export function setClient(c: Client) {
-  if (client) throw new Error("Client already initialized");
   client = c;
 }
