@@ -387,26 +387,34 @@ export class PodmanClient extends Client {
     if (keystore) {
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       await makeDir(keystoreRemoteDir, true);
-      const keystoreIsEmpty = await fs.readdir(keystoreRemoteDir).length === 0;
-      if(!keystoreIsEmpty) await this.runCommand(["unshare", "chmod", "-R", "o+w", keystoreRemoteDir], {scoped:false});
+      const keystoreIsEmpty =
+        (await fs.readdir(keystoreRemoteDir).length) === 0;
+      if (!keystoreIsEmpty)
+        await this.runCommand(
+          ["unshare", "chmod", "-R", "o+w", keystoreRemoteDir],
+          { scoped: false },
+        );
       debug("keystoreRemoteDir", keystoreRemoteDir);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
       debug("keys injected");
     }
 
-    const cfgDirIsEmpty = await fs.readdir(`${this.tmpDir}/${name}/cfg`).length === 0;
-    if(!cfgDirIsEmpty && filesToCopy.length) {
-      await this.runCommand(["unshare", "chmod", "-R", "o+w", `${this.tmpDir}/${name}/cfg`], {scoped:false});
+    const cfgDirIsEmpty =
+      (await fs.readdir(`${this.tmpDir}/${name}/cfg`).length) === 0;
+    if (!cfgDirIsEmpty && filesToCopy.length) {
+      await this.runCommand(
+        ["unshare", "chmod", "-R", "o+w", `${this.tmpDir}/${name}/cfg`],
+        { scoped: false },
+      );
     }
     // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
-      debug(`copyFile ${localFilePath} to ${this.tmpDir}/${name}${remoteFilePath}`);
-      await fs.cp(
-        localFilePath,
-        `${this.tmpDir}/${name}${remoteFilePath}`,
+      debug(
+        `copyFile ${localFilePath} to ${this.tmpDir}/${name}${remoteFilePath}`,
       );
+      await fs.cp(localFilePath, `${this.tmpDir}/${name}${remoteFilePath}`);
       debug("copied!");
     }
 
