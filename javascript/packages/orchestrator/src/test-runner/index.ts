@@ -33,6 +33,7 @@ export async function run(
   provider: string,
   inCI: boolean = false,
   concurrency: number = 1,
+  silent: boolean = false,
   runningNetworkSpecPath: string | undefined,
 ) {
   let network: Network;
@@ -89,6 +90,7 @@ export async function run(
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
+          silent,
         });
       } else {
         const runningNetworkSpec: any = require(runningNetworkSpecPath);

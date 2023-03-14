@@ -18,6 +18,7 @@ import {
   getFilePathNameExt,
   readNetworkConfig,
   RelativeLoader,
+  setSilent,
 } from "@zombienet/utils";
 import axios from "axios";
 import { Command, Option } from "commander";
@@ -344,7 +345,8 @@ program
       "Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)",
     ),
   )
-  .addOption(new Option("-f, --force", "Force override all prompt commands"));
+  .addOption(new Option("-f, --force", "Force override all prompt commands"))
+  .addOption(new Option("-s, --silent", "Don't log to stdout"));
 
 program
   .command("spawn")
@@ -418,6 +420,8 @@ async function spawn(
   // since this shouldn't be a bottleneck in most of the cases,
   // but also can be set with the `-c` flag.
   const spawnConcurrency = opts.spawnConcurrency || 4;
+  const silent = opts.silent || false;
+  setSilent(silent);
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
@@ -465,7 +469,7 @@ async function spawn(
   }
 
   const inCI = process.env.RUN_IN_CONTAINER === "1";
-  const options = { monitor, spawnConcurrency, dir, force, inCI };
+  const options = { monitor, spawnConcurrency, dir, force, inCI, silent };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
@@ -519,6 +523,9 @@ async function test(
     process.exit(1);
   }
 
+  const silent = opts.silent || false;
+  setSilent(silent);
+
   await run(
     configBasePath,
     testName,
@@ -526,6 +533,7 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
+    silent,
     runningNetworkSpec,
   );
 }

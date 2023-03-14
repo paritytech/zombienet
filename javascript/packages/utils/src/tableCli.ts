@@ -99,7 +99,7 @@ export class CreateLogTable {
   };
 
   print = () => {
-    if(!silent) console.log(this.table!.toString());
+    if (!silent) console.log(this.table!.toString());
   };
 
   // This function makes the process of creating a table, pushing data and printing it faster
