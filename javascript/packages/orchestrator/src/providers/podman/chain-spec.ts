@@ -8,7 +8,7 @@ import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 const debug = require("debug")("zombie::podman::chain-spec");
 
-const fs = require("fs").promises;
+const { copyFileSync, readFileSync, promises } = require("fs");
 
 export async function setupChainSpec(
   namespace: string,
@@ -22,7 +22,7 @@ export async function setupChainSpec(
   const client = getClient();
   if (chainConfig.chainSpecPath) {
     // copy file to temp to use
-    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
+    copyFileSync(chainConfig.chainSpecPath, chainFullPath);
   } else {
     if (chainConfig.chainSpecCommand) {
       const { defaultImage, chainSpecCommand } = chainConfig;
@@ -46,7 +46,7 @@ export async function setupChainSpec(
       debug("copy file from pod");
 
       const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
-      await fs.copyFile(podChainPath, chainFullPath);
+      copyFileSync(podChainPath, chainFullPath);
     }
   }
 }
@@ -103,8 +103,12 @@ export async function getChainSpecRaw(
   let isValid = false;
   try {
     let content = require(chainFullPath);
+    const chainSpecContentTest = readFileSync(chainFullPath);
+    JSON.parse(chainSpecContentTest.toString());
     isValid = true;
-  } catch (_) {}
+  } catch (e) {
+    debug(e);
+  }
 
   if (!isValid) {
     try {
@@ -117,10 +121,12 @@ export async function getChainSpecRaw(
       if (result.exitCode === 0 && result.stdout.length > 0) {
         // TODO: remove this debug when we get this fixed.
         debug(result.stdout);
-        fs.writeFileSync(chainFullPath, result.stdout);
+        promises.writeFileSync(chainFullPath, result.stdout);
         isValid = true;
       }
-    } catch (_) {}
+    } catch (e) {
+      debug(e);
+    }
   }
 
   if (!isValid) throw new Error(`Invalid chain spec raw file generated.`);

@@ -8,10 +8,18 @@ import { decorators } from "./colors";
 import { RelativeLoader } from "./nunjucks-relative-loader";
 import { LaunchConfig } from "./types";
 
+interface LocalJsonFileContentIF {
+  apiVersion: string;
+  kind: string;
+  metadata: {
+    name: string;
+  };
+}
+
 export function writeLocalJsonFile(
   path: string,
   fileName: string,
-  content: any,
+  content: string | LocalJsonFileContentIF,
 ) {
   fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }

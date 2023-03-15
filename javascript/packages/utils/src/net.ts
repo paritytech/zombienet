@@ -27,7 +27,7 @@ export async function getRandomPort(): Promise<number> {
 
 export async function getHostIp(): Promise<string> {
   return await new Promise((resolve, reject) => {
-    dns.lookup(os.hostname(), (err: any, addr: any) => {
+    dns.lookup(os.hostname(), (_err: unknown, addr: string) => {
       resolve(addr);
     });
   });

@@ -5,6 +5,7 @@ import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
+  setSilent,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -36,9 +37,11 @@ export async function run(
   provider: string,
   inCI: boolean = false,
   concurrency: number = 1,
-  runningNetworksSpec: string[],
+  silent: boolean = false,
+  runningNetworkSpecPath: string | undefined,
 ) {
-  let networks: Network[] = [];
+  setSilent(silent);
+  let network: Network;
   let backchannelMap: BackchannelMap = {};
 
   let suiteName: string = testName;
@@ -89,7 +92,7 @@ export async function run(
 
   suite.beforeAll("launching", async function () {
     for (let [networkConfigIdx, networkConfig] of networkConfigs.entries()) {
-      const launchTimeout = networkConfig.settings?.timeout || 500;
+      const launchTimeout = config.settings?.timeout || 500;
       this.timeout(launchTimeout * 1000);
 
       let runningNetworkSpecPath = runningNetworksSpec[networkConfigIdx];
@@ -103,6 +106,7 @@ export async function run(
           network = await start(creds!, networkConfig, {
             spawnConcurrency: concurrency,
             inCI,
+            silent,
           });
         } else {
           const runningNetworkSpec: any = require(runningNetworkSpecPath);

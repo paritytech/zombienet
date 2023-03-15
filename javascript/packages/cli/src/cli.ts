@@ -414,7 +414,10 @@ async function spawn(
   const dir = opts.dir || "";
   const force = opts.force || false;
   const monitor = opts.monitor || false;
-  const spawnConcurrency = opts.spawnConcurrency || 1;
+  // By default spawn pods/process in batches of 4,
+  // since this shouldn't be a bottleneck in most of the cases,
+  // but also can be set with the `-c` flag.
+  const spawnConcurrency = opts.spawnConcurrency || 4;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
@@ -462,7 +465,14 @@ async function spawn(
   }
 
   const inCI = process.env.RUN_IN_CONTAINER === "1";
-  const options = { monitor, spawnConcurrency, dir, force, inCI };
+  const options = {
+    monitor,
+    spawnConcurrency,
+    dir,
+    force,
+    inCI,
+    silent: false,
+  };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
@@ -522,7 +532,8 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
-    runningNetworksSpec,
+    false,
+    runningNetworkSpec,
   );
 }
 

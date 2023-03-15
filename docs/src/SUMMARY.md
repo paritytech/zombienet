@@ -19,4 +19,5 @@
 - [Network definition spec](./network-definition-spec.md)
 - [Testing DSL spec](./cli/test-dsl-definition-spec.md)
 - [Development](./development.md)
+- [Projects](./projects.md)
 - [Acknowledgement](./acknowledgement.md)
