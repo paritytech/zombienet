@@ -557,7 +557,7 @@ export class KubeClient extends Client {
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
-      await this.createStaticResource("baseline-resources.yaml");
+      await this.createStaticResource("baseline-resources.yaml", this.namespace);
   }
 
   async checkFileServer(): Promise<boolean> {
