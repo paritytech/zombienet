@@ -346,7 +346,7 @@ program
     ),
   )
   .addOption(new Option("-f, --force", "Force override all prompt commands"))
-  .addOption(new Option("-s, --silent", "Don't log to stdout"));
+  .addOption(new Option("-s, --silent", "Mute logging output."));
 
 program
   .command("spawn")
