@@ -18,7 +18,6 @@ import {
   getFilePathNameExt,
   readNetworkConfig,
   RelativeLoader,
-  setSilent,
 } from "@zombienet/utils";
 import axios from "axios";
 import { Command, Option } from "commander";
@@ -33,8 +32,6 @@ import {
   DEFAULT_PROVIDER,
 } from "./constants";
 
-// We always want to log when the orchestrator is called from the cli
-const SILENT = false;
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
@@ -422,7 +419,6 @@ async function spawn(
   // but also can be set with the `-c` flag.
   const spawnConcurrency = opts.spawnConcurrency || 4;
 
-  setSilent(SILENT);
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
@@ -476,7 +472,7 @@ async function spawn(
     dir,
     force,
     inCI,
-    silent: SILENT,
+    silent: false,
   };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
@@ -531,8 +527,6 @@ async function test(
     process.exit(1);
   }
 
-  setSilent(SILENT);
-
   await run(
     configBasePath,
     testName,
@@ -540,7 +534,7 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
-    SILENT,
+    false,
     runningNetworkSpec,
   );
 }
