@@ -72,6 +72,7 @@ import {
   Parachain,
 } from "./types";
 
+import { setSilent } from "@zombienet/utils";
 import { getProcessStartTimeKey } from "./metrics";
 import { decorate } from "./paras-decorators";
 
@@ -90,6 +91,7 @@ export interface OrcOptionsInterface {
   inCI?: boolean;
   dir?: string;
   force?: boolean;
+  silent?: boolean; // Mute logging output
 }
 
 export async function start(
@@ -98,10 +100,11 @@ export async function start(
   options?: OrcOptionsInterface,
 ) {
   const opts = {
-    ...{ monitor: false, spawnConcurrency: 1, inCI: false },
+    ...{ monitor: false, spawnConcurrency: 1, inCI: false, silent: true },
     ...options,
   };
 
+  setSilent(opts.silent);
   let network: Network | undefined;
   let cronInterval = undefined;
   let multiAddressByNode: MultiAddressByNode = {};
@@ -650,7 +653,7 @@ export async function start(
             break;
         }
         logTable.print();
-        console.log(logCommand + "\n\n");
+        if (!opts.silent) console.log(logCommand + "\n\n");
       }
     };
 
@@ -689,7 +692,9 @@ export async function start(
 
     await series(promiseGenerators, opts.spawnConcurrency);
 
-    console.log("\t All relay chain nodes spawned...");
+    new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+      [decorators.green("All relay chain nodes spawned...")],
+    ]);
     debug("\t All relay chain nodes spawned...");
 
     const collatorPromiseGenerators = [];

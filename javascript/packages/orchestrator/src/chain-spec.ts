@@ -101,11 +101,12 @@ export async function addBalances(specPath: string, nodes: Node[]) {
         : node.balance;
       runtimeConfig.balances.balances.push([stash_key, balanceToAdd]);
 
-      console.log(
-        `\t👤 Added Balance ${node.balance} for ${decorators.green(
-          node.name,
-        )} - ${decorators.magenta(stash_key)}`,
-      );
+      const logLine = `👤 Added Balance ${node.balance} for ${decorators.green(
+        node.name,
+      )} - ${decorators.magenta(stash_key)}`;
+      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        [logLine],
+      ]);
     }
   }
 
@@ -269,11 +270,12 @@ export async function addGrandpaAuthority(
   keys.push([ed_account.address, 1]);
 
   writeChainSpec(specPath, chainSpec);
-  console.log(
-    `\t👤 Added Genesis Authority (GRANDPA) ${decorators.green(
-      name,
-    )} - ${decorators.magenta(ed_account.address)}`,
-  );
+  const logLine = `👤 Added Genesis Authority (GRANDPA) ${decorators.green(
+    name,
+  )} - ${decorators.magenta(ed_account.address)}`;
+  new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+    [logLine],
+  ]);
 }
 
 export async function generateNominators(
@@ -286,11 +288,12 @@ export async function generateNominators(
   const runtimeConfig = getRuntimeConfig(chainSpec);
   if (!runtimeConfig?.staking) return;
 
-  console.log(
-    `\t👤 Generating random Nominators (${decorators.green(
-      randomNominatorsCount,
-    )})`,
-  );
+  let logLine = `👤 Generating random Nominators (${decorators.green(
+    randomNominatorsCount,
+  )})`;
+  new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+    [logLine],
+  ]);
 
   const maxForRandom = 2 ** 48 - 1;
   for (let i = 0; i < randomNominatorsCount; i++) {
@@ -314,9 +317,12 @@ export async function generateNominators(
   }
 
   writeChainSpec(specPath, chainSpec);
-  console.log(
-    `\t👤 Added random Nominators (${decorators.green(randomNominatorsCount)})`,
-  );
+  logLine = `👤 Added random Nominators (${decorators.green(
+    randomNominatorsCount,
+  )})`;
+  new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+    [logLine],
+  ]);
 }
 
 // Add parachains to the chain spec at genesis.
@@ -347,9 +353,12 @@ export async function addParachainToGenesis(
     paras.push(new_para);
 
     writeChainSpec(specPath, chainSpec);
-    console.log(
-      `\n ${decorators.green("✓ Added Genesis Parachain")} ${para_id}`,
-    );
+    const logLine = `${decorators.green(
+      "✓ Added Genesis Parachain",
+    )} ${para_id}`;
+    new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+      [logLine],
+    ]);
   } else {
     console.error(
       `\n${decorators.reverse(
@@ -365,7 +374,9 @@ export async function addParachainToGenesis(
 export async function changeGenesisConfig(specPath: string, updates: any) {
   const chainSpec = readAndParseChainSpec(specPath);
   const msg = `⚙ Updating Chain Genesis Configuration (path: ${specPath})`;
-  console.log(`\n\t\t ${decorators.green(msg)}`);
+  new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+    [`\n\t ${decorators.green(msg)}`],
+  ]);
 
   if (chainSpec.genesis) {
     let config = chainSpec.genesis;
@@ -383,11 +394,13 @@ export async function addBootNodes(specPath: string, addresses: string[]) {
     if (e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
 
     // can't customize bootnodes
-    console.log(
-      `\n\t\t 🚧 ${decorators.yellow(
-        `Chain Spec file ${specPath} is TOO LARGE to customize (more than 2G).`,
-      )} 🚧`,
-    );
+    const logLine = ` 🚧 ${decorators.yellow(
+      `Chain Spec file ${specPath} is TOO LARGE to customize (more than 2G).`,
+    )} 🚧`;
+    new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+      [logLine],
+    ]);
+
     return;
   }
 
@@ -411,7 +424,9 @@ export async function addHrmpChannelsToGenesis(
   specPath: string,
   hrmp_channels: HrmpChannelsConfig[],
 ) {
-  console.log(`\n\t\t ⛓  ${decorators.green("Adding Genesis HRMP Channels")}`);
+  new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+    [`\n\t ${decorators.green("Adding Genesis HRMP Channels")}`],
+  ]);
 
   const chainSpec = readAndParseChainSpec(specPath);
 
@@ -438,11 +453,13 @@ export async function addHrmpChannelsToGenesis(
     if (hrmp && hrmp.preopenHrmpChannels) {
       hrmp.preopenHrmpChannels.push(newHrmpChannel);
 
-      console.log(
-        decorators.green(
-          `\t\t\t  ✓ Added HRMP channel ${h.sender} -> ${h.recipient}`,
-        ),
-      );
+      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        [
+          decorators.green(
+            `✓ Added HRMP channel ${h.sender} -> ${h.recipient}`,
+          ),
+        ],
+      ]);
     } else {
       console.error(
         `${decorators.reverse(
@@ -473,11 +490,16 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
         findAndReplaceConfig(obj1[key], obj2[key]);
       } else {
         obj2[key] = obj1[key];
-        console.log(
-          `\n\t\t  ${decorators.green(
-            "✓ Updated Genesis Configuration",
-          )} [ key : ${key} ]`,
-        );
+        new CreateLogTable({
+          colWidths: [120],
+          doubleBorder: true,
+        }).pushToPrint([
+          [
+            `${decorators.green(
+              "✓ Updated Genesis Configuration",
+            )} [ key : ${key} ]`,
+          ],
+        ]);
         debug(`[ ${key}: ${obj2[key]} ]`);
       }
     } else {

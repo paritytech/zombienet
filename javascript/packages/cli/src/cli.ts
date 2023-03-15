@@ -465,7 +465,14 @@ async function spawn(
   }
 
   const inCI = process.env.RUN_IN_CONTAINER === "1";
-  const options = { monitor, spawnConcurrency, dir, force, inCI };
+  const options = {
+    monitor,
+    spawnConcurrency,
+    dir,
+    force,
+    inCI,
+    silent: false,
+  };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
@@ -526,6 +533,7 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
+    false,
     runningNetworkSpec,
   );
 }

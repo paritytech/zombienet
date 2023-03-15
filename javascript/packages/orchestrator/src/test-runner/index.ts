@@ -3,6 +3,7 @@ import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
+  setSilent,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -33,8 +34,10 @@ export async function run(
   provider: string,
   inCI: boolean = false,
   concurrency: number = 1,
+  silent: boolean = false,
   runningNetworkSpecPath: string | undefined,
 ) {
+  setSilent(silent);
   let network: Network;
   let backchannelMap: BackchannelMap = {};
 
@@ -89,6 +92,7 @@ export async function run(
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
+          silent,
         });
       } else {
         const runningNetworkSpec: any = require(runningNetworkSpecPath);
