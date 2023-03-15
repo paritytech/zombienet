@@ -33,6 +33,8 @@ import {
   DEFAULT_PROVIDER,
 } from "./constants";
 
+// We always want to log when the orchestrator is called from the cli
+const SILENT = false;
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
@@ -345,8 +347,7 @@ program
       "Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)",
     ),
   )
-  .addOption(new Option("-f, --force", "Force override all prompt commands"))
-  .addOption(new Option("-s, --silent", "Mute logging output."));
+  .addOption(new Option("-f, --force", "Force override all prompt commands"));
 
 program
   .command("spawn")
@@ -420,8 +421,8 @@ async function spawn(
   // since this shouldn't be a bottleneck in most of the cases,
   // but also can be set with the `-c` flag.
   const spawnConcurrency = opts.spawnConcurrency || 4;
-  const silent = opts.silent || false;
-  setSilent(silent);
+
+  setSilent(SILENT);
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
@@ -469,7 +470,7 @@ async function spawn(
   }
 
   const inCI = process.env.RUN_IN_CONTAINER === "1";
-  const options = { monitor, spawnConcurrency, dir, force, inCI, silent };
+  const options = { monitor, spawnConcurrency, dir, force, inCI, silent: SILENT };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
@@ -523,8 +524,7 @@ async function test(
     process.exit(1);
   }
 
-  const silent = opts.silent || false;
-  setSilent(silent);
+  setSilent(SILENT);
 
   await run(
     configBasePath,
@@ -533,7 +533,7 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
-    silent,
+    SILENT,
     runningNetworkSpec,
   );
 }
