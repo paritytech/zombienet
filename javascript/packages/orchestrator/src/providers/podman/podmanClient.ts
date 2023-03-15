@@ -178,6 +178,7 @@ export class PodmanClient extends Client {
   }
 
   async destroyNamespace(): Promise<void> {
+    console.log("WHAT IS HAPPENING HERE?");
     // get pod names
     let args = [
       "pod",
@@ -187,15 +188,20 @@ export class PodmanClient extends Client {
       "--format",
       "{{.Name}}",
     ];
+
     let result = await this.runCommand(args, { scoped: false });
+    console.log("RESULT 1 ? ", result);
 
     // now remove the pods
     args = ["pod", "rm", "-f", ...result.stdout.split("\n")];
     result = await this.runCommand(args, { scoped: false });
 
+    console.log("RESULT 2 ? ", result);
+
     // now remove the pnetwork
     args = ["network", "rm", this.namespace];
     result = await this.runCommand(args, { scoped: false });
+    console.log("RESULT 3 ? ", result);
   }
 
   async addNodeToPrometheus(podName: string) {
@@ -283,7 +289,11 @@ export class PodmanClient extends Client {
       if (opts?.scoped) augmentedCmd.push("--network", this.namespace);
 
       const finalArgs = [...augmentedCmd, ...args];
+
+      console.log("inside runcommand for args: ", args);
+
       const result = await execa(this.command, finalArgs);
+      console.log("inside runcommand for result: ", result);
 
       // podman use stderr for logs
       const stdout =

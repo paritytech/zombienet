@@ -148,6 +148,7 @@ export class Network {
     for (const node of Object.values(this.nodesByName))
       node.apiInstance?.disconnect();
     await this.client.destroyNamespace();
+    console.log("stop is done?");
   }
 
   async dumpLogs(showLogPath: boolean = true): Promise<string> {
