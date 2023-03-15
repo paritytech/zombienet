@@ -418,7 +418,6 @@ async function spawn(
   // since this shouldn't be a bottleneck in most of the cases,
   // but also can be set with the `-c` flag.
   const spawnConcurrency = opts.spawnConcurrency || 4;
-
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
