@@ -322,6 +322,16 @@ npm install
 npm run build
 ```
 
+### Build `parser-wrapper` locally (optional)
+
+```bash
+cd zombienet/crates/parser-wrapper
+wasm-pack build --release --target nodejs --scope zombienet
+cd zombienet/javascript
+npm link ../crates/parser-wrapper/pkg/
+npm run build
+```
+
 ### Download and install needed artifacts (optional)
 
 For an easier and faster setup of your local environment, run:

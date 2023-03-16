@@ -13,8 +13,8 @@
   "scripts": {
     "clean": "npm run clean --workspaces --if-present",
     "build": "npm run clean && npm run build --workspaces --if-present",
-    "lint": "eslint './**' && npx prettier -c .",
-    "lint:write": "eslint './**' --fix && npx prettier --write .",
+    "lint": "eslint './**/*.ts' && npx prettier -c .",
+    "lint:write": "eslint './**/*.ts' --fix && npx prettier --write .",
     "package": "npm run -w packages/cli package",
     "package:linux": "npm run -w packages/cli package:linux",
     "package:macos": "npm run -w packages/cli package:macos",
