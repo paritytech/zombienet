@@ -8,8 +8,12 @@ import {
   RPC_WS_PORT,
 } from "../../constants";
 import { Network } from "../../network";
-import { Node } from "../../types";
+import { envVars, Node } from "../../types";
 import { getClient } from "../client";
+
+interface processEnvironment {
+  [key: string]: string;
+}
 
 export async function genBootnodeDef(
   namespace: string,
@@ -27,7 +31,6 @@ export async function genBootnodeDef(
   await makeDir(dataPath, true);
 
   const command = await genCmd(nodeSetup, cfgPath, dataPath, false);
-
   return {
     metadata: {
       name: "bootnode",
@@ -44,6 +47,10 @@ export async function genBootnodeDef(
       cfgPath: `${client.tmpDir}/${nodeSetup.name}/cfg`,
       ports,
       command,
+      env: nodeSetup.env.reduce((memo, item: envVars) => {
+        memo[item.name] = item.value;
+        return memo;
+      }, {} as processEnvironment),
     },
   };
 }
@@ -99,6 +106,10 @@ export async function genNodeDef(
       dataPath,
       ports,
       command: computedCommand,
+      env: nodeSetup.env.reduce((memo, item: envVars) => {
+        memo[item.name] = item.value;
+        return memo;
+      }, {} as processEnvironment),
     },
   };
 }

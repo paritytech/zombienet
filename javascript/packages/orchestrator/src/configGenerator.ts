@@ -494,11 +494,9 @@ async function getCollatorNodeFromConfig(
   if (collatorConfig.args)
     args = args.concat(sanitizeArgs(collatorConfig.args, { "listen-addr": 2 }));
 
-  const env = [
-    { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-    { name: "RUST_BACKTRACE", value: "FULL" },
-  ];
-  if (collatorConfig.env) env.push(...collatorConfig.env);
+  const env = collatorConfig.env
+    ? DEFAULT_ENV.concat(collatorConfig.env)
+    : DEFAULT_ENV;
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
