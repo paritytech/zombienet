@@ -358,10 +358,11 @@ export class NativeClient extends Client {
       debug(resourseDef.spec.command);
 
       const log = fs.createWriteStream(this.processMap[name].logs);
-      const nodeProcess = spawn(this.command, [
-        "-c",
-        ...resourseDef.spec.command,
-      ]);
+      const nodeProcess = spawn(
+        this.command,
+        ["-c", ...resourseDef.spec.command],
+        { env: { ...process.env, ...resourseDef.spec.env } },
+      );
       debug(nodeProcess.pid);
       nodeProcess.stdout.pipe(log);
       nodeProcess.stderr.pipe(log);
