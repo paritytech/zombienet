@@ -9,8 +9,8 @@ import {
   RPC_WS_PORT,
   TMP_DONE,
   TRANSFER_CONTAINER_NAME,
-  WAIT_UNTIL_SCRIPT_SUFIX,
   TRANSFER_CONTAINER_WAIT_LOG,
+  WAIT_UNTIL_SCRIPT_SUFIX,
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";

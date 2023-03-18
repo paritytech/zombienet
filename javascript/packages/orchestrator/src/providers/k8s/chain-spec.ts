@@ -1,4 +1,3 @@
-import { sleep } from "@zombienet/utils";
 import { promises as fsPromises, writeFileSync } from "fs";
 import {
   DEFAULT_CHAIN_SPEC,
