@@ -45,6 +45,7 @@ const GENESIS_STATE_FILENAME = "genesis-state";
 const GENESIS_WASM_FILENAME = "genesis-wasm";
 
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
+const TRANSFER_CONTAINER_WAIT_LOG = "waiting for tar to finish";
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
 const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "waiting for copy files to finish"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
 const TRANSFER_CONTAINER_NAME = "transfer-files-container";
@@ -131,6 +132,7 @@ export {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   TMP_DONE,
+  TRANSFER_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
   TRANSFER_CONTAINER_NAME,
   ZOMBIE_BUCKET,

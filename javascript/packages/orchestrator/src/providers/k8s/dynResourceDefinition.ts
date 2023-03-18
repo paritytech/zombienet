@@ -10,6 +10,7 @@ import {
   TMP_DONE,
   TRANSFER_CONTAINER_NAME,
   WAIT_UNTIL_SCRIPT_SUFIX,
+  TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";
@@ -123,7 +124,7 @@ function make_transfer_containter(): any {
         "chmod +x /cfg/coreutils",
         "rm -rf ./coreutils-0.0.17-x86_64-unknown-linux-musl",
         "echo coreutils downloaded",
-        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
+        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo ${TRANSFER_CONTAINER_WAIT_LOG}; sleep 1; done; echo copy files has finished`,
       ].join(" && "),
     ],
   };
