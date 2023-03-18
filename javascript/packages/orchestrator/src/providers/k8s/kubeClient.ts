@@ -128,7 +128,7 @@ export class KubeClient extends Client {
 
     logTable.print();
 
-    await this.createResource(podDef, true, false);
+    await this.createResource(podDef, true);
     await this.wait_transfer_container(name);
 
     if (dbSnapshot) {
@@ -230,7 +230,6 @@ export class KubeClient extends Client {
   async createResource(
     resourseDef: any,
     scoped: boolean = false,
-    waitReady: boolean = false,
   ): Promise<void> {
     await this.runCommand(["apply", "-f", "-"], {
       resourceDef: JSON.stringify(resourseDef),
@@ -240,27 +239,6 @@ export class KubeClient extends Client {
     debug(resourseDef);
     const name = resourseDef.metadata.name;
     const kind: string = resourseDef.kind.toLowerCase();
-
-    if (waitReady) {
-      // loop until ready
-      let t = this.timeout;
-      const args = ["get", kind, name, "-o", "jsonpath={.status}"];
-      do {
-        const result = await this.runCommand(args);
-        const status = JSON.parse(result.stdout);
-        if (["Running", "Succeeded"].includes(status.phase)) return;
-
-        // check if we are waiting init container
-        for (const s of status.initContainerStatuses) {
-          if (s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        t -= 3;
-      } while (t > 0);
-
-      throw new Error(`Timeout(${this.timeout}) for ${kind} : ${name}`);
-    }
   }
 
   async wait_pod_ready(podName: string): Promise<void> {
@@ -279,6 +257,7 @@ export class KubeClient extends Client {
 
     throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
   }
+
   async wait_transfer_container(podName: string): Promise<void> {
     // loop until ready
     let t = this.timeout;
