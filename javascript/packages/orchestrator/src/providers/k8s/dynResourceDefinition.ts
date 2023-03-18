@@ -113,11 +113,11 @@ function make_transfer_containter(): any {
       "ash",
       "-c",
       [
-        "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
+        "wget github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
         "echo downloaded",
         "chmod +x /cfg/curl",
         "echo chmoded",
-        "wget https://github.com/uutils/coreutils/releases/download/0.0.17/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz -O /cfg/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
+        "wget github.com/uutils/coreutils/releases/download/0.0.17/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz -O /cfg/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
         "cd /cfg",
         "tar -xvzf ./coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
         "cp ./coreutils-0.0.17-x86_64-unknown-linux-musl/coreutils /cfg/coreutils",
