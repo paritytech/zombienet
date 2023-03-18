@@ -104,8 +104,8 @@ export class KubeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string,
-    chainSpecId: string,
+    keystore?: string,
+    chainSpecId?: string,
     dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
