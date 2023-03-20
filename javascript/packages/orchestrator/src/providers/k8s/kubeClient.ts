@@ -3,6 +3,7 @@ import {
   CreateLogTable,
   decorators,
   getSha256,
+  retry,
   sleep,
   writeLocalJsonFile,
 } from "@zombienet/utils";
@@ -15,6 +16,7 @@ import {
   FINISH_MAGIC_FILE,
   P2P_PORT,
   TRANSFER_CONTAINER_NAME,
+  TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
 import { fileMap } from "../../types";
 import {
@@ -102,8 +104,8 @@ export class KubeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string,
-    chainSpecId: string,
+    keystore?: string,
+    chainSpecId?: string,
     dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
@@ -128,8 +130,8 @@ export class KubeClient extends Client {
 
     logTable.print();
 
-    await this.createResource(podDef, true, false);
-    await this.wait_transfer_container(name);
+    await this.createResource(podDef, true);
+    await this.waitTransferContainerReady(name);
 
     if (dbSnapshot) {
       // we need to get the snapshot from a public access
@@ -201,7 +203,7 @@ export class KubeClient extends Client {
     }
 
     await this.putLocalMagicFile(name);
-    await this.wait_pod_ready(name);
+    await this.waitPodReady(name);
     logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
@@ -230,7 +232,6 @@ export class KubeClient extends Client {
   async createResource(
     resourseDef: any,
     scoped: boolean = false,
-    waitReady: boolean = false,
   ): Promise<void> {
     await this.runCommand(["apply", "-f", "-"], {
       resourceDef: JSON.stringify(resourseDef),
@@ -240,66 +241,67 @@ export class KubeClient extends Client {
     debug(resourseDef);
     const name = resourseDef.metadata.name;
     const kind: string = resourseDef.kind.toLowerCase();
+  }
 
-    if (waitReady) {
-      // loop until ready
-      let t = this.timeout;
-      const args = ["get", kind, name, "-o", "jsonpath={.status}"];
-      do {
+  async waitPodReady(pod: string): Promise<void> {
+    const args = ["get", "pod", pod, "--no-headers"];
+    await retry(
+      3000,
+      this.timeout * 1000,
+      async () => {
         const result = await this.runCommand(args);
-        const status = JSON.parse(result.stdout);
-        if (["Running", "Succeeded"].includes(status.phase)) return;
-
-        // check if we are waiting init container
-        for (const s of status.initContainerStatuses) {
-          if (s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        t -= 3;
-      } while (t > 0);
-
-      throw new Error(`Timeout(${this.timeout}) for ${kind} : ${name}`);
-    }
+        if (result.stdout.match(/Running|Completed/)) return true;
+        if (result.stdout.match(/ErrImagePull|ImagePullBackOff/))
+          throw new Error(`Error pulling image for pod : ${pod}`);
+      },
+      `waitPodReady(): pod: ${pod}`,
+    );
   }
 
-  async wait_pod_ready(podName: string): Promise<void> {
-    // loop until ready
-    let t = this.timeout;
-    const args = ["get", "pod", podName, "--no-headers"];
-    do {
-      const result = await this.runCommand(args);
-      if (result.stdout.match(/Running|Completed/)) return;
-      if (result.stdout.match(/ErrImagePull|ImagePullBackOff/))
-        throw new Error(`Error pulling image for pod : ${podName}`);
+  async waitContainerInState(
+    pod: string,
+    container: string,
+    state: string,
+  ): Promise<void> {
+    const args = ["get", "pod", pod, "-o", "jsonpath={.status}"];
+    await retry(
+      3000,
+      this.timeout * 1000,
+      async () => {
+        const result = await this.runCommand(args);
+        const json = JSON.parse(result.stdout);
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      t -= 3;
-    } while (t > 0);
-
-    throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
-  }
-  async wait_transfer_container(podName: string): Promise<void> {
-    // loop until ready
-    let t = this.timeout;
-    const args = ["get", "pod", podName, "-o", "jsonpath={.status}"];
-    do {
-      const result = await this.runCommand(args);
-      const status = JSON.parse(result.stdout);
-
-      // check if we are waiting init container
-      if (status.initContainerStatuses) {
-        for (const s of status.initContainerStatuses) {
-          if (s.name === TRANSFER_CONTAINER_NAME && s.state.running) return;
+        let containerStatuses = json?.containerStatuses ?? [];
+        let initContainerStatuses = json?.initContainerStatuses ?? [];
+        for (const status of containerStatuses.concat(initContainerStatuses)) {
+          if (status.name === container && state in status.state) return true;
         }
-      }
+      },
+      `waitContainerInState(): pod: ${pod}, container: ${container}, state: ${state}`,
+    );
+  }
 
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      t -= 3;
-    } while (t > 0);
+  async waitLog(pod: string, container: string, log: string): Promise<void> {
+    const args = ["logs", "--tail=1", pod, "-c", `${container}`];
+    await retry(
+      3000,
+      this.timeout * 1000,
+      async () => {
+        const result = await this.runCommand(args);
 
-    throw new Error(
-      `Timeout(${this.timeout}) for transfer container for pod : ${podName}`,
+        if (result.stdout == log) return true;
+      },
+      `waitLog(): pod: ${pod}, container: ${container}, log: ${log}`,
+    );
+  }
+
+  async waitTransferContainerReady(pod: string): Promise<void> {
+    await this.waitContainerInState(pod, TRANSFER_CONTAINER_NAME, "running");
+
+    await this.waitLog(
+      pod,
+      TRANSFER_CONTAINER_NAME,
+      TRANSFER_CONTAINER_WAIT_LOG,
     );
   }
 
@@ -540,7 +542,7 @@ export class KubeClient extends Client {
     }
 
     // wait until fileserver is ready, fix race condition #700.
-    await this.wait_pod_ready("fileserver");
+    await this.waitPodReady("fileserver");
     sleep(3 * 1000);
     let fileServerOk = false;
     let attempts = 0;
@@ -831,7 +833,7 @@ export class KubeClient extends Client {
       this.namespace,
     );
 
-    await this.wait_pod_ready("introspector");
+    await this.waitPodReady("introspector");
   }
 
   async uploadToFileserver(

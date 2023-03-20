@@ -9,6 +9,7 @@ import {
   RPC_WS_PORT,
   TMP_DONE,
   TRANSFER_CONTAINER_NAME,
+  TRANSFER_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "../../constants";
 import { Network } from "../../network";
@@ -112,18 +113,18 @@ function make_transfer_containter(): any {
       "ash",
       "-c",
       [
-        "wget https://github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
+        "wget github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
         "echo downloaded",
         "chmod +x /cfg/curl",
         "echo chmoded",
-        "wget https://github.com/uutils/coreutils/releases/download/0.0.17/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz -O /cfg/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
+        "wget github.com/uutils/coreutils/releases/download/0.0.17/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz -O /cfg/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
         "cd /cfg",
         "tar -xvzf ./coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
         "cp ./coreutils-0.0.17-x86_64-unknown-linux-musl/coreutils /cfg/coreutils",
         "chmod +x /cfg/coreutils",
         "rm -rf ./coreutils-0.0.17-x86_64-unknown-linux-musl",
         "echo coreutils downloaded",
-        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for tar to finish; sleep 1; done; echo copy files has finished`,
+        `until [ -f ${FINISH_MAGIC_FILE} ]; do echo ${TRANSFER_CONTAINER_WAIT_LOG}; sleep 1; done; echo copy files has finished`,
       ].join(" && "),
     ],
   };

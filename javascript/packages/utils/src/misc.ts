@@ -6,6 +6,24 @@ export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export async function retry(
+  delayMs: number,
+  timeoutMs: number,
+  fn: () => Promise<boolean | undefined>,
+  errMsg: string,
+) {
+  do {
+    if (await fn()) {
+      return;
+    }
+
+    await sleep(delayMs);
+    timeoutMs -= delayMs;
+  } while (timeoutMs > 0);
+
+  throw new Error(`Timeout(${timeoutMs}) for: ${errMsg}`);
+}
+
 export function generateNamespace(n: number = 16): string {
   const buf = randomBytes(n);
   return buf.toString("hex");
