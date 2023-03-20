@@ -1,0 +1,17 @@
+Description: Multiple Networks test
+Network: ./0000-test-config-small-network.toml
+Network: ./0003-big-network.toml
+Creds: config
+
+# 0000-test-config-small-network - metrics
+alice: reports node_roles is 4
+alice: reports sub_libp2p_is_major_syncing is 0
+
+# 0000-test-config-small-network - logs
+bob: log line matches glob "*rted #1*" within 10 seconds
+bob: log line matches "Imported #[0-9]+" within 10 seconds
+
+# 0003-big-network - metrics
+a: reports node_roles is 4
+b: reports sub_libp2p_is_major_syncing is 0
+
