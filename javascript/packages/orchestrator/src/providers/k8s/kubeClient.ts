@@ -43,10 +43,6 @@ export function initClient(
   return client;
 }
 
-// Here we cache each file we upload from local
-// to just cp between pods and not upload again the same file.
-const fileUploadCache: any = {};
-
 export class KubeClient extends Client {
   namespace: string;
   chainId?: string;
@@ -59,6 +55,9 @@ export class KubeClient extends Client {
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
+  // Here we cache each file we upload from local
+  // to just cp between pods and not upload again the same file.
+  fileUploadCache: any = {};
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -421,7 +420,7 @@ export class KubeClient extends Client {
       const fileHash = getSha256(fileBuffer.toString());
       const parts = localFilePath.split("/");
       const fileName = parts[parts.length - 1];
-      if (!fileUploadCache[fileHash]) {
+      if (!this.fileUploadCache[fileHash]) {
         await this.uploadToFileserver(localFilePath, fileName, fileHash);
       }
 
@@ -863,7 +862,7 @@ export class KubeClient extends Client {
     debug("copyFileToPod", args);
     const result = await this.runCommand(args);
     debug(result);
-    fileUploadCache[fileHash] = fileName;
+    this.fileUploadCache[fileHash] = fileName;
   }
   getLogsCommand(name: string): string {
     return `kubectl logs -f ${name} -c ${name} -n ${this.namespace}`;
