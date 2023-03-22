@@ -285,7 +285,7 @@ export class Network {
           content: decorators.green("Network launched 🚀🚀"),
         },
       ],
-      colWidths: [30, 170],
+      colWidths: [30, 100],
       wordWrap: true,
     });
     logTable.pushTo([
