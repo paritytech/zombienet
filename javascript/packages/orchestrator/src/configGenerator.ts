@@ -533,6 +533,7 @@ async function getCollatorNodeFromConfig(
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
+    p2pCertHash: collatorConfig.p2p_cert_hash,
   };
 
   return node;
@@ -609,6 +610,7 @@ async function getNodeFromConfig(
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
+    p2pCertHash: node.p2p_cert_hash,
   };
 
   if (group) nodeSetup.group = group;
