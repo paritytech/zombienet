@@ -2,40 +2,40 @@ version: 2
 
 updates:
   - package-ecosystem: npm
-    directory: "/javascript"
+    directory: '/javascript'
     labels:
-      - "automerge"
+    - 'automerge'
     schedule:
       interval: daily
     open-pull-requests-limit: 4
 
   - package-ecosystem: npm
-    directory: "/javascript/packages/cli"
+    directory: '/javascript/packages/cli'
     labels:
-      - "automerge"
+    - 'automerge'
     schedule:
       interval: daily
     open-pull-requests-limit: 4
 
   - package-ecosystem: npm
-    directory: "/javascript/packages/orchestrator"
+    directory: '/javascript/packages/orchestrator'
     labels:
-      - "automerge"
+    - 'automerge'
     schedule:
       interval: daily
     open-pull-requests-limit: 4
 
   - package-ecosystem: npm
-    directory: "/javascript/packages/utils"
+    directory: '/javascript/packages/utils'
     labels:
-      - "automerge"
+    - 'automerge'
     schedule:
       interval: daily
     open-pull-requests-limit: 4
 
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: '/'
     labels:
-      - "automerge"
+    - 'automerge'
     schedule:
       interval: daily
