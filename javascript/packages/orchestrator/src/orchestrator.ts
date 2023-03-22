@@ -521,6 +521,8 @@ export async function start(
         node.args,
         nodeIp,
         nodePort,
+        true,
+        node.p2pCertHash
       );
       multiAddressByNode[podDef.metadata.name] = nodeMultiAddress;
 
@@ -668,6 +670,8 @@ export async function start(
           firstNode.args,
           nodeIp,
           nodePort,
+          true,
+          firstNode.p2pCertHash
         ),
       );
       // add bootnodes to chain spec
@@ -729,6 +733,8 @@ export async function start(
               firstCollatorNode.args,
               nodeIp,
               nodePort,
+              true,
+              firstCollatorNode.p2pCertHash
             ),
           ]);
         }

@@ -8,6 +8,7 @@ export async function generateBootnodeString(
   ip: string,
   port: number,
   useWs: boolean = true,
+  certhash?: string,
 ): Promise<string> {
   let multiaddress;
   let pair = await libp2pKeys.generateKeyPairFromSeed(
@@ -22,6 +23,7 @@ export async function generateBootnodeString(
     let listenAddrParts = args[listenIndex + 1].split("/");
     listenAddrParts[2] = ip;
     listenAddrParts[4] = port.toString();
+    if(certhash) listenAddrParts.push("certhash", certhash);
     multiaddress = `${listenAddrParts.join("/")}/p2p/${peerId.toB58String()}`;
   } else {
     multiaddress = `/ip4/${ip}/tcp/${port}/${
