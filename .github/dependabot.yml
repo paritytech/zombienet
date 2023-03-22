@@ -2,6 +2,14 @@ version: 2
 
 updates:
   - package-ecosystem: npm
+    directory: "/javascript"
+    labels:
+      - "automerge"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 4
+
+  - package-ecosystem: npm
     directory: "/javascript/packages/cli"
     labels:
       - "automerge"
