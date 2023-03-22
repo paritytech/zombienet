@@ -388,10 +388,8 @@ Commands:
   help [command]                           display help for command
 ```
 
-Via [nix](https://zero-to-nix.com/):
-```bash
-nix run github:paritytech/zombienet
-```
+With [nix](https://zero-to-nix.com/) run `nix run github:paritytech/zombienet` or add `inputs.zombienet.url = "github:paritytech/zombienet";` to flake.
+
 
 ## Projects using Zombienet
 
