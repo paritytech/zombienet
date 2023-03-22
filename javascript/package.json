@@ -27,8 +27,8 @@
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
-    "@types/chai": "^4.3.3",
-    "chai": "^4.3.4"
+    "@types/chai": "^4.3.4",
+    "chai": "^4.3.7"
   },
   "devDependencies": {
     "@types/node": "^18.7.13",
