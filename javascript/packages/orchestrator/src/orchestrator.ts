@@ -527,8 +527,6 @@ export async function start(
       if (node.addToBootnodes) {
         bootnodes.push(nodeMultiAddress);
         await addBootNodes(chainSpecFullPath, bootnodes);
-        // flush require cache since we change the chain-spec
-        delete require.cache[require.resolve(chainSpecFullPath)];
       }
 
       let networkNode: NetworkNode;
@@ -733,8 +731,6 @@ export async function start(
               nodePort,
             ),
           ]);
-          // flush require cache since we change the chain-spec
-          delete require.cache[require.resolve(parachain.specPath!)];
         }
       }
 

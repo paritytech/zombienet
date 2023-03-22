@@ -492,6 +492,7 @@ async function test(
   _opts: any,
 ) {
   const opts = program.opts();
+  const dir = opts.dir || "";
 
   let extension = testFile.slice(testFile.lastIndexOf(".") + 1);
 
@@ -513,8 +514,8 @@ async function test(
 
   const configBasePath = path.dirname(testFile);
   const env = new Environment(new RelativeLoader([configBasePath]));
-  const temmplateContent = fs.readFileSync(testFile).toString();
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = fs.readFileSync(testFile).toString();
+  const content = env.renderString(templateContent, process.env);
 
   const testName = getTestNameFromFileName(testFile);
 
@@ -535,6 +536,7 @@ async function test(
     opts.spawnConcurrency,
     false,
     runningNetworkSpec,
+    dir,
   );
 }
 

@@ -388,6 +388,9 @@ Commands:
   help [command]                           display help for command
 ```
 
+With [nix](https://zero-to-nix.com/) run `nix run github:paritytech/zombienet` or add `inputs.zombienet.url = "github:paritytech/zombienet";` to flake.
+
+
 ## Projects using Zombienet
 
 Below can be found some of the projects that are currently using Zombienet as integration or as a testing framework:
