@@ -17,7 +17,7 @@
       });
     in
     outputs // {
-      # conventional injecting zombinet to pkfs for usage in other flakes
+      # conventional injecting so that can access via `pkgs.zombinet` for usage in other flakes
       overlays.default = final: prev: {
         zombienet = outputs.packages.${prev.system};
       };
