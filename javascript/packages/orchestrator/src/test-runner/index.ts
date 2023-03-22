@@ -218,6 +218,9 @@ export async function run(
             "Error launching the network!",
           )} \t ${decorators.bright(err)}`,
         );
+        for (const network of networks) {
+          await network.stop();
+        }
         exitMocha(100);
       }
     }
