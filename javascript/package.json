@@ -27,13 +27,13 @@
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
-    "@types/chai": "^4.3.3",
-    "chai": "^4.3.4"
+    "@types/chai": "^4.3.4",
+    "chai": "^4.3.7"
   },
   "devDependencies": {
     "@types/node": "^18.7.13",
     "@types/tmp": "^0.2.1",
-    "prettier": "^2.7.1",
+    "prettier": "^2.8.6",
     "prettier-plugin-organize-imports": "^3.1.1"
   },
   "workspaces": [
