@@ -199,9 +199,9 @@ async function convertInput(filePath: string) {
   parachains &&
     parachains.forEach((parachain: any) => {
       collators = [];
-      parachain.nodes.forEach((n: any) => {
+      parachain.nodes.forEach((node: any) => {
         collators.push({
-          name: n.name,
+          ...node,
           command: "adder-collator",
           ...DEFAULT_NODE_VALUES,
         });
@@ -215,22 +215,22 @@ async function convertInput(filePath: string) {
   collators = [];
 
   simpleParachains &&
-    simpleParachains.forEach((sp: any) => {
+    simpleParachains.forEach((simpleParachain: any) => {
       collators.push({
-        name: sp.name,
+        ...simpleParachain,
         command: "adder-collator",
         ...DEFAULT_NODE_VALUES,
       });
       paras.push({
-        id: sp.id,
+        id: simpleParachain.id,
         collators,
       });
     });
 
   if (relaychain?.nodes) {
-    relaychain.nodes.forEach((n: any) => {
+    relaychain.nodes.forEach((node: any) => {
       nodes.push({
-        name: `"${n.name}"`,
+        ...node,
         ...DEFAULT_NODE_VALUES,
       });
     });
