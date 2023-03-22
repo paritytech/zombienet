@@ -36,6 +36,7 @@ export async function run(
   concurrency: number = 1,
   silent: boolean = false,
   runningNetworkSpecPath: string | undefined,
+  dir: string | undefined,
 ) {
   setSilent(silent);
   let network: Network;
@@ -48,6 +49,7 @@ export async function run(
   let networkConfigFilePath = fs.existsSync(testDef.network)
     ? testDef.network
     : path.resolve(configBasePath, testDef.network);
+
   const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
 
   // set the provider
@@ -85,14 +87,13 @@ export async function run(
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {
-      if (runningNetworkSpecPath)
-        console.log("runningNetworkSpecPath", runningNetworkSpecPath);
       if (!runningNetworkSpecPath) {
         console.log(`\t Launching network... this can take a while.`);
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
           silent,
+          dir,
         });
       } else {
         const runningNetworkSpec: any = require(runningNetworkSpecPath);

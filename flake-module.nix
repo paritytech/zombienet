@@ -26,12 +26,16 @@
           npmBuildFlag = "--workspaces";
 
           # just for safety of mac as it is used here often
-          nativeBuildInputs = pkgs.lib.optional pkgs.stdenv.isDarwin (with pkgs;
+          nativeBuildInputs = with pkgs; [
+            python3
+            nodePackages.node-gyp-build
+            nodePackages.node-gyp
+          ] ++ pkgs.lib.optional pkgs.stdenv.isDarwin (with pkgs;
             with darwin.apple_sdk.frameworks; [
               Security
               SystemConfiguration
             ]);
-            
+
           runtimeDeps = with pkgs;
             # these are used behind the scenes
             # can provide nix `devenv` with running podman based kubernetes as process/service  
