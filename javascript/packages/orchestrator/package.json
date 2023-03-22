@@ -58,7 +58,7 @@
     "@types/chai": "^4.3.4",
     "@types/fs-extra": "^9.0.13",
     "@types/jsdom": "^20.0.0",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^10.0.1",
     "@types/minimatch": "^5.1.2"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme"
