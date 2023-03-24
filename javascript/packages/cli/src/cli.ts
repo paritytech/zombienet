@@ -52,14 +52,25 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
     let count = 0;
     for (let binary of binaries) {
       promises.push(
-        new Promise<void>(async (resolve) => {
-          const { url, name } = options[binary];
-          const { data, headers } = await axios({
-            url,
-            method: "GET",
-            responseType: "stream",
-          });
-          const totalLength = headers["content-length"];
+        new Promise<void>(async (resolve, reject) => {
+          let result = options[binary];
+          if (!result) {
+            console.log("options", options, "binary", binary);
+            throw new Error("Binary is not defined");
+          }
+          const { url, name } = result;
+
+          if (!url) throw new Error("No url for downloading, was provided");
+
+          const response = await fetch(url);
+
+          if (!response.ok)
+            throw Error(response.status + " " + response.statusText);
+
+          const contentLength = response.headers.get(
+            "content-length",
+          ) as string;
+          let loaded = 0;
 
           const progressBar = new progress(
             "-> downloading [:bar] :percent :etas",
@@ -68,28 +79,39 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
               complete: "=",
               incomplete: " ",
               renderThrottle: 1,
-              total: parseInt(totalLength),
+              total: parseInt(contentLength, 10),
             },
           );
 
           const writer = fs.createWriteStream(path.resolve(name));
+          const reader = response.body?.getReader();
+          read();
 
-          data.on("data", (chunk: any) => progressBar.tick(chunk.length));
-          data.pipe(writer);
-          data.on("end", () => {
-            console.log(
-              decorators.yellow(`Binary "${name}" downloaded to:`),
-              decorators.bright(`"${process.cwd()}".`),
-            );
-            // Add permissions to the binary
-            console.log(decorators.cyan(`Giving permissions to "${name}"`));
-            fs.chmodSync(path.resolve(name), 0o755);
-            resolve();
-          });
+          async function read() {
+            try {
+              let res = await reader?.read();
+              if (res) {
+                if (res.done || progressBar.complete) {
+                  writer.close();
+                  resolve();
+                } else if (res.value) {
+                  loaded += res.value.length;
+                  progressBar.tick(res.value.length);
+                  writer.write(res.value);
+                  read();
+                }
+              }
+            } catch (error) {
+              console.error(error);
+              reject(error);
+            }
+          }
         }),
       );
     }
+    console.log("1");
     await Promise.all(promises);
+    console.log("2");
     console.log(
       decorators.cyan(
         `Please add the current dir to your $PATH by running the command:\n`,
@@ -603,7 +625,7 @@ async function setup(params: any) {
   }
 
   if (params.length === 0) {
-    console.log(decorators.green("No more binaries to download. Exiting..."));
+    console.log(decorators.green("No binaries to download. Exiting..."));
     return;
   }
   let count = 0;
