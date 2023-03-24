@@ -19,7 +19,6 @@ import {
   readNetworkConfig,
   RelativeLoader,
 } from "@zombienet/utils";
-import axios from "axios";
 import cliProgress from "cli-progress";
 import { Command, Option } from "commander";
 import fs from "fs";
@@ -140,14 +139,15 @@ const latestPolkadotReleaseURL = async (
   name: string,
 ): Promise<[string, string]> => {
   try {
-    const allReleases = await axios.get(
+    const releases = await fetch(
       `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
 
     let obj: any;
     let tag_name;
 
-    const release = allReleases.data.find((r: any) => {
+    const allReleases = await releases.json();
+    const release = allReleases.find((r: any) => {
       obj = r?.assets?.find((a: any) => a.name === name);
       return Boolean(obj);
     });
@@ -173,7 +173,7 @@ const latestPolkadotReleaseURL = async (
       );
     }
     throw new Error(
-      `Error status${err?.response?.status}. Error message: ${err?.response}`,
+      `Error status: ${err?.response?.status}. Error message: ${err?.response}`,
     );
   }
 };
