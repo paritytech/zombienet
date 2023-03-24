@@ -20,11 +20,11 @@ import {
   RelativeLoader,
 } from "@zombienet/utils";
 import axios from "axios";
+import cliProgress from "cli-progress";
 import { Command, Option } from "commander";
 import fs from "fs";
 import { Environment } from "nunjucks";
 import path, { resolve } from "path";
-import progress from "progress";
 import {
   AVAILABLE_PROVIDERS,
   DEFAULT_BALANCE,
@@ -49,7 +49,20 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
   try {
     console.log(decorators.yellow("\nStart download...\n"));
     const promises = [];
-    let count = 0;
+
+    const multibar = new cliProgress.MultiBar(
+      {
+        clearOnComplete: false,
+        hideCursor: true,
+        format:
+          decorators.yellow("{bar} - {percentage}%") +
+          " | " +
+          decorators.cyan("Binary name:") +
+          " {filename}",
+      },
+      cliProgress.Presets.shades_grey,
+    );
+
     for (let binary of binaries) {
       promises.push(
         new Promise<void>(async (resolve, reject) => {
@@ -72,16 +85,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
           ) as string;
           let loaded = 0;
 
-          const progressBar = new progress(
-            "-> downloading [:bar] :percent :etas",
-            {
-              width: 40,
-              complete: "=",
-              incomplete: " ",
-              renderThrottle: 1,
-              total: parseInt(contentLength, 10),
-            },
-          );
+          const progressBar = multibar.create(parseInt(contentLength, 10), 0);
 
           const writer = fs.createWriteStream(path.resolve(name));
           const reader = response.body?.getReader();
@@ -91,12 +95,15 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
             try {
               let res = await reader?.read();
               if (res) {
-                if (res.done || progressBar.complete) {
+                if (res.done) {
                   writer.close();
                   resolve();
                 } else if (res.value) {
                   loaded += res.value.length;
-                  progressBar.tick(res.value.length);
+                  progressBar.increment();
+                  progressBar.update(loaded, {
+                    filename: name,
+                  });
                   writer.write(res.value);
                   read();
                 }
@@ -109,14 +116,14 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
         }),
       );
     }
-    console.log("1");
+
     await Promise.all(promises);
-    console.log("2");
+    multibar.stop();
     console.log(
       decorators.cyan(
-        `Please add the current dir to your $PATH by running the command:\n`,
+        `\n\nPlease add the current dir to your $PATH by running the command:\n`,
       ),
-      decorators.blue(`export PATH=${process.cwd()}:$PATH`),
+      decorators.blue(`export PATH=${process.cwd()}:$PATH\n\n`),
     );
   } catch (err) {
     console.log(

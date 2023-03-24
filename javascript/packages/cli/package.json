@@ -56,15 +56,15 @@
     "@zombienet/orchestrator": "^0.0.33",
     "@zombienet/utils": "^0.0.17",
     "axios": "^0.27.2",
+    "cli-progress": "^3.12.0",
     "commander": "^10.0.0",
     "debug": "^4.3.2",
     "nunjucks": "^3.2.3",
-    "progress": "^2.0.3",
     "typescript": "^5.0.2"
   },
   "devDependencies": {
+    "@types/cli-progress": "^3.11.0",
     "@types/nunjucks": "^3.2.1",
-    "@types/progress": "^2.0.5",
     "pkg": "~5.8.0"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme",
