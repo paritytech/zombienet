@@ -12,6 +12,7 @@ import {
 import { Network } from "../../network";
 import { Node } from "../../types";
 import { getClient } from "../client";
+import { PrometheusResource } from "./resources";
 
 const fs = require("fs").promises;
 
@@ -47,77 +48,10 @@ export async function genBootnodeDef(
 
 export async function genPrometheusDef(namespace: string): Promise<any> {
   const client = getClient();
-  const volume_mounts = [
-    { name: "prom-cfg", mountPath: "/etc/prometheus", readOnly: false },
-    { name: "prom-data", mountPath: "/data", readOnly: false },
-  ];
-  const cfgPath = `${client.tmpDir}/prometheus/etc`;
-  const dataPath = `${client.tmpDir}/prometheus/data`;
-  await makeDir(cfgPath, true);
-  await makeDir(dataPath, true);
+  const prometheusResource = new PrometheusResource(client, namespace);
+  const prometheusResourceSpec = prometheusResource.generateSpec();
 
-  const devices = [
-    { name: "prom-cfg", hostPath: { type: "Directory", path: cfgPath } },
-    { name: "prom-data", hostPath: { type: "Directory", path: dataPath } },
-  ];
-
-  const config = `# config
-global:
-  scrape_interval: 5s
-  external_labels:
-    monitor: 'zombienet-monitor'
-# Scraping Prometheus itself
-scrape_configs:
-- job_name: 'prometheus'
-  static_configs:
-  - targets: ['localhost:9090']
-- job_name: 'dynamic'
-  file_sd_configs:\n\
-  - files:
-    - /data/sd_config*.yaml
-    - /data/sd_config*.json
-    refresh_interval: 5s
-`;
-
-  await fs.writeFile(`${cfgPath}/prometheus.yml`, config);
-
-  const ports = [
-    {
-      containerPort: 9090,
-      name: "prometheus_endpoint",
-      hostPort: await getRandomPort(),
-    },
-  ];
-
-  const containerDef = {
-    image: "docker.io/prom/prometheus",
-    name: "prometheus",
-    imagePullPolicy: "Always",
-    ports,
-    volumeMounts: volume_mounts,
-  };
-
-  return {
-    apiVersion: "v1",
-    kind: "Pod",
-    metadata: {
-      name: "prometheus",
-      namespace: namespace,
-      labels: {
-        "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "prometheus",
-        "zombie-role": "prometheus",
-        app: "zombienet",
-        "zombie-ns": namespace,
-      },
-    },
-    spec: {
-      hostname: "prometheus",
-      containers: [containerDef],
-      restartPolicy: "OnFailure",
-      volumes: devices,
-    },
-  };
+  return prometheusResourceSpec;
 }
 
 export async function genGrafanaDef(
