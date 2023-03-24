@@ -12,7 +12,7 @@ import {
 import { Network } from "../../network";
 import { Node } from "../../types";
 import { getClient } from "../client";
-import { PrometheusResource } from "./resources";
+import { GrafanaResource, PrometheusResource} from "./resources";
 
 const fs = require("fs").promises;
 
@@ -60,82 +60,15 @@ export async function genGrafanaDef(
   tempoIp: string,
 ): Promise<any> {
   const client = getClient();
-  const volume_mounts = [
-    {
-      name: "datasources-cfg",
-      mountPath: "/etc/grafana/provisioning/datasources",
-      readOnly: false,
-    },
-  ];
-  const datasourcesPath = `${client.tmpDir}/grafana/datasources`;
-  await makeDir(datasourcesPath, true);
+  const grafanaResource = new GrafanaResource(
+    client,
+    namespace,
+    prometheusIp,
+    tempoIp,
+  );
+  const grafanaResourceSpec = grafanaResource.generateSpec();
 
-  const devices = [
-    {
-      name: "datasources-cfg",
-      hostPath: { type: "Directory", path: datasourcesPath },
-    },
-  ];
-
-  const datasource = `
-# config file version
-apiVersion: 1
-datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    orgId: 1
-    url: http://${prometheusIp}:9090
-    version: 1
-    editable: true
-  - name: Tempo
-    type: tempo
-    access: proxy
-    orgId: 1
-    url: http://${tempoIp}:3200
-    version: 1
-    editable: true
-`;
-
-  await fs.writeFile(`${datasourcesPath}/prometheus.yml`, datasource);
-
-  const ports = [
-    {
-      containerPort: 3000,
-      name: "grafana_web",
-      hostPort: await getRandomPort(),
-    },
-  ];
-
-  const containerDef = {
-    image: "docker.io/grafana/grafana",
-    name: "grafana",
-    imagePullPolicy: "Always",
-    ports,
-    volumeMounts: volume_mounts,
-  };
-
-  return {
-    apiVersion: "v1",
-    kind: "Pod",
-    metadata: {
-      name: "grafana",
-      namespace: namespace,
-      labels: {
-        "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": "grafana",
-        "zombie-role": "grafana",
-        app: "zombienet",
-        "zombie-ns": namespace,
-      },
-    },
-    spec: {
-      hostname: "grafana",
-      containers: [containerDef],
-      restartPolicy: "OnFailure",
-      volumes: devices,
-    },
-  };
+  return grafanaResourceSpec;
 }
 
 export async function getIntrospectorDef(

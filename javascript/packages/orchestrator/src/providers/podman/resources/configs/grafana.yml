@@ -1,0 +1,17 @@
+# config file version
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://{{PROMETHEUS_IP}}:9090
+    version: 1
+    editable: true
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    url: http://{{TEMPO_IP}}:3200
+    version: 1
+    editable: true
