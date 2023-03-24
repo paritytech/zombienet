@@ -44,7 +44,7 @@
     "tool"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "author": "Parity Technologies <admin@parity.io>",
   "license": "GPL-3.0-or-later",
