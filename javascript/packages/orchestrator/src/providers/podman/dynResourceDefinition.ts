@@ -12,7 +12,7 @@ import {
 import { Network } from "../../network";
 import { Node } from "../../types";
 import { getClient } from "../client";
-import { GrafanaResource, PrometheusResource, TempoResource } from "./resources";
+import { GrafanaResource, IntrospectorResource, PrometheusResource, TempoResource } from "./resources";
 
 const fs = require("fs").promises;
 
@@ -75,43 +75,10 @@ export async function getIntrospectorDef(
   namespace: string,
   wsUri: string,
 ): Promise<any> {
-  const ports = [
-    {
-      containerPort: 65432,
-      name: "prometheus",
-      hostPort: await getRandomPort(),
-    },
-  ];
+  const introspectorResource = new IntrospectorResource(namespace, wsUri);
+  const introspectorResourceSpec = introspectorResource.generateSpec();
 
-  const containerDef = {
-    image: "docker.io/paritytech/polkadot-introspector:latest",
-    name: INTROSPECTOR_POD_NAME,
-    args: ["block-time-monitor", `--ws=${wsUri}`, "prometheus"],
-    imagePullPolicy: "Always",
-    ports,
-    volumeMounts: [],
-  };
-
-  return {
-    apiVersion: "v1",
-    kind: "Pod",
-    metadata: {
-      name: INTROSPECTOR_POD_NAME,
-      namespace: namespace,
-      labels: {
-        "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": INTROSPECTOR_POD_NAME,
-        "zombie-role": INTROSPECTOR_POD_NAME,
-        app: "zombienet",
-        "zombie-ns": namespace,
-      },
-    },
-    spec: {
-      hostname: INTROSPECTOR_POD_NAME,
-      containers: [containerDef],
-      restartPolicy: "OnFailure",
-    },
-  };
+  return introspectorResourceSpec;
 }
 
 export async function genTempoDef(namespace: string): Promise<any> {
