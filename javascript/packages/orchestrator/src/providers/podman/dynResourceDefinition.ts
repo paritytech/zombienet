@@ -12,7 +12,7 @@ import {
 import { Network } from "../../network";
 import { Node } from "../../types";
 import { getClient } from "../client";
-import { GrafanaResource, IntrospectorResource, PrometheusResource, TempoResource } from "./resources";
+import { GrafanaResource, IntrospectorResource, NodeResource, PrometheusResource, TempoResource } from "./resources";
 
 const fs = require("fs").promises;
 
@@ -93,35 +93,11 @@ export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = await make_volume_mounts(nodeSetup.name);
-  const container = await make_main_container(nodeSetup, volume_mounts);
+  const client = getClient();
+  const nodeResource = new NodeResource(client, namespace, nodeSetup);
+  const nodeResourceSpec = nodeResource.generateSpec();
 
-  return {
-    apiVersion: "v1",
-    kind: "Pod",
-    metadata: {
-      name: nodeSetup.name,
-      namespace: namespace,
-      labels: {
-        "zombie-role": nodeSetup.validator ? "authority" : "full-node",
-        app: "zombienet",
-        "zombie-ns": namespace,
-        "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": nodeSetup.name,
-      },
-      annotations: {
-        "prometheus.io/scrape": "true",
-        "prometheus.io/port": PROMETHEUS_PORT + "", //force string
-      },
-    },
-    spec: {
-      hostname: nodeSetup.name,
-      containers: [container],
-      initContainers: [],
-      restartPolicy: "OnFailure",
-      volumes: devices,
-    },
-  };
+  return nodeResourceSpec;
 }
 
 async function make_volume_mounts(name: string): Promise<[any, any]> {
