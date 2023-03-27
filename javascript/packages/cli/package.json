@@ -63,9 +63,9 @@
     "typescript": "^5.0.2"
   },
   "devDependencies": {
-    "@types/nunjucks": "^3.2.1",
+    "@types/nunjucks": "^3.2.2",
     "@types/progress": "^2.0.5",
-    "pkg": "~5.8.0"
+    "pkg": "~5.8.1"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme",
   "publishConfig": {
