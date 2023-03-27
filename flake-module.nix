@@ -45,6 +45,9 @@
           #npmFlags = "--verbose";
 
           # unfortunately current fetcher(written in rust) has bugs for workspaes, so this is ugly workaround https://github.com/NixOS/nixpkgs/issues/219673
+          preBuild = ''
+            patchShebangs packages
+          '';
           postBuild = ''
             echo "Generating `dist` of `workspace`"
             npm run build --workspace=packages/utils          
