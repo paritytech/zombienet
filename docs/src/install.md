@@ -1,3 +1,3 @@
 # Installation
 
-ZombieNet releases are available in `github`. Each one provide an executable for both `linux` and `macos` crated with [pkg](https://github.com/vercel/pkg) and allow to run `zombienet` cli *without* having `Node.js` installed **but** each `provider` define it's own requirements (e.g. k8s, podman).
+ZombieNet releases are available in [github](https://github.com/paritytech/zombienet/releases). Each release provides executables for both `linux` and `macos` created with [pkg](https://github.com/vercel/pkg) and allows running `zombienet` cli *without* having `Node.js` installed. **But** each `provider` define its own requirements (e.g. k8s, podman).
