@@ -1,3 +1,4 @@
+export { BootNodeResource } from "./boot-node.resource";
 export { GrafanaResource } from "./grafana.resource";
 export { IntrospectorResource } from "./introspector.resource";
 export { NodeResource } from "./node.resource";
