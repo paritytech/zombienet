@@ -17,7 +17,7 @@
         default = pkgs.buildNpmPackage rec {
           # root hash (hash of hashes of each dependnecies)
           # this should be updated on each dependency change (use `prefetch-npm-deps` to get new hash)
-          npmDepsHash = "sha256-3eW2oNTyzIZ3PRf8Cda40qqaG5cHoxMZtZVU1ImvcLA=";
+          npmDepsHash = "sha256-hsQ7Z0/wU8FPNWeR68N9NnbvW95Ux1gHwk+MoTQYBRE=";
 
           pname = "zombienet";
           name = pname;
