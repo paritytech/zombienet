@@ -1,0 +1,124 @@
+name: Bug Report
+description: File a bug report
+labels: ["triage-needed"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        **NOTE** A number of issues reported against Zombienet are often found to already be fixed in more current versions of the project.
+        Before reporting an issue, please verify the version you are running with `zombienet version` and compare it to the latest release. 
+        If they differ, please update your version of Zombienet to the latest possible and retry your command before creating an issue.
+
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue Description
+      description: Please explain your issue
+      value: "Describe your issue"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Steps to reproduce the issue
+      description: Please explain the steps to reproduce the issue, including configuration files needed.
+      value: "Steps to reproduce the issue\n1.\n2.\n3.\n"
+    validations:
+      required: true
+
+  - type: textarea
+    id: received_results
+    attributes:
+      label: Describe the results you received
+      description: Please explain the results you are noticing, including stacktrace and error logs.
+      value: "Describe the results you received"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_results
+    attributes:
+      label: Describe the results you expected
+      description: Please explain the results you are expecting
+      value: "Describe the results you expected"
+    validations:
+      required: true
+
+  - type: input
+    id: zombienet_version 
+    attributes:
+      label: Zombienet version
+      description: Which zombienet version are you using ?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      description: Which provider are you using ?
+      options:
+        - Native
+        - Kubernetes
+        - Podman
+    validations:
+      required: true
+
+  - type: textarea
+    id: provider_version
+    attributes:
+      label: Provider version
+      description: Which provider version / binaries versions are you using ?
+      value: |
+        ## For binaries
+        polkadot 0.9.40-a2b62fb872b
+        polkadot-parachain 0.9.380-fe24f39507f 
+
+        ## For Kubernetes/Podman
+        podman version 4.4.1
+        
+        OR
+        
+        kubectl version v0.26.3
+        cluster version 1.25.2
+      render: yaml
+    validations:
+      required: true
+
+  - type: dropdown
+    id: upstream_latest
+    attributes:
+      label: Upstream Latest Release
+      description: Have you tried running the [latest upstream release](https://github.com/paritytech/zombienet/releases/latest)
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_environment
+    attributes:
+      label: Additional environment details
+      description: Please describe any additional environment details like (Cloud, Local, OS, Provider versions...)
+      value: "Additional environment details"
+
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Additional information
+      description: Please explain the additional information you deem important
+      value: "Additional information like issue happens only occasionally or issue happens with a particular architecture or on a particular setting"
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Provide us with screenshots if needed to have a better understanding of the issue
+    validations:
+      required: false
