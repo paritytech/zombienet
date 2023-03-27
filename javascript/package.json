@@ -21,7 +21,7 @@
     "zombie": "node ./packages/cli/dist/cli.js"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "bin": {
     "zombienet": "./packages/cli/dist/cli.js"
