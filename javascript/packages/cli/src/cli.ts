@@ -547,6 +547,8 @@ async function test(
  * @returns
  */
 async function setup(params: any) {
+  const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
+
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
   if (
     ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
@@ -607,6 +609,17 @@ async function setup(params: any) {
   let count = 0;
   console.log("Setup will start to download binaries:");
   params.forEach((a: any) => {
+    if (!POSSIBLE_BINARIES.includes(a)) {
+      const index = params.indexOf(a);
+      index > -1 && params.splice(index, 1);
+      console.log(
+        decorators.red(
+          `"${a}" is not one of the possible options for this setup and will be skipped;`,
+        ),
+        decorators.green(` Valid options: polkadot polkadot-parachain`),
+      );
+      return;
+    }
     const size = parseInt(options[a]?.size || "0", 10);
     count += size;
     console.log("-", a, "\t Approx. size ", size, " MB");
