@@ -1,4 +1,3 @@
-import axios from "axios";
 import dns from "dns";
 import fs from "fs";
 import { AddressInfo, createServer } from "net";
@@ -36,17 +35,18 @@ export async function getHostIp(): Promise<string> {
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
     await new Promise<void>(async (resolve) => {
-      const { data } = await axios({
-        url,
-        method: "GET",
-        responseType: "stream",
-      });
-
+      const response = await fetch(url);
+      const reader = response.body?.getReader();
       const writer = fs.createWriteStream(dest);
-      data.pipe(writer);
-      data.on("end", () => {
-        resolve();
-      });
+      while (true) {
+        const read = await reader?.read();
+        if (read?.done) {
+          writer.close();
+          resolve();
+          break;
+        }
+        writer.write(read?.value);
+      }
     });
   } catch (err) {
     console.log(
