@@ -6,7 +6,7 @@ import {
   makeDir,
   writeLocalJsonFile,
 } from "@zombienet/utils";
-import execa from "execa";
+import { execa } from "execa";
 import { copy as fseCopy } from "fs-extra";
 import path, { resolve } from "path";
 import YAML from "yaml";

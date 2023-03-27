@@ -7,7 +7,7 @@ import {
   writeLocalJsonFile,
 } from "@zombienet/utils";
 import { spawn } from "child_process";
-import execa from "execa";
+import { execa } from "execa";
 import { copy as fseCopy } from "fs-extra";
 import path from "path";
 import YAML from "yaml";
