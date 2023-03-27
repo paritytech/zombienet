@@ -47,6 +47,16 @@ At the end of the download, the `setup` script will provide a command to run in 
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/<current_directory>/dist:$PATH
 ```
 
+### Nix Flake
+
+Each time the `javascript/package-lock.json` is updated, the value of `npmDepsHash` must be updated in `flake-module.nix`.
+
+The value it needs to be updated to can be found by running:
+
+```
+nix run nixpkgs#prefetch-npm-deps -- javascript/package-lock.json 2>/dev/null
+```
+
 ### Using Zombienet
 
 With the above steps completed, the `zombienet` CLI is ready to run:
