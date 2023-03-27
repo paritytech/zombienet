@@ -145,7 +145,19 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<p>ZombieNet releases are available in <code>github</code>. Each one provide an executable for both <code>linux</code> and <code>macos</code> crated with <a href="https://github.com/vercel/pkg">pkg</a> and allow to run <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed <strong>but</strong> each <code>provider</code> define it's own requirements (e.g. k8s, podman).</p>
+<p>ZombieNet releases are available in <a href="https://github.com/paritytech/zombienet/releases">github</a>. Each release provides executables for both <code>linux</code> and <code>macos</code> created with <a href="https://github.com/vercel/pkg">pkg</a> and allows running <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed. <strong>But</strong> each <code>provider</code> define its own requirements (e.g. k8s, podman).</p>
+<h2 id="using-nix"><a class="header" href="#using-nix">Using Nix</a></h2>
+<p><a href="https://nixos.org/">Nix</a> is a package manager which is available for both <code>linux</code> and <code>macos</code>.</p>
+<p>The ZombieNet repository provides a <code>flake.nix</code> file, which can be used if you have <a href="https://nixos.wiki/wiki/Flakes#Enable_flakes">nix flakes enabled</a>. (e.g. <code>experimental-features = nix-command flakes</code> is in <code>~/.config/nix/nix.conf</code>). Use the flake reference <code>github:paritytech/zombienet</code> for the latest on <code>main</code>, or <code>github:paritytech/zombienet/&lt;tag&gt;</code> for a particular revision.</p>
+<p>One way of using the nix flake is to use <code>nix run</code>. e.g. this command fetches the latest from <code>main</code> and builds <code>zombienet</code>:</p>
+<pre><code>nix run github:paritytech/zombienet -- spawn config.toml
+</code></pre>
+<p>Or a particular release can be specified. e.g. to run <code>v1.3.40</code>, use:</p>
+<pre><code>nix run github:paritytech/zombienet/v1.3.40 -- spawn config.toml
+</code></pre>
+<p>Another option is to add he <code>zombienet</code> binary to the <code>PATH</code> for the current shell. This can be done with:</p>
+<pre><code>nix shell github:paritytech/zombienet/v1.3.40
+</code></pre>
 
                     </main>
 

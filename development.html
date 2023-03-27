@@ -179,6 +179,11 @@ npm run build
 At the end of the download, the <code>setup</code> script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:</p>
 <pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/&lt;current_directory&gt;/dist:$PATH
 </code></pre>
+<h3 id="nix-flake"><a class="header" href="#nix-flake">Nix Flake</a></h3>
+<p>Each time the <code>javascript/package-lock.json</code> is updated, the value of <code>npmDepsHash</code> must be updated in <code>flake-module.nix</code>.</p>
+<p>The value it needs to be updated to can be found by running:</p>
+<pre><code>nix run nixpkgs#prefetch-npm-deps -- javascript/package-lock.json 2&gt;/dev/null
+</code></pre>
 <h3 id="using-zombienet"><a class="header" href="#using-zombienet">Using Zombienet</a></h3>
 <p>With the above steps completed, the <code>zombienet</code> CLI is ready to run:</p>
 <pre><code class="language-bash">❯ node dist/cli.js
