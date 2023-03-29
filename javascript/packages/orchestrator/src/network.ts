@@ -1,5 +1,4 @@
 import { CreateLogTable, decorators } from "@zombienet/utils";
-import axios from "axios";
 import fs from "fs";
 import {
   BAKCCHANNEL_POD_NAME,
@@ -204,13 +203,24 @@ export class Network {
       debug(`backchannel uri ${this.backchannelUri}`);
       while (!done) {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
-        const response = await axios.get(`${this.backchannelUri}/${key}`, {
-          timeout: 2000,
-          validateStatus: function (status) {
-            debug(`status: ${status}`);
-            return status === 404 || (status >= 200 && status < 300); // allow 404 as valid
-          },
+        const controller = new AbortController();
+        const signal = controller.signal;
+        setTimeout(() => {
+          controller.abort();
+        }, 2000);
+        const res = await fetch(`${this.backchannelUri}/${key}`, {
+          signal,
         });
+        const response = await res.json();
+
+        if (
+          response.status !== 404 ||
+          !(response.status >= 200 && response.status < 300)
+        ) {
+          debug(response.status);
+          console.log("Status is not one of the expected ones;");
+        }
+
         if (response.status === 200) {
           done = true;
           value = response.data;

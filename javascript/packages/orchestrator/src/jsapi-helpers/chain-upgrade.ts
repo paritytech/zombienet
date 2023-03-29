@@ -1,6 +1,5 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { blake2AsHex, cryptoWaitReady } from "@polkadot/util-crypto";
-import axios from "axios";
 import { promises as fsPromises } from "fs";
 import { compress, decompress } from "napi-maybe-compressed-blob";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
@@ -14,10 +13,8 @@ export async function chainUpgradeFromUrl(
   // with `.compact.compressed.wasm` extension.
   console.log(`upgrading chain with file from url: ${wasmFileUrl}`);
 
-  const file = await axios({
-    url: wasmFileUrl,
-    responseType: "arraybuffer",
-  });
+  const res = await fetch(wasmFileUrl);
+  const file = await res.json();
 
   const buff = Buffer.from(file.data);
   const hash = blake2AsHex(buff);

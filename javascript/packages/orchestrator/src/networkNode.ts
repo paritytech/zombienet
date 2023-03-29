@@ -1,5 +1,4 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import axios from "axios";
 import minimatch from "minimatch";
 
 import {
@@ -506,10 +505,22 @@ export class NetworkNode implements NetworkNodeInterface {
     collatorUrl: string,
   ): Promise<string[]> {
     const url = `${collatorUrl}/api/traces/${traceId}`;
-    const response = await axios.get(url, { timeout: 2000 });
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    setTimeout(() => {
+      controller.abort();
+    }, 2000);
+
+    const res = await fetch(url, {
+      signal,
+    });
+
+    const response = await res.json();
 
     // filter batches
-    const batches = response.data.batches.filter((batch: any) => {
+    const batches = response.batches.filter((batch: any) => {
       const serviceNameAttr = batch.resource.attributes.find((attr: any) => {
         return attr.key === "service.name";
       });
