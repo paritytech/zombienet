@@ -1,5 +1,5 @@
 # Our first stage, that is the Builder
-FROM node:18.15.0-bullseye-slim AS builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN npm install
@@ -7,7 +7,7 @@ RUN npm run clean
 RUN npm run build
 
 # Our Second stage, that creates an image for production
-FROM node:18.15.0-bullseye-slim AS runtime
+FROM node:18-bullseye-slim AS runtime
 
 RUN apt-get update && \
      apt-get install -y curl gnupg lsb-release jq tini && \

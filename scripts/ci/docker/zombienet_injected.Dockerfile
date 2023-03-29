@@ -1,4 +1,4 @@
-FROM docker.io/library/node:18.15.0-bullseye-slim
+FROM docker.io/library/node:18-bullseye-slim
 
 LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.vendor="Parity Technologies" \
