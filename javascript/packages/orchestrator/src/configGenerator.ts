@@ -28,16 +28,16 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { decorate, PARA, whichPara } from "./paras-decorators";
+import { PARA, decorate, whichPara } from "./paras-decorators";
 import {
   ComputedNetwork,
-  envVars,
   LaunchConfig,
   Node,
   NodeConfig,
   Override,
   Parachain,
   ParachainConfig,
+  envVars,
 } from "./types";
 
 const debug = require("debug")("zombie::config-manager");
@@ -191,7 +191,7 @@ export async function generateNetworkSpec(
   }
 
   for (const nodeGroup of config.relaychain.node_groups || []) {
-    for (let i = 0; i < nodeGroup.count; i++) {
+    for (let i = 0; i < (nodeGroup.count as number); i++) {
       let node: NodeConfig = {
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
@@ -265,7 +265,7 @@ export async function generateNetworkSpec(
       }
 
       for (const collatorGroup of parachain.collator_groups || []) {
-        for (let i = 0; i < collatorGroup.count; i++) {
+        for (let i = 0; i < (collatorGroup.count as number); i++) {
           let node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
             image: collatorGroup.image || DEFAULT_COLLATOR_IMAGE,

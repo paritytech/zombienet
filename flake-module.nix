@@ -17,7 +17,7 @@
         default = pkgs.buildNpmPackage rec {
           # root hash (hash of hashes of each dependnecies)
           # this should be updated on each dependency change (use `prefetch-npm-deps` to get new hash)
-          npmDepsHash = "sha256-3eW2oNTyzIZ3PRf8Cda40qqaG5cHoxMZtZVU1ImvcLA=";
+          npmDepsHash = "sha256-hsQ7Z0/wU8FPNWeR68N9NnbvW95Ux1gHwk+MoTQYBRE=";
 
           pname = "zombienet";
           name = pname;
@@ -45,6 +45,9 @@
           #npmFlags = "--verbose";
 
           # unfortunately current fetcher(written in rust) has bugs for workspaes, so this is ugly workaround https://github.com/NixOS/nixpkgs/issues/219673
+          preBuild = ''
+            patchShebangs packages
+          '';
           postBuild = ''
             echo "Generating `dist` of `workspace`"
             npm run build --workspace=packages/utils          

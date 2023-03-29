@@ -4,7 +4,7 @@ import {
   genNodeDef,
   replaceNetworkRef,
 } from "./dynResourceDefinition";
-import { initClient, KubeClient } from "./kubeClient";
+import { KubeClient, initClient } from "./kubeClient";
 
 export const provider = {
   KubeClient,
