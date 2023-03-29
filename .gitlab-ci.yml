@@ -15,7 +15,7 @@ stages:
   - deploy
 
 variables:
-  CI_IMAGE: "node:16.18"
+  CI_IMAGE: "node:18"
   BUILDAH_IMAGE: "quay.io/buildah/stable:v1.27"
   DOCKERFILE: scripts/ci/docker/zombienet_injected.Dockerfile
   DOCKERHUB_REPO: paritytech
