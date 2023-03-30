@@ -87,6 +87,8 @@ export class KubeClient extends Client {
       kind: "Namespace",
       metadata: {
         name: this.namespace,
+        jobId: process.env.CI_JOB_ID || "",
+        projectName: process.env.CI_PROJECT_NAME || ""
       },
     };
 
