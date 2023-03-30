@@ -19,12 +19,11 @@ import {
   readNetworkConfig,
   RelativeLoader,
 } from "@zombienet/utils";
-import axios from "axios";
+import cliProgress from "cli-progress";
 import { Command, Option } from "commander";
 import fs from "fs";
 import { Environment } from "nunjucks";
 import path, { resolve } from "path";
-import progress from "progress";
 import {
   AVAILABLE_PROVIDERS,
   DEFAULT_BALANCE,
@@ -49,52 +48,72 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
   try {
     console.log(decorators.yellow("\nStart download...\n"));
     const promises = [];
-    let count = 0;
+
+    const multibar = new cliProgress.MultiBar(
+      {
+        clearOnComplete: false,
+        hideCursor: true,
+        format:
+          decorators.yellow("{bar} - {percentage}%") +
+          " | " +
+          decorators.cyan("Binary name:") +
+          " {filename}",
+      },
+      cliProgress.Presets.shades_grey,
+    );
+
     for (let binary of binaries) {
       promises.push(
-        new Promise<void>(async (resolve) => {
-          const { url, name } = options[binary];
-          const { data, headers } = await axios({
-            url,
-            method: "GET",
-            responseType: "stream",
-          });
-          const totalLength = headers["content-length"];
+        new Promise<void>(async (resolve, reject) => {
+          let result = options[binary];
+          if (!result) {
+            console.log("options", options, "binary", binary);
+            throw new Error("Binary is not defined");
+          }
+          const { url, name } = result;
 
-          const progressBar = new progress(
-            "-> downloading [:bar] :percent :etas",
-            {
-              width: 40,
-              complete: "=",
-              incomplete: " ",
-              renderThrottle: 1,
-              total: parseInt(totalLength),
-            },
-          );
+          if (!url) throw new Error("No url for downloading, was provided");
 
+          const response = await fetch(url);
+
+          if (!response.ok)
+            throw Error(response.status + " " + response.statusText);
+
+          const contentLength = response.headers.get(
+            "content-length",
+          ) as string;
+          let loaded = 0;
+
+          const progressBar = multibar.create(parseInt(contentLength, 10), 0);
+          const reader = response.body?.getReader();
           const writer = fs.createWriteStream(path.resolve(name));
 
-          data.on("data", (chunk: any) => progressBar.tick(chunk.length));
-          data.pipe(writer);
-          data.on("end", () => {
-            console.log(
-              decorators.yellow(`Binary "${name}" downloaded to:`),
-              decorators.bright(`"${process.cwd()}".`),
-            );
-            // Add permissions to the binary
-            console.log(decorators.cyan(`Giving permissions to "${name}"`));
-            fs.chmodSync(path.resolve(name), 0o755);
-            resolve();
-          });
+          while (true) {
+            const read = await reader?.read()!;
+            if (read?.done) {
+              writer.close();
+              resolve();
+              break;
+            }
+
+            loaded += read.value.length;
+            progressBar.increment();
+            progressBar.update(loaded, {
+              filename: name,
+            });
+            writer.write(read.value);
+          }
         }),
       );
     }
+
     await Promise.all(promises);
+    multibar.stop();
     console.log(
       decorators.cyan(
-        `Please add the current dir to your $PATH by running the command:\n`,
+        `\n\nPlease add the current dir to your $PATH by running the command:\n`,
       ),
-      decorators.blue(`export PATH=${process.cwd()}:$PATH`),
+      decorators.blue(`export PATH=${process.cwd()}:$PATH\n\n`),
     );
   } catch (err) {
     console.log(
@@ -111,14 +130,15 @@ const latestPolkadotReleaseURL = async (
   name: string,
 ): Promise<[string, string]> => {
   try {
-    const allReleases = await axios.get(
+    const releases = await fetch(
       `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
 
     let obj: any;
     let tag_name;
 
-    const release = allReleases.data.find((r: any) => {
+    const allReleases = await releases.json();
+    const release = allReleases.find((r: any) => {
       obj = r?.assets?.find((a: any) => a.name === name);
       return Boolean(obj);
     });
@@ -144,7 +164,7 @@ const latestPolkadotReleaseURL = async (
       );
     }
     throw new Error(
-      `Error status${err?.response?.status}. Error message: ${err?.response}`,
+      `Error status: ${err?.response?.status}. Error message: ${err?.response}`,
     );
   }
 };
@@ -603,7 +623,7 @@ async function setup(params: any) {
   }
 
   if (params.length === 0) {
-    console.log(decorators.green("No more binaries to download. Exiting..."));
+    console.log(decorators.green("No binaries to download. Exiting..."));
     return;
   }
   let count = 0;
