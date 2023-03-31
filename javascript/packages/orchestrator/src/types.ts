@@ -96,6 +96,7 @@ export interface ParachainConfig {
   chain?: string;
   add_to_genesis?: boolean;
   register_para?: boolean;
+  onboard_as_parachain?: boolean;
   balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
@@ -203,6 +204,7 @@ export interface Parachain {
   para: PARA;
   addToGenesis: boolean;
   registerPara: boolean;
+  onboardAsParachain: boolean;
   cumulusBased: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
@@ -345,5 +347,15 @@ export interface PL_ConfigType {
   simpleParachains?: [PL_NodesConfig & { id: number }];
   hrmpChannels?: HrmpChannelsConfig[];
   types?: any;
+  finalization?: boolean;
+}
+
+export interface RegisterParachainOptions {
+  id: number;
+  wasmPath: string;
+  statePath: string;
+  apiUrl: string;
+  onboard_as_parachain: boolean;
+  seed?: string;
   finalization?: boolean;
 }

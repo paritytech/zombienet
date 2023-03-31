@@ -10,6 +10,7 @@ import {
 } from "./chain-upgrade";
 import { findPatternInSystemEventSubscription } from "./events";
 import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
+import { RegisterParachainOptions } from "../types";
 
 async function connect(apiUrl: string, types?: any): Promise<ApiPromise> {
   const provider = new WsProvider(apiUrl);
@@ -18,14 +19,15 @@ async function connect(apiUrl: string, types?: any): Promise<ApiPromise> {
   return api;
 }
 
-async function registerParachain(
-  id: number,
-  wasmPath: string,
-  statePath: string,
-  apiUrl: string,
-  seed: string = "//Alice",
+async function registerParachain({
+  id,
+  wasmPath,
+  statePath,
+  apiUrl,
+  onboard_as_parachain,
+  seed = "//Alice",
   finalization = false,
-) {
+}: RegisterParachainOptions) {
   return new Promise<void>(async (resolve, reject) => {
     await cryptoWaitReady();
 
@@ -42,7 +44,7 @@ async function registerParachain(
     const parachainGenesisArgs = {
       genesis_head: genesis_state,
       validation_code: wasm_data,
-      parachain: true,
+      parachain: onboard_as_parachain,
     };
 
     const genesis = api.createType("ParaGenesisArgs", parachainGenesisArgs);
