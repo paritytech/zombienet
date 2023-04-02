@@ -9,7 +9,7 @@ import {
 import crypto from "crypto";
 import fs from "fs";
 import { generateKeyFromSeed } from "./keys";
-import { ChainSpec, HrmpChannelsConfig, Node } from "./types";
+import { ChainSpec, ComputedNetwork, HrmpChannelsConfig, Node } from "./types";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -580,6 +580,57 @@ export async function getChainIdFromSpec(specPath: string): Promise<string> {
   });
 }
 
+export async function customizePlainRelayChain(
+  specPath: string,
+  networkSpec: ComputedNetwork,
+): Promise<void> {
+  // Relay-chain spec customization logic
+  const plainRelayChainSpec = readAndParseChainSpec(specPath);
+  const keyType = specHaveSessionsKeys(plainRelayChainSpec)
+    ? "session"
+    : "aura";
+
+  // Clear all defaults
+  clearAuthorities(specPath);
+
+  // add balances for nodes
+  await addBalances(specPath, networkSpec.relaychain.nodes);
+
+  // add authorities for nodes
+  const validatorKeys = [];
+  for (const node of networkSpec.relaychain.nodes) {
+    if (node.validator) {
+      validatorKeys.push(node.accounts.sr_stash.address);
+
+      if (keyType === "session") {
+        const key = getNodeKey(node);
+        await addAuthority(specPath, node, key);
+      } else {
+        await addAuraAuthority(specPath, node.name, node.accounts!);
+        await addGrandpaAuthority(specPath, node.name, node.accounts!);
+      }
+
+      await addStaking(specPath, node);
+    }
+  }
+
+  if (networkSpec.relaychain.randomNominatorsCount) {
+    await generateNominators(
+      specPath,
+      networkSpec.relaychain.randomNominatorsCount,
+      networkSpec.relaychain.maxNominations,
+      validatorKeys,
+    );
+  }
+
+  if (networkSpec.relaychain.genesis) {
+    await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
+  }
+
+  if (networkSpec.hrmp_channels) {
+    await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
+  }
+}
 export default {
   addAuraAuthority,
   addAuthority,
@@ -593,4 +644,5 @@ export default {
   addCollatorSelection,
   isRawSpec,
   getChainIdFromSpec,
+  customizePlainRelayChain,
 };

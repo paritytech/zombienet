@@ -99,6 +99,7 @@ export abstract class Client {
   ): Promise<[string, number]>;
   abstract getNodeIP(identifier: string): Promise<string>;
   abstract spawnIntrospector(wsUri: string): Promise<void>;
+  abstract validateAccess(): Promise<boolean>;
 }
 
 let client: Client;

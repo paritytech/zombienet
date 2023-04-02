@@ -16,20 +16,10 @@ import {
 import fs from "fs";
 import tmp from "tmp-promise";
 import {
-  addAuraAuthority,
-  addAuthority,
-  addBalances,
   addBootNodes,
-  addGrandpaAuthority,
-  addHrmpChannelsToGenesis,
   addParachainToGenesis,
-  addStaking,
-  changeGenesisConfig,
-  clearAuthorities,
-  generateNominators,
-  getNodeKey,
+  customizePlainRelayChain,
   readAndParseChainSpec,
-  specHaveSessionsKeys,
 } from "./chain-spec";
 import {
   generateBootnodeSpec,
@@ -58,6 +48,8 @@ import { setSilent } from "@zombienet/utils";
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
 import { verifyNodes } from "./network-helpers/verifier";
+import { Client } from "./providers/client";
+import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
 
 const debug = require("debug")("zombie");
@@ -154,7 +146,7 @@ export async function start(
       "-plain.json",
     );
 
-    const client = initClient(credentials, namespace, tmpDir.path);
+    const client: Client = initClient(credentials, namespace, tmpDir.path);
 
     if (networkSpec.settings.node_spawn_timeout)
       client.timeout = networkSpec.settings.node_spawn_timeout;
@@ -201,7 +193,7 @@ export async function start(
       zombieWrapperLocalPath,
       zombieWrapperContent
         .toString()
-        .replace("{{REMOTE_DIR}}", client.remoteDir),
+        .replace("{{REMOTE_DIR}}", client.remoteDir!),
       {
         mode: 0o755,
       },
@@ -260,6 +252,7 @@ export async function start(
     );
 
     await series(parachainPromiseGenerators, opts.spawnConcurrency);
+
     for (const parachain of networkSpec.parachains) {
       const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
       const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
@@ -274,64 +267,7 @@ export async function start(
     }
 
     if (!relayChainSpecIsRaw) {
-      // Chain spec customization logic
-      const relayChainSpec = readAndParseChainSpec(chainSpecFullPathPlain);
-      const keyType = specHaveSessionsKeys(relayChainSpec) ? "session" : "aura";
-
-      // Clear all defaults
-      clearAuthorities(chainSpecFullPathPlain);
-
-      // add balances for nodes
-      await addBalances(chainSpecFullPathPlain, networkSpec.relaychain.nodes);
-
-      // add authorities for nodes
-      const validatorKeys = [];
-      for (const node of networkSpec.relaychain.nodes) {
-        if (node.validator) {
-          validatorKeys.push(node.accounts.sr_stash.address);
-
-          if (keyType === "session") {
-            const key = getNodeKey(node);
-            await addAuthority(chainSpecFullPathPlain, node, key);
-          } else {
-            await addAuraAuthority(
-              chainSpecFullPathPlain,
-              node.name,
-              node.accounts!,
-            );
-            await addGrandpaAuthority(
-              chainSpecFullPathPlain,
-              node.name,
-              node.accounts!,
-            );
-          }
-
-          await addStaking(chainSpecFullPathPlain, node);
-        }
-      }
-
-      if (networkSpec.relaychain.randomNominatorsCount) {
-        await generateNominators(
-          chainSpecFullPathPlain,
-          networkSpec.relaychain.randomNominatorsCount,
-          networkSpec.relaychain.maxNominations,
-          validatorKeys,
-        );
-      }
-
-      if (networkSpec.relaychain.genesis) {
-        await changeGenesisConfig(
-          chainSpecFullPathPlain,
-          networkSpec.relaychain.genesis,
-        );
-      }
-
-      if (networkSpec.hrmp_channels) {
-        await addHrmpChannelsToGenesis(
-          chainSpecFullPathPlain,
-          networkSpec.hrmp_channels,
-        );
-      }
+      await customizePlainRelayChain(chainSpecFullPathPlain, networkSpec);
 
       // generate the raw chain spec
       await getChainSpecRaw(
@@ -443,7 +379,11 @@ export async function start(
         const fileHash = getSha256(fileBuffer.toString());
         const parts = chainSpecFullPath.split("/");
         const fileName = parts[parts.length - 1];
-        await client.uploadToFileserver(chainSpecFullPath, fileName, fileHash);
+        await (client as KubeClient).uploadToFileserver(
+          chainSpecFullPath,
+          fileName,
+          fileHash,
+        );
       }
     }
 
