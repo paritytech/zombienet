@@ -14,6 +14,7 @@ import YAML from "yaml";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
+  LOCALHOST,
   P2P_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
@@ -175,7 +176,11 @@ export class NativeClient extends Client {
 
   async getNodeInfo(podName: string): Promise<[string, number]> {
     const hostPort = await this.getPortMapping(P2P_PORT, podName);
-    return ["127.0.0.1", hostPort];
+    return [LOCALHOST, hostPort];
+  }
+
+  async getNodeIP(identifier: string): Promise<string> {
+    return LOCALHOST;
   }
 
   async runCommand(
@@ -429,6 +434,10 @@ export class NativeClient extends Client {
   async isPodMonitorAvailable(): Promise<boolean> {
     // NOOP
     return false;
+  }
+
+  async spawnIntrospector(wsUri: string) {
+    // NOOP
   }
 
   getPauseArgs(name: string): string[] {

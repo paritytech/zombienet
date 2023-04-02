@@ -1,15 +1,16 @@
 import { hexAddPrefix, hexToU8a } from "@polkadot/util";
 import { keys as libp2pKeys } from "libp2p-crypto";
 import PeerId from "peer-id";
+import { NodeMultiAddress } from "./types";
 
-export async function generateBootnodeString(
+export async function generateNodeMultiAddress(
   key: string,
   args: string[],
   ip: string,
   port: number,
   useWs: boolean = true,
   certhash?: string,
-): Promise<string> {
+): Promise<NodeMultiAddress> {
   let multiaddress;
   let pair = await libp2pKeys.generateKeyPairFromSeed(
     "Ed25519",

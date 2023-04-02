@@ -95,16 +95,23 @@ export class Network {
   wasRunning: boolean;
   tmpDir: string;
   backchannelUri: string = "";
+  chainId?: string;
   chainSpecFullPath?: string;
   tracing_collator_url?: string;
   networkStartTime?: number;
 
-  constructor(client: Client, namespace: string, tmpDir: string) {
+  constructor(
+    client: Client,
+    namespace: string,
+    tmpDir: string,
+    startTime: number = new Date().getTime(),
+  ) {
     this.client = client;
     this.namespace = namespace;
     this.launched = false;
     this.wasRunning = false;
     this.tmpDir = tmpDir;
+    this.networkStartTime = startTime;
   }
 
   addPara(
