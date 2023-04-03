@@ -88,7 +88,7 @@ export async function setup(params: any) {
       );
       return;
     }
-    const size = parseInt(opts[a]?.size || "0", 10);
+    const size = parseInt(options[a]?.size || "0", 10);
     count += size;
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
