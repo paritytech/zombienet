@@ -7,7 +7,7 @@ import type {
 import { decorators, getFilePathNameExt } from "@zombienet/utils";
 import fs from "fs";
 import path from "path";
-import { DEFAULT_BALANCE } from "src/constants";
+import { DEFAULT_BALANCE } from "../constants";
 
 export async function convert(param: string) {
   try {
