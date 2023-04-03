@@ -355,7 +355,7 @@ export interface RegisterParachainOptions {
   wasmPath: string;
   statePath: string;
   apiUrl: string;
-  onboard_as_parachain: boolean;
+  onboardAsParachain: boolean;
   seed?: string;
   finalization?: boolean;
 }
