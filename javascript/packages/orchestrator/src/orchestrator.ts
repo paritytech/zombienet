@@ -703,10 +703,11 @@ export async function start(
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
+        const basePath = `${tmpDir.path}/${parachain.name}`;
         await registerParachain({
           id: parachain.id,
-          wasmPath: `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
-          statePath: `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`,
+          wasmPath: `${basePath}/${GENESIS_WASM_FILENAME}`,
+          statePath: `${basePath}/${GENESIS_STATE_FILENAME}`,
           apiUrl: network.relay[0].wsUri,
           onboardAsParachain: parachain.onboardAsParachain,
         });
