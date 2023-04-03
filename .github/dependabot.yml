@@ -2,15 +2,45 @@ version: 2
 
 updates:
   - package-ecosystem: npm
-    directory: "/"
+    directory: '/javascript'
     labels:
-    - "automerge"
+    - 'automerge'
     schedule:
       interval: daily
     open-pull-requests-limit: 4
+
+  - package-ecosystem: npm
+    directory: '/javascript/packages/cli'
+    labels:
+    - 'automerge'
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 4
+
+  - package-ecosystem: npm
+    directory: '/javascript/packages/orchestrator'
+    labels:
+    - 'automerge'
+    schedule:
+      interval: daily
+    ignore:
+    - dependency-name: "execa"
+      update-types: ["version-update:semver-major"]
+    - dependency-name: "axios"
+      update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 4
+
+  - package-ecosystem: npm
+    directory: '/javascript/packages/utils'
+    labels:
+    - 'automerge'
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 4
+
   - package-ecosystem: github-actions
     directory: '/'
     labels:
-    - "automerge"
+    - 'automerge'
     schedule:
       interval: daily

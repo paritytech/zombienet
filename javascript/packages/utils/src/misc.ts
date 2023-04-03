@@ -6,6 +6,24 @@ export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export async function retry(
+  delayMs: number,
+  timeoutMs: number,
+  fn: () => Promise<boolean | undefined>,
+  errMsg: string,
+) {
+  do {
+    if (await fn()) {
+      return;
+    }
+
+    await sleep(delayMs);
+    timeoutMs -= delayMs;
+  } while (timeoutMs > 0);
+
+  throw new Error(`Timeout(${timeoutMs}) for: ${errMsg}`);
+}
+
 export function generateNamespace(n: number = 16): string {
   const buf = randomBytes(n);
   return buf.toString("hex");
@@ -48,7 +66,9 @@ export function filterConsole(excludePatterns: string[], options?: any) {
   };
 
   const { console: consoleObject, methods } = options;
-  const originalMethods = methods.map((method: any) => consoleObject[method]);
+  const originalMethods = methods.map(
+    (method: string) => consoleObject[method],
+  );
 
   const check = (output: string) => {
     for (const pattern of excludePatterns) {
@@ -125,4 +145,21 @@ export function getFilePathNameExt(filePath: string): {
   const [fileName] = fileNameWithExt.split(".");
 
   return { fullPath, fileName, extension };
+}
+
+export function validateImageUrl(image: string): string {
+  const ipRegexStr =
+    "((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]).){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))";
+  const hostnameRegexStr =
+    "((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]).)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9]))";
+  const tagNameRegexStr = "([a-z0-9](-*[a-z0-9])*)";
+  const tagVersionRegexStr = "([a-z0-9_]([-._a-z0-9])*)";
+  const RepoTagRegexStr = `^(${ipRegexStr}|${hostnameRegexStr}/)?${tagNameRegexStr}(:${tagVersionRegexStr})?$`;
+
+  const regex = new RegExp(RepoTagRegexStr);
+
+  if (!image.match(regex)) {
+    throw new Error("Image's URL is invalid: `" + image + "`");
+  }
+  return image;
 }

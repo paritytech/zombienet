@@ -267,9 +267,10 @@ const CustomJs = ({
       else values = resp;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red(`Error running script: ${file_path!}`)}`,
+        `\n ${decorators.red(
+          `Error running script: ${file_path!}`,
+        )} \t ${decorators.bright(err.message)}\n`,
       );
-      console.log(`\t\t ${err.message}\n`);
       throw new Error(err);
     }
 
@@ -331,9 +332,10 @@ const CustomSh = ({
       expect(true).to.be.ok;
     } catch (err: any) {
       console.log(
-        `\n\t ${decorators.red(`Error running script: ${file_path!}`)}`,
+        `\n ${decorators.red(
+          `Error running script: ${file_path!}`,
+        )} \t ${decorators.bright(err.message)}\n`,
       );
-      console.log(`\t\t ${err.message}\n`);
       throw new Error(err);
     }
   };

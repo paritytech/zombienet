@@ -10,6 +10,18 @@ import { Node } from "./types";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
+interface ParachainArgsInterface {
+  [key: string]: boolean;
+}
+
+interface PortsInterface {
+  [key: string]: number;
+}
+
+interface ParachainCollatorsInterface {
+  [key: number]: number;
+}
+
 function parseCmdWithArguments(
   commandWithArgs: string,
   useWrapper = true,
@@ -50,7 +62,7 @@ export async function genCumulusCollatorCmd(
     return parseCmdWithArguments(commandWithArgs, useWrapper);
   }
 
-  const parachainAddedArgs: any = {
+  const parachainAddedArgs: ParachainArgsInterface = {
     "--name": true,
     "--collator": true,
     "--base-path": true,
@@ -96,7 +108,7 @@ export async function genCumulusCollatorCmd(
 
   if (validator) fullCmd.push(...["--collator"]);
 
-  const collatorPorts: any = {
+  const collatorPorts: PortsInterface = {
     "--port": 0,
     "--ws-port": 0,
     "--rpc-port": 0,
@@ -124,73 +136,67 @@ export async function genCumulusCollatorCmd(
       }
     }
 
-    if (
-      fullCmd.findIndex((thisArg) =>
-        thisArg.includes("relay-chain-rpc-url"),
-      ) === -1
-    ) {
-      // Arguments for the relay chain node part of the collator binary.
-      fullCmd.push(
-        ...[
-          "--",
-          "--base-path",
-          relayDataPath,
-          "--chain",
-          `${cfgPath}/${relayChain}.json`,
-          "--execution wasm",
-        ],
-      );
+    // Arguments for the relay chain node part of the collator binary.
+    fullCmd.push(
+      ...[
+        "--",
+        "--base-path",
+        relayDataPath,
+        "--chain",
+        `${cfgPath}/${relayChain}.json`,
+        "--execution wasm",
+      ],
+    );
 
-      if (argsFullNode) {
-        // Add any additional flags to the CLI
-        for (const [index, arg] of argsFullNode.entries()) {
-          if (collatorPorts[arg] >= 0) {
-            // port passed as argument, we need to ensure is not a default one because it will be
-            // use by the parachain part.
-            const selectedPort = parseInt(argsFullNode[index + 1], 10);
-            if (
-              [
-                P2P_PORT,
-                RPC_HTTP_PORT,
-                RPC_WS_PORT,
-                nodeSetup.p2pPort,
-                nodeSetup.rpcPort,
-                nodeSetup.wsPort,
-              ].includes(selectedPort)
-            ) {
-              console.log(
-                decorators.yellow(
-                  `WARN: default port configured, changing to use a random free port`,
-                ),
-              );
-              const randomPort = await getRandomPort();
-              collatorPorts[arg] = randomPort;
-              argsFullNode[index + 1] = randomPort.toString();
-            }
+    if (argsFullNode) {
+      // Add any additional flags to the CLI
+      for (const [index, arg] of argsFullNode.entries()) {
+        if (collatorPorts[arg] >= 0) {
+          // port passed as argument, we need to ensure is not a default one because it will be
+          // use by the parachain part.
+          const selectedPort = parseInt(argsFullNode[index + 1], 10);
+          if (
+            [
+              P2P_PORT,
+              RPC_HTTP_PORT,
+              RPC_WS_PORT,
+              nodeSetup.p2pPort,
+              nodeSetup.rpcPort,
+              nodeSetup.wsPort,
+            ].includes(selectedPort)
+          ) {
+            console.log(
+              decorators.yellow(
+                `WARN: default port configured, changing to use a random free port`,
+              ),
+            );
+            const randomPort = await getRandomPort();
+            collatorPorts[arg] = randomPort;
+            argsFullNode[index + 1] = randomPort.toString();
           }
         }
+      }
 
-        // check ports
-        for (const portArg of Object.keys(collatorPorts)) {
-          if (collatorPorts[portArg] === 0) {
-            const randomPort = await getRandomPort();
-            argsFullNode.push(portArg);
-            argsFullNode.push(randomPort.toString());
-            debug(`Added ${portArg} with value ${randomPort}`);
-          }
+      // check ports
+      for (const portArg of Object.keys(collatorPorts)) {
+        if (collatorPorts[portArg] === 0) {
+          const randomPort = await getRandomPort();
+          argsFullNode.push(portArg);
+          argsFullNode.push(randomPort.toString());
+          debug(`Added ${portArg} with value ${randomPort}`);
         }
+      }
 
-        fullCmd = fullCmd.concat(argsFullNode);
-        debug(`Added ${argsFullNode} to collator`);
-      } else {
-        // ensure ports
-        for (const portArg of Object.keys(collatorPorts)) {
-          if (collatorPorts[portArg] === 0) {
-            const randomPort = await getRandomPort();
-            fullCmd.push(portArg);
-            fullCmd.push(randomPort.toString());
-            debug(`Added ${portArg} with value ${randomPort}`);
-          }
+      fullCmd = fullCmd.concat(argsFullNode);
+      debug(`Added ${argsFullNode} to collator`);
+    } else {
+      // ensure ports
+      for (const portArg of Object.keys(collatorPorts)) {
+        if (collatorPorts[portArg] === 0) {
+          const randomPort = await getRandomPort();
+          fullCmd.push(portArg);
+          fullCmd.push(randomPort.toString());
+          debug(`Added ${portArg} with value ${randomPort}`);
         }
       }
     }
@@ -289,7 +295,17 @@ export async function genCmd(
   for (const [k, v] of Object.entries(portFlags)) {
     args.push(...[k, v.toString()]);
   }
-  args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+
+  const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
+  if (listenIndex >= 0) {
+    let listenAddrParts = args[listenIndex + 1].split("/");
+    listenAddrParts[4] = `${nodeSetup.p2pPort}`;
+    const listenAddr = listenAddrParts.join("/");
+    args[listenIndex + 1] = listenAddr;
+  } else {
+    // no --listen-add args
+    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+  }
 
   // set our base path
   const basePathFlagIndex = args.findIndex((arg) => arg === "--base-path");
@@ -317,7 +333,8 @@ export async function genCmd(
 }
 
 // helper
-const parachainCollators: any = {};
+const parachainCollators: ParachainCollatorsInterface =
+  {} as ParachainCollatorsInterface;
 function getCollatorIndex(paraId: number): number {
   if (parachainCollators[paraId] >= 0)
     parachainCollators[paraId] = parachainCollators[paraId] + 1;

@@ -18,7 +18,12 @@ import {
   PROMETHEUS_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { Client, RunCommandResponse, setClient } from "../client";
+import {
+  Client,
+  RunCommandOptions,
+  RunCommandResponse,
+  setClient,
+} from "../client";
 import {
   genGrafanaDef,
   genPrometheusDef,
@@ -65,7 +70,7 @@ export class PodmanClient extends Client {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this.runCommand(["--help"], undefined, false);
+      const result = await this.runCommand(["--help"], { scoped: false });
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -84,7 +89,7 @@ export class PodmanClient extends Client {
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Podman don't have the namespace concept yet but we use a isolated network
     let args = ["network", "create", this.namespace];
-    await this.runCommand(args, undefined, false);
+    await this.runCommand(args, { scoped: false });
     return;
   }
 
@@ -182,15 +187,15 @@ export class PodmanClient extends Client {
       "--format",
       "{{.Name}}",
     ];
-    let result = await this.runCommand(args, undefined, false);
+    let result = await this.runCommand(args, { scoped: false });
 
     // now remove the pods
     args = ["pod", "rm", "-f", ...result.stdout.split("\n")];
-    result = await this.runCommand(args, undefined, false);
+    result = await this.runCommand(args, { scoped: false });
 
     // now remove the pnetwork
     args = ["network", "rm", this.namespace];
-    result = await this.runCommand(args, undefined, false);
+    result = await this.runCommand(args, { scoped: false });
   }
 
   async addNodeToPrometheus(podName: string) {
@@ -210,7 +215,7 @@ export class PodmanClient extends Client {
     if (since && since > 0) args.push(...["--since", `${since}s`]);
     args.push(`${podName}_pod-${podName}`);
 
-    const result = await this.runCommand(args, undefined, false);
+    const result = await this.runCommand(args, { scoped: false });
     return result.stdout;
   }
 
@@ -234,7 +239,7 @@ export class PodmanClient extends Client {
 
   async getPortMapping(port: number, podName: string): Promise<number> {
     const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
-    const result = await this.runCommand(args, undefined, false);
+    const result = await this.runCommand(args, { scoped: false });
     const resultJson = JSON.parse(result.stdout);
     const hostPort =
       resultJson[0].NetworkSettings.Ports[`${port}/tcp`][0].HostPort;
@@ -243,7 +248,7 @@ export class PodmanClient extends Client {
 
   async getNodeIP(podName: string): Promise<string> {
     const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
-    const result = await this.runCommand(args, undefined, false);
+    const result = await this.runCommand(args, { scoped: false });
     const resultJson = JSON.parse(result.stdout);
     const podIp =
       resultJson[0].NetworkSettings.Networks[this.namespace].IPAddress;
@@ -271,12 +276,11 @@ export class PodmanClient extends Client {
 
   async runCommand(
     args: string[],
-    resourceDef?: string,
-    scoped?: boolean,
+    opts?: RunCommandOptions,
   ): Promise<RunCommandResponse> {
     try {
       const augmentedCmd: string[] = [];
-      if (scoped) augmentedCmd.push("--network", this.namespace);
+      if (opts?.scoped) augmentedCmd.push("--network", this.namespace);
 
       const finalArgs = [...augmentedCmd, ...args];
       const result = await execa(this.command, finalArgs);
@@ -294,7 +298,9 @@ export class PodmanClient extends Client {
         stdout,
       };
     } catch (error) {
-      console.log(error);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
+      );
       throw error;
     }
   }
@@ -371,29 +377,45 @@ export class PodmanClient extends Client {
       // and extract to /data
       await makeDir(`${dataPath.hostPath.path}/chains`, true);
 
-      await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/chains/db.tgz`);
+      await downloadFile(dbSnapshot, `${dataPath.hostPath.path}/db.tgz`);
       await execa("bash", [
         "-c",
-        `cd ${dataPath.hostPath.path}/chains && tar -xzvf db.tgz`,
+        `cd ${dataPath.hostPath.path}/..  && tar -xzvf data/db.tgz`,
       ]);
     }
 
     if (keystore) {
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
-      debug("keystoreRemoteDir", keystoreRemoteDir);
       await makeDir(keystoreRemoteDir, true);
+      const keystoreIsEmpty =
+        (await fs.readdir(keystoreRemoteDir).length) === 0;
+      if (!keystoreIsEmpty)
+        await this.runCommand(
+          ["unshare", "chmod", "-R", "o+w", keystoreRemoteDir],
+          { scoped: false },
+        );
+      debug("keystoreRemoteDir", keystoreRemoteDir);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
       debug("keys injected");
     }
 
+    const cfgDirIsEmpty =
+      (await fs.readdir(`${this.tmpDir}/${name}/cfg`).length) === 0;
+    if (!cfgDirIsEmpty && filesToCopy.length) {
+      await this.runCommand(
+        ["unshare", "chmod", "-R", "o+w", `${this.tmpDir}/${name}/cfg`],
+        { scoped: false },
+      );
+    }
     // copy files to volumes
     for (const fileMap of filesToCopy) {
       const { localFilePath, remoteFilePath } = fileMap;
-      await fs.copyFile(
-        localFilePath,
-        `${this.tmpDir}/${name}${remoteFilePath}`,
+      debug(
+        `copyFile ${localFilePath} to ${this.tmpDir}/${name}${remoteFilePath}`,
       );
+      await fs.cp(localFilePath, `${this.tmpDir}/${name}${remoteFilePath}`);
+      debug("copied!");
     }
 
     await this.createResource(podDef, false, false);
@@ -440,8 +462,7 @@ export class PodmanClient extends Client {
 
     await this.runCommand(
       ["play", "kube", "--network", this.namespace, localFilePath],
-      undefined,
-      false,
+      { scoped: false },
     );
 
     if (waitReady) await this.wait_pod_ready(name);
@@ -455,7 +476,7 @@ export class PodmanClient extends Client {
     let t = this.timeout;
     const args = ["pod", "ps", "-f", `name=${podName}`, "--format", "json"];
     do {
-      const result = await this.runCommand(args, undefined, false);
+      const result = await this.runCommand(args, { scoped: false });
       const resultJson = JSON.parse(result.stdout);
       if (resultJson[0].Status === "Running") return;
       if (allowDegraded && resultJson[0].Status === "Degraded") return;
@@ -470,6 +491,24 @@ export class PodmanClient extends Client {
   async isPodMonitorAvailable(): Promise<boolean> {
     // NOOP
     return false;
+  }
+
+  getPauseArgs(name: string): string[] {
+    return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
+  }
+  getResumeArgs(name: string): string[] {
+    return ["exec", name, "--", "bash", "-c", "echo resume > /tmp/zombiepipe"];
+  }
+
+  async restartNode(name: string, timeout: number | null): Promise<boolean> {
+    const args = ["exec", name, "--", "bash", "-c"];
+    const cmd = timeout
+      ? `echo restart ${timeout} > /tmp/zombiepipe`
+      : `echo restart > /tmp/zombiepipe`;
+    args.push(cmd);
+
+    const result = await this.runCommand(args, { scoped: true });
+    return result.exitCode === 0;
   }
 
   async spawnIntrospector(wsUri: string) {

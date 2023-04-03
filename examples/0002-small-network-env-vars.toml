@@ -1,3 +1,4 @@
+# examples/0002-small-network-env-vars.toml
 [relaychain]
 default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
 default_command = "polkadot"
@@ -12,6 +13,7 @@ chain = "rococo-local"
   [[relaychain.nodes]]
   name = "bob"
   validator = true
+  image= "{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}" 
 
 [[parachains]]
 id = 100
@@ -19,4 +21,4 @@ id = 100
   [parachains.collator]
   name = "collator01"
   image = "{{ZOMBIENET_COL_IMAGE}}"
-  command = "adder-collator"
+  command = "polkadot-parachain"

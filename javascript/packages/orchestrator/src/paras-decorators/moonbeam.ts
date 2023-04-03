@@ -1,12 +1,12 @@
 import { Keyring } from "@polkadot/api";
 import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { decorators } from "@zombienet/utils";
+import { CreateLogTable, decorators } from "@zombienet/utils";
 import {
   clearAuthorities as _clearAuthorities,
+  specHaveSessionsKeys as _specHaveSessionsKeys,
   getRuntimeConfig,
   readAndParseChainSpec,
-  specHaveSessionsKeys as _specHaveSessionsKeys,
   writeChainSpec,
 } from "../chain-spec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
@@ -52,13 +52,20 @@ async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
 
   keys.push(key);
 
-  console.log(
-    `\t👤 Added Genesis Authority ${decorators.green(
-      node.name,
-    )} - ${decorators.magenta(sr_account.address)}`,
-  );
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added Genesis Authority"),
+      decorators.green(node.name),
+      decorators.magenta(sr_account.address),
+    ],
+  ]);
 
-  console.log(chainSpec.genesis.runtime.authorMapping);
+  new CreateLogTable({
+    colWidths: [120],
+  }).pushToPrint([chainSpec.genesis.runtime.authorMapping]);
+
   writeChainSpec(specPath, chainSpec);
 }
 
@@ -128,6 +135,10 @@ async function addParaCustom(specPath: string, node: Node) {
   writeChainSpec(specPath, chainSpec);
 }
 
+function getProcessStartTimeKey() {
+  return "moonbeam_substrate_process_start_time_seconds";
+}
+
 export default {
   specHaveSessionsKeys,
   addAuthority,
@@ -136,4 +147,5 @@ export default {
   addParaCustom,
   getAuthorityKeys,
   getNodeKey,
+  getProcessStartTimeKey,
 };

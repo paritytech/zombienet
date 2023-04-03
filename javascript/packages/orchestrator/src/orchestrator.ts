@@ -8,6 +8,9 @@ import {
   getSha256,
   loadTypeDef,
   makeDir,
+  PARACHAIN_NOT_FOUND,
+  POLKADOT_NOT_FOUND,
+  POLKADOT_NOT_FOUND_DESCRIPTION,
   series,
   sleep,
 } from "@zombienet/utils";
@@ -27,6 +30,7 @@ import {
   changeGenesisConfig,
   clearAuthorities,
   generateNominators,
+  getChainIdFromSpec,
   getNodeKey,
   readAndParseChainSpec,
   specHaveSessionsKeys,
@@ -68,6 +72,10 @@ import {
   Parachain,
 } from "./types";
 
+import { setSilent } from "@zombienet/utils";
+import { getProcessStartTimeKey } from "./metrics";
+import { decorate } from "./paras-decorators";
+
 const debug = require("debug")("zombie");
 
 // Hide some warning messages that are coming from Polkadot JS API.
@@ -83,6 +91,7 @@ export interface OrcOptionsInterface {
   inCI?: boolean;
   dir?: string;
   force?: boolean;
+  silent?: boolean; // Mute logging output
 }
 
 export async function start(
@@ -91,10 +100,11 @@ export async function start(
   options?: OrcOptionsInterface,
 ) {
   const opts = {
-    ...{ monitor: false, spawnConcurrency: 1, inCI: false },
+    ...{ monitor: false, spawnConcurrency: 1, inCI: false, silent: true },
     ...options,
   };
 
+  setSilent(opts.silent);
   let network: Network | undefined;
   let cronInterval = undefined;
   let multiAddressByNode: MultiAddressByNode = {};
@@ -104,6 +114,24 @@ export async function start(
       launchConfig,
     );
     debug(JSON.stringify(networkSpec, null, 4));
+
+    // get provider fns
+    const provider = networkSpec.settings.provider;
+    if (!Providers.has(provider)) {
+      throw new Error(
+        "Invalid provider config. You must one of: " +
+          Array.from(Providers.keys()).join(", "),
+      );
+    }
+
+    const {
+      genBootnodeDef,
+      genNodeDef,
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+      replaceNetworkRef,
+    } = Providers.get(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
@@ -132,9 +160,9 @@ export async function start(
         fs.mkdirSync(opts.dir);
       } else if (!opts.force) {
         const response = await askQuestion(
-          `${decorators.yellow(
+          decorators.yellow(
             "Directory already exists; \nDo you want to continue? (y/N)",
-          )}`,
+          ),
         );
         if (response.toLowerCase() !== "y") {
           console.log("Exiting...");
@@ -154,24 +182,6 @@ export async function start(
       "-plain.json",
     );
 
-    // get provider fns
-    const provider = networkSpec.settings.provider;
-    if (!Providers.has(provider)) {
-      throw new Error(
-        "Invalid provider config. You must one of: " +
-          Array.from(Providers.keys()).join(", "),
-      );
-    }
-
-    const {
-      genBootnodeDef,
-      genNodeDef,
-      initClient,
-      setupChainSpec,
-      getChainSpecRaw,
-      replaceNetworkRef,
-    } = Providers.get(networkSpec.settings.provider);
-
     const client = initClient(credentials, namespace, tmpDir.path);
 
     if (networkSpec.settings.node_spawn_timeout)
@@ -181,8 +191,8 @@ export async function start(
 
     const zombieTable = new CreateLogTable({
       head: [
-        `${decorators.green("🧟 Zombienet 🧟")}`,
-        `${decorators.green("Initiation")}`,
+        decorators.green("🧟 Zombienet 🧟"),
+        decorators.green("Initiation"),
       ],
       colWidths: [20, 100],
       doubleBorder: true,
@@ -191,7 +201,7 @@ export async function start(
     zombieTable.pushTo([
       [
         decorators.green("Provider"),
-        decorators.red(networkSpec.settings.provider),
+        decorators.blue(networkSpec.settings.provider),
       ],
       [decorators.green("Namespace"), namespace],
       [decorators.green("Temp Dir"), tmpDir.path],
@@ -205,7 +215,9 @@ export async function start(
     const isValid = await client.validateAccess();
     if (!isValid) {
       console.error(
-        `\n\t\t ${decorators.red("⚠ Can not access")} ${decorators.magenta(
+        `\n\t\t ${decorators.reverse(
+          decorators.red("⚠ Can not access"),
+        )} ${decorators.magenta(
           networkSpec.settings.provider,
         )}, please check your config.`,
       );
@@ -241,7 +253,7 @@ export async function start(
     await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
 
-    // create or copy chain spec
+    // create or copy relay chain spec
     await setupChainSpec(
       namespace,
       networkSpec.relaychain,
@@ -255,10 +267,45 @@ export async function start(
 
     // Check if the chain spec is in raw format
     // Could be if the chain_spec_path was set
-    const chainSpecContent = require(chainSpecFullPathPlain);
+    const chainSpecContent = readAndParseChainSpec(chainSpecFullPathPlain);
+    const relayChainSpecIsRaw = Boolean(chainSpecContent.genesis?.raw);
+
     client.chainId = chainSpecContent.id;
 
-    if (!chainSpecContent.genesis.raw) {
+    const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
+      const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
+      await makeDir(parachainFilesPath);
+      await generateParachainFiles(
+        namespace,
+        tmpDir.path,
+        parachainFilesPath,
+        chainName,
+        parachain,
+        relayChainSpecIsRaw,
+      );
+    };
+
+    const parachainPromiseGenerators = networkSpec.parachains.map(
+      (parachain: Parachain) => {
+        return () => parachainFilesPromiseGenerator(parachain);
+      },
+    );
+
+    await series(parachainPromiseGenerators, opts.spawnConcurrency);
+    for (const parachain of networkSpec.parachains) {
+      const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
+      const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
+      const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
+      if (parachain.addToGenesis && !relayChainSpecIsRaw)
+        await addParachainToGenesis(
+          chainSpecFullPathPlain,
+          parachain.id.toString(),
+          stateLocalFilePath,
+          wasmLocalFilePath,
+        );
+    }
+
+    if (!relayChainSpecIsRaw) {
       // Chain spec customization logic
       const relayChainSpec = readAndParseChainSpec(chainSpecFullPathPlain);
       const keyType = specHaveSessionsKeys(relayChainSpec) ? "session" : "aura";
@@ -311,37 +358,6 @@ export async function start(
         );
       }
 
-      const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
-        const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        await makeDir(parachainFilesPath);
-        await generateParachainFiles(
-          namespace,
-          tmpDir.path,
-          parachainFilesPath,
-          chainName,
-          parachain,
-        );
-      };
-      const parachainPromiseGenerators = networkSpec.parachains.map(
-        (parachain: Parachain) => {
-          return () => parachainFilesPromiseGenerator(parachain);
-        },
-      );
-
-      await series(parachainPromiseGenerators, opts.spawnConcurrency);
-      for (const parachain of networkSpec.parachains) {
-        const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-        const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
-        const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
-        if (parachain.addToGenesis)
-          await addParachainToGenesis(
-            chainSpecFullPathPlain,
-            parachain.id.toString(),
-            stateLocalFilePath,
-            wasmLocalFilePath,
-          );
-      }
-
       if (networkSpec.hrmp_channels) {
         await addHrmpChannelsToGenesis(
           chainSpecFullPathPlain,
@@ -368,15 +384,22 @@ export async function start(
 
     // ensure chain raw is ok
     try {
-      const chainRawContent = require(chainSpecFullPath);
-      debug(`Chain name: ${chainRawContent.name}`);
+      const chainSpecContent = readAndParseChainSpec(chainSpecFullPathPlain);
+      debug(`Chain name: ${chainSpecContent.name}`);
 
       new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
-        [`Chain name: ${decorators.green(chainRawContent.name)}`],
+        [`Chain name: ${decorators.green(chainSpecContent.name)}`],
       ]);
     } catch (err) {
+      console.log(
+        `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+          err,
+        )}\n`,
+      );
       throw new Error(
-        `Error: chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`,
+        `${decorators.red(`Error:`)} \t ${decorators.bright(
+          ` chain-spec raw file at ${chainSpecFullPath} is not a valid JSON`,
+        )}`,
       );
     }
 
@@ -454,8 +477,7 @@ export async function start(
           localFilePath: parachainSpecPath,
           remoteFilePath: `${client.remoteDir}/${node.chain}-${paraId}.json`,
         });
-        const parachainSpec = require(parachainSpecPath);
-        parachainSpecId = parachainSpec.id;
+        parachainSpecId = await getChainIdFromSpec(parachainSpecPath);
       }
       for (const override of node.overrides) {
         finalFilesToCopyToNode.push({
@@ -496,16 +518,17 @@ export async function start(
       const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
       const nodeMultiAddress = await generateBootnodeString(
         node.key!,
+        node.args,
         nodeIp,
         nodePort,
+        true,
+        node.p2pCertHash,
       );
       multiAddressByNode[podDef.metadata.name] = nodeMultiAddress;
 
       if (node.addToBootnodes) {
         bootnodes.push(nodeMultiAddress);
         await addBootNodes(chainSpecFullPath, bootnodes);
-        // flush require cache since we change the chain-spec
-        delete require.cache[require.resolve(chainSpecFullPath)];
       }
 
       let networkNode: NetworkNode;
@@ -565,6 +588,7 @@ export async function start(
             parachain?.statePath,
           );
         networkNode.parachainId = paraId;
+        networkNode.para = parachain?.para;
         network.addNode(networkNode, Scope.PARA);
       } else {
         network.addNode(networkNode, Scope.RELAY);
@@ -629,7 +653,7 @@ export async function start(
             break;
         }
         logTable.print();
-        console.log(logCommand + "\n\n");
+        if (!opts.silent) console.log(logCommand + "\n\n");
       }
     };
 
@@ -641,12 +665,18 @@ export async function start(
       const [nodeIp, nodePort] = await client.getNodeInfo(firstNode.name);
 
       bootnodes.push(
-        await generateBootnodeString(firstNode.key!, nodeIp, nodePort),
+        await generateBootnodeString(
+          firstNode.key!,
+          firstNode.args,
+          nodeIp,
+          nodePort,
+          true,
+          firstNode.p2pCertHash,
+        ),
       );
       // add bootnodes to chain spec
       await addBootNodes(chainSpecFullPath, bootnodes);
       // flush require cache since we change the chain-spec
-      delete require.cache[require.resolve(chainSpecFullPath)];
 
       if (client.providerName === "kubernetes") {
         // cache the chainSpec with bootnodes
@@ -664,7 +694,9 @@ export async function start(
 
     await series(promiseGenerators, opts.spawnConcurrency);
 
-    console.log("\t All relay chain nodes spawned...");
+    new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+      [decorators.green("All relay chain nodes spawned...")],
+    ]);
     debug("\t All relay chain nodes spawned...");
 
     const collatorPromiseGenerators = [];
@@ -698,12 +730,13 @@ export async function start(
           await addBootNodes(parachain.specPath!, [
             await generateBootnodeString(
               firstCollatorNode.key!,
+              firstCollatorNode.args,
               nodeIp,
               nodePort,
+              true,
+              firstCollatorNode.p2pCertHash,
             ),
           ]);
-          // flush require cache since we change the chain-spec
-          delete require.cache[require.resolve(parachain.specPath!)];
         }
       }
 
@@ -827,6 +860,32 @@ export async function start(
       }
     }
 
+    // sleep to give time to last node process' to start
+    await sleep(2 * 1000);
+
+    // wait until all the node's are up
+    const nodeChecker = async (node: NetworkNode) => {
+      const metricToQuery = node.para
+        ? decorate(node.para, [getProcessStartTimeKey])[0]()
+        : getProcessStartTimeKey();
+      debug(
+        `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
+      );
+      const ready = await node.getMetric(metricToQuery, "isAtLeast", 1, 60 * 5);
+      debug(`\t ${node.name} ready ${ready}`);
+      return ready;
+    };
+    const nodeCheckGenerators = Object.values(network.nodesByName).map(
+      (node: NetworkNode) => {
+        return () => nodeChecker(node);
+      },
+    );
+
+    const nodesOk = await series(nodeCheckGenerators, 10);
+    if (!(nodesOk as any[]).every(Boolean))
+      throw new Error("At least one of the nodes fails to start");
+    debug("All nodes checked ok");
+
     // cleanup global timeout
     network.launched = true;
     clearTimeout(timeoutTimer);
@@ -840,8 +899,19 @@ export async function start(
     );
 
     return network;
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    let errDetails;
+    if (
+      error?.stderr?.includes(POLKADOT_NOT_FOUND) ||
+      error?.stderr?.includes(PARACHAIN_NOT_FOUND)
+    ) {
+      errDetails = POLKADOT_NOT_FOUND_DESCRIPTION;
+    }
+    console.log(
+      `${decorators.red("Error: ")} \t ${decorators.bright(
+        error,
+      )}\n\n${decorators.magenta(errDetails)}`,
+    );
     if (network) {
       await network.dumpLogs();
       await network.stop();
@@ -861,7 +931,9 @@ export async function test(
     network = await start(credentials, networkConfig, { force: true });
     await cb(network);
   } catch (error) {
-    console.error(error);
+    console.log(
+      `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
+    );
   } finally {
     if (network) {
       await network.dumpLogs();

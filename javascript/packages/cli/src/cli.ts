@@ -19,12 +19,11 @@ import {
   readNetworkConfig,
   RelativeLoader,
 } from "@zombienet/utils";
-import axios from "axios";
+import cliProgress from "cli-progress";
 import { Command, Option } from "commander";
 import fs from "fs";
 import { Environment } from "nunjucks";
 import path, { resolve } from "path";
-import progress from "progress";
 import {
   AVAILABLE_PROVIDERS,
   DEFAULT_BALANCE,
@@ -32,28 +31,11 @@ import {
   DEFAULT_PROVIDER,
 } from "./constants";
 
-const DEFAULT_CUMULUS_COLLATOR_URL =
-  "https://github.com/paritytech/cumulus/releases/download/v0.9.270/polkadot-parachain";
-// const DEFAULT_ADDER_COLLATOR_URL =
-//   "https://gitlab.parity.io/parity/mirrors/polkadot/-/jobs/1769497/artifacts/raw/artifacts/adder-collator";
-
 interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
 
-const options: OptIf = {
-  "polkadot-parachain": {
-    name: "polkadot-parachain",
-    url: DEFAULT_CUMULUS_COLLATOR_URL,
-    size: "120",
-  },
-  // // Deactivate for now
-  // adderCollator: {
-  //   name: "adderCollator",
-  //   url: DEFAULT_ADDER_COLLATOR_URL,
-  //   size: "950",
-  // },
-};
+const options: OptIf = {};
 
 const debug = require("debug")("zombie-cli");
 
@@ -64,54 +46,81 @@ let network: Network | undefined;
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
   try {
-    console.log(`${decorators.yellow("\nStart download...\n")}`);
+    console.log(decorators.yellow("\nStart download...\n"));
     const promises = [];
-    let count = 0;
+
+    const multibar = new cliProgress.MultiBar(
+      {
+        clearOnComplete: false,
+        hideCursor: true,
+        format:
+          decorators.yellow("{bar} - {percentage}%") +
+          " | " +
+          decorators.cyan("Binary name:") +
+          " {filename}",
+      },
+      cliProgress.Presets.shades_grey,
+    );
+
     for (let binary of binaries) {
       promises.push(
-        new Promise<void>(async (resolve) => {
-          const { url, name } = options[binary];
-          const { data, headers } = await axios({
-            url,
-            method: "GET",
-            responseType: "stream",
-          });
-          const totalLength = headers["content-length"];
+        new Promise<void>(async (resolve, reject) => {
+          let result = options[binary];
+          if (!result) {
+            console.log("options", options, "binary", binary);
+            throw new Error("Binary is not defined");
+          }
+          const { url, name } = result;
 
-          const progressBar = new progress(
-            "-> downloading [:bar] :percent :etas",
-            {
-              width: 40,
-              complete: "=",
-              incomplete: " ",
-              renderThrottle: 1,
-              total: parseInt(totalLength),
-            },
-          );
+          if (!url) throw new Error("No url for downloading, was provided");
 
+          const response = await fetch(url);
+
+          if (!response.ok)
+            throw Error(response.status + " " + response.statusText);
+
+          const contentLength = response.headers.get(
+            "content-length",
+          ) as string;
+          let loaded = 0;
+
+          const progressBar = multibar.create(parseInt(contentLength, 10), 0);
+          const reader = response.body?.getReader();
           const writer = fs.createWriteStream(path.resolve(name));
 
-          data.on("data", (chunk: any) => progressBar.tick(chunk.length));
-          data.pipe(writer);
-          data.on("end", () => {
-            console.log(decorators.yellow(`Binary "${name}" downloaded`));
-            // Add permissions to the binary
-            console.log(decorators.cyan(`Giving permissions to "${name}"`));
-            fs.chmodSync(path.resolve(name), 0o755);
-            resolve();
-          });
+          while (true) {
+            const read = await reader?.read()!;
+            if (read?.done) {
+              writer.close();
+              resolve();
+              break;
+            }
+
+            loaded += read.value.length;
+            progressBar.increment();
+            progressBar.update(loaded, {
+              filename: name,
+            });
+            writer.write(read.value);
+          }
         }),
       );
     }
+
     await Promise.all(promises);
+    multibar.stop();
     console.log(
       decorators.cyan(
-        `Please add the current dir to your $PATH by running the command:\n`,
+        `\n\nPlease add the current dir to your $PATH by running the command:\n`,
       ),
-      decorators.blue(`export PATH=${process.cwd()}:$PATH`),
+      decorators.blue(`export PATH=${process.cwd()}:$PATH\n\n`),
     );
   } catch (err) {
-    console.log("Unexpected error: ", err);
+    console.log(
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
+    );
   }
 };
 
@@ -121,21 +130,42 @@ const latestPolkadotReleaseURL = async (
   name: string,
 ): Promise<[string, string]> => {
   try {
-    const res = await axios.get(
-      `https://api.github.com/repos/paritytech/${repo}/releases/latest`,
+    const releases = await fetch(
+      `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
-    const obj = res.data.assets.filter((a: any) => a.name === name);
+
+    let obj: any;
+    let tag_name;
+
+    const allReleases = await releases.json();
+    const release = allReleases.find((r: any) => {
+      obj = r?.assets?.find((a: any) => a.name === name);
+      return Boolean(obj);
+    });
+
+    tag_name = release.tag_name;
+
+    if (!tag_name) {
+      throw new Error(
+        "Should never come to this point. Tag_name should never be undefined!",
+      );
+    }
+
     return [
-      `https://github.com/paritytech/${repo}/releases/download/${res.data.tag_name}/${name}`,
-      convertBytes(obj[0].size),
+      `https://github.com/paritytech/${repo}/releases/download/${tag_name}/${name}`,
+      convertBytes(obj.size),
     ];
   } catch (err: any) {
     if (err.code === "ENOTFOUND") {
       throw new Error("Network error.");
     } else if (err.response && err.response.status === 404) {
-      throw new Error("Could not find a release.");
+      throw new Error(
+        "Could not find a release. Error 404 (not found) detected",
+      );
     }
-    throw new Error(err);
+    throw new Error(
+      `Error status: ${err?.response?.status}. Error message: ${err?.response}`,
+    );
   }
 };
 
@@ -275,7 +305,11 @@ process.on("unhandledRejection", async (err) => {
     await network.stop();
   }
   debug(err);
-  console.log(`UnhandledRejection: ${err}`);
+  console.log(
+    `\n${decorators.red("UnhandledRejection: ")} \t ${decorators.bright(
+      err,
+    )}\n`,
+  );
   process.exit(1001);
 });
 
@@ -400,10 +434,17 @@ async function spawn(
   const dir = opts.dir || "";
   const force = opts.force || false;
   const monitor = opts.monitor || false;
-  const spawnConcurrency = opts.spawnConcurrency || 1;
+  // By default spawn pods/process in batches of 4,
+  // since this shouldn't be a bottleneck in most of the cases,
+  // but also can be set with the `-c` flag.
+  const spawnConcurrency = opts.spawnConcurrency || 4;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
-    console.error("  ⚠ Config file does not exist: ", configPath);
+    console.error(
+      `${decorators.reverse(
+        decorators.red(`  ⚠ Config file does not exist: ${configPath}`),
+      )}`,
+    );
     process.exit();
   }
 
@@ -434,12 +475,24 @@ async function spawn(
       console.log(
         `Running ${config.settings?.provider || DEFAULT_PROVIDER} provider:`,
       );
-      console.error("  ⚠ I can't find the Creds file: ", credsFile);
+      console.error(
+        `${decorators.reverse(
+          decorators.red(`  ⚠ I can't find the Creds file: ${credsFile}`),
+        )}`,
+      );
       process.exit();
     }
   }
 
-  const options = { monitor, spawnConcurrency, dir, force };
+  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  const options = {
+    monitor,
+    spawnConcurrency,
+    dir,
+    force,
+    inCI,
+    silent: false,
+  };
   network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
 }
@@ -459,6 +512,18 @@ async function test(
   _opts: any,
 ) {
   const opts = program.opts();
+  const dir = opts.dir || "";
+
+  let extension = testFile.slice(testFile.lastIndexOf(".") + 1);
+
+  if (extension !== "zndsl") {
+    console.log(
+      `\n ${decorators.red(
+        "Error:",
+      )} File extension is not correct. Extension for tests should be '.zndsl'.\n`,
+    );
+  }
+
   process.env.DEBUG = "zombie";
   const inCI = process.env.RUN_IN_CONTAINER === "1";
   // use `k8s` as default
@@ -469,8 +534,8 @@ async function test(
 
   const configBasePath = path.dirname(testFile);
   const env = new Environment(new RelativeLoader([configBasePath]));
-  const temmplateContent = fs.readFileSync(testFile).toString();
-  const content = env.renderString(temmplateContent, process.env);
+  const templateContent = fs.readFileSync(testFile).toString();
+  const content = env.renderString(templateContent, process.env);
 
   const testName = getTestNameFromFileName(testFile);
 
@@ -478,7 +543,7 @@ async function test(
   try {
     testDef = JSON.parse(parser.parse_to_json(content));
   } catch (e) {
-    console.log(e);
+    console.log(`\n ${decorators.red("Error:")} \t ${decorators.bright(e)}\n`);
     process.exit(1);
   }
 
@@ -489,7 +554,9 @@ async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
+    false,
     runningNetworkSpec,
+    dir,
   );
 }
 
@@ -500,7 +567,9 @@ async function test(
  * @returns
  */
 async function setup(params: any) {
-  console.log(`${decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n")}`);
+  const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
+
+  console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
   if (
     ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
   ) {
@@ -509,11 +578,26 @@ async function setup(params: any) {
     );
     return;
   }
+
+  console.log(decorators.green("Gathering latest releases' versions...\n"));
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL("polkadot", "polkadot").then(
       (res: [string, string]) => {
         options.polkadot = {
           name: "polkadot",
+          url: res[0],
+          size: res[1],
+        };
+        resolve();
+      },
+    );
+  });
+
+  await new Promise<void>((resolve) => {
+    latestPolkadotReleaseURL("cumulus", "polkadot-parachain").then(
+      (res: [string, string]) => {
+        options["polkadot-parachain"] = {
+          name: "polkadot-parachain",
           url: res[0],
           size: res[1],
         };
@@ -529,7 +613,7 @@ async function setup(params: any) {
       `${decorators.yellow(
         "Note: ",
       )} You are using MacOS. Please, clone the polkadot repo ` +
-        `${decorators.cyan("(https://github.com/paritytech/polkadot)")}` +
+        decorators.cyan("(https://github.com/paritytech/polkadot)") +
         ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
     );
     const index = params.indexOf("polkadot");
@@ -539,21 +623,30 @@ async function setup(params: any) {
   }
 
   if (params.length === 0) {
-    console.log(
-      `${decorators.green("No more binaries to download. Exiting...")}`,
-    );
+    console.log(decorators.green("No binaries to download. Exiting..."));
     return;
   }
   let count = 0;
   console.log("Setup will start to download binaries:");
   params.forEach((a: any) => {
+    if (!POSSIBLE_BINARIES.includes(a)) {
+      const index = params.indexOf(a);
+      index > -1 && params.splice(index, 1);
+      console.log(
+        decorators.red(
+          `"${a}" is not one of the possible options for this setup and will be skipped;`,
+        ),
+        decorators.green(` Valid options: polkadot polkadot-parachain`),
+      );
+      return;
+    }
     const size = parseInt(options[a]?.size || "0", 10);
     count += size;
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
   console.log("Total approx. size: ", count, "MB");
   const response = await askQuestion(
-    `${decorators.yellow("\nDo you want to continue? (y/n)")}`,
+    decorators.yellow("\nDo you want to continue? (y/n)"),
   );
   if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
     console.log("Invalid input. Exiting...");
@@ -577,7 +670,9 @@ async function convert(param: string) {
     // Read through the JSON and write to stream sample
     await convertInput(filePath);
   } catch (err) {
-    console.log("error", err);
+    console.log(
+      `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
+    );
   }
 }
 

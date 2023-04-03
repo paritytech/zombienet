@@ -153,13 +153,9 @@ export class Network {
   async dumpLogs(showLogPath: boolean = true): Promise<string> {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
-    fs.mkdirSync(logsPath);
-    const paraNodes: NetworkNode[] = Object.keys(this.paras).reduce(
-      (memo: NetworkNode[], key) => {
-        const paraId = parseInt(key, 10);
-        memo.concat(this.paras[paraId].nodes);
-        return memo;
-      },
+    if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
+    const paraNodes: NetworkNode[] = Object.values(this.paras).reduce(
+      (memo: NetworkNode[], value) => memo.concat(value.nodes),
       [],
     );
 
@@ -225,7 +221,9 @@ export class Network {
       }
       return value;
     } catch (err) {
-      console.log(err);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
+      );
       if (limitTimeout) clearTimeout(limitTimeout);
       throw err;
     }
@@ -270,7 +268,9 @@ export class Network {
       await node.apiInstance?.rpc.system.name();
       return true;
     } catch (err) {
-      console.log(err);
+      console.log(
+        `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
+      );
       return false;
     }
   }
@@ -282,10 +282,11 @@ export class Network {
         {
           colSpan: 2,
           hAlign: "center",
-          content: `${decorators.green("Network launched 🚀🚀")}`,
+          content: decorators.green("Network launched 🚀🚀"),
         },
       ],
       colWidths: [30, 100],
+      wordWrap: true,
     });
     logTable.pushTo([
       ["Namespace", this.namespace],
@@ -333,14 +334,29 @@ export class Network {
       ? node.wsUri
       : encodeURIComponent(node.wsUri);
 
+    let logCommand: string = "";
+
+    switch (this.client.providerName) {
+      case "podman":
+        logCommand = `podman logs -f ${node.name}_pod-${node.name}`;
+        break;
+      case "kubernetes":
+        logCommand = `kubectl logs -f ${node.name} -c ${node.name} -n ${this.client.namespace}`;
+        break;
+      case "native":
+        logCommand = `tail -f  ${this.client.tmpDir}/${node.name}.log`;
+        break;
+    }
+
     logTable.pushTo([
       [{ colSpan: 2, hAlign: "center", content: "Node Information" }],
-      [`${decorators.cyan("Name")}`, `${decorators.green(node.name)}`],
+      [decorators.cyan("Name"), decorators.green(node.name)],
       [
-        `${decorators.cyan("Direct Link")}`,
+        decorators.cyan("Direct Link"),
         `https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer`,
       ],
-      [`${decorators.cyan("Prometheus Link")}`, node.prometheusUri],
+      [decorators.cyan("Prometheus Link"), node.prometheusUri],
+      [decorators.cyan("Log Cmd"), logCommand],
     ]);
   }
 

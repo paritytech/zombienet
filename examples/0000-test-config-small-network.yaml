@@ -1,0 +1,16 @@
+# some comment - next line is empty for testing parser
+
+relaychain:
+  default_image: 'docker.io/parity/polkadot:latest'
+  default_command: polkadot
+  default_args:
+    - '-lparachain=debug'
+  chain: rococo-local
+  nodes:
+    - name: alice
+      validator: true
+    - name: bob
+      image: 'docker.io/parity/polkadot:latest'
+      validator: true
+      args:
+        - '--database=paritydb-experimental'

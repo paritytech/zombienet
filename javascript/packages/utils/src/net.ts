@@ -1,8 +1,8 @@
-import axios from "axios";
 import dns from "dns";
 import fs from "fs";
 import { AddressInfo, createServer } from "net";
 import os from "os";
+import { decorators } from "./colors";
 
 export async function getRandomPort(): Promise<number> {
   const inner = async () => {
@@ -26,7 +26,7 @@ export async function getRandomPort(): Promise<number> {
 
 export async function getHostIp(): Promise<string> {
   return await new Promise((resolve, reject) => {
-    dns.lookup(os.hostname(), (err: any, addr: any) => {
+    dns.lookup(os.hostname(), (_err: unknown, addr: string) => {
       resolve(addr);
     });
   });
@@ -35,19 +35,24 @@ export async function getHostIp(): Promise<string> {
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
     await new Promise<void>(async (resolve) => {
-      const { data } = await axios({
-        url,
-        method: "GET",
-        responseType: "stream",
-      });
-
+      const response = await fetch(url);
+      const reader = response.body?.getReader();
       const writer = fs.createWriteStream(dest);
-      data.pipe(writer);
-      data.on("end", () => {
-        resolve();
-      });
+      while (true) {
+        const read = await reader?.read();
+        if (read?.done) {
+          writer.close();
+          resolve();
+          break;
+        }
+        writer.write(read?.value);
+      }
     });
   } catch (err) {
-    console.log("Unexpected error: ", err);
+    console.log(
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
+    );
   }
 }

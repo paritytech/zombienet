@@ -29,8 +29,11 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
     metrics = _extractMetrics(response.data);
   } catch (err) {
     debug(`ERR: ${err}`);
-    const errMsg = `Error fetching metrics from: ${metricUri}`;
-    console.log(`\n${decorators.red(errMsg)}`);
+    console.log(
+      `\n${decorators.red(`Error`)} \t ${decorators.bright(
+        `fetching metrics from: ${metricUri}`,
+      )}`,
+    );
   } finally {
     return metrics;
   }
@@ -98,6 +101,10 @@ export function getMetricName(metricName: string): string {
   }
 
   return metricNameTouse;
+}
+
+export function getProcessStartTimeKey() {
+  return "substrate_process_start_time_seconds";
 }
 
 function _extractMetrics(text: string): Metrics {

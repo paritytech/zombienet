@@ -22,7 +22,7 @@ pub fn main() {
             println!("{}", serde_json::to_string_pretty(&test_def).unwrap());
         }
         Err(e) => {
-            println!("{}", e);
+            println!("{e}");
         }
     }
 }

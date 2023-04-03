@@ -3,6 +3,7 @@ import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
+  setSilent,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -33,8 +34,11 @@ export async function run(
   provider: string,
   inCI: boolean = false,
   concurrency: number = 1,
+  silent: boolean = false,
   runningNetworkSpecPath: string | undefined,
+  dir: string | undefined,
 ) {
+  setSilent(silent);
   let network: Network;
   let backchannelMap: BackchannelMap = {};
 
@@ -45,6 +49,7 @@ export async function run(
   let networkConfigFilePath = fs.existsSync(testDef.network)
     ? testDef.network
     : path.resolve(configBasePath, testDef.network);
+
   const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
 
   // set the provider
@@ -82,13 +87,13 @@ export async function run(
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {
-      if (runningNetworkSpecPath)
-        console.log("runningNetworkSpecPath", runningNetworkSpecPath);
       if (!runningNetworkSpecPath) {
         console.log(`\t Launching network... this can take a while.`);
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
+          silent,
+          dir,
         });
       } else {
         const runningNetworkSpec: any = require(runningNetworkSpecPath);
@@ -111,8 +116,11 @@ export async function run(
       await sleep(5 * 1000);
       return;
     } catch (err) {
-      console.log(`\n${decorators.red("Error launching the network!")}`);
-      console.log(`\t ${err}`);
+      console.log(
+        `\n${decorators.red(
+          "Error launching the network!",
+        )} \t ${decorators.bright(err)}`,
+      );
       exitMocha(100);
     }
   });
@@ -122,29 +130,75 @@ export async function run(
     if (network && !network.wasRunning) {
       const logsPath = await network.dumpLogs(false);
       const tests = this.test?.parent?.tests;
+
       if (tests) {
         const failed = tests.filter((test) => {
           return test.state !== "passed";
         });
         if (failed.length) {
           console.log(
-            `\n\n\t${decorators.red(
-              "Hey one or more of your test failed, to see the full logs of the nodes please go to:",
-            )}`,
+            `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
           );
 
           switch (network.client.providerName) {
             case "podman":
             case "native":
-              console.log(`\n\t${decorators.magenta(logsPath)}`);
               console.log(`\n\t ${decorators.green("Deleting network")}`);
               await network.stop();
               break;
             case "kubernetes":
               if (inCI) {
-                // show links to grafana and also we need to move the logs to artifacts
-                const networkEndtime = new Date().getTime();
-                for (const node of network.relay) {
+                // keep pods running for 30 mins.
+                console.log(
+                  `\n\t${decorators.red(
+                    "One or more test failed, we will keep the namespace up for 30 more minutes",
+                  )}`,
+                );
+                await network.upsertCronJob(30);
+              } else {
+                console.log(`\n\t ${decorators.green("Deleting network")}`);
+                await network.stop();
+              }
+              break;
+          }
+        } else {
+          // All test passed, just remove the network
+          console.log(`\n\t ${decorators.green("Deleting network")}`);
+          await network.stop();
+        }
+
+        // show logs
+        console.log(
+          `\n\n\t${decorators.magenta(
+            "📓 To see the full logs of the nodes please go to:",
+          )}`,
+        );
+        switch (network.client.providerName) {
+          case "podman":
+          case "native":
+            console.log(`\n\t${decorators.magenta(logsPath)}`);
+            break;
+          case "kubernetes":
+            if (inCI) {
+              // show links to grafana and also we need to move the logs to artifacts
+              const networkEndtime = new Date().getTime();
+              for (const node of network.relay) {
+                const loki_url = getLokiUrl(
+                  network.namespace,
+                  node.name,
+                  network.networkStartTime!,
+                  networkEndtime,
+                );
+                console.log(
+                  `\t${decorators.magenta(node.name)}: ${decorators.green(
+                    loki_url,
+                  )}`,
+                );
+              }
+
+              for (const [paraId, parachain] of Object.entries(network.paras)) {
+                console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
+                for (const node of parachain?.nodes) {
                   const loki_url = getLokiUrl(
                     network.namespace,
                     node.name,
@@ -152,53 +206,23 @@ export async function run(
                     networkEndtime,
                   );
                   console.log(
-                    `\t${decorators.magenta(node.name)}: ${decorators.green(
+                    `\t\t${decorators.magenta(node.name)}: ${decorators.green(
                       loki_url,
                     )}`,
                   );
                 }
-
-                for (const [paraId, parachain] of Object.entries(
-                  network.paras,
-                )) {
-                  console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                  for (const node of parachain?.nodes) {
-                    const loki_url = getLokiUrl(
-                      network.namespace,
-                      node.name,
-                      network.networkStartTime!,
-                      networkEndtime,
-                    );
-                    console.log(
-                      `\t\t${decorators.magenta(node.name)}: ${decorators.green(
-                        loki_url,
-                      )}`,
-                    );
-                  }
-                }
-
-                // logs are also collaected as artifacts
-                console.log(
-                  `\n\n\t ${decorators.yellow(
-                    "Logs are also available in the artifacts' pipeline in gitlab",
-                  )}`,
-                );
-              } else {
-                console.log(`\n\t${decorators.magenta(logsPath)}`);
               }
-              // keep pods running for 30 mins.
+
+              // logs are also collaected as artifacts
               console.log(
-                `\n\t${decorators.yellow(
-                  "One or more test failed, we will keep the namespace up for 30 more minutes",
+                `\n\n\t ${decorators.yellow(
+                  "📓 Logs are also available in the artifacts' pipeline in gitlab",
                 )}`,
               );
-              await network.upsertCronJob(30);
-              break;
-          }
-        } else {
-          // All test passed, just remove the network
-          console.log(`\n\t ${decorators.green("Deleting network")}`);
-          await network.stop();
+            } else {
+              console.log(`\n\t${decorators.magenta(logsPath)}`);
+            }
+            break;
         }
       }
     }
@@ -211,7 +235,9 @@ export async function run(
 
     if (!generator) {
       console.log(
-        `\n\t ${decorators.red("Invalid fn generator:" + assertion.parsed.fn)}`,
+        `\n ${decorators.red("Invalid fn generator:")} \t ${decorators.bright(
+          assertion.parsed.fn,
+        )}`,
       );
       process.exit(1);
     }

@@ -1,12 +1,12 @@
 # Testing
 
-The other goal of ZombieNet is provide a way to perform test/assertions agins the spawned network, using a set of `natural language expressions` that allow to make assertions based on metrics, logs and some `built-in` function that query the network using `polkadot.js`.
+The other goal of ZombieNet is to provide a way to perform test/assertions against the spawned network, using a set of `natural language expressions` that allow making assertions based on metrics, logs and some `built-in` function that query the network using `polkadot.js`.
 Those assertions should be defined in a _feature test_, and the `dsl` and format is documented in [here](./test-dsl-definition-spec.md).
 
-The following is an small example to spawn a network (using the previos `simple network definition`) and assert that:
+The following is a small example to spawn a network (using the previous `simple network definition`) and assert that:
 
 - Both `nodes` are running
-- The definded `parachain` is registered
+- The defined `parachain` is registered
 - The defined `parachain` is producing blocks and produced at least 10 within 200 seconds.
 
 ```feature
@@ -21,4 +21,4 @@ alice: parachain 100 is registered within 225 seconds
 alice: parachain 100 block height is at least 10 within 200 seconds
 ```
 
-Another examples are provided in the [examples](https://github.com/paritytech/zombienet/tree/main/examples) directory.
+Other examples are provided in the [examples](https://github.com/paritytech/zombienet/tree/main/examples) directory.

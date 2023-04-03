@@ -23,7 +23,7 @@ class TestReporter {
         {
           colSpan: 2,
           hAlign: "center",
-          content: `${decorators.green("Test Results")}`,
+          content: decorators.green("Test Results"),
         },
       ],
       colWidths: [30, 100],
@@ -57,7 +57,7 @@ class TestReporter {
         }).pushToPrint([
           [
             new Date().toLocaleString(),
-            `✅ ${test.title} ${decorators.red(`(${test.duration}ms)`)}`,
+            `✅ ${test.title} ${decorators.underscore(`(${test.duration}ms)`)}`,
           ],
         ]);
       })
@@ -67,7 +67,7 @@ class TestReporter {
         }).pushToPrint([
           [
             new Date().toLocaleString(),
-            `❌ ${test.title} ${decorators.red(`(${test.duration}ms)`)}`,
+            `❌ ${test.title} ${decorators.underscore(`(${test.duration}ms)`)}`,
           ],
         ]);
       })

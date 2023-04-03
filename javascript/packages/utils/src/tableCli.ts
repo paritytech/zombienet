@@ -54,6 +54,11 @@ interface TableCreationProps {
   wordWrap?: boolean;
 }
 
+// Module level config.
+let silent = true;
+export function setSilent(value: boolean) {
+  silent = value;
+}
 export class CreateLogTable {
   table: CreatedTable | undefined;
   colWidths: number[];
@@ -94,7 +99,7 @@ export class CreateLogTable {
   };
 
   print = () => {
-    console.log(this.table!.toString());
+    if (!silent) console.log(this.table!.toString());
   };
 
   // This function makes the process of creating a table, pushing data and printing it faster

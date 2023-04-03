@@ -1,4 +1,6 @@
 import { sleep } from "@zombienet/utils";
+import { promises as fsPromises } from "fs";
+import { readAndParseChainSpec } from "../../chain-spec";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
@@ -6,9 +8,8 @@ import {
 } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-const debug = require("debug")("zombie::native::chain-spec");
 
-const fs = require("fs").promises;
+const debug = require("debug")("zombie::native::chain-spec");
 
 export async function setupChainSpec(
   namespace: string,
@@ -22,7 +23,7 @@ export async function setupChainSpec(
   const client = getClient();
   if (chainConfig.chainSpecPath) {
     // copy file to temp to use
-    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
+    await fsPromises.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
     if (chainConfig.chainSpecCommand) {
       const { defaultImage, chainSpecCommand } = chainConfig;
@@ -41,7 +42,7 @@ export async function setupChainSpec(
 
       const podDef = await genNodeDef(namespace, node);
       await client.spawnFromDef(podDef);
-      await fs.copyFile(plainChainSpecOutputFilePath, chainFullPath);
+      await fsPromises.copyFile(plainChainSpecOutputFilePath, chainFullPath);
     }
   }
 }
@@ -90,7 +91,7 @@ export async function getChainSpecRaw(
   // let's add some extra checks here to ensure we are ok.
   let isValid = false;
   try {
-    require(chainFullPath);
+    readAndParseChainSpec(chainFullPath);
     isValid = true;
   } catch (e) {
     debug(e);

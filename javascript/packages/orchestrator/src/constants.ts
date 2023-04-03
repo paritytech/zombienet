@@ -21,7 +21,7 @@ const DEFAULT_PORTS = {
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 const DEFAULT_COMMAND = "polkadot";
-const DEFAULT_IMAGE = "parity/substrate:latest";
+const DEFAULT_IMAGE = "parity/polkadot:latest";
 const DEFAULT_ARGS: string[] = [];
 const DEFAULT_CHAIN = "rococo-local";
 const DEFAULT_BOOTNODE_PEER_ID =
@@ -36,15 +36,19 @@ const DEFAULT_CHAIN_SPEC_COMMAND =
 const DEFAULT_GENESIS_GENERATE_SUBCOMMAND = "export-genesis-state";
 const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
+const UNDYING_COLLATOR_BIN = "undying-collator";
 const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-parachain";
-const DEFAULT_COLLATOR_IMAGE = "paritypr/colander:4131-e5c7e975";
+const DEFAULT_COLLATOR_IMAGE = "parity/polkadot-parachain:latest";
 const DEFAULT_MAX_NOMINATIONS = 24; // kusama value is 24
 const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 const GENESIS_STATE_FILENAME = "genesis-state";
 const GENESIS_WASM_FILENAME = "genesis-wasm";
 
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
-const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
+const TRANSFER_CONTAINER_WAIT_LOG = "waiting for tar to finish";
+const NODE_CONTAINER_WAIT_LOG = "waiting for copy files to finish";
+const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo ${NODE_CONTAINER_WAIT_LOG}; sleep 1; done; echo copy files has finished`;
+const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "${NODE_CONTAINER_WAIT_LOG}"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
 const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 const ZOMBIE_BUCKET = "zombienet-logs";
 const WS_URI_PATTERN = "ws://{{IP}}:{{PORT}}";
@@ -95,7 +99,6 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
   "rpc-port": 2,
   "prometheus-port": 2,
   "node-key": 2,
-  "listen-addr": 2,
   d: 2,
   "base-path": 2,
 };
@@ -130,6 +133,8 @@ export {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   TMP_DONE,
+  TRANSFER_CONTAINER_WAIT_LOG,
+  NODE_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
   TRANSFER_CONTAINER_NAME,
   ZOMBIE_BUCKET,
@@ -151,4 +156,6 @@ export {
   DEV_ACCOUNTS,
   DEFAULT_BALANCE,
   ARGS_TO_REMOVE,
+  UNDYING_COLLATOR_BIN,
+  K8S_WAIT_UNTIL_SCRIPT_SUFIX,
 };

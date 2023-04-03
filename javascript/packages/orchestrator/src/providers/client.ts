@@ -3,6 +3,15 @@ import { fileMap } from "../types";
 export interface RunCommandResponse {
   exitCode: number;
   stdout: string;
+  stderr?: string;
+  errorMsg?: string;
+}
+
+export interface RunCommandOptions {
+  resourceDef?: string;
+  scoped?: boolean;
+  allowFail?: boolean;
+  mainCmd?: string;
 }
 
 export abstract class Client {
@@ -50,8 +59,7 @@ export abstract class Client {
   ): Promise<number>;
   abstract runCommand(
     args: string[],
-    resourceDef?: string,
-    scoped?: boolean,
+    opts?: RunCommandOptions,
   ): Promise<RunCommandResponse>;
   abstract runScript(
     identifier: string,
@@ -79,6 +87,10 @@ export abstract class Client {
   abstract createPodMonitor(filename: string, chain: string): Promise<void>;
   abstract setupCleaner(): Promise<any>;
   abstract isPodMonitorAvailable(): Promise<boolean>;
+
+  abstract getPauseArgs(name: string): string[];
+  abstract getResumeArgs(name: string): string[];
+  abstract restartNode(name: string, timeout: number | null): Promise<boolean>;
 }
 
 let client: Client;

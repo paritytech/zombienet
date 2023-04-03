@@ -5,3 +5,5 @@ You only need to have `podman` installed in your environment to use it and eithe
 
 **Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
 Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
+
+**There is actually an issue with versions of podman >3 preventing to run the prometheus pods. We are working on the issue.**

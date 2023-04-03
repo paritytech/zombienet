@@ -16,24 +16,25 @@
     "lint": "npm run lint --workspaces --if-present",
     "lint:write": "npm run lint:write --workspaces --if-present",
     "package": "npm run -w packages/cli package",
+    "package:linux": "npm run -w packages/cli package:linux",
+    "package:macos": "npm run -w packages/cli package:macos",
     "zombie": "node ./packages/cli/dist/cli.js"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "bin": {
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
-    "@types/chai": "^4.3.3",
-    "chai": "^4.3.4"
+    "@types/chai": "^4.3.4",
+    "chai": "^4.3.7"
   },
   "devDependencies": {
-    "@types/node": "^18.7.13",
+    "@types/node": "^18.15.11",
     "@types/tmp": "^0.2.1",
-    "prettier": "^2.7.1",
-    "prettier-plugin-organize-imports": "^3.1.1",
-    "yarn": "^1.22.10"
+    "prettier": "^2.8.7",
+    "prettier-plugin-organize-imports": "^3.2.2"
   },
   "workspaces": [
     "packages/utils",

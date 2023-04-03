@@ -1,4 +1,5 @@
 export * from "./colors";
+export * from "./error_consts";
 export * from "./fs";
 export * from "./misc";
 export * from "./net";

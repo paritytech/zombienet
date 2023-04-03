@@ -76,6 +76,7 @@ export interface NodeConfig {
   prometheus_port?: number;
   p2p_port?: number;
   db_snapshot?: string;
+  p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
 }
 
 export interface NodeGroupConfig {
@@ -172,8 +173,15 @@ export interface Node {
   rpcPort: number;
   prometheusPort: number;
   p2pPort: number;
+  p2pCertHash?: string;
   imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
   dbSnapshot?: string;
+  externalPorts?: {
+    wsPort: number;
+    rpcPort: number;
+    prometheusPort: number;
+    p2pPort: number;
+  };
 }
 
 export interface Collator {

@@ -1,6 +1,14 @@
 const reset = "\x1b[0m";
 
 const colorMap = {
+  reset: "\x1b[0m",
+  bright: "\x1b[1m",
+  dim: "\x1b[2m",
+  underscore: "\x1b[4m",
+  blink: "\x1b[5m",
+  reverse: "\x1b[7m",
+  hidden: "\x1b[8m",
+  //colors
   black: "\x1b[30m",
   red: "\x1b[31m",
   green: "\x1b[32m",
@@ -9,6 +17,7 @@ const colorMap = {
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
   white: "\x1b[37m",
+  // background colors
   bg_black: "\x1b[40m",
   bg_red: "\x1b[41m",
   bg_green: "\x1b[42m",
