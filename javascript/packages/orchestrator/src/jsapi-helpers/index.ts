@@ -44,7 +44,7 @@ async function registerParachain({
     const parachainGenesisArgs = {
       genesis_head: genesis_state,
       validation_code: wasm_data,
-      parachain: onboard_as_parachain,
+      parachain: onboardAsParachain,
     };
 
     const genesis = api.createType("ParaGenesisArgs", parachainGenesisArgs);
