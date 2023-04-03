@@ -156,9 +156,9 @@ function asyncAction(cmd: Function) {
     (async () => {
       try {
         if (cmd.name == "spawn") {
-             network = await cmd.apply(null, args);
-        }  else {
-            await cmd.apply(null, args);
+          network = await cmd.apply(null, args);
+        } else {
+          await cmd.apply(null, args);
         }
       } catch (err) {
         console.log(
