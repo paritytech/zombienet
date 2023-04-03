@@ -64,7 +64,7 @@ async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
 
   new CreateLogTable({
     colWidths: [120],
-  }).pushToPrint(chainSpec.genesis.runtime.authorMapping);
+  }).pushToPrint([chainSpec.genesis.runtime.authorMapping]);
 
   writeChainSpec(specPath, chainSpec);
 }
