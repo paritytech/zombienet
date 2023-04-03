@@ -365,9 +365,7 @@ export async function generateNetworkSpec(
             ? true
             : parachain.register_para, // register by default
         onboardAsParachain:
-          parachain.onboard_as_parachain === undefined
-            ? true
-            : parachain.onboard_as_parachain, // onboard as parachain by default
+          parachain.onboard_as_parachain || false
         collators,
       };
 
