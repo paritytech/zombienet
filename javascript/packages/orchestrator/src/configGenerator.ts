@@ -28,16 +28,16 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { decorate, PARA, whichPara } from "./paras-decorators";
+import { PARA, decorate, whichPara } from "./paras-decorators";
 import {
   ComputedNetwork,
-  envVars,
   LaunchConfig,
   Node,
   NodeConfig,
   Override,
   Parachain,
   ParachainConfig,
+  envVars,
 } from "./types";
 
 const debug = require("debug")("zombie::config-manager");
@@ -364,8 +364,7 @@ export async function generateNetworkSpec(
           parachain.register_para === undefined
             ? true
             : parachain.register_para, // register by default
-        onboardAsParachain:
-          parachain.onboard_as_parachain || false,
+        onboardAsParachain: parachain.onboard_as_parachain || false,
         collators,
       };
 

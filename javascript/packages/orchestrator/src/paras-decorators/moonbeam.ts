@@ -4,9 +4,9 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { decorators } from "@zombienet/utils";
 import {
   clearAuthorities as _clearAuthorities,
+  specHaveSessionsKeys as _specHaveSessionsKeys,
   getRuntimeConfig,
   readAndParseChainSpec,
-  specHaveSessionsKeys as _specHaveSessionsKeys,
   writeChainSpec,
 } from "../chain-spec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
