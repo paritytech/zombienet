@@ -708,7 +708,7 @@ export async function start(
           wasmPath: `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
           statePath: `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`,
           apiUrl: network.relay[0].wsUri,
-          onboard_as_parachain: parachain.onboardAsParachain,
+          onboardAsParachain: parachain.onboardAsParachain,
         });
       }
 
