@@ -24,7 +24,7 @@ async function registerParachain({
   wasmPath,
   statePath,
   apiUrl,
-  onboard_as_parachain,
+  onboardAsParachain,
   seed = "//Alice",
   finalization = false,
 }: RegisterParachainOptions) {
