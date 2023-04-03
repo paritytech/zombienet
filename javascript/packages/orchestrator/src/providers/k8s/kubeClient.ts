@@ -275,8 +275,8 @@ export class KubeClient extends Client {
         const result = await this.runCommand(args);
         const json = JSON.parse(result.stdout);
 
-        let containerStatuses = json?.containerStatuses ?? [];
-        let initContainerStatuses = json?.initContainerStatuses ?? [];
+        const containerStatuses = json?.containerStatuses ?? [];
+        const initContainerStatuses = json?.initContainerStatuses ?? [];
         for (const status of containerStatuses.concat(initContainerStatuses)) {
           if (status.name === container && state in status.state) return true;
         }
@@ -510,7 +510,7 @@ export class KubeClient extends Client {
   }
 
   async staticSetup(settings: any) {
-    let storageFiles: string[] = (await this.runningOnMinikube())
+    const storageFiles: string[] = (await this.runningOnMinikube())
       ? [
           "node-data-tmp-storage-class-minikube.yaml",
           "node-data-persistent-storage-class-minikube.yaml",
@@ -572,7 +572,7 @@ export class KubeClient extends Client {
   async checkFileServer(): Promise<boolean> {
     const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
     debug("checking fileserver", args);
-    let result = await this.runCommand(args);
+    const result = await this.runCommand(args);
     debug("result", result);
     return result.stdout.includes("Welcome to nginx");
   }
@@ -585,7 +585,7 @@ export class KubeClient extends Client {
     await this.cronJobCleanerSetup();
     await this.upsertCronJob();
 
-    let cronInterval = setInterval(
+    const cronInterval = setInterval(
       async () => await this.upsertCronJob(),
       8 * 60 * 1000,
     );
@@ -607,7 +607,7 @@ export class KubeClient extends Client {
       const now = new Date();
       if (this.podMonitorAvailable) {
         const [hr, min] = addMinutes(minutes, now);
-        let schedule = `${min} ${hr} * * *`;
+        const schedule = `${min} ${hr} * * *`;
         await this.updateResource(
           "job-delete-podmonitor.yaml",
           this.namespace,
@@ -845,7 +845,7 @@ export class KubeClient extends Client {
     fileName: string,
     fileHash: string,
   ) {
-    let logTable = new CreateLogTable({
+    const logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
     logTable.pushTo([

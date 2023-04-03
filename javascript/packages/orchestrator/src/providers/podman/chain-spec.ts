@@ -102,7 +102,6 @@ export async function getChainSpecRaw(
   // let's add some extra checks here to ensure we are ok.
   let isValid = false;
   try {
-    let content = require(chainFullPath);
     const chainSpecContentTest = readFileSync(chainFullPath);
     JSON.parse(chainSpecContentTest.toString());
     isValid = true;

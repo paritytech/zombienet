@@ -172,7 +172,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (!this.apiInstance) await this.connectApi();
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          let blockNumber = await paraGetBlockHeight(
+          const blockNumber = await paraGetBlockHeight(
             this.apiInstance as ApiPromise,
             parachainId,
           );
@@ -371,7 +371,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const client = getClient();
       const getValue = async (): Promise<number> => {
         await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
-        let logs = await client.getNodeLogs(this.name, undefined, true);
+        const logs = await client.getNodeLogs(this.name, undefined, true);
 
         for (let line of logs.split("\n")) {
           if (client.providerName !== "native") {

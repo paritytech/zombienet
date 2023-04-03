@@ -33,7 +33,7 @@ class TestReporter {
       colWidths: [30, 100],
     });
 
-    let announcement = new CreateLogTable({
+    const announcement = new CreateLogTable({
       colWidths: [120],
     });
     announcement.pushToPrint([

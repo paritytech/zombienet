@@ -62,10 +62,10 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
       cliProgress.Presets.shades_grey,
     );
 
-    for (let binary of binaries) {
+    for (const binary of binaries) {
       promises.push(
         new Promise<void>(async (resolve, reject) => {
-          let result = options[binary];
+          const result = options[binary];
           if (!result) {
             console.log("options", options, "binary", binary);
             throw new Error("Binary is not defined");
@@ -135,7 +135,6 @@ const latestPolkadotReleaseURL = async (
     );
 
     let obj: any;
-    let tag_name;
 
     const allReleases = await releases.json();
     const release = allReleases.find((r: any) => {
@@ -143,7 +142,7 @@ const latestPolkadotReleaseURL = async (
       return Boolean(obj);
     });
 
-    tag_name = release.tag_name;
+    const tag_name = release.tag_name;
 
     if (!tag_name) {
       throw new Error(
@@ -205,7 +204,6 @@ async function convertInput(filePath: string) {
   const { relaychain, parachains, simpleParachains, hrmpChannels, types } =
     convertedJson;
 
-  let jsonOutput: PolkadotLaunchConfig;
   const nodes: NodeConfig[] = [];
   const paras: ParachainConfig[] = [];
   let collators: NodeConfig[] = [];
@@ -256,7 +254,7 @@ async function convertInput(filePath: string) {
     });
   }
 
-  jsonOutput = {
+  const jsonOutput: PolkadotLaunchConfig = {
     relaychain: {
       default_image: "docker.io/paritypr/polkadot-debug:master",
       default_command: "polkadot",
@@ -428,7 +426,7 @@ program
 async function spawn(
   configFile: string,
   credsFile: string | undefined,
-  _opts: any,
+  _opts?: any,
 ) {
   const opts = program.opts();
   const dir = opts.dir || "";
@@ -509,12 +507,12 @@ async function spawn(
 async function test(
   testFile: string,
   runningNetworkSpec: string | undefined,
-  _opts: any,
+  _opts?: any,
 ) {
   const opts = program.opts();
   const dir = opts.dir || "";
 
-  let extension = testFile.slice(testFile.lastIndexOf(".") + 1);
+  const extension = testFile.slice(testFile.lastIndexOf(".") + 1);
 
   if (extension !== "zndsl") {
     console.log(

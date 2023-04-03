@@ -15,7 +15,7 @@ export async function findPatternInSystemEventSubscription(
 
     api.query.system.events((events: any) => {
       let eventString: string = "";
-      let matchedEvent = events.find((record: any) => {
+      const matchedEvent = events.find((record: any) => {
         eventString = "";
         // extract the phase, event and the event types
         const { event, phase } = record;

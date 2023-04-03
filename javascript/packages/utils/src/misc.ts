@@ -36,7 +36,7 @@ export function getSha256(input: string): string {
 export function addMinutes(howMany: number, baseDate?: Date): [number, number] {
   const baseTs = baseDate ? baseDate.getTime() : new Date().getTime();
 
-  let targetTs = baseTs + howMany * 60 * 1000;
+  const targetTs = baseTs + howMany * 60 * 1000;
   const targetDate = new Date(targetTs);
   return [targetDate.getUTCHours(), targetDate.getUTCMinutes()];
 }
@@ -121,11 +121,11 @@ export function getLokiUrl(
 }
 
 export function getRandom(arr: string[], n: number) {
-  let result = new Array(n),
-    len = arr.length,
+  let len = arr.length;
+  const result = new Array(n),
     taken = new Array(len);
   while (n--) {
-    let x = Math.floor(Math.random() * len);
+    const x = Math.floor(Math.random() * len);
     result[n] = arr[x in taken ? taken[x] : x];
     taken[x] = --len in taken ? taken[len] : len;
   }

@@ -430,7 +430,7 @@ async function make_main_container(
     computedCommand = await genCmd(nodeSetup);
   }
 
-  let containerDef = {
+  const containerDef = {
     image: nodeSetup.image,
     name: nodeSetup.name,
     imagePullPolicy: "Always",
@@ -463,7 +463,7 @@ export async function createTempNodeDef(
   chain: string,
   fullCommand: string,
 ) {
-  let node: Node = {
+  const node: Node = {
     name: getUniqueName("temp"),
     image,
     fullCommand: fullCommand,

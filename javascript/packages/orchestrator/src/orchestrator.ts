@@ -107,7 +107,7 @@ export async function start(
   setSilent(opts.silent);
   let network: Network | undefined;
   let cronInterval = undefined;
-  let multiAddressByNode: MultiAddressByNode = {};
+  const multiAddressByNode: MultiAddressByNode = {};
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
@@ -421,7 +421,7 @@ export async function start(
       },
     ];
 
-    let bootnodes: string[] = [];
+    const bootnodes: string[] = [];
 
     if (launchConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
@@ -469,7 +469,7 @@ export async function start(
         ? genBootnodeDef(namespace, node)
         : genNodeDef(namespace, node));
 
-      let finalFilesToCopyToNode = [...filesToCopyToNodes];
+      const finalFilesToCopyToNode = [...filesToCopyToNodes];
 
       // add spec file if is provided
       if (parachainSpecPath) {
@@ -595,7 +595,7 @@ export async function start(
       }
 
       // Display info about the current node
-      let logTable = new CreateLogTable({
+      const logTable = new CreateLogTable({
         colWidths: [20, 100],
         doubleBorder: true,
       });

@@ -31,7 +31,7 @@ async function registerParachain(
 
     const keyring = new Keyring({ type: "sr25519" });
     const sudo = keyring.addFromUri(seed);
-    let api: ApiPromise = await connect(apiUrl);
+    const api: ApiPromise = await connect(apiUrl);
 
     let nonce = (
       (await api.query.system.account(sudo.address)) as any

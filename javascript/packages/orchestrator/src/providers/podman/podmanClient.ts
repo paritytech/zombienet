@@ -88,7 +88,7 @@ export class PodmanClient extends Client {
 
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Podman don't have the namespace concept yet but we use a isolated network
-    let args = ["network", "create", this.namespace];
+    const args = ["network", "create", this.namespace];
     await this.runCommand(args, { scoped: false });
     return;
   }

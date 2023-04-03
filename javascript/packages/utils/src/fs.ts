@@ -72,10 +72,12 @@ export function getCredsFilePath(credsFile: string): string | undefined {
   if (fs.existsSync(credsFile)) return credsFile;
 
   const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
-  let credsFileExistInPath: string | undefined = possiblePaths.find((path) => {
-    const t = `${path}/${credsFile}`;
-    return fs.existsSync(t);
-  });
+  const credsFileExistInPath: string | undefined = possiblePaths.find(
+    (path) => {
+      const t = `${path}/${credsFile}`;
+      return fs.existsSync(t);
+    },
+  );
   if (credsFileExistInPath) return `${credsFileExistInPath}/${credsFile}`;
 }
 
@@ -95,9 +97,9 @@ const parseConfigFile = (
   filepath: string,
   configBasePath: string,
 ): LaunchConfig => {
-  const jsonChar = /[\{]/;
-  const tomlChar = /[\[]/;
-  const yamlChar = /[A-Za-z\-\#]/;
+  const jsonChar = /[{]/;
+  const tomlChar = /[[]/;
+  const yamlChar = /[A-Za-z\-#]/;
 
   const fileType = filepath?.split(".")?.pop();
   if (!fileType) {
@@ -108,7 +110,7 @@ const parseConfigFile = (
   const data = fs.readFileSync(filepath, "utf-8");
   const lines = data.split(/\r?\n/);
   let firstChar;
-  for (let line of lines) {
+  for (const line of lines) {
     // Avoid any lines with comments or empty lines
     if (!line || ["#", "/", " "].includes(line[0])) {
       continue;
@@ -161,7 +163,7 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
   const content = env.renderString(temmplateContent, process.env);
 
   //  check if we have missing replacements
-  let replacements = getReplacementInText(content);
+  const replacements = getReplacementInText(content);
   if (replacements.length > 0) {
     throw new Error(`Environment not set for : ${replacements.join(",")}`);
   }

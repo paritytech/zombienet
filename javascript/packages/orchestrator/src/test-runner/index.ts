@@ -1,4 +1,3 @@
-const chai = require("chai");
 import {
   decorators,
   getLokiUrl,
@@ -33,20 +32,20 @@ export async function run(
   testDef: TestDefinition,
   provider: string,
   inCI: boolean = false,
-  concurrency: number = 1,
-  silent: boolean = false,
+  concurrency = 1,
+  silent = false,
   runningNetworkSpecPath: string | undefined,
   dir: string | undefined,
 ) {
   setSilent(silent);
   let network: Network;
-  let backchannelMap: BackchannelMap = {};
+  const backchannelMap: BackchannelMap = {};
 
   let suiteName: string = testName;
   if (testDef.description) suiteName += `( ${testDef.description} )`;
 
   // read network file
-  let networkConfigFilePath = fs.existsSync(testDef.network)
+  const networkConfigFilePath = fs.existsSync(testDef.network)
     ? testDef.network
     : path.resolve(configBasePath, testDef.network);
 
@@ -58,7 +57,7 @@ export async function run(
   else config.settings.provider = provider;
 
   // find creds file
-  let credsFile = inCI ? "config" : testDef.creds;
+  const credsFile = inCI ? "config" : testDef.creds;
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {
@@ -68,7 +67,7 @@ export async function run(
       `${process.env.HOME}/.kube`,
       "/etc/zombie-net",
     ];
-    let credsFileExistInPath: string | undefined = possiblePaths.find(
+    const credsFileExistInPath: string | undefined = possiblePaths.find(
       (path) => {
         const t = `${path}/${credsFile}`;
         return fs.existsSync(t);
@@ -230,7 +229,7 @@ export async function run(
   });
 
   for (const assertion of testDef.assertions) {
-    let generator = fns[assertion.parsed.fn as keyof Fns];
+    const generator = fns[assertion.parsed.fn as keyof Fns];
     debug(generator);
 
     if (!generator) {
@@ -242,7 +241,7 @@ export async function run(
       process.exit(1);
     }
 
-    let testFn = generator(assertion.parsed.args);
+    const testFn = generator(assertion.parsed.args);
     const test = new Test(
       assertion.original_line,
       async () => await testFn(network, backchannelMap, configBasePath),

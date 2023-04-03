@@ -120,7 +120,7 @@ export class NativeClient extends Client {
 
   async destroyNamespace(): Promise<void> {
     // get pod names
-    let args = ["bash", "-c"];
+    const args = ["bash", "-c"];
 
     const memo: string[] = [];
     const pids: string[] = Object.keys(this.processMap).reduce((memo, key) => {
@@ -384,7 +384,7 @@ export class NativeClient extends Client {
     if (result.exitCode > 0) {
       const lines = await this.getNodeLogs(nodeName);
 
-      let logTable = new CreateLogTable({
+      const logTable = new CreateLogTable({
         colWidths: [20, 100],
       });
 

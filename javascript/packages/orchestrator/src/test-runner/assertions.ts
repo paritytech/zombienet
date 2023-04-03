@@ -389,7 +389,7 @@ const ParaRuntimeUpgrade = ({
     backchannelMap: BackchannelMap,
     configBasePath: string,
   ) => {
-    let node = network.node(node_name!);
+    const node = network.node(node_name!);
     let api: ApiPromise = await connect(node.wsUri);
     let hash;
 

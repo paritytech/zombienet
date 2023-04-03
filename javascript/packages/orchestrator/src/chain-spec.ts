@@ -79,7 +79,7 @@ export function clearAuthorities(specPath: string) {
   }
 
   writeChainSpec(specPath, chainSpec);
-  let logTable = new CreateLogTable({
+  const logTable = new CreateLogTable({
     colWidths: [120],
   });
   logTable.pushToPrint([
@@ -150,7 +150,7 @@ export async function addAuthority(
 
   const { sr_stash } = node.accounts;
 
-  let keys = getAuthorityKeys(chainSpec);
+  const keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
@@ -237,7 +237,7 @@ export async function addAuraAuthority(
 
   const chainSpec = readAndParseChainSpec(specPath);
 
-  let keys = getAuthorityKeys(chainSpec, "aura");
+  const keys = getAuthorityKeys(chainSpec, "aura");
   if (!keys) return;
 
   keys.push(sr_account.address);
@@ -303,7 +303,7 @@ export async function generateNominators(
     const balanceToAdd = stakingBond! + 1;
     runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
     // random nominations
-    let count = crypto.randomInt(maxForRandom) % maxNominations;
+    const count = crypto.randomInt(maxForRandom) % maxNominations;
     const nominations = getRandom(validators, count || count + 1);
     // push to stakers
     runtimeConfig.staking.stakers.push([
@@ -345,7 +345,7 @@ export async function addParachainToGenesis(
     paras = runtimeConfig.parachainsParas.paras;
   }
   if (paras) {
-    let new_para = [
+    const new_para = [
       parseInt(para_id),
       [readDataFile(head), readDataFile(wasm), parachain],
     ];
@@ -379,7 +379,7 @@ export async function changeGenesisConfig(specPath: string, updates: any) {
   ]);
 
   if (chainSpec.genesis) {
-    let config = chainSpec.genesis;
+    const config = chainSpec.genesis;
     findAndReplaceConfig(updates, config);
 
     writeChainSpec(specPath, chainSpec);
@@ -431,7 +431,7 @@ export async function addHrmpChannelsToGenesis(
   const chainSpec = readAndParseChainSpec(specPath);
 
   for (const h of hrmp_channels) {
-    let newHrmpChannel = [
+    const newHrmpChannel = [
       h.sender,
       h.recipient,
       h.max_capacity,
@@ -521,7 +521,7 @@ export function getRuntimeConfig(chainSpec: any) {
 }
 
 export function readAndParseChainSpec(specPath: string) {
-  let rawdata = fs.readFileSync(specPath);
+  const rawdata = fs.readFileSync(specPath);
   let chainSpec;
   try {
     chainSpec = JSONbig.parse(rawdata);
@@ -536,7 +536,7 @@ export function readAndParseChainSpec(specPath: string) {
 
 export function writeChainSpec(specPath: string, chainSpec: any) {
   try {
-    let data = JSONbig.stringify(chainSpec, null, 2);
+    const data = JSONbig.stringify(chainSpec, null, 2);
     fs.writeFileSync(specPath, convertExponentials(data));
   } catch {
     console.error(

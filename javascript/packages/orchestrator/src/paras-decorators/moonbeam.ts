@@ -33,7 +33,7 @@ const KNOWN_MOONBEAM_KEYS: { [name: string]: string } = {
 };
 
 function specHaveSessionsKeys(chainSpec: ChainSpec) {
-  let keys = _specHaveSessionsKeys(chainSpec);
+  const keys = _specHaveSessionsKeys(chainSpec);
 
   return keys || getRuntimeConfig(chainSpec)?.authorMapping;
 }
@@ -47,7 +47,7 @@ async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
 
   const { sr_account } = node.accounts;
 
-  let keys = getAuthorityKeys(chainSpec);
+  const keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
@@ -90,7 +90,7 @@ async function clearAuthorities(specPath: string) {
 }
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
-  let keys = await _generateKeyForNode(nodeName);
+  const keys = await _generateKeyForNode(nodeName);
 
   await cryptoWaitReady();
 

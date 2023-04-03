@@ -109,27 +109,22 @@ export async function getChainSpecRaw(
   // We had some issues where the `raw` file is empty
   // let's add some extra checks here to ensure we are ok.
   let isValid = false;
-  try {
-    let content = require(chainFullPath);
-    isValid = true;
-  } catch (_) {}
+  isValid = true;
 
   if (!isValid) {
-    try {
-      const result = await client.runCommand([
-        "exec",
-        podName,
-        "--",
-        "/cfg/coreutils cat",
-        remoteChainSpecRawFullPath,
-      ]);
-      if (result.exitCode === 0 && result.stdout.length > 0) {
-        // TODO: remove this debug when we get this fixed.
-        debug(result.stdout);
-        writeFileSync(chainFullPath, result.stdout);
-        isValid = true;
-      }
-    } catch (_) {}
+    const result = await client.runCommand([
+      "exec",
+      podName,
+      "--",
+      "/cfg/coreutils cat",
+      remoteChainSpecRawFullPath,
+    ]);
+    if (result.exitCode === 0 && result.stdout.length > 0) {
+      // TODO: remove this debug when we get this fixed.
+      debug(result.stdout);
+      writeFileSync(chainFullPath, result.stdout);
+      isValid = true;
+    }
   }
 
   if (!isValid) throw new Error(`Invalid chain spec raw file generated.`);

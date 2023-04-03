@@ -103,7 +103,7 @@ export async function genCumulusCollatorCmd(
   ];
 
   const chainParts = chain.split("_");
-  let relayChain =
+  const relayChain =
     chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
 
   if (validator) fullCmd.push(...["--collator"]);
@@ -117,7 +117,7 @@ export async function genCumulusCollatorCmd(
   if (nodeSetup.args.length > 0) {
     let argsFullNode = null;
     let argsParachain = null;
-    let splitIndex = nodeSetup.args.indexOf("--");
+    const splitIndex = nodeSetup.args.indexOf("--");
 
     if (splitIndex < 0) {
       argsParachain = nodeSetup.args;
@@ -229,23 +229,23 @@ export async function genCmd(
   dataPath: string = "/data",
   useWrapper = true,
 ): Promise<string[]> {
-  let {
+  const {
     name,
     key,
     chain,
     commandWithArgs,
     fullCommand,
-    command,
     telemetry,
     telemetryUrl,
     prometheus,
     validator,
     bootnodes,
-    args,
     zombieRole,
     jaegerUrl,
     parachainId,
   } = nodeSetup;
+
+  let { command, args } = nodeSetup;
 
   // fullCommand is NOT decorated by the `zombie` wrapper
   // and is used internally in init containers.
@@ -298,7 +298,7 @@ export async function genCmd(
 
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
-    let listenAddrParts = args[listenIndex + 1].split("/");
+    const listenAddrParts = args[listenIndex + 1].split("/");
     listenAddrParts[4] = `${nodeSetup.p2pPort}`;
     const listenAddr = listenAddrParts.join("/");
     args[listenIndex + 1] = listenAddr;

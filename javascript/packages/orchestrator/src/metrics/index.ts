@@ -46,7 +46,7 @@ export async function getHistogramBuckets(
   debug(`fetching: ${metricUri}`);
   const response = await axios.get(metricUri, { timeout: 2000 });
   let previousBucketValue = 0;
-  let buckets: any = {};
+  const buckets: any = {};
 
   const resolvedMetricName = metricName.includes("_bucket")
     ? metricName
@@ -108,7 +108,7 @@ export function getProcessStartTimeKey() {
 }
 
 function _extractMetrics(text: string): Metrics {
-  let rawMetrics: Metrics = {};
+  const rawMetrics: Metrics = {};
   rawMetrics["_raw"] = {};
   for (const line of text.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
@@ -121,8 +121,8 @@ function _extractMetrics(text: string): Metrics {
     const ns = parts[0];
     const rawMetricNameWithOutNs = parts.slice(1).join("_");
 
-    let labelStrings = [];
-    let labelStringsWithOutChain = [];
+    const labelStrings = [];
+    const labelStringsWithOutChain = [];
     for (const [k, v] of parsedLine.labels.entries()) {
       labelStrings.push(`${k}="${v}"`);
       if (k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);
