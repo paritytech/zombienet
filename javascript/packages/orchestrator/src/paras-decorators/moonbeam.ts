@@ -1,7 +1,7 @@
 import { Keyring } from "@polkadot/api";
 import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { decorators } from "@zombienet/utils";
+import { CreateLogTable, decorators } from "@zombienet/utils";
 import {
   clearAuthorities as _clearAuthorities,
   specHaveSessionsKeys as _specHaveSessionsKeys,
@@ -52,13 +52,20 @@ async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
 
   keys.push(key);
 
-  console.log(
-    `\t👤 Added Genesis Authority ${decorators.green(
-      node.name,
-    )} - ${decorators.magenta(sr_account.address)}`,
-  );
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added Genesis Authority"),
+      decorators.green(node.name),
+      decorators.magenta(sr_account.address),
+    ],
+  ]);
 
-  console.log(chainSpec.genesis.runtime.authorMapping);
+  new CreateLogTable({
+    colWidths: [120],
+  }).pushToPrint(chainSpec.genesis.runtime.authorMapping);
+
   writeChainSpec(specPath, chainSpec);
 }
 
