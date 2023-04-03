@@ -64,7 +64,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
 
     for (const binary of binaries) {
       promises.push(
-        new Promise<void>(async (resolve, reject) => {
+        new Promise<void>(async (resolve) => {
           const result = options[binary];
           if (!result) {
             console.log("options", options, "binary", binary);
@@ -426,11 +426,7 @@ program
  *  in the current directory or in $HOME/.kube/ if a filename is passed.
  * @param _opts
  */
-async function spawn(
-  configFile: string,
-  credsFile: string | undefined,
-  _opts?: any,
-) {
+async function spawn(configFile: string, credsFile: string | undefined) {
   const opts = program.opts();
   const dir = opts.dir || "";
   const force = opts.force || false;
@@ -507,11 +503,7 @@ async function spawn(
  * @param runningNetworkSpec
  * @param _opts
  */
-async function test(
-  testFile: string,
-  runningNetworkSpec: string | undefined,
-  _opts?: any,
-) {
+async function test(testFile: string, runningNetworkSpec: string | undefined) {
   const opts = program.opts();
   const dir = opts.dir || "";
 

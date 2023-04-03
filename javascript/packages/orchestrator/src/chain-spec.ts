@@ -221,7 +221,7 @@ export async function addCollatorSelection(specPath: string, node: Node) {
   writeChainSpec(specPath, chainSpec);
 }
 
-export async function addParaCustom(specPath: string, node: Node) {
+export async function addParaCustom() {
   /// noop
 }
 

@@ -84,7 +84,7 @@ export class CreateLogTable {
         const times = parseInt((inp.length / split).toString());
         if (times > 1) {
           const some = inp;
-          for (const i = 0; i <= times; i++) {
+          for (let i = 0; i <= times; i++) {
             if (i === 0) {
               inp = some.substring(0, split);
             } else {

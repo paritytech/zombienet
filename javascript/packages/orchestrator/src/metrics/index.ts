@@ -34,9 +34,8 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
         `fetching metrics from: ${metricUri}`,
       )}`,
     );
-  } finally {
-    return metrics;
   }
+  return metrics;
 }
 
 export async function getHistogramBuckets(
@@ -96,6 +95,7 @@ export function getMetricName(metricName: string): string {
     case "peers count":
     case "peers":
       metricNameTouse = metricKeysMapping.PeersCount;
+      break;
     default:
       break;
   }

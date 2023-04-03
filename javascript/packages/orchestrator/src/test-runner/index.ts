@@ -197,7 +197,7 @@ export async function run(
 
               for (const [paraId, parachain] of Object.entries(network.paras)) {
                 console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                for (const node of parachain?.nodes) {
+                for (const node of parachain.nodes) {
                   const loki_url = getLokiUrl(
                     network.namespace,
                     node.name,

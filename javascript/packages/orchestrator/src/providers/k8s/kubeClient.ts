@@ -573,7 +573,9 @@ export class KubeClient extends Client {
     debug("result", result);
     return result.stdout.includes("Welcome to nginx");
   }
-  async spawnBackchannel() {}
+  async spawnBackchannel() {
+    console.log("empty function");
+  }
 
   async setupCleaner(): Promise<NodeJS.Timer> {
     this.podMonitorAvailable = await this.isPodMonitorAvailable();
@@ -801,9 +803,8 @@ export class KubeClient extends Client {
       console.log(
         `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
       );
-    } finally {
-      return available;
     }
+    return available;
   }
 
   getPauseArgs(name: string): string[] {

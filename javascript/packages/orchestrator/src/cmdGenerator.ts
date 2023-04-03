@@ -72,8 +72,6 @@ export async function genCumulusCollatorCmd(
     "--prometheus-port": true,
   };
 
-  const colIndex = getCollatorIndex(parachainId!);
-
   let fullCmd: string[] = [
     nodeSetup.command || DEFAULT_COMMAND,
     "--name",

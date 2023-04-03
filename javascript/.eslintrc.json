@@ -9,7 +9,7 @@
   "settings": {
     "import/resolver": {
       "typescript": {
-        "project": ["./tsconfig.json", "javascript/*/tsconfig.json"]
+        "project": ["./tsconfig.json", "packages/*/tsconfig.json"]
       }
     }
   },
@@ -27,8 +27,14 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-ts-ignore": "off",
+    "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-var-requires": "off",
+    "no-case-declarations": "off",
+    "no-prototype-builtins": "off",
     "semi": [2, "always"],
     "no-shadow": "off",
     "no-console": "off",

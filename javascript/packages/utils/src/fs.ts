@@ -84,7 +84,7 @@ export function getCredsFilePath(credsFile: string): string | undefined {
 function getReplacementInText(content: string): string[] {
   const replacements: string[] = [];
   // allow to replace with env vars, to make more dynamic usage of ci.
-  const replacementRegex = /{{([A-Za-z-_\.]+)}}/gim;
+  const replacementRegex = /{{([A-Za-z-_.]+)}}/gim;
   for (const match of content.matchAll(replacementRegex)) {
     replacements.push(match[1]);
   }
