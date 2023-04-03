@@ -1,5 +1,5 @@
 import { getRandomPort, makeDir } from "@zombienet/utils";
-import { genCmd, genCumulusCollatorCmd } from "../../cmdGenerator";
+import { genCmd } from "../../cmdGenerator";
 import { getUniqueName } from "../../configGenerator";
 import {
   P2P_PORT,
@@ -10,6 +10,7 @@ import {
 import { Network } from "../../network";
 import { Node, envVars } from "../../types";
 import { getClient } from "../client";
+import { NodeResource } from "./resources";
 
 interface processEnvironment {
   [key: string]: string;
@@ -60,58 +61,9 @@ export async function genNodeDef(
   nodeSetup: Node,
 ): Promise<any> {
   const client = getClient();
-  const name = nodeSetup.name;
-  const { rpcPort, wsPort, prometheusPort, p2pPort } = nodeSetup;
-  const ports = await getPorts(rpcPort, wsPort, prometheusPort, p2pPort);
-  const cfgPath = `${client.tmpDir}/${name}/cfg`;
-  await makeDir(cfgPath, true);
+  const nodeResource = new NodeResource(client, namespace, nodeSetup);
 
-  const dataPath = `${client.tmpDir}/${name}/data`;
-  await makeDir(dataPath, true);
-
-  const relayDataPath = `${client.tmpDir}/${name}/relay-data`;
-  await makeDir(relayDataPath, true);
-
-  let computedCommand;
-  if (nodeSetup.zombieRole === "cumulus-collator") {
-    computedCommand = await genCumulusCollatorCmd(
-      nodeSetup,
-      cfgPath,
-      dataPath,
-      relayDataPath,
-      false,
-    );
-  } else {
-    computedCommand = await genCmd(nodeSetup, cfgPath, dataPath, false);
-  }
-
-  return {
-    metadata: {
-      name: nodeSetup.name,
-      namespace: namespace,
-      labels: {
-        "zombie-role": nodeSetup.zombieRole
-          ? nodeSetup.zombieRole
-          : nodeSetup.validator
-          ? "authority"
-          : "full-node",
-        app: "zombienet",
-        "zombie-ns": namespace,
-        name: namespace,
-        instance: nodeSetup.name,
-      },
-    },
-    spec: {
-      cfgPath,
-      dataPath,
-      ports,
-      command: computedCommand,
-      env: nodeSetup.env.reduce((memo, item: envVars) => {
-        memo[item.name] = item.value;
-        return memo;
-      }, {} as processEnvironment),
-    },
-  };
+  return nodeResource.generateSpec();
 }
 
 async function getPorts(
