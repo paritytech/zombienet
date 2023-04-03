@@ -51,7 +51,7 @@ export class PodmanClient extends Client {
   debug: boolean;
   timeout: number;
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
@@ -258,7 +258,7 @@ export class PodmanClient extends Client {
   async getNodeInfo(
     podName: string,
     port?: number,
-    externalView: boolean = false,
+    externalView = false,
   ): Promise<[string, number]> {
     let hostIp, hostPort;
     if (externalView) {
@@ -468,10 +468,7 @@ export class PodmanClient extends Client {
     if (waitReady) await this.wait_pod_ready(name);
   }
 
-  async wait_pod_ready(
-    podName: string,
-    allowDegraded: boolean = true,
-  ): Promise<void> {
+  async wait_pod_ready(podName: string, allowDegraded = true): Promise<void> {
     // loop until ready
     let t = this.timeout;
     const args = ["pod", "ps", "-f", `name=${podName}`, "--format", "json"];

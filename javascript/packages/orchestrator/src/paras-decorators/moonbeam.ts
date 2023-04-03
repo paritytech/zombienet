@@ -109,10 +109,7 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
   return keys;
 }
 
-export function getNodeKey(
-  node: Node,
-  useStash: boolean = true,
-): GenesisNodeKey {
+export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
   const { sr_account, eth_account } = node.accounts;
 
   return [sr_account.address, eth_account.address];

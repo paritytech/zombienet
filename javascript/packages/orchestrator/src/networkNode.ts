@@ -164,7 +164,7 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredValue: number,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
-    let value: number = 0;
+    let value = 0;
     try {
       const getValue = async () => {
         while (desiredValue > value) {
@@ -550,7 +550,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   _getMetric(
     metricName: string,
-    metricShouldExists: boolean = true,
+    metricShouldExists = true,
   ): number | undefined {
     if (!this.cachedMetrics) throw new Error("Metrics not availables");
 

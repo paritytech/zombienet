@@ -49,9 +49,9 @@ function parseCmdWithArguments(
 
 export async function genCumulusCollatorCmd(
   nodeSetup: Node,
-  cfgPath: string = "/cfg",
-  dataPath: string = "/data",
-  relayDataPath: string = "/relay-data",
+  cfgPath = "/cfg",
+  dataPath = "/data",
+  relayDataPath = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator, commandWithArgs } =
@@ -225,8 +225,8 @@ export async function genCumulusCollatorCmd(
 
 export async function genCmd(
   nodeSetup: Node,
-  cfgPath: string = "/cfg",
-  dataPath: string = "/data",
+  cfgPath = "/cfg",
+  dataPath = "/data",
   useWrapper = true,
 ): Promise<string[]> {
   const {

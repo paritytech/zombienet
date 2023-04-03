@@ -7,7 +7,7 @@ export async function generateBootnodeString(
   args: string[],
   ip: string,
   port: number,
-  useWs: boolean = true,
+  useWs = true,
   certhash?: string,
 ): Promise<string> {
   let multiaddress;

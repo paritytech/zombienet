@@ -31,7 +31,7 @@ export async function run(
   testName: string,
   testDef: TestDefinition,
   provider: string,
-  inCI: boolean = false,
+  inCI = false,
   concurrency = 1,
   silent = false,
   runningNetworkSpecPath: string | undefined,

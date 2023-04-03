@@ -31,6 +31,7 @@
     "@typescript-eslint/no-explicit-any": "off",
     "semi": [2, "always"],
     "no-shadow": "off",
-    "no-console": "off"
+    "no-console": "off",
+    "no-async-promise-executor": "off"
   }
 }

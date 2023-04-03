@@ -113,10 +113,7 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   writeChainSpec(specPath, chainSpec);
 }
 
-export function getNodeKey(
-  node: Node,
-  useStash: boolean = true,
-): GenesisNodeKey {
+export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
   const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
 
   const address = useStash ? sr_stash.address : sr_account.address;
@@ -331,7 +328,7 @@ export async function addParachainToGenesis(
   para_id: string,
   head: string,
   wasm: string,
-  parachain: boolean = true,
+  parachain = true,
 ) {
   const chainSpec = readAndParseChainSpec(specPath);
   const runtimeConfig = getRuntimeConfig(chainSpec);

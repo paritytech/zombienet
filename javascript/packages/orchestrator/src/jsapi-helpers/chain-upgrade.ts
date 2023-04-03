@@ -79,36 +79,32 @@ export async function validateRuntimeCode(
   hash: string,
   timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
 ): Promise<boolean> {
-  try {
-    const validate = async (hash: string) => {
-      let done;
-      while (!done) {
-        const currentHash = await api.query.paras.currentCodeHash(paraId);
-        console.log(`parachain ${paraId} current code hash : ${currentHash}`);
-        if (hash === currentHash.toString()) break;
-        // wait 2 secs between checks
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
+  const validate = async (hash: string) => {
+    let done;
+    while (!done) {
+      const currentHash = await api.query.paras.currentCodeHash(paraId);
+      console.log(`parachain ${paraId} current code hash : ${currentHash}`);
+      if (hash === currentHash.toString()) break;
+      // wait 2 secs between checks
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
 
-      return true;
-    };
-    const resp: any = await Promise.race([
-      validate(hash),
-      new Promise((resolve) =>
-        setTimeout(() => {
-          const err = new Error(
-            `Timeout(${timeout}), "validating the hash of the runtime upgrade`,
-          );
-          return resolve(err);
-        }, timeout * 1000),
-      ),
-    ]);
-    if (resp instanceof Error) throw resp;
+    return true;
+  };
+  const resp: any = await Promise.race([
+    validate(hash),
+    new Promise((resolve) =>
+      setTimeout(() => {
+        const err = new Error(
+          `Timeout(${timeout}), "validating the hash of the runtime upgrade`,
+        );
+        return resolve(err);
+      }, timeout * 1000),
+    ),
+  ]);
+  if (resp instanceof Error) throw resp;
 
-    return resp;
-  } catch (err: any) {
-    throw err;
-  }
+  return resp;
 }
 
 async function performChainUpgrade(api: ApiPromise, code: string) {
@@ -145,7 +141,8 @@ async function performChainUpgrade(api: ApiPromise, code: string) {
 
 /// Internal
 function hexToBytes(hex: any) {
-  for (var bytes = [], c = 0; c < hex.length; c += 2)
+  const bytes = [];
+  for (let c = 0; c < hex.length; c += 2)
     bytes.push(parseInt(hex.substr(c, 2), 16));
   return bytes;
 }

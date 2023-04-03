@@ -44,7 +44,7 @@ export class NativeClient extends Client {
   debug: boolean;
   timeout: number;
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;

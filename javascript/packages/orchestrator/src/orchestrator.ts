@@ -1,6 +1,9 @@
 import {
-  askQuestion,
   CreateLogTable,
+  PARACHAIN_NOT_FOUND,
+  POLKADOT_NOT_FOUND,
+  POLKADOT_NOT_FOUND_DESCRIPTION,
+  askQuestion,
   decorators,
   filterConsole,
   generateNamespace,
@@ -8,10 +11,8 @@ import {
   getSha256,
   loadTypeDef,
   makeDir,
-  PARACHAIN_NOT_FOUND,
-  POLKADOT_NOT_FOUND,
-  POLKADOT_NOT_FOUND_DESCRIPTION,
   series,
+  setSilent,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -65,14 +66,13 @@ import { generateParachainFiles } from "./paras";
 import { Providers } from "./providers/";
 import {
   ComputedNetwork,
-  fileMap,
   LaunchConfig,
   MultiAddressByNode,
   Node,
   Parachain,
+  fileMap,
 } from "./types";
 
-import { setSilent } from "@zombienet/utils";
 import { getProcessStartTimeKey } from "./metrics";
 import { decorate } from "./paras-decorators";
 

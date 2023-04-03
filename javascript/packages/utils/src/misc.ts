@@ -24,7 +24,7 @@ export async function retry(
   throw new Error(`Timeout(${timeoutMs}) for: ${errMsg}`);
 }
 
-export function generateNamespace(n: number = 16): string {
+export function generateNamespace(n = 16): string {
   const buf = randomBytes(n);
   return buf.toString("hex");
 }

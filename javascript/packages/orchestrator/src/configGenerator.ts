@@ -76,7 +76,7 @@ const configurationFileChecks = (config: LaunchConfig): void => {
       );
     }
   if (config?.parachains && isIterable(config?.parachains))
-    for (const parachain of config?.parachains) {
+    for (const parachain of config.parachains) {
       if (parachain?.collator_groups && isIterable(parachain?.collator_groups))
         for (const collatorGroup of parachain?.collator_groups || []) {
           validateImageUrl(

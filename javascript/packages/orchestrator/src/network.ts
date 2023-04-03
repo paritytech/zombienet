@@ -94,7 +94,7 @@ export class Network {
   launched: boolean;
   wasRunning: boolean;
   tmpDir: string;
-  backchannelUri: string = "";
+  backchannelUri = "";
   chainSpecFullPath?: string;
   tracing_collator_url?: string;
   networkStartTime?: number;
@@ -150,7 +150,7 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async dumpLogs(showLogPath: boolean = true): Promise<string> {
+  async dumpLogs(showLogPath = true): Promise<string> {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
     if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
@@ -334,7 +334,7 @@ export class Network {
       ? node.wsUri
       : encodeURIComponent(node.wsUri);
 
-    let logCommand: string = "";
+    let logCommand = "";
 
     switch (this.client.providerName) {
       case "podman":

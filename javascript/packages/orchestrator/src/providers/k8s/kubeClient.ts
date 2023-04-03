@@ -53,9 +53,9 @@ export class KubeClient extends Client {
   configPath: string;
   debug: boolean;
   timeout: number;
-  command: string = "kubectl";
+  command = "kubectl";
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
@@ -233,10 +233,7 @@ export class KubeClient extends Client {
   }
 
   // accept a json def
-  async createResource(
-    resourseDef: any,
-    scoped: boolean = false,
-  ): Promise<void> {
+  async createResource(resourseDef: any, scoped = false): Promise<void> {
     await this.runCommand(["apply", "-f", "-"], {
       resourceDef: JSON.stringify(resourseDef),
       scoped,
@@ -387,7 +384,7 @@ export class KubeClient extends Client {
     localFilePath: string,
     podFilePath: string,
     container: string | undefined = undefined,
-    unique: boolean = false,
+    unique = false,
   ) {
     if (unique) {
       if (container === TRANSFER_CONTAINER_NAME) {

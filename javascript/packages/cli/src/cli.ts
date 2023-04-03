@@ -87,21 +87,24 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
           const progressBar = multibar.create(parseInt(contentLength, 10), 0);
           const reader = response.body?.getReader();
           const writer = fs.createWriteStream(path.resolve(name));
+          let i = true;
+          while (i) {
+            const read = await reader?.read();
+            if (read) {
+              if (read?.done) {
+                writer.close();
+                i = false;
+                resolve();
+                break;
+              }
 
-          while (true) {
-            const read = await reader?.read()!;
-            if (read?.done) {
-              writer.close();
-              resolve();
-              break;
+              loaded += read.value.length;
+              progressBar.increment();
+              progressBar.update(loaded, {
+                filename: name,
+              });
+              writer.write(read.value);
             }
-
-            loaded += read.value.length;
-            progressBar.increment();
-            progressBar.update(loaded, {
-              filename: name,
-            });
-            writer.write(read.value);
           }
         }),
       );

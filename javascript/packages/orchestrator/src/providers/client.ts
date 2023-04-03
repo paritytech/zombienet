@@ -21,7 +21,7 @@ export abstract class Client {
   timeout: number;
   command: string;
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   providerName: string;
   remoteDir: string | undefined;

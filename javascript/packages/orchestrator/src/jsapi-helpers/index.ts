@@ -23,7 +23,7 @@ async function registerParachain(
   wasmPath: string,
   statePath: string,
   apiUrl: string,
-  seed: string = "//Alice",
+  seed = "//Alice",
   finalization = false,
 ) {
   return new Promise<void>(async (resolve, reject) => {
