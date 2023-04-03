@@ -8,7 +8,7 @@ import {
   RPC_WS_PORT,
 } from "../../constants";
 import { Network } from "../../network";
-import { Node, envVars } from "../../types";
+import { envVars, Node } from "../../types";
 import { getClient } from "../client";
 
 interface processEnvironment {

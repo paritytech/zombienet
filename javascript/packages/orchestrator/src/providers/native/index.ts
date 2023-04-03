@@ -4,7 +4,7 @@ import {
   genNodeDef,
   replaceNetworkRef,
 } from "./dynResourceDefinition";
-import { NativeClient, initClient } from "./nativeClient";
+import { initClient, NativeClient } from "./nativeClient";
 
 export const provider = {
   NativeClient,

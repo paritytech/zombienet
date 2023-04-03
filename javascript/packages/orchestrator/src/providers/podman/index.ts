@@ -4,7 +4,7 @@ import {
   genNodeDef,
   replaceNetworkRef,
 } from "./dynResourceDefinition";
-import { PodmanClient, initClient } from "./podmanClient";
+import { initClient, PodmanClient } from "./podmanClient";
 
 export const provider = {
   PodmanClient,

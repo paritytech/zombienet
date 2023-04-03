@@ -28,16 +28,16 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { PARA, decorate, whichPara } from "./paras-decorators";
+import { decorate, PARA, whichPara } from "./paras-decorators";
 import {
   ComputedNetwork,
+  envVars,
   LaunchConfig,
   Node,
   NodeConfig,
   Override,
   Parachain,
   ParachainConfig,
-  envVars,
 } from "./types";
 
 const debug = require("debug")("zombie::config-manager");

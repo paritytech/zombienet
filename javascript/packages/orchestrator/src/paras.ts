@@ -12,7 +12,7 @@ import {
 import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
-import { Node, Parachain, fileMap } from "./types";
+import { fileMap, Node, Parachain } from "./types";
 
 const debug = require("debug")("zombie::paras");
 

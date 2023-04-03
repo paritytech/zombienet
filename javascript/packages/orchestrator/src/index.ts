@@ -5,8 +5,8 @@ export { run } from "./test-runner";
 export {
   LaunchConfig,
   NodeConfig,
-  PL_ConfigType,
   ParachainConfig,
+  PL_ConfigType,
   PolkadotLaunchConfig,
   TestDefinition,
 } from "./types";

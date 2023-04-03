@@ -10,10 +10,10 @@ import {
 } from "./constants";
 import {
   BucketHash,
-  Metrics,
   fetchMetrics,
   getHistogramBuckets,
   getMetricName,
+  Metrics,
 } from "./metrics";
 import { getClient } from "./providers/client";
 

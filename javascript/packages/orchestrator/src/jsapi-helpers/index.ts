@@ -2,6 +2,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { readDataFile } from "@zombienet/utils";
+import { RegisterParachainOptions } from "../types";
 import {
   chainCustomSectionUpgrade,
   chainUpgradeFromLocalFile,
@@ -10,7 +11,6 @@ import {
 } from "./chain-upgrade";
 import { findPatternInSystemEventSubscription } from "./events";
 import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
-import { RegisterParachainOptions } from "../types";
 
 async function connect(apiUrl: string, types?: any): Promise<ApiPromise> {
   const provider = new WsProvider(apiUrl);
