@@ -155,8 +155,11 @@ function asyncAction(cmd: Function) {
     const args = [...arguments];
     (async () => {
       try {
-        if (cmd.name == "spawn") network = await cmd.apply(null, args);
-        else await cmd.apply(null, args);
+        if (cmd.name == "spawn") {
+             network = await cmd.apply(null, args);
+        }  else {
+            await cmd.apply(null, args);
+        }
       } catch (err) {
         console.log(
           `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
