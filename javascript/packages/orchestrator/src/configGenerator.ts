@@ -520,7 +520,7 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
-    args: collatorConfig.args || [],
+    args: args || [],
     chain,
     bootnodes,
     env,
