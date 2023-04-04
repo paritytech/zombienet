@@ -84,7 +84,8 @@ export function getCredsFilePath(credsFile: string): string | undefined {
 function getReplacementInText(content: string): string[] {
   const replacements: string[] = [];
   // allow to replace with env vars, to make more dynamic usage of ci.
-  const replacementRegex = /{{([A-Za-z-_.]+)}}/gim;
+  // eslint-disable-next-line no-useless-escape
+  const replacementRegex = /{{([A-Za-z-_\.]+)}}/gim;
   for (const match of content.matchAll(replacementRegex)) {
     replacements.push(match[1]);
   }
@@ -97,9 +98,12 @@ const parseConfigFile = (
   filepath: string,
   configBasePath: string,
 ): LaunchConfig => {
-  const jsonChar = /[{]/;
-  const tomlChar = /[[]/;
-  const yamlChar = /[A-Za-z\-#]/;
+  // eslint-disable-next-line no-useless-escape
+  const jsonChar = /[\{]/;
+  // eslint-disable-next-line no-useless-escape
+  const tomlChar = /[\[]/;
+  // eslint-disable-next-line no-useless-escape
+  const yamlChar = /[A-Za-z\-\#]/;
 
   const fileType = filepath?.split(".")?.pop();
   if (!fileType) {

@@ -574,7 +574,7 @@ export class KubeClient extends Client {
     return result.stdout.includes("Welcome to nginx");
   }
   async spawnBackchannel() {
-    console.log("empty function");
+    console.log("Not implemented function");
   }
 
   async setupCleaner(): Promise<NodeJS.Timer> {

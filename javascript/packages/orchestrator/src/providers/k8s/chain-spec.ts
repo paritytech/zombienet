@@ -109,21 +109,24 @@ export async function getChainSpecRaw(
   // We had some issues where the `raw` file is empty
   // let's add some extra checks here to ensure we are ok.
   let isValid = false;
-  isValid = true;
 
   if (!isValid) {
-    const result = await client.runCommand([
-      "exec",
-      podName,
-      "--",
-      "/cfg/coreutils cat",
-      remoteChainSpecRawFullPath,
-    ]);
-    if (result.exitCode === 0 && result.stdout.length > 0) {
-      // TODO: remove this debug when we get this fixed.
-      debug(result.stdout);
-      writeFileSync(chainFullPath, result.stdout);
-      isValid = true;
+    try {
+      const result = await client.runCommand([
+        "exec",
+        podName,
+        "--",
+        "/cfg/coreutils cat",
+        remoteChainSpecRawFullPath,
+      ]);
+      if (result.exitCode === 0 && result.stdout.length > 0) {
+        // TODO: remove this debug when we get this fixed.
+        debug(result.stdout);
+        writeFileSync(chainFullPath, result.stdout);
+        isValid = true;
+      }
+    } catch (e) {
+      debug(e);
     }
   }
 

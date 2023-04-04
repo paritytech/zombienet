@@ -45,7 +45,6 @@ export async function downloadFile(url: string, dest: string): Promise<void> {
           writer.close();
           i = false;
           resolve();
-          break;
         }
         writer.write(read?.value);
       }
