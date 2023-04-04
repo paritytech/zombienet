@@ -95,15 +95,16 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
                 writer.close();
                 i = false;
                 resolve();
-                break;
               }
 
-              loaded += read.value.length;
-              progressBar.increment();
-              progressBar.update(loaded, {
-                filename: name,
-              });
-              writer.write(read.value);
+              if (read?.value) {
+                loaded += read.value.length;
+                progressBar.increment();
+                progressBar.update(loaded, {
+                  filename: name,
+                });
+                writer.write(read.value);
+              }
             }
           }
         }),
