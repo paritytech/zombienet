@@ -46,7 +46,7 @@ async function convertInput(filePath: string) {
 
   const convertedJson = await readInputFile(extension, filePath);
 
-  const { relaychain, parachains, simpleParachains, hrmpChannels, types } =
+  const { relaychain, parachains = [], simpleParachains = [], hrmpChannels = [], types } =
     convertedJson;
 
   let jsonOutput: PolkadotLaunchConfig;
