@@ -1,6 +1,6 @@
 import { Node } from "../../../types";
 import { Client } from "../../client";
-import { NodeResource } from "./node.resource";
+import { NodeResource } from "./nodeResource";
 import { Container, PodSpec, Volume } from "./types";
 
 export class BootNodeResource extends NodeResource {

@@ -1,6 +1,6 @@
-export { BootNodeResource } from "./bootnode.resource";
-export { GrafanaResource } from "./grafana.resource";
-export { IntrospectorResource } from "./introspector.resource";
-export { NodeResource } from "./node.resource";
-export { PrometheusResource } from "./prometheus.resource";
-export { TempoResource } from "./tempo.resource";
+export { BootNodeResource } from "./bootnodeResource";
+export { GrafanaResource } from "./grafanaResource";
+export { IntrospectorResource } from "./introspectorResource";
+export { NodeResource } from "./nodeResource";
+export { PrometheusResource } from "./prometheusResource";
+export { TempoResource } from "./tempoResource";
