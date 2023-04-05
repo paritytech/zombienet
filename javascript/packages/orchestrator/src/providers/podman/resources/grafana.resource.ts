@@ -116,8 +116,6 @@ export class GrafanaResource {
         name: "grafana",
         namespace: this.namespace,
         labels: {
-          "app.kubernetes.io/name": this.namespace,
-          "app.kubernetes.io/instance": "grafana",
           "zombie-role": "grafana",
           app: "zombienet",
           "zombie-ns": this.namespace,

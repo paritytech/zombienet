@@ -129,8 +129,6 @@ export class TempoResource {
         name: "tempo",
         namespace: this.namespace,
         labels: {
-          "app.kubernetes.io/name": this.namespace,
-          "app.kubernetes.io/instance": "tempo",
           "zombie-role": "tempo",
           app: "zombienet",
           "zombie-ns": this.namespace,

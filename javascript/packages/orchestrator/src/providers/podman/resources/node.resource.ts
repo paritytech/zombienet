@@ -173,8 +173,6 @@ export class NodeResource {
           "zombie-role": validator ? "authority" : "full-node",
           app: "zombienet",
           "zombie-ns": this.namespace,
-          "app.kubernetes.io/name": this.namespace,
-          "app.kubernetes.io/instance": name,
         },
         annotations: {
           "prometheus.io/scrape": "true",

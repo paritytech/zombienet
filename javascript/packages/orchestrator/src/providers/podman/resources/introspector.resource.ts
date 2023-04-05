@@ -46,8 +46,6 @@ export class IntrospectorResource {
         name: INTROSPECTOR_POD_NAME,
         namespace: this.namespace,
         labels: {
-          "app.kubernetes.io/name": this.namespace,
-          "app.kubernetes.io/instance": INTROSPECTOR_POD_NAME,
           "zombie-role": INTROSPECTOR_POD_NAME,
           app: "zombienet",
           "zombie-ns": this.namespace,

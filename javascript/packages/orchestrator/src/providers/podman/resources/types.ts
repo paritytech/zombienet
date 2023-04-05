@@ -52,8 +52,6 @@ export interface PodSpec {
       "zombie-role": string;
       app: string;
       "zombie-ns": string;
-      "app.kubernetes.io/name": string;
-      "app.kubernetes.io/instance": string;
     };
     annotations?: {
       "prometheus.io/scrape": "true";

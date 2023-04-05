@@ -117,8 +117,6 @@ export class PrometheusResource {
         name: "prometheus",
         namespace: this.namespace,
         labels: {
-          "app.kubernetes.io/name": this.namespace,
-          "app.kubernetes.io/instance": "prometheus",
           "zombie-role": "prometheus",
           app: "zombienet",
           "zombie-ns": this.namespace,
