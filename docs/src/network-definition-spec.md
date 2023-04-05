@@ -70,8 +70,8 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `parachains` Array of `parachain` definition objects
 
   - `*id`: (Number) The id to assign to this parachain. Must be unique.
-  - `add_to_genesis`: (Boolean) flag to add parachain to genesis or register in runtime.
-  - `cumulus_based`: (Boolean) flag to use `cumulus` command generation; Set to `true` by default.
+  - `add_to_genesis`: (Boolean, default true) flag to add parachain to genesis or register in runtime.
+  - `cumulus_based`: (Boolean, default true) flag to use `cumulus` command generation.
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.
@@ -97,6 +97,9 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
+
+  - `onboard_as_parachain`: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread
+  - `register_para`: (Boolean, default true) flag to specify whether the para should be registered. The `add_to_genesis` flag **must** be set to false for this flag to have any effect.
 
 ## `hrmp_channels`: (Array of objects)
 
