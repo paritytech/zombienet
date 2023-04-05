@@ -76,8 +76,7 @@ export async function setup(params: any) {
   console.log("Setup will start to download binaries:");
   params.forEach((a: any) => {
     if (!POSSIBLE_BINARIES.includes(a)) {
-      const index = params.indexOf(a);
-      index > -1 && params.splice(index, 1);
+      params = params.filter(param => param !== a);
       console.log(
         decorators.red(
           `"${a}" is not one of the possible options for this setup and will be skipped;`,
