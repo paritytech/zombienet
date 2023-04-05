@@ -215,7 +215,7 @@ const latestPolkadotReleaseURL = async (
     }
 
     return [
-      `https://github.com/paritytech/${repo}/releases/download/${tag_name}/${name}`,
+      obj.browser_download_url
       convertBytes(obj.size),
     ];
   } catch (err: any) {
