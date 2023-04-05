@@ -60,7 +60,6 @@ async function convertInput(filePath: string) {
     balance: DEFAULT_BALANCE,
   };
 
-  parachains &&
     parachains.forEach((parachain: any) => {
       collators = [];
       parachain.nodes.forEach((n: any) => {
