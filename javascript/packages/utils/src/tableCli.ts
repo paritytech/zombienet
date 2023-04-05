@@ -78,24 +78,26 @@ export class CreateLogTable {
   }
 
   pushTo = (inputs: any[][]) => {
-    inputs.forEach((input) => {
-      input.forEach((inp, index) => {
-        const split = this.colWidths[index] - 10;
-        const times = parseInt((inp.length / split).toString());
-        if (times > 1) {
-          const some = inp;
-          for (let i = 0; i <= times; i++) {
-            if (i === 0) {
-              inp = some.substring(0, split);
-            } else {
-              inp += "\n" + some.substring(split * i, split * (i + 1));
+    Array.isArray(inputs) &&
+      inputs.forEach((input) => {
+        Array.isArray(input) &&
+          input.forEach((inp, index) => {
+            const split = this.colWidths[index] - 10;
+            const times = parseInt((inp.length / split).toString());
+            if (times > 1) {
+              const some = inp;
+              for (let i = 0; i <= times; i++) {
+                if (i === 0) {
+                  inp = some.substring(0, split);
+                } else {
+                  inp += "\n" + some.substring(split * i, split * (i + 1));
+                }
+              }
+              input[index] = inp;
             }
-          }
-          input[index] = inp;
-        }
+          });
+        this.table!.push(input);
       });
-      this.table!.push(input);
-    });
   };
 
   print = () => {
