@@ -77,7 +77,6 @@ async function convertInput(filePath: string) {
 
   collators = [];
 
-  simpleParachains &&
     simpleParachains.forEach((sp: any) => {
       collators.push({
         name: sp.name,
