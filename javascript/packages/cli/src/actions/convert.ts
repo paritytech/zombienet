@@ -32,16 +32,13 @@ async function readInputFile(
   ext: string,
   fPath: string,
 ): Promise<PL_ConfigType> {
-  let json: object;
   if (ext === "json" || ext === "js") {
-    json =
-      ext === "json"
+     return  ext === "json"
         ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
         : await import(path.resolve(fPath));
-  } else {
-    throw Error("No valid extension was found.");
   }
-  return json;
+  
+  throw Error("No valid extension was found.");
 }
 
 async function convertInput(filePath: string) {
