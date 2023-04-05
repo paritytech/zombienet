@@ -18,9 +18,7 @@ export async function setup(params: any) {
   const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
 
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
-  if (
-    ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
-  ) {
+  if (!["linux", "darwin"].includes(process.platform)) {
     console.log(
       "Zombienet currently supports linux and MacOS. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
     );
