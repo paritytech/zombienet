@@ -317,3 +317,13 @@ export interface FnArgs {
   after?: number;
   seconds?: number;
 }
+
+export interface RegisterParachainOptions {
+  id: number;
+  wasmPath: string;
+  statePath: string;
+  apiUrl: string;
+  onboardAsParachain: boolean;
+  seed?: string;
+  finalization?: boolean;
+}
