@@ -107,7 +107,7 @@ async function convertInput(filePath: string) {
       genesis: relaychain?.genesis,
     },
     types,
-    hrmp_channels: hrmpChannels || [],
+    hrmp_channels: hrmpChannels
     parachains: paras,
   };
 
