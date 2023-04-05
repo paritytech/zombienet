@@ -264,7 +264,7 @@ export interface Override {
   remote_name: string;
 }
 
-interface ObjectJSON {
+export interface ObjectJSON {
   [key: string]: ObjectJSON | number | string;
 }
 
@@ -316,36 +316,4 @@ export interface FnArgs {
   file_or_uri?: string;
   after?: number;
   seconds?: number;
-}
-
-// Config interfaces
-interface PL_NodesConfig {
-  name: string;
-  wsPort: number;
-  port: number;
-  flags?: [string];
-}
-
-interface PL_RelayChainConfig {
-  bin?: string;
-  chain: string;
-  nodes: [NodeConfig];
-  genesis?: JSON | ObjectJSON;
-}
-
-interface PL_ParaChainConfig {
-  bin?: string;
-  id: number;
-  port?: string;
-  balance?: string;
-  nodes: [PL_NodesConfig];
-}
-
-export interface PL_ConfigType {
-  relaychain?: PL_RelayChainConfig;
-  parachains?: [PL_ParaChainConfig];
-  simpleParachains?: [PL_NodesConfig & { id: number }];
-  hrmpChannels?: HrmpChannelsConfig[];
-  types?: any;
-  finalization?: boolean;
 }

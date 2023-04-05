@@ -1,286 +1,17 @@
 #!/usr/bin/env node
-import parser from "@zombienet/dsl-parser-wrapper";
-import { Network, run, start } from "@zombienet/orchestrator";
-
-import type {
-  LaunchConfig,
-  NodeConfig,
-  ParachainConfig,
-  PL_ConfigType,
-  PolkadotLaunchConfig,
-  TestDefinition,
-} from "@zombienet/orchestrator";
-import {
-  askQuestion,
-  convertBytes,
-  decorators,
-  getCredsFilePath,
-  getFilePathNameExt,
-  readNetworkConfig,
-  RelativeLoader,
-} from "@zombienet/utils";
-import cliProgress from "cli-progress";
+import { Network } from "@zombienet/orchestrator";
+import { decorators } from "@zombienet/utils";
 import { Command, Option } from "commander";
-import fs from "fs";
-import { Environment } from "nunjucks";
-import path, { resolve } from "path";
-import {
-  AVAILABLE_PROVIDERS,
-  DEFAULT_BALANCE,
-  DEFAULT_GLOBAL_TIMEOUT,
-  DEFAULT_PROVIDER,
-} from "./constants";
-
-interface OptIf {
-  [key: string]: { name: string; url?: string; size?: string };
-}
-
-const options: OptIf = {};
+import { convert } from "./actions/convert";
+import { setup } from "./actions/setup";
+import { spawn } from "./actions/spawn";
+import { test } from "./actions/test";
 
 const debug = require("debug")("zombie-cli");
 
 const program = new Command("zombienet");
 
 let network: Network | undefined;
-
-// Download the binaries
-const downloadBinaries = async (binaries: string[]): Promise<void> => {
-  try {
-    console.log(decorators.yellow("\nStart download...\n"));
-    const promises = [];
-
-    const multibar = new cliProgress.MultiBar(
-      {
-        clearOnComplete: false,
-        hideCursor: true,
-        format:
-          decorators.yellow("{bar} - {percentage}%") +
-          " | " +
-          decorators.cyan("Binary name:") +
-          " {filename}",
-      },
-      cliProgress.Presets.shades_grey,
-    );
-
-    for (let binary of binaries) {
-      promises.push(
-        new Promise<void>(async (resolve, reject) => {
-          let result = options[binary];
-          if (!result) {
-            console.log("options", options, "binary", binary);
-            throw new Error("Binary is not defined");
-          }
-          const { url, name } = result;
-
-          if (!url) throw new Error("No url for downloading, was provided");
-
-          const response = await fetch(url);
-
-          if (!response.ok)
-            throw Error(response.status + " " + response.statusText);
-
-          const contentLength = response.headers.get(
-            "content-length",
-          ) as string;
-          let loaded = 0;
-
-          const progressBar = multibar.create(parseInt(contentLength, 10), 0);
-          const reader = response.body?.getReader();
-          const writer = fs.createWriteStream(path.resolve(name));
-
-          while (true) {
-            const read = await reader?.read()!;
-            if (read?.done) {
-              writer.close();
-              resolve();
-              break;
-            }
-
-            loaded += read.value.length;
-            progressBar.increment();
-            progressBar.update(loaded, {
-              filename: name,
-            });
-            writer.write(read.value);
-          }
-        }),
-      );
-    }
-
-    await Promise.all(promises);
-    multibar.stop();
-    console.log(
-      decorators.cyan(
-        `\n\nPlease add the current dir to your $PATH by running the command:\n`,
-      ),
-      decorators.blue(`export PATH=${process.cwd()}:$PATH\n\n`),
-    );
-  } catch (err) {
-    console.log(
-      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
-        err,
-      )}\n`,
-    );
-  }
-};
-
-// Retrieve the latest release for polkadot
-const latestPolkadotReleaseURL = async (
-  repo: string,
-  name: string,
-): Promise<[string, string]> => {
-  try {
-    const releases = await fetch(
-      `https://api.github.com/repos/paritytech/${repo}/releases`,
-    );
-
-    let obj: any;
-    let tag_name;
-
-    const allReleases = await releases.json();
-    const release = allReleases.find((r: any) => {
-      obj = r?.assets?.find((a: any) => a.name === name);
-      return Boolean(obj);
-    });
-
-    tag_name = release.tag_name;
-
-    if (!tag_name) {
-      throw new Error(
-        "Should never come to this point. Tag_name should never be undefined!",
-      );
-    }
-
-    return [
-      `https://github.com/paritytech/${repo}/releases/download/${tag_name}/${name}`,
-      convertBytes(obj.size),
-    ];
-  } catch (err: any) {
-    if (err.code === "ENOTFOUND") {
-      throw new Error("Network error.");
-    } else if (err.response && err.response.status === 404) {
-      throw new Error(
-        "Could not find a release. Error 404 (not found) detected",
-      );
-    }
-    throw new Error(
-      `Error status: ${err?.response?.status}. Error message: ${err?.response}`,
-    );
-  }
-};
-
-function getTestNameFromFileName(testFile: string): string {
-  const fileWithOutExt = testFile.split(".")[0];
-  const fileName: string = fileWithOutExt.split("/").pop() || "";
-  const parts = fileName.split("-");
-  const name = parts[0].match(/\d/)
-    ? parts.slice(1).join(" ")
-    : parts.join(" ");
-  return name;
-}
-
-// Convert functions
-// Read the input file
-async function readInputFile(
-  ext: string,
-  fPath: string,
-): Promise<PL_ConfigType> {
-  let json: object;
-  if (ext === "json" || ext === "js") {
-    json =
-      ext === "json"
-        ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
-        : await import(path.resolve(fPath));
-  } else {
-    throw Error("No valid extension was found.");
-  }
-  return json;
-}
-
-async function convertInput(filePath: string) {
-  const { fullPath, fileName, extension } = getFilePathNameExt(filePath);
-
-  const convertedJson = await readInputFile(extension, filePath);
-
-  const { relaychain, parachains, simpleParachains, hrmpChannels, types } =
-    convertedJson;
-
-  let jsonOutput: PolkadotLaunchConfig;
-  const nodes: NodeConfig[] = [];
-  const paras: ParachainConfig[] = [];
-  let collators: NodeConfig[] = [];
-
-  const DEFAULT_NODE_VALUES = {
-    validator: true,
-    invulnerable: true,
-    balance: DEFAULT_BALANCE,
-  };
-
-  parachains &&
-    parachains.forEach((parachain: any) => {
-      collators = [];
-      parachain.nodes.forEach((n: any) => {
-        collators.push({
-          name: n.name,
-          command: "adder-collator",
-          ...DEFAULT_NODE_VALUES,
-        });
-      });
-      paras.push({
-        id: parachain.id,
-        collators,
-      });
-    });
-
-  collators = [];
-
-  simpleParachains &&
-    simpleParachains.forEach((sp: any) => {
-      collators.push({
-        name: sp.name,
-        command: "adder-collator",
-        ...DEFAULT_NODE_VALUES,
-      });
-      paras.push({
-        id: sp.id,
-        collators,
-      });
-    });
-
-  if (relaychain?.nodes) {
-    relaychain.nodes.forEach((n: any) => {
-      nodes.push({
-        name: `"${n.name}"`,
-        ...DEFAULT_NODE_VALUES,
-      });
-    });
-  }
-
-  jsonOutput = {
-    relaychain: {
-      default_image: "docker.io/paritypr/polkadot-debug:master",
-      default_command: "polkadot",
-      default_args: ["-lparachain=debug"],
-      chain: relaychain?.chain || "",
-      nodes,
-      genesis: relaychain?.genesis,
-    },
-    types,
-    hrmp_channels: hrmpChannels || [],
-    parachains: paras,
-  };
-
-  fs.writeFile(
-    `${fullPath}/${fileName}-zombienet.json`,
-    JSON.stringify(jsonOutput),
-    (error: any) => {
-      if (error) throw error;
-    },
-  );
-  console.log(
-    `Converted JSON config exists now under: ${fullPath}/${fileName}-zombienet.json`,
-  );
-}
 
 // Ensure to log the uncaught exceptions
 // to debug the problem, also exit because we don't know
@@ -352,12 +83,7 @@ program
       ["podman", "kubernetes", "native"],
     ),
   )
-  .addOption(
-    new Option(
-      "-m, --monitor",
-      "Start as monitor, do not auto cleanup network",
-    ),
-  )
+
   .addOption(
     new Option(
       "-d, --dir <path>",
@@ -371,7 +97,13 @@ program
   .description("Spawn the network defined in the config")
   .argument("<networkConfig>", "Network config file path")
   .argument("[creds]", "kubeclt credentials file")
-  .action(spawn);
+  .addOption(
+    new Option(
+      "-m, --monitor",
+      "Start as monitor, do not auto cleanup network",
+    ),
+  )
+  .action(asyncAction(spawn));
 
 program
   .command("test")
@@ -381,7 +113,7 @@ program
     "[runningNetworkSpec]",
     "Path to the network spec json, for using a running network for running the test",
   )
-  .action(test);
+  .action(asyncAction(test));
 
 program
   .command("setup")
@@ -394,7 +126,7 @@ program
       "zombienet setup polkadot polkadot-parachain",
     )}`,
   )
-  .action(setup);
+  .action(asyncAction(setup));
 
 program
   .command("convert")
@@ -405,7 +137,7 @@ program
     "<filePath>",
     `Expecting 1 mandatory param which is the path of the polkadot-lauch configuration file (could be either a .js or .json file).`,
   )
-  .action(convert);
+  .action(asyncAction(convert));
 
 program
   .command("version")
@@ -416,264 +148,24 @@ program
     process.exit(0);
   });
 
-/**
- * Spawn - spawns ephemeral networks, providing a simple but poweful cli that allow you to declare
- * the desired network in toml or json format.
- * Read more here: https://paritytech.github.io/zombienet/cli/spawn.html
- * @param configFile: config file, supported both json and toml formats
- * @param credsFile: Credentials file name or path> to use (Only> with kubernetes provider), we look
- *  in the current directory or in $HOME/.kube/ if a filename is passed.
- * @param _opts
- */
-async function spawn(
-  configFile: string,
-  credsFile: string | undefined,
-  _opts: any,
-) {
-  const opts = program.opts();
-  const dir = opts.dir || "";
-  const force = opts.force || false;
-  const monitor = opts.monitor || false;
-  // By default spawn pods/process in batches of 4,
-  // since this shouldn't be a bottleneck in most of the cases,
-  // but also can be set with the `-c` flag.
-  const spawnConcurrency = opts.spawnConcurrency || 4;
-  const configPath = resolve(process.cwd(), configFile);
-  if (!fs.existsSync(configPath)) {
-    console.error(
-      `${decorators.reverse(
-        decorators.red(`  ⚠ Config file does not exist: ${configPath}`),
-      )}`,
-    );
-    process.exit();
-  }
-
-  const filePath = resolve(configFile);
-  const config: LaunchConfig = readNetworkConfig(filePath);
-
-  // set default provider and timeout if not provided
-  if (!config.settings) {
-    config.settings = {
-      provider: DEFAULT_PROVIDER,
-      timeout: DEFAULT_GLOBAL_TIMEOUT,
-    };
-  } else {
-    if (!config.settings.provider) config.settings.provider = DEFAULT_PROVIDER;
-    if (!config.settings.timeout)
-      config.settings.timeout = DEFAULT_GLOBAL_TIMEOUT;
-  }
-
-  // if a provider is passed, let just use it.
-  if (opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)) {
-    config.settings.provider = opts.provider;
-  }
-
-  let creds = "";
-  if (config.settings?.provider === "kubernetes") {
-    creds = getCredsFilePath(credsFile || "config") || "";
-    if (!creds) {
-      console.log(
-        `Running ${config.settings?.provider || DEFAULT_PROVIDER} provider:`,
-      );
-      console.error(
-        `${decorators.reverse(
-          decorators.red(`  ⚠ I can't find the Creds file: ${credsFile}`),
-        )}`,
-      );
-      process.exit();
-    }
-  }
-
-  const inCI = process.env.RUN_IN_CONTAINER === "1";
-  const options = {
-    monitor,
-    spawnConcurrency,
-    dir,
-    force,
-    inCI,
-    silent: false,
-  };
-  network = await start(creds, config, options);
-  network.showNetworkInfo(config.settings?.provider);
-}
-
-/**
- * Test - performs test/assertions agins the spawned network, using a set of natural
- * language expressions that allow to make assertions based on metrics, logs and some
- * built-in function that query the network using polkadot.js
- * Read more here: https://paritytech.github.io/zombienet/cli/testing.html
- * @param testFile
- * @param runningNetworkSpec
- * @param _opts
- */
-async function test(
-  testFile: string,
-  runningNetworkSpec: string | undefined,
-  _opts: any,
-) {
-  const opts = program.opts();
-  const dir = opts.dir || "";
-
-  let extension = testFile.slice(testFile.lastIndexOf(".") + 1);
-
-  if (extension !== "zndsl") {
-    console.log(
-      `\n ${decorators.red(
-        "Error:",
-      )} File extension is not correct. Extension for tests should be '.zndsl'.\n`,
-    );
-  }
-
-  process.env.DEBUG = "zombie";
-  const inCI = process.env.RUN_IN_CONTAINER === "1";
-  // use `k8s` as default
-  const providerToUse =
-    opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)
-      ? opts.provider
-      : "kubernetes";
-
-  const configBasePath = path.dirname(testFile);
-  const env = new Environment(new RelativeLoader([configBasePath]));
-  const templateContent = fs.readFileSync(testFile).toString();
-  const content = env.renderString(templateContent, process.env);
-
-  const testName = getTestNameFromFileName(testFile);
-
-  let testDef: TestDefinition;
-  try {
-    testDef = JSON.parse(parser.parse_to_json(content));
-  } catch (e) {
-    console.log(`\n ${decorators.red("Error:")} \t ${decorators.bright(e)}\n`);
-    process.exit(1);
-  }
-
-  await run(
-    configBasePath,
-    testName,
-    testDef,
-    providerToUse,
-    inCI,
-    opts.spawnConcurrency,
-    false,
-    runningNetworkSpec,
-    dir,
-  );
-}
-
-/**
- * Setup - easily download latest artifacts and make them executablein order to use them with zombienet
- * Read more here: https://paritytech.github.io/zombienet/cli/setup.html
- * @param params binaries that willbe downloaded and set up. Possible values: `polkadot` `polkadot-parachain`
- * @returns
- */
-async function setup(params: any) {
-  const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
-
-  console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
-  if (
-    ["aix", "freebsd", "openbsd", "sunos", "win32"].includes(process.platform)
-  ) {
-    console.log(
-      "Zombienet currently supports linux and MacOS. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
-    );
-    return;
-  }
-
-  console.log(decorators.green("Gathering latest releases' versions...\n"));
-  await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL("polkadot", "polkadot").then(
-      (res: [string, string]) => {
-        options.polkadot = {
-          name: "polkadot",
-          url: res[0],
-          size: res[1],
-        };
-        resolve();
-      },
-    );
-  });
-
-  await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL("cumulus", "polkadot-parachain").then(
-      (res: [string, string]) => {
-        options["polkadot-parachain"] = {
-          name: "polkadot-parachain",
-          url: res[0],
-          size: res[1],
-        };
-        resolve();
-      },
-    );
-  });
-
-  // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
-  // as polkadot do not release a binary for MacOS
-  if (process.platform === "darwin" && params.includes("polkadot")) {
-    console.log(
-      `${decorators.yellow(
-        "Note: ",
-      )} You are using MacOS. Please, clone the polkadot repo ` +
-        decorators.cyan("(https://github.com/paritytech/polkadot)") +
-        ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
-    );
-    const index = params.indexOf("polkadot");
-    if (index !== -1) {
-      params.splice(index, 1);
-    }
-  }
-
-  if (params.length === 0) {
-    console.log(decorators.green("No binaries to download. Exiting..."));
-    return;
-  }
-  let count = 0;
-  console.log("Setup will start to download binaries:");
-  params.forEach((a: any) => {
-    if (!POSSIBLE_BINARIES.includes(a)) {
-      const index = params.indexOf(a);
-      index > -1 && params.splice(index, 1);
-      console.log(
-        decorators.red(
-          `"${a}" is not one of the possible options for this setup and will be skipped;`,
-        ),
-        decorators.green(` Valid options: polkadot polkadot-parachain`),
-      );
-      return;
-    }
-    const size = parseInt(options[a]?.size || "0", 10);
-    count += size;
-    console.log("-", a, "\t Approx. size ", size, " MB");
-  });
-  console.log("Total approx. size: ", count, "MB");
-  const response = await askQuestion(
-    decorators.yellow("\nDo you want to continue? (y/n)"),
-  );
-  if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
-    console.log("Invalid input. Exiting...");
-    return;
-  }
-  if (response.toLowerCase() === "n") {
-    return;
-  }
-  downloadBinaries(params);
-  return;
-}
-
-async function convert(param: string) {
-  try {
-    const filePath = param;
-
-    if (!filePath) {
-      throw Error("Path of configuration file was not provided");
-    }
-
-    // Read through the JSON and write to stream sample
-    await convertInput(filePath);
-  } catch (err) {
-    console.log(
-      `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
-    );
-  }
-}
-
 program.parse(process.argv);
+
+function asyncAction(cmd: Function) {
+  return function () {
+    const args = [...arguments];
+    (async () => {
+      try {
+        if (cmd.name == "spawn") {
+          network = await cmd.apply(null, args);
+        } else {
+          await cmd.apply(null, args);
+        }
+      } catch (err) {
+        console.log(
+          `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
+        );
+        process.exit(1);
+      }
+    })();
+  };
+}
