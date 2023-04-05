@@ -51,7 +51,7 @@ async function convertInput(filePath: string) {
 
   let jsonOutput: PolkadotLaunchConfig;
   const nodes: NodeConfig[] = [];
-  const paras: ParachainConfig[] = [];
+  let paras: ParachainConfig[] = [];
   let collators: NodeConfig[] = [];
 
   const DEFAULT_NODE_VALUES = {
