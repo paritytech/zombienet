@@ -62,7 +62,7 @@ export async function setup(params: any) {
         decorators.cyan("(https://github.com/paritytech/polkadot)") +
         ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
     );
-params = params.filter(param => param !== "polkadot")
+    params = params.filter((param: string) => param !== "polkadot");
   }
 
   if (params.length === 0) {
@@ -73,7 +73,7 @@ params = params.filter(param => param !== "polkadot")
   console.log("Setup will start to download binaries:");
   params.forEach((a: any) => {
     if (!POSSIBLE_BINARIES.includes(a)) {
-      params = params.filter(param => param !== a);
+      params = params.filter((param: any) => param !== a);
       console.log(
         decorators.red(
           `"${a}" is not one of the possible options for this setup and will be skipped;`,
@@ -210,10 +210,7 @@ const latestPolkadotReleaseURL = async (
       );
     }
 
-    return [
-      obj.browser_download_url
-      convertBytes(obj.size),
-    ];
+    return [obj.browser_download_url, convertBytes(obj.size)];
   } catch (err: any) {
     if (err.code === "ENOTFOUND") {
       throw new Error("Network error.");

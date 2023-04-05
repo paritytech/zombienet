@@ -1,12 +1,12 @@
 import type {
   NodeConfig,
-  PL_ConfigType,
   ParachainConfig,
   PolkadotLaunchConfig,
 } from "@zombienet/orchestrator";
 import { decorators, getFilePathNameExt } from "@zombienet/utils";
 import fs from "fs";
 import path from "path";
+import { PL_ConfigType, PL_NodesConfig } from "src/types";
 import { DEFAULT_BALANCE } from "../constants";
 
 export async function convert(param: string) {
@@ -33,11 +33,11 @@ async function readInputFile(
   fPath: string,
 ): Promise<PL_ConfigType> {
   if (ext === "json" || ext === "js") {
-     return  ext === "json"
-        ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
-        : await import(path.resolve(fPath));
+    return ext === "json"
+      ? JSON.parse(fs.readFileSync(`${fPath}`, "utf8"))
+      : await import(path.resolve(fPath));
   }
-  
+
   throw Error("No valid extension was found.");
 }
 
@@ -46,13 +46,17 @@ async function convertInput(filePath: string) {
 
   const convertedJson = await readInputFile(extension, filePath);
 
-  const { relaychain, parachains = [], simpleParachains = [], hrmpChannels = [], types } =
-    convertedJson;
+  const {
+    relaychain,
+    parachains = [],
+    simpleParachains = [],
+    hrmpChannels = [],
+    types,
+  } = convertedJson;
 
   let jsonOutput: PolkadotLaunchConfig;
   const nodes: NodeConfig[] = [];
   let paras: ParachainConfig[] = [];
-  let collators: NodeConfig[] = [];
 
   const DEFAULT_NODE_VALUES = {
     validator: true,
@@ -60,33 +64,23 @@ async function convertInput(filePath: string) {
     balance: DEFAULT_BALANCE,
   };
 
-    parachains.forEach((parachain: any) => {
-      collators = [];
-      parachain.nodes.forEach((n: any) => {
-        collators.push({
-          name: n.name,
-          command: "adder-collator",
-          ...DEFAULT_NODE_VALUES,
-        });
-      });
-      paras.push({
-        id: parachain.id,
-        collators,
-      });
-    });
-
-
-    simpleParachains.forEach((sp: any) => {
-      collators.push({
-        name: sp.name,
+  paras = paras.concat(
+    parachains.map(({ id, nodes }) => ({
+      id,
+      collators: ((nodes as PL_NodesConfig[]) || []).map(({ name }) => ({
+        name,
         command: "adder-collator",
         ...DEFAULT_NODE_VALUES,
-      });
-      paras.push({
-        id: sp.id,
-        collators,
-      });
-    });
+      })),
+    })),
+  );
+
+  paras = paras.concat(
+    simpleParachains.map(({ id, name }) => ({
+      id,
+      collators: [{ name, command: "adder-collator", ...DEFAULT_NODE_VALUES }],
+    })),
+  );
 
   if (relaychain?.nodes) {
     relaychain.nodes.forEach((n: any) => {
@@ -107,7 +101,7 @@ async function convertInput(filePath: string) {
       genesis: relaychain?.genesis,
     },
     types,
-    hrmp_channels: hrmpChannels
+    hrmp_channels: hrmpChannels,
     parachains: paras,
   };
 
