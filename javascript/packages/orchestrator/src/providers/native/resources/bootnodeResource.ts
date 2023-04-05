@@ -1,6 +1,6 @@
 import { makeDir } from "@zombienet/utils";
 import { genCmd } from "../../../cmdGenerator";
-import { NodeResource } from "./node.resource";
+import { NodeResource } from "./nodeResource";
 import { NodeSpec, Port, ProcessEnvironment, ZombieRole } from "./types";
 
 export class BootNodeResource extends NodeResource {

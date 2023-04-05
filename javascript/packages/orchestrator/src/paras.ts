@@ -1,6 +1,6 @@
 import { decorators, getRandomPort } from "@zombienet/utils";
 import fs from "fs";
-import chainSpecFns, { isRawSpec } from "./chain-spec";
+import chainSpecFns, { isRawSpec } from "./chainSpec";
 import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
