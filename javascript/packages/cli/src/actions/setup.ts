@@ -62,10 +62,7 @@ export async function setup(params: any) {
         decorators.cyan("(https://github.com/paritytech/polkadot)") +
         ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
     );
-    const index = params.indexOf("polkadot");
-    if (index !== -1) {
-      params.splice(index, 1);
-    }
+params = params.filter(param => param !== "polkadot")
   }
 
   if (params.length === 0) {
