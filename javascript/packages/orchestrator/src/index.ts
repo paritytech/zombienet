@@ -3,9 +3,10 @@ export { start, test } from "./orchestrator";
 export { Providers } from "./providers";
 export { run } from "./test-runner";
 export {
+  HrmpChannelsConfig,
   LaunchConfig,
   NodeConfig,
-  PL_ConfigType,
+  ObjectJSON,
   ParachainConfig,
   PolkadotLaunchConfig,
   TestDefinition,
