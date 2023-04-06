@@ -2,6 +2,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Keyring } from "@polkadot/keyring";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { readDataFile } from "@zombienet/utils";
+import { RegisterParachainOptions } from "../types";
 import {
   chainCustomSectionUpgrade,
   chainUpgradeFromLocalFile,
@@ -18,14 +19,15 @@ async function connect(apiUrl: string, types?: any): Promise<ApiPromise> {
   return api;
 }
 
-async function registerParachain(
-  id: number,
-  wasmPath: string,
-  statePath: string,
-  apiUrl: string,
-  seed: string = "//Alice",
+async function registerParachain({
+  id,
+  wasmPath,
+  statePath,
+  apiUrl,
+  onboardAsParachain,
+  seed = "//Alice",
   finalization = false,
-) {
+}: RegisterParachainOptions) {
   return new Promise<void>(async (resolve, reject) => {
     await cryptoWaitReady();
 
@@ -42,7 +44,7 @@ async function registerParachain(
     const parachainGenesisArgs = {
       genesis_head: genesis_state,
       validation_code: wasm_data,
-      parachain: true,
+      parachain: onboardAsParachain,
     };
 
     const genesis = api.createType("ParaGenesisArgs", parachainGenesisArgs);
