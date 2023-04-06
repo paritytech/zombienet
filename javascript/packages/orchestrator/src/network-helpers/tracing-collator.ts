@@ -58,12 +58,13 @@ export async function setTracingCollatorConfig(
               serviceNamespace,
             );
             network.tracing_collator_url = `http://localhost:${tracingPort}`;
-          } catch (_) {
+          } catch (err) {
             console.log(
               decorators.yellow(
                 `\n\t Warn: Can not create the forwarding to the tracing collator`,
-              ),
+              )
             );
+            console.error(err);
           }
         }
         break;
