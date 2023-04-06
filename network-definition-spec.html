@@ -232,10 +232,10 @@
 <p><code>*id</code>: (Number) The id to assign to this parachain. Must be unique.</p>
 </li>
 <li>
-<p><code>add_to_genesis</code>: (Boolean) flag to add parachain to genesis or register in runtime.</p>
+<p><code>add_to_genesis</code>: (Boolean, default true) flag to add parachain to genesis or register in runtime.</p>
 </li>
 <li>
-<p><code>cumulus_based</code>: (Boolean) flag to use <code>cumulus</code> command generation; Set to <code>true</code> by default.</p>
+<p><code>cumulus_based</code>: (Boolean, default true) flag to use <code>cumulus</code> command generation.</p>
 </li>
 <li>
 <p><code>genesis_wasm_path</code>: (String) Path to the wasm file to use.</p>
@@ -281,6 +281,12 @@
 </ul>
 </li>
 </ul>
+</li>
+<li>
+<p><code>onboard_as_parachain</code>: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread</p>
+</li>
+<li>
+<p><code>register_para</code>: (Boolean, default true) flag to specify whether the para should be registered. The <code>add_to_genesis</code> flag <strong>must</strong> be set to false for this flag to have any effect.</p>
 </li>
 </ul>
 </li>
