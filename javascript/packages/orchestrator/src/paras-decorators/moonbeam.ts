@@ -115,7 +115,7 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
   return keys;
 }
 
-export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
+export function getNodeKey(node: Node): GenesisNodeKey {
   const { sr_account, eth_account } = node.accounts;
 
   return [sr_account.address, eth_account.address];
@@ -128,7 +128,7 @@ async function addParaCustom(specPath: string, node: Node) {
   // parachainStaking
   if (!runtimeConfig?.parachainStaking) return;
 
-  const { sr_account, eth_account } = node.accounts;
+  const { eth_account } = node.accounts;
 
   runtimeConfig.parachainStaking.candidates.push([
     eth_account.address,

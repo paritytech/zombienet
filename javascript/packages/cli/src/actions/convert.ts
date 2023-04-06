@@ -54,7 +54,6 @@ async function convertInput(filePath: string) {
     types,
   } = convertedJson;
 
-  let jsonOutput: PolkadotLaunchConfig;
   const nodes: NodeConfig[] = [];
   let paras: ParachainConfig[] = [];
 
@@ -91,7 +90,7 @@ async function convertInput(filePath: string) {
     });
   }
 
-  jsonOutput = {
+  const jsonOutput: PolkadotLaunchConfig = {
     relaychain: {
       default_image: "docker.io/paritypr/polkadot-debug:master",
       default_command: "polkadot",

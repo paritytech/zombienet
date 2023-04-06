@@ -108,7 +108,6 @@ export class PodmanClient extends Client {
 
     const tempoSpec = await genTempoDef(this.namespace);
     await this.createResource(tempoSpec, false, false);
-    const jaegerPort = tempoSpec.spec.containers[0].ports[0].hostPort;
     const tempoPort = tempoSpec.spec.containers[0].ports[1].hostPort;
     console.log(
       `\n\t Monitor: ${decorators.green(
@@ -167,7 +166,7 @@ export class PodmanClient extends Client {
     ]);
   }
 
-  async createPodMonitor(filename: string, chain: string): Promise<void> {
+  async createPodMonitor(): Promise<void> {
     // NOOP, podman don't have podmonitor.
     return;
   }
@@ -225,7 +224,7 @@ export class PodmanClient extends Client {
     await fs.writeFile(dstFileName, logs);
   }
 
-  upsertCronJob(minutes: number): Promise<void> {
+  upsertCronJob(): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
@@ -435,7 +434,6 @@ export class PodmanClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string,
   ): Promise<void> {
     debug(`cp ${this.tmpDir}/${identifier}${podFilePath}  ${localFilePath}`);
     await fs.copyFile(
@@ -444,7 +442,7 @@ export class PodmanClient extends Client {
     );
   }
 
-  async putLocalMagicFile(name: string, container?: string): Promise<void> {
+  async putLocalMagicFile(): Promise<void> {
     // NOOP
     return;
   }

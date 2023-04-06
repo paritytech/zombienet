@@ -7,7 +7,7 @@ export async function findPatternInSystemEventSubscription(
   timeout: number,
 ): Promise<boolean> {
   let found = false;
-  found = await new Promise((resolve, _) => {
+  found = await new Promise((resolve) => {
     const limitTimeout = setTimeout(() => {
       debug(`Timeout getting pattern (${timeout})`);
       resolve(false);

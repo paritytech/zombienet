@@ -310,10 +310,8 @@ export class NetworkNode implements NetworkNodeInterface {
       }
 
       const getValue = async () => {
-        let c = 0;
         let done = false;
         while (!done) {
-          c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           histogramBuckets = await getHistogramBuckets(
             this.prometheusUri,

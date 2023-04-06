@@ -99,16 +99,16 @@ export class NativeClient extends Client {
     return;
   }
   // Podman ONLY support `pods`
-  async staticSetup(_: any): Promise<void> {
+  async staticSetup(): Promise<void> {
     return;
   }
 
-  async createStaticResource(filename: string): Promise<void> {
+  async createStaticResource(): Promise<void> {
     // NOOP, native don't have podmonitor.
     return;
   }
 
-  async createPodMonitor(filename: string, chain: string): Promise<void> {
+  async createPodMonitor(): Promise<void> {
     // NOOP, native don't have podmonitor.
     return;
   }
@@ -145,10 +145,7 @@ export class NativeClient extends Client {
     }
   }
 
-  async getNodeLogs(
-    name: string,
-    since: number | undefined = undefined,
-  ): Promise<string> {
+  async getNodeLogs(name: string): Promise<string> {
     // For now in native let's just return all the logs
     const lines = await fs.promises.readFile(`${this.tmpDir}/${name}.log`);
     return lines.toString();
@@ -159,7 +156,7 @@ export class NativeClient extends Client {
     await fs.promises.copyFile(`${this.tmpDir}/${podName}.log`, dstFileName);
   }
 
-  upsertCronJob(minutes: number): Promise<void> {
+  upsertCronJob(): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
@@ -331,13 +328,12 @@ export class NativeClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string,
   ): Promise<void> {
     debug(`cp ${podFilePath}  ${localFilePath}`);
     await fs.promises.copyFile(podFilePath, localFilePath);
   }
 
-  async putLocalMagicFile(name: string, container?: string): Promise<void> {
+  async putLocalMagicFile(): Promise<void> {
     // NOOP
     return;
   }

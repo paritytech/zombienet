@@ -240,8 +240,6 @@ export class KubeClient extends Client {
     });
 
     debug(resourseDef);
-    const name = resourseDef.metadata.name;
-    const kind: string = resourseDef.kind.toLowerCase();
   }
 
   async waitPodReady(pod: string): Promise<void> {
@@ -414,7 +412,6 @@ export class KubeClient extends Client {
           "/dev/null",
         );
         debug("copyFileToPod", args.join(" "));
-        const result = await execa("cat", [args.join(" ")], { shell: true });
       }
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
@@ -663,7 +660,7 @@ export class KubeClient extends Client {
       return subprocess;
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let subprocess: null | ChildProcessWithoutNullStreams = createTunnel(
         port,
         identifier,

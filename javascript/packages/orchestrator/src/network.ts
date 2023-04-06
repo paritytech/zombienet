@@ -255,15 +255,8 @@ export class Network {
   }
 
   // Testing abstraction
-  async nodeIsUp(
-    nodeName: string,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  ): Promise<boolean> {
+  async nodeIsUp(nodeName: string): Promise<boolean> {
     try {
-      const limitTimeout = setTimeout(() => {
-        throw new Error(`Timeout(${timeout}s)`);
-      }, timeout * 1000);
-
       const node = this.getNodeByName(nodeName);
       await node.apiInstance?.rpc.system.name();
       return true;

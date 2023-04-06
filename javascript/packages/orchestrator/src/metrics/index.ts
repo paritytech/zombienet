@@ -112,7 +112,6 @@ function _extractMetrics(text: string): Metrics {
   rawMetrics["_raw"] = {};
   for (const line of text.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
-    const [key] = line.split(" ", 1);
     const parsedLine = parseLine(line);
     const metricValue = parseInt(parsedLine.value);
 

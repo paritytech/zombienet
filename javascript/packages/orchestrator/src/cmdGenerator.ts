@@ -18,9 +18,10 @@ interface PortsInterface {
   [key: string]: number;
 }
 
-interface ParachainCollatorsInterface {
-  [key: number]: number;
-}
+// Commented out as "Never used"
+// interface ParachainCollatorsInterface {
+//   [key: number]: number;
+// }
 
 function parseCmdWithArguments(
   commandWithArgs: string,
@@ -330,13 +331,16 @@ export async function genCmd(
   return resolvedCmd;
 }
 
+// Commented out as "Never used"
 // helper
-const parachainCollators: ParachainCollatorsInterface =
-  {} as ParachainCollatorsInterface;
-function getCollatorIndex(paraId: number): number {
-  if (parachainCollators[paraId] >= 0)
-    parachainCollators[paraId] = parachainCollators[paraId] + 1;
-  else parachainCollators[paraId] = 0;
+// const parachainCollators: ParachainCollatorsInterface =
+//   {} as ParachainCollatorsInterface;
 
-  return parachainCollators[paraId];
-}
+// Commented out as "Never used"
+// function getCollatorIndex(paraId: number): number {
+//   if (parachainCollators[paraId] >= 0)
+//     parachainCollators[paraId] = parachainCollators[paraId] + 1;
+//   else parachainCollators[paraId] = 0;
+
+//   return parachainCollators[paraId];
+// }
