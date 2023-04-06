@@ -1,4 +1,4 @@
-import { getChainSpecRaw, setupChainSpec } from "./chain-spec";
+import { getChainSpecRaw, setupChainSpec } from "./chainSpec";
 import {
   genBootnodeDef,
   genNodeDef,

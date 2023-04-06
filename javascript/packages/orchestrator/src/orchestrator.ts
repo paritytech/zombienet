@@ -35,7 +35,7 @@ import {
   getNodeKey,
   readAndParseChainSpec,
   specHaveSessionsKeys,
-} from "./chain-spec";
+} from "./chainSpec";
 import {
   generateBootnodeSpec,
   generateNetworkSpec,

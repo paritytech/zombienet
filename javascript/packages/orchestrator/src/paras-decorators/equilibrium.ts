@@ -3,7 +3,7 @@ import {
   getRuntimeConfig,
   readAndParseChainSpec,
   writeChainSpec,
-} from "../chain-spec";
+} from "../chainSpec";
 import { Node } from "../types";
 
 // Acala genesis node key type

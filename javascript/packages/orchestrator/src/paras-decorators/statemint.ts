@@ -1,4 +1,4 @@
-import { GenesisNodeKey, getNodeKey as _getNodeKey } from "../chain-spec";
+import { GenesisNodeKey, getNodeKey as _getNodeKey } from "../chainSpec";
 import { Node } from "../types";
 
 export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
