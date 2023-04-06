@@ -8,7 +8,7 @@ import {
   getRuntimeConfig,
   readAndParseChainSpec,
   writeChainSpec,
-} from "../chain-spec";
+} from "../chainSpec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
 import { ChainSpec, Node } from "../types";
 

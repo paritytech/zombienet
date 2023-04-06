@@ -7,7 +7,7 @@ import {
   chainUpgradeFromLocalFile,
   chainUpgradeFromUrl,
   validateRuntimeCode,
-} from "./chain-upgrade";
+} from "./chainUpgrade";
 import { findPatternInSystemEventSubscription } from "./events";
 import { paraGetBlockHeight, paraIsRegistered } from "./parachain";
 

@@ -5,7 +5,7 @@ import readline from "readline";
 import toml from "toml";
 import yaml from "yaml";
 import { decorators } from "./colors";
-import { RelativeLoader } from "./nunjucks-relative-loader";
+import { RelativeLoader } from "./nunjucksRelativeLoader";
 import { LaunchConfig } from "./types";
 
 interface LocalJsonFileContentIF {
