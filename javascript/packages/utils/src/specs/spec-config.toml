@@ -1,0 +1,20 @@
+# examples/0001-small-network.toml
+[relaychain]
+default_image = "test-image"
+default_command = "test-polkadot"
+default_args = [ "-lparachain=test" ]
+
+chain = "test-rococo"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+[[parachains]]
+id = 100
+
+  [parachains.collator]
+  name = "collator01"
+  image = "test-latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=test"]
