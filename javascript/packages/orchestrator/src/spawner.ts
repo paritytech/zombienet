@@ -229,20 +229,9 @@ export const spawnNode = async (
         },
       ],
     ]);
-    let logCommand;
-    switch (client.providerName) {
-      case "podman":
-        logCommand = `podman logs -f ${podDef.metadata.name}_pod-${podDef.metadata.name}`;
-        break;
-      case "kubernetes":
-        logCommand = `kubectl logs -f ${podDef.metadata.name} -c ${podDef.metadata.name} -n ${namespace}`;
-        break;
-      case "native":
-        logCommand = `tail -f  ${client.tmpDir}/${podDef.metadata.name}.log`;
-        break;
-    }
     logTable.print();
-    if (!opts.silent) console.log(logCommand + "\n\n");
+
+    if (!opts.silent) console.log(client.getLogsCommand(podDef.metadata.name) + "\n\n");
   }
 
   return nodeMultiAddress;

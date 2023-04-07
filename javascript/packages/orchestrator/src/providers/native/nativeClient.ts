@@ -474,4 +474,8 @@ export class NativeClient extends Client {
     await this.wait_node_ready(name);
     return true;
   }
+
+  getLogsCommand(name: string): string {
+    return `tail -f  ${this.tmpDir}/${name}.log`;
+  }
 }
