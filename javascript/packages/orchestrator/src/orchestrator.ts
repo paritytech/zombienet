@@ -20,7 +20,6 @@ import {
   addParachainToGenesis,
   customizePlainRelayChain,
   readAndParseChainSpec,
-  specHaveSessionsKeys,
 } from "./chainSpec";
 import {
   generateBootnodeSpec,

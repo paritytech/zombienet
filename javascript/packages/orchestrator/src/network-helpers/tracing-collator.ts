@@ -62,7 +62,7 @@ export async function setTracingCollatorConfig(
             console.log(
               decorators.yellow(
                 `\n\t Warn: Can not create the forwarding to the tracing collator`,
-              )
+              ),
             );
             console.error(err);
           }

@@ -107,18 +107,23 @@ export async function addBalances(specPath: string, nodes: Node[]) {
           : node.balance;
         runtimeConfig.balances.balances.push([stash_key, balanceToAdd]);
 
-        const logLine = `👤 Added Balance ${node.balance} for ${decorators.green(
-          node.name,
-        )} - ${decorators.magenta(stash_key)}`;
-        new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
-          [logLine],
-        ]);
+        const logLine = `👤 Added Balance ${
+          node.balance
+        } for ${decorators.green(node.name)} - ${decorators.magenta(
+          stash_key,
+        )}`;
+        new CreateLogTable({
+          colWidths: [120],
+          doubleBorder: true,
+        }).pushToPrint([[logLine]]);
       }
     }
 
     writeChainSpec(specPath, chainSpec);
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add balance for nodes: ${nodes}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add balance for nodes: ${nodes}`)}`,
+    );
     throw err;
   }
 }
@@ -150,10 +155,11 @@ export function getNodeKey(
 
     return key;
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to generate key for node: ${node}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to generate key for node: ${node}`)}`,
+    );
     throw err;
   }
-
 }
 
 // Add additional authorities to chain spec in `session.keys`
@@ -184,7 +190,9 @@ export async function addAuthority(
 
     writeChainSpec(specPath, chainSpec);
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add authority for node: ${node}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add authority for node: ${node}`)}`,
+    );
     throw err;
   }
 }
@@ -222,11 +230,11 @@ export async function addStaking(specPath: string, node: Node) {
 
     writeChainSpec(specPath, chainSpec);
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add staking for node: ${node}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add staking for node: ${node}`)}`,
+    );
     throw err;
   }
-
-
 }
 
 /// Add collators
@@ -288,7 +296,9 @@ export async function addAuraAuthority(
       ],
     ]);
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add Aura account for node: ${name}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add Aura account for node: ${name}`)}`,
+    );
     throw err;
   }
 }
@@ -316,10 +326,11 @@ export async function addGrandpaAuthority(
       [logLine],
     ]);
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add GrandPa account for node: ${name}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add GrandPa account for node: ${name}`)}`,
+    );
     throw err;
   }
-
 }
 
 export async function generateNominators(
@@ -369,9 +380,11 @@ export async function generateNominators(
       [logLine],
     ]);
   } catch (err) {
-    console.error(`\n${
-      decorators.red(`Fail to generate staking config with count : ${randomNominatorsCount} and max : ${maxNominations}`)
-    }`);
+    console.error(
+      `\n${decorators.red(
+        `Fail to generate staking config with count : ${randomNominatorsCount} and max : ${maxNominations}`,
+      )}`,
+    );
     throw err;
   }
 }
@@ -420,7 +433,9 @@ export async function addParachainToGenesis(
       process.exit(1);
     }
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add para: ${para_id} to genesis`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add para: ${para_id} to genesis`)}`,
+    );
     throw err;
   }
 }
@@ -515,7 +530,10 @@ export async function addHrmpChannelsToGenesis(
       if (hrmp && hrmp.preopenHrmpChannels) {
         hrmp.preopenHrmpChannels.push(newHrmpChannel);
 
-        new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        new CreateLogTable({
+          colWidths: [120],
+          doubleBorder: true,
+        }).pushToPrint([
           [
             decorators.green(
               `✓ Added HRMP channel ${h.sender} -> ${h.recipient}`,
@@ -534,7 +552,9 @@ export async function addHrmpChannelsToGenesis(
       writeChainSpec(specPath, chainSpec);
     }
   } catch (err) {
-    console.error(`\n${decorators.red(`Fail to add hrmp channels: ${hrmp_channels}`)}`);
+    console.error(
+      `\n${decorators.red(`Fail to add hrmp channels: ${hrmp_channels}`)}`,
+    );
     throw err;
   }
 }
@@ -697,10 +717,11 @@ export async function customizePlainRelayChain(
     if (networkSpec.hrmp_channels) {
       await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
     }
-
   } catch (err) {
     console.log(
-      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(err)}\n`
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
     );
   }
 }

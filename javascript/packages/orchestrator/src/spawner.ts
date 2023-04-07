@@ -231,7 +231,8 @@ export const spawnNode = async (
     ]);
     logTable.print();
 
-    if (!opts.silent) console.log(client.getLogsCommand(podDef.metadata.name) + "\n\n");
+    if (!opts.silent)
+      console.log(client.getLogsCommand(podDef.metadata.name) + "\n\n");
   }
 
   return nodeMultiAddress;
