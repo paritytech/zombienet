@@ -6,7 +6,7 @@ import {
 } from "@zombienet/utils";
 import path from "path";
 import { generateNodeMultiAddress } from "./bootnode";
-import { getChainIdFromSpec } from "./chain-spec";
+import { getChainIdFromSpec } from "./chainSpec";
 import {
   LOCALHOST,
   METRICS_URI_PATTERN,

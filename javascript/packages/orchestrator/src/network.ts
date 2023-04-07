@@ -91,10 +91,10 @@ export class Network {
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
-  launched: boolean;
-  wasRunning: boolean;
+  launched = false;
+  wasRunning = false;
   tmpDir: string;
-  backchannelUri: string = "";
+  backchannelUri = "";
   chainId?: string;
   chainSpecFullPath?: string;
   tracing_collator_url?: string;
@@ -108,8 +108,6 @@ export class Network {
   ) {
     this.client = client;
     this.namespace = namespace;
-    this.launched = false;
-    this.wasRunning = false;
     this.tmpDir = tmpDir;
     this.networkStartTime = startTime;
   }
