@@ -10,7 +10,9 @@ import { LaunchConfig } from "../types";
 
 chai.use(deepEqualInAnyOrder);
 
-describe("Test fs:writeLocalJsonFile function:", () => {
+describe("Tests on module 'fs';", () => {
+  let readlineStub: SinonStub<any, any>;
+
   before(async function () {
     await mkdir(path.join(__dirname, "tmp_tests"), (err) => {
       if (err) {
@@ -23,7 +25,7 @@ describe("Test fs:writeLocalJsonFile function:", () => {
     rmSync(path.join(__dirname, "tmp_tests"), { recursive: true, force: true });
   });
 
-  it("success on LocalJsonFileContentIF ", async () => {
+  it("tests that fs/writeLocalJsonFile is success ", async () => {
     const jsonTest = {
       apiVersion: "v1",
       kind: "Namespace",
@@ -53,12 +55,8 @@ describe("Test fs:writeLocalJsonFile function:", () => {
       },
     );
   });
-});
 
-describe("Test fs:askQuestion function:", () => {
-  let readlineStub: SinonStub<any, any>;
-
-  it("success ", async () => {
+  it("tests that fs/askQuestion function is success", async () => {
     afterEach(() => {
       if (readlineStub) readlineStub.restore();
     });
@@ -91,10 +89,8 @@ describe("Test fs:askQuestion function:", () => {
       });
     });
   });
-});
 
-describe("Test fs:readNetworkConfig function:", () => {
-  it("converts the config file", async () => {
+  it("tests that fs/readNetworkConfig converts the config file", async () => {
     const some = path.resolve(path.join(__dirname, "./spec-config.toml"));
     const s: LaunchConfig = readNetworkConfig(some);
     assert.equal(s?.relaychain?.default_image, "test-image");
