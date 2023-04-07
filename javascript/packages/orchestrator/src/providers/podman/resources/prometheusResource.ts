@@ -44,9 +44,9 @@ export class PrometheusResource {
         __dirname,
         "./configs/prometheus.yml",
       );
-      await fs.copyFile(
-        templateConfigPath,
+      await fs.writeFile(
         `${this.configPath}/prometheus.yml`,
+        templateConfigPath,
       );
     } catch {
       throw new Error("Error generating config for prometheus resource");
