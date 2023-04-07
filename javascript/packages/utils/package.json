@@ -23,17 +23,26 @@
     "build": "tsc",
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --require ts-node/register src/**/*.spec.ts"
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
     "cli-table3": "^0.6.2",
     "debug": "^4.3.2",
+    "mocha": "^10.2.0",
     "nunjucks": "^3.2.3",
-    "toml": "^3.0.0"
+    "toml": "^3.0.0",
+    "ts-node": "^10.9.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/deep-equal-in-any-order": "^1.0.1",
+    "@types/mocha": "^10.0.1",
     "@types/nunjucks": "^3.2.2",
+    "@types/sinon": "^10.0.13",
+    "chai": "^4.3.7",
+    "deep-equal-in-any-order": "^2.0.6",
+    "sinon": "^15.0.3",
     "yaml": "^2.2.1"
   },
   "publishConfig": {
