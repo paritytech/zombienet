@@ -14,6 +14,7 @@ import {
 } from "../../constants";
 import { Network } from "../../network";
 import { Node } from "../../types";
+import { NodeResource } from "./resources/nodeResource";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -53,50 +54,8 @@ export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
 ): Promise<any> {
-  const [volume_mounts, devices] = make_volume_mounts();
-  const container = await make_main_container(nodeSetup, volume_mounts);
-  const transferContainter = make_transfer_containter();
-
-  const containersToRun = [container];
-  if (
-    (nodeSetup.zombieRole === "node" ||
-      nodeSetup.zombieRole === "cumulus-collator") &&
-    nodeSetup.jaegerUrl &&
-    nodeSetup.jaegerUrl === "localhost:6831"
-  ) {
-    // add sidecar
-    containersToRun.push(jaegerAgentDef());
-  }
-
-  return {
-    apiVersion: "v1",
-    kind: "Pod",
-    metadata: {
-      name: nodeSetup.name,
-      labels: {
-        "zombie-role": nodeSetup.validator ? "authority" : "full-node",
-        app: "zombienet",
-        "app.kubernetes.io/name": namespace,
-        "app.kubernetes.io/instance": nodeSetup.name,
-      },
-      annotations: {
-        "prometheus.io/scrape": "true",
-        "prometheus.io/port": PROMETHEUS_PORT + "", //force string
-      },
-    },
-    spec: {
-      hostname: nodeSetup.name,
-      containers: containersToRun,
-      initContainers: [transferContainter],
-      restartPolicy: "Never",
-      volumes: devices,
-      securityContext: {
-        fsGroup: 1000,
-        runAsUser: 1000,
-        runAsGroup: 1000,
-      },
-    },
-  };
+  const nodeResource = new NodeResource(namespace, nodeSetup);
+  return nodeResource.generateSpec();
 }
 
 function make_transfer_containter(): any {
@@ -177,46 +136,6 @@ async function make_main_container(
   if (nodeSetup.resources) containerDef.resources = nodeSetup.resources;
 
   return containerDef;
-}
-
-function jaegerAgentDef() {
-  return {
-    name: "jaeger-agent",
-    image: "jaegertracing/jaeger-agent:1.28.0",
-    ports: [
-      {
-        containerPort: 5775,
-        protocol: "UDP",
-      },
-      {
-        containerPort: 5778,
-        protocol: "TCP",
-      },
-      {
-        containerPort: 6831,
-        protocol: "UDP",
-      },
-      {
-        containerPort: 6832,
-        protocol: "UDP",
-      },
-    ],
-    command: [
-      "/go/bin/agent-linux",
-      "--reporter.type=grpc",
-      "--reporter.grpc.host-port=tempo-tempo-distributed-distributor.tempo.svc.cluster.local:14250",
-    ],
-    resources: {
-      limits: {
-        memory: "50M",
-        cpu: "100m",
-      },
-      requests: {
-        memory: "50M",
-        cpu: "100m",
-      },
-    },
-  };
 }
 
 export function replaceNetworkRef(podDef: any, network: Network) {
