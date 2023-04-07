@@ -20,7 +20,8 @@ import {
   addParachainToGenesis,
   customizePlainRelayChain,
   readAndParseChainSpec,
-} from "./chain-spec";
+  specHaveSessionsKeys,
+} from "./chainSpec";
 import {
   generateBootnodeSpec,
   generateNetworkSpec,
@@ -413,12 +414,14 @@ export async function start(
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
-        await registerParachain(
-          parachain.id,
-          `${tmpDir.path}/${parachain.name}/${GENESIS_WASM_FILENAME}`,
-          `${tmpDir.path}/${parachain.name}/${GENESIS_STATE_FILENAME}`,
-          network.relay[0].wsUri,
-        );
+        const basePath = `${tmpDir.path}/${parachain.name}`;
+        await registerParachain({
+          id: parachain.id,
+          wasmPath: `${basePath}/${GENESIS_WASM_FILENAME}`,
+          statePath: `${basePath}/${GENESIS_STATE_FILENAME}`,
+          apiUrl: network.relay[0].wsUri,
+          onboardAsParachain: parachain.onboardAsParachain,
+        });
       }
 
       if (parachain.cumulusBased) {

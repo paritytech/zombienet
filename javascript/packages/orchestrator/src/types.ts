@@ -96,6 +96,7 @@ export interface ParachainConfig {
   chain?: string;
   add_to_genesis?: boolean;
   register_para?: boolean;
+  onboard_as_parachain?: boolean;
   balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
@@ -203,6 +204,7 @@ export interface Parachain {
   para: PARA;
   addToGenesis: boolean;
   registerPara: boolean;
+  onboardAsParachain: boolean;
   cumulusBased: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
@@ -316,4 +318,14 @@ export interface FnArgs {
   file_or_uri?: string;
   after?: number;
   seconds?: number;
+}
+
+export interface RegisterParachainOptions {
+  id: number;
+  wasmPath: string;
+  statePath: string;
+  apiUrl: string;
+  onboardAsParachain: boolean;
+  seed?: string;
+  finalization?: boolean;
 }
