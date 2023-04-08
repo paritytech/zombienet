@@ -246,6 +246,8 @@ export interface ChainSpec {
   };
 }
 
+export type NodeMultiAddress = string;
+
 // Utils
 export interface GlobalVolume {
   name: string;
