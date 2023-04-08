@@ -15,7 +15,7 @@ export class PrometheusResource {
   private readonly dataPath: string;
 
   constructor(client: Client, private readonly namespace: string) {
-    const nodeRootPath = `${client.tmpDir}/prometeus`;
+    const nodeRootPath = `${client.tmpDir}/prometheus`;
     this.configPath = `${nodeRootPath}/etc`;
     this.dataPath = `${nodeRootPath}/data`;
   }

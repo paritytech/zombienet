@@ -14,7 +14,8 @@
   },
   "scripts": {
     "clean": "rm -rf ./dist/*",
-    "build": "tsc",
+    "build": "tsc && npm run copy:podman",
+    "copy:podman": "cp -r src/providers/podman/resources/configs dist/providers/podman/resources",
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\" && exit 1"
