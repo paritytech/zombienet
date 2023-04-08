@@ -10,6 +10,7 @@ import {
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import { Client } from "./providers/client";
+import { destroyChainSpecProcesses } from "./chainSpec";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -152,6 +153,7 @@ export class Network {
     // Cleanup all api instances
     for (const node of Object.values(this.nodesByName))
       node.apiInstance?.disconnect();
+    await destroyChainSpecProcesses();
     await this.client.destroyNamespace();
   }
 

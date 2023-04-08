@@ -24,6 +24,8 @@ import {
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  RAW_CHAIN_SPEC_IN_CMD_PATTERN,
+  PLAIN_CHAIN_SPEC_IN_CMD_PATTERN,
   UNDYING_COLLATOR_BIN,
   ZOMBIE_WRAPPER,
 } from "./constants";
@@ -118,6 +120,8 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      chainSpecModifierCommands: [],
+      rawChainSpecModifierCommands: [],
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       maxNominations:
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
@@ -176,6 +180,30 @@ export async function generateNetworkSpec(
           "{{chainName}}",
           networkSpec.relaychain.chain,
         ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
+  }
+
+  for (const cmd of config.relaychain.chain_spec_modifier_commands || []) {
+    const cmdHasRawSpec = cmd.some(arg => RAW_CHAIN_SPEC_IN_CMD_PATTERN.test(arg));
+    const cmdHasPlainSpec = cmd.some(arg => PLAIN_CHAIN_SPEC_IN_CMD_PATTERN.test(arg));
+
+    if (cmdHasRawSpec && cmdHasPlainSpec) {
+      console.error(
+        decorators.red(
+          `Chain spec modifier command references both raw and plain chain specs!\n\t${cmd}`,
+        ),
+      );
+      process.exit();
+    }
+    else if (cmdHasRawSpec) networkSpec.relaychain.rawChainSpecModifierCommands.push(cmd);
+    else if (cmdHasPlainSpec) networkSpec.relaychain.chainSpecModifierCommands.push(cmd);
+    else {
+      console.error(
+        decorators.red(
+          `Chain spec modifier command does not attempt to reference a chain spec path!\n\t${cmd}`,
+        ),
+      );
+      process.exit();
+    }
   }
 
   const relayChainBootnodes: string[] = [];
@@ -357,6 +385,8 @@ export async function generateNetworkSpec(
         name: getUniqueName(parachain.id.toString()),
         para,
         cumulusBased: isCumulusBased,
+        chainSpecModifierCommands: [],
+        rawChainSpecModifierCommands: [],
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
@@ -386,6 +416,30 @@ export async function generateNetworkSpec(
           process.exit();
         } else {
           parachainSetup.chainSpecPath = chainSpecPath;
+        }
+      }
+
+      for (const cmd of parachain.chain_spec_modifier_commands || []) {
+        const cmdHasRawSpec = cmd.some(arg => RAW_CHAIN_SPEC_IN_CMD_PATTERN.test(arg));
+        const cmdHasPlainSpec = cmd.some(arg => PLAIN_CHAIN_SPEC_IN_CMD_PATTERN.test(arg));
+    
+        if (cmdHasRawSpec && cmdHasPlainSpec) {
+          console.error(
+            decorators.red(
+              `Chain spec modifier command references both raw and plain chain specs!\n\t${cmd}`,
+            ),
+          );
+          process.exit();
+        }
+        else if (cmdHasRawSpec) parachainSetup.rawChainSpecModifierCommands.push(cmd);
+        else if (cmdHasPlainSpec) parachainSetup.chainSpecModifierCommands.push(cmd);
+        else {
+          console.error(
+            decorators.red(
+              `Chain spec modifier command does not attempt to reference a chain spec path!\n\t${cmd}`,
+            ),
+          );
+          process.exit();
         }
       }
 

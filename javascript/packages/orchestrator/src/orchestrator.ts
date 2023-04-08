@@ -21,6 +21,7 @@ import {
   addParachainToGenesis,
   customizePlainRelayChain,
   readAndParseChainSpec,
+  runCommandWithChainSpec,
 } from "./chainSpec";
 import {
   generateBootnodeSpec,
@@ -329,6 +330,11 @@ export async function start(
     if (launchConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
       networkSpec.relaychain.nodes.unshift(bootnodeSpec);
+    }
+
+    // modify the raw chain spec with any custom commands
+    for (const cmd of networkSpec.relaychain.rawChainSpecModifierCommands) {
+      await runCommandWithChainSpec(chainSpecFullPath, cmd);
     }
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();

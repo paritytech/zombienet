@@ -42,6 +42,7 @@ export interface RelayChainConfig {
   chain_spec_command?: string;
   default_args?: string[];
   default_overrides?: Override[];
+  chain_spec_modifier_commands?: string[][];
   random_nominators_count?: number;
   max_nominations?: number;
   nodes?: NodeConfig[];
@@ -94,6 +95,7 @@ export interface ParachainConfig {
   chain_spec_path?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
+  chain_spec_modifier_commands?: string[][];
   // backward compatibility
   collator?: NodeConfig;
   collators?: NodeConfig[];

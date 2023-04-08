@@ -6,8 +6,10 @@ import {
   getRandom,
   readDataFile,
 } from "@zombienet/utils";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import crypto from "crypto";
 import fs from "fs";
+import { PLAIN_CHAIN_SPEC_IN_CMD_PATTERN, RAW_CHAIN_SPEC_IN_CMD_PATTERN } from "./constants";
 import { generateKeyFromSeed } from "./keys";
 import { ChainSpec, ComputedNetwork, HrmpChannelsConfig, Node } from "./types";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
@@ -17,6 +19,15 @@ const JSONStream = require("JSONStream");
 
 // track 1st staking as default;
 let stakingBond: number | undefined;
+
+const processes: { [key: string]: ChildProcessWithoutNullStreams } = {};
+
+// kill any runnning processes related to non-node chain spec processing
+export async function destroyChainSpecProcesses() {
+  for (const key of Object.keys(processes)) {
+		processes[key].kill();
+	}
+}
 
 export type KeyType = "session" | "aura" | "grandpa";
 
@@ -663,6 +674,63 @@ export async function getChainIdFromSpec(specPath: string): Promise<string> {
   });
 }
 
+export async function runCommandWithChainSpec(
+  chainSpecFullPath: string,
+  commandArgs: string[],
+) {
+  const chainSpecSubstitutePattern = new RegExp(
+    RAW_CHAIN_SPEC_IN_CMD_PATTERN.source + "|" + PLAIN_CHAIN_SPEC_IN_CMD_PATTERN.source,
+    "gi",
+  );
+
+  const substitutedCommandArgs = commandArgs.map(arg =>
+    `${arg.replaceAll(chainSpecSubstitutePattern, chainSpecFullPath)}`);
+  const chainSpecModifiedPath = chainSpecFullPath.replace('.json', '-modified.json');
+
+  new CreateLogTable({ colWidths: [30, 90] }).pushToPrint([[
+    decorators.green("🧪 Mutating chain spec"),
+    decorators.white(substitutedCommandArgs.join(" ")),
+  ]]);
+
+  try {
+    await new Promise<void>(function (resolve, reject) {
+      if (processes["mutator"]) {
+        processes["mutator"].kill();
+      }
+
+      // spawn the chain spec mutator thread with the command and arguments
+      processes["mutator"] = spawn(substitutedCommandArgs[0], substitutedCommandArgs.slice(1));
+      // flush the modified spec to a different file and then copy it back into the original path
+      let spec = fs.createWriteStream(chainSpecModifiedPath);
+
+      // `pipe` since it deals with flushing and we need to guarantee that the data is flushed
+      // before we resolve the promise.
+      processes["mutator"].stdout.pipe(spec);
+
+      processes["mutator"].stderr.pipe(process.stderr);
+
+      processes["mutator"].on("close", () => {
+        resolve();
+      });
+
+      processes["mutator"].on("error", (err) => {
+        reject(err);
+      });
+    });
+
+    // copy the modified file back into the original path after the mutation has completed
+    fs.copyFileSync(chainSpecModifiedPath, chainSpecFullPath);
+  } catch (e: any) {
+    if (e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
+
+    console.log(
+      `\n\t\t 🚧 ${decorators.yellow(
+        `Chain Spec file ${chainSpecFullPath} is TOO LARGE to customize (more than 2G).`,
+      )} 🚧`,
+    );
+  }
+}
+
 export async function customizePlainRelayChain(
   specPath: string,
   networkSpec: ComputedNetwork,
@@ -713,6 +781,11 @@ export async function customizePlainRelayChain(
 
     if (networkSpec.hrmp_channels) {
       await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
+    }
+
+    // modify the plain chain spec with any custom commands
+    for (const cmd of networkSpec.relaychain.chainSpecModifierCommands) {
+      await runCommandWithChainSpec(specPath, cmd);
     }
   } catch (err) {
     console.log(
