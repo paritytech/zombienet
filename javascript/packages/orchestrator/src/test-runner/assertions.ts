@@ -190,7 +190,11 @@ const CustomJs = ({
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   const comparatorFn = comparators[op!];
 
-  return async (network: Network, _backchannelMap: BackchannelMap, configBasePath: string) => {
+  return async (
+    network: Network,
+    _backchannelMap: BackchannelMap,
+    configBasePath: string,
+  ) => {
     const networkInfo = {
       tmpDir: network.tmpDir,
       chainSpecPath: network.chainSpecFullPath,
@@ -297,7 +301,11 @@ const CustomSh = ({
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   const comparatorFn = comparators[op!];
 
-  return async (network: Network, _backchannelMap: BackchannelMap, configBasePath: string) => {
+  return async (
+    network: Network,
+    _backchannelMap: BackchannelMap,
+    configBasePath: string,
+  ) => {
     try {
       const resolvedShFilePath = path.resolve(configBasePath, file_path!);
 
@@ -376,7 +384,11 @@ const ParaRuntimeUpgrade = ({
   timeout,
 }: FnArgs) => {
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
-  return async (network: Network, _backchannelMap: BackchannelMap, configBasePath: string) => {
+  return async (
+    network: Network,
+    _backchannelMap: BackchannelMap,
+    configBasePath: string,
+  ) => {
     const node = network.node(node_name!);
     let api: ApiPromise = await connect(node.wsUri);
     let hash;

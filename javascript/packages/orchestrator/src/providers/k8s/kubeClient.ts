@@ -738,7 +738,8 @@ export class KubeClient extends Client {
       const cmd = opts?.mainCmd || this.command;
 
       // only apply augmented args when we are using the default cmd.
-      const finalArgs = cmd !== this.command ? args : [...augmentedCmd, ...args];
+      const finalArgs =
+        cmd !== this.command ? args : [...augmentedCmd, ...args];
       debug("finalArgs", finalArgs);
 
       const result = await execa(cmd, finalArgs, {
