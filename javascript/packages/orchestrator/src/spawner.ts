@@ -56,7 +56,7 @@ export const spawnNode = async (
     ? genBootnodeDef(namespace, node)
     : genNodeDef(namespace, node));
 
-  let finalFilesToCopyToNode = [...filesToCopy];
+  const finalFilesToCopyToNode = [...filesToCopy];
 
   // add spec file if is provided
   if (parachain?.specPath) {
@@ -184,7 +184,7 @@ export const spawnNode = async (
   }
 
   // Display info about the current node
-  let logTable = new CreateLogTable({
+  const logTable = new CreateLogTable({
     colWidths: [20, 100],
     doubleBorder: true,
   });

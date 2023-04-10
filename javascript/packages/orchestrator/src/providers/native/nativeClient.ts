@@ -176,7 +176,7 @@ export class NativeClient extends Client {
     return [LOCALHOST, hostPort];
   }
 
-  async getNodeIP(identifier: string): Promise<string> {
+  async getNodeIP(): Promise<string> {
     return LOCALHOST;
   }
 
@@ -432,7 +432,7 @@ export class NativeClient extends Client {
     return false;
   }
 
-  async spawnIntrospector(wsUri: string) {
+  async spawnIntrospector() {
     // NOOP
   }
 

@@ -128,10 +128,7 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   }
 }
 
-export function getNodeKey(
-  node: Node,
-  useStash: boolean = true,
-): GenesisNodeKey {
+export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
   try {
     const { sr_stash, sr_account, ed_account, ec_account } = node.accounts;
 
@@ -359,7 +356,7 @@ export async function generateNominators(
       const balanceToAdd = stakingBond! + 1;
       runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
       // random nominations
-      let count = crypto.randomInt(maxForRandom) % maxNominations;
+      const count = crypto.randomInt(maxForRandom) % maxNominations;
       const nominations = getRandom(validators, count || count + 1);
       // push to stakers
       runtimeConfig.staking.stakers.push([
@@ -410,7 +407,7 @@ export async function addParachainToGenesis(
       paras = runtimeConfig.parachainsParas.paras;
     }
     if (paras) {
-      let new_para = [
+      const new_para = [
         parseInt(para_id),
         [readDataFile(head), readDataFile(wasm), parachain],
       ];
@@ -451,7 +448,7 @@ export async function changeGenesisConfig(specPath: string, updates: any) {
     ]);
 
     if (chainSpec.genesis) {
-      let config = chainSpec.genesis;
+      const config = chainSpec.genesis;
       findAndReplaceConfig(updates, config);
 
       writeChainSpec(specPath, chainSpec);
@@ -508,7 +505,7 @@ export async function addHrmpChannelsToGenesis(
     const chainSpec = readAndParseChainSpec(specPath);
 
     for (const h of hrmp_channels) {
-      let newHrmpChannel = [
+      const newHrmpChannel = [
         h.sender,
         h.recipient,
         h.max_capacity,

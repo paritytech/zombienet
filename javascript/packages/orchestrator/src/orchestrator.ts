@@ -39,13 +39,11 @@ import { getProvider } from "./providers/";
 import {
   ComputedNetwork,
   LaunchConfig,
-  MultiAddressByNode,
   Node,
   Parachain,
   fileMap,
 } from "./types";
 
-import { setSilent } from "@zombienet/utils";
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
 import { verifyNodes } from "./network-helpers/verifier";
@@ -84,7 +82,7 @@ export async function start(
   setSilent(opts.silent);
   let network: Network | undefined;
   let cronInterval = undefined;
-  const multiAddressByNode: MultiAddressByNode = {};
+
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
@@ -387,23 +385,6 @@ export async function start(
         );
       }
     }
-
-    const promiseGenerators = networkSpec.relaychain.nodes.map((node: Node) => {
-      return () =>
-        spawnNode(
-          client,
-          node,
-          network!,
-          bootnodes,
-          filesToCopyToNodes,
-          spawnOpts,
-        );
-    });
-
-    const nodeMultiAddresses = await series(
-      promiseGenerators,
-      opts.spawnConcurrency,
-    );
 
     new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
       [decorators.green("All relay chain nodes spawned...")],
