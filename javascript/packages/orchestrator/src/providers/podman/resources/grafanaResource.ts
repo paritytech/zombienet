@@ -1,4 +1,4 @@
-import { getRandomPort, makeDir } from "@zombienet/utils";
+import { decorators, getRandomPort, makeDir } from "@zombienet/utils";
 import fs from "fs/promises";
 import path from "path";
 import { Client } from "../../client";
@@ -56,8 +56,11 @@ export class GrafanaResource {
         `${this.dataSourcesPath}/prometheus.yml`,
         grafanaConfig,
       );
-    } catch {
-      throw new Error("Error generating config for grafana resource");
+    } catch (err) {
+      console.error(
+        decorators.red("Error generating config for grafana resource"),
+      );
+      throw err;
     }
   }
 

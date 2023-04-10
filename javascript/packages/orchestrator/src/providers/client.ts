@@ -56,6 +56,7 @@ export abstract class Client {
   abstract startPortForwarding(
     port: number,
     identifier: string,
+    namespace?: string,
   ): Promise<number>;
   abstract runCommand(
     args: string[],
@@ -71,6 +72,7 @@ export abstract class Client {
     filesToCopy?: fileMap[],
     keystore?: string,
     chainSpecId?: string,
+    dbSnapshot?: string,
   ): Promise<void>;
   abstract copyFileFromPod(
     identifier: string,
@@ -91,6 +93,14 @@ export abstract class Client {
   abstract getPauseArgs(name: string): string[];
   abstract getResumeArgs(name: string): string[];
   abstract restartNode(name: string, timeout: number | null): Promise<boolean>;
+  abstract getNodeInfo(
+    identifier: string,
+    port?: number,
+  ): Promise<[string, number]>;
+  abstract getNodeIP(identifier: string): Promise<string>;
+  abstract spawnIntrospector(wsUri: string): Promise<void>;
+  abstract validateAccess(): Promise<boolean>;
+  abstract getLogsCommand(name: string): string;
 }
 
 let client: Client;

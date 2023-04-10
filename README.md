@@ -416,6 +416,7 @@ Below can be found some of the projects that are currently using Zombienet as in
 - [Moonbeam](https://github.com/PureStake/moonbeam/tree/master/tests/zombienet)
 - [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
 - [ZombieNet Block Explorer](https://github.com/colorfulnotion/zombienet-explorer)
+- [ParaSpell✨](https://github.com/paraspell/ui-v2)
 
 
 ## Acknowledgement

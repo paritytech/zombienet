@@ -510,4 +510,8 @@ export class PodmanClient extends Client {
     const spec = await getIntrospectorDef(this.namespace, wsUri);
     await this.createResource(spec, false, true);
   }
+
+  getLogsCommand(name: string): string {
+    return `podman logs -f ${name}_pod-${name}`;
+  }
 }

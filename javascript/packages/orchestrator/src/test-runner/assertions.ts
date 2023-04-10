@@ -2,7 +2,7 @@ import { ApiPromise, Keyring } from "@polkadot/api";
 import { decorators, isValidHttpUrl } from "@zombienet/utils";
 import { assert, expect } from "chai";
 import { JSDOM } from "jsdom";
-import minimatch from "minimatch";
+import { makeRe } from "minimatch";
 import path from "path";
 import {
   chainCustomSectionUpgrade,
@@ -165,7 +165,7 @@ const SystemEvent = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   return async (network: Network) => {
     const node = network.node(node_name!);
     const api: ApiPromise = await connect(node.wsUri);
-    const re = isGlob ? minimatch.makeRe(pattern!) : new RegExp(pattern!, "ig");
+    const re = isGlob ? makeRe(pattern!) : new RegExp(pattern!, "ig");
     const found = await findPatternInSystemEventSubscription(
       api,
       re as RegExp,
