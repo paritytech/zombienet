@@ -864,4 +864,7 @@ export class KubeClient extends Client {
     debug(result);
     fileUploadCache[fileHash] = fileName;
   }
+  getLogsCommand(name: string): string {
+    return `kubectl logs -f ${name} -c ${name} -n ${this.namespace}`;
+  }
 }
