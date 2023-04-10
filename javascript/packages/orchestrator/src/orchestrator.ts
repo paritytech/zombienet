@@ -386,6 +386,28 @@ export async function start(
       }
     }
 
+    const promiseGenerators = networkSpec.relaychain.nodes.map((node: Node) => {
+      return () =>
+        spawnNode(
+          client,
+          node,
+          network!,
+          bootnodes,
+          filesToCopyToNodes,
+          spawnOpts,
+        );
+    });
+
+    await series(promiseGenerators, opts.spawnConcurrency);
+
+    // TODO: handle `addToBootnodes` in a diff serie.
+    // for (const node of networkSpec.relaychain.nodes) {
+    //   if (node.addToBootnodes) {
+    //     bootnodes.push(network.getNodeByName(node.name).multiAddress);
+    //     await addBootNodes(chainSpecFullPath, bootnodes);
+    //   }
+    // }
+
     new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
       [decorators.green("All relay chain nodes spawned...")],
     ]);
