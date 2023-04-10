@@ -1,6 +1,6 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import axios from "axios";
-import minimatch from "minimatch";
+import { makeRe } from "minimatch";
 
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -366,7 +366,7 @@ export class NetworkNode implements NetworkNodeInterface {
   ): Promise<number> {
     try {
       let total_count = 0;
-      const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
       const getValue = async (): Promise<number> => {
@@ -416,7 +416,7 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     try {
-      const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
       let logs = await client.getNodeLogs(this.name, undefined, true);
