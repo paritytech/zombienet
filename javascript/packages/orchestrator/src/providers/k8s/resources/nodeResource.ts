@@ -81,7 +81,7 @@ export class NodeResource {
           { name: "tmp-relay-data", mountPath: "/relay-data", readOnly: false },
         ],
         command: [
-          "ash",
+          "bash",
           "-c",
           [
             "wget github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
