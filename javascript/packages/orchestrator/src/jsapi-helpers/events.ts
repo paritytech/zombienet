@@ -6,16 +6,16 @@ export async function findPatternInSystemEventSubscription(
   re: RegExp,
   timeout: number,
 ): Promise<boolean> {
-  let found: boolean = false;
-  found = await new Promise((resolve, _) => {
+  let found = false;
+  found = await new Promise((resolve) => {
     const limitTimeout = setTimeout(() => {
       debug(`Timeout getting pattern (${timeout})`);
       resolve(false);
     }, timeout * 1000);
 
     api.query.system.events((events: any) => {
-      let eventString: string = "";
-      let matchedEvent = events.find((record: any) => {
+      let eventString = "";
+      const matchedEvent = events.find((record: any) => {
         eventString = "";
         // extract the phase, event and the event types
         const { event, phase } = record;

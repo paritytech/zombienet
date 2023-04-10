@@ -24,7 +24,7 @@ export async function generateParachainFiles(
   parachain: Parachain,
   relayChainSpecIsRaw: boolean,
 ): Promise<void> {
-  let [
+  const [
     addAuraAuthority,
     addAuthority,
     changeGenesisConfig,
@@ -204,7 +204,7 @@ export async function generateParachainFiles(
         remoteFilePath: `${client.remoteDir}/${chainSpecFileName}`,
       });
 
-    let commands = [];
+    const commands = [];
     if (parachain.genesisStateGenerator) {
       let genesisStateGenerator = parachain.genesisStateGenerator.replace(
         "{{CLIENT_REMOTE_DIR}}",
@@ -250,7 +250,7 @@ export async function generateParachainFiles(
     else if (client.providerName == "podman")
       commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
-    let node: Node = {
+    const node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,
       invulnerable: false,

@@ -38,7 +38,6 @@ export const spawnNode = async (
   },
   parachain?: Parachain,
 ): Promise<NodeMultiAddress> => {
-  console.log("parachain", parachain);
   const namespace = client.namespace;
   const { genBootnodeDef, genNodeDef, replaceNetworkRef } = getProvider(
     client.providerName,
@@ -56,7 +55,7 @@ export const spawnNode = async (
     ? genBootnodeDef(namespace, node)
     : genNodeDef(namespace, node));
 
-  let finalFilesToCopyToNode = [...filesToCopy];
+  const finalFilesToCopyToNode = [...filesToCopy];
 
   // add spec file if is provided
   if (parachain?.specPath) {
@@ -111,13 +110,6 @@ export const spawnNode = async (
     true,
     node.p2pCertHash,
   );
-
-  // multiAddressByNode[podDef.metadata.name] = nodeMultiAddress;
-
-  // if (node.addToBootnodes) {
-  //   bootnodes.push(nodeMultiAddress);
-  //   await addBootNodes(chainSpecFullPath, bootnodes);
-  // }
 
   let networkNode: NetworkNode;
 
@@ -184,7 +176,7 @@ export const spawnNode = async (
   }
 
   // Display info about the current node
-  let logTable = new CreateLogTable({
+  const logTable = new CreateLogTable({
     colWidths: [20, 100],
     doubleBorder: true,
   });

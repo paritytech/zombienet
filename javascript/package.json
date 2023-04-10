@@ -13,8 +13,8 @@
   "scripts": {
     "clean": "npm run clean --workspaces --if-present",
     "build": "npm run clean && npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "lint:write": "npm run lint:write --workspaces --if-present",
+    "lint": "eslint './**' && npx prettier -c .",
+    "lint:write": "eslint './**' --fix && npx prettier --write .",
     "package": "npm run -w packages/cli package",
     "package:linux": "npm run -w packages/cli package:linux",
     "package:macos": "npm run -w packages/cli package:macos",
@@ -33,6 +33,12 @@
   "devDependencies": {
     "@types/node": "^18.15.11",
     "@types/tmp": "^0.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "eslint": "^8.37.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-import-resolver-typescript": "^3.5.4",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.8.7",
     "prettier-plugin-organize-imports": "^3.2.2"
   },

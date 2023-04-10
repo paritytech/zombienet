@@ -63,7 +63,7 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
 export async function generateKeystoreFiles(
   node: Node,
   path: string,
-  isStatemint: boolean = false,
+  isStatemint = false,
 ): Promise<string[]> {
   const keystoreDir = `${path}/keystore`;
   await makeDir(keystoreDir);

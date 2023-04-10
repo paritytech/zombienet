@@ -42,7 +42,7 @@ export async function createTempNodeDef(
   fullCommand: string,
 ) {
   const nodeName = getUniqueName("temp");
-  let node: Node = {
+  const node: Node = {
     name: nodeName,
     key: getSha256(nodeName),
     image,

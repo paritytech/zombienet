@@ -164,7 +164,7 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredValue: number,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
-    let value: number = 0;
+    let value = 0;
     try {
       const getValue = async () => {
         while (desiredValue > value) {
@@ -172,7 +172,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (!this.apiInstance) await this.connectApi();
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          let blockNumber = await paraGetBlockHeight(
+          const blockNumber = await paraGetBlockHeight(
             this.apiInstance as ApiPromise,
             parachainId,
           );
@@ -310,10 +310,8 @@ export class NetworkNode implements NetworkNodeInterface {
       }
 
       const getValue = async () => {
-        let c = 0;
         let done = false;
         while (!done) {
-          c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           histogramBuckets = await getHistogramBuckets(
             this.prometheusUri,
@@ -371,7 +369,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const client = getClient();
       const getValue = async (): Promise<number> => {
         await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
-        let logs = await client.getNodeLogs(this.name, undefined, true);
+        const logs = await client.getNodeLogs(this.name, undefined, true);
 
         for (let line of logs.split("\n")) {
           if (client.providerName !== "native") {
@@ -550,7 +548,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   _getMetric(
     metricName: string,
-    metricShouldExists: boolean = true,
+    metricShouldExists = true,
   ): number | undefined {
     if (!this.cachedMetrics) throw new Error("Metrics not availables");
 

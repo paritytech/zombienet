@@ -1,16 +1,17 @@
 import {
-  askQuestion,
   CreateLogTable,
+  PARACHAIN_NOT_FOUND,
+  POLKADOT_NOT_FOUND,
+  POLKADOT_NOT_FOUND_DESCRIPTION,
+  askQuestion,
   decorators,
   filterConsole,
   generateNamespace,
   getSha256,
   loadTypeDef,
   makeDir,
-  PARACHAIN_NOT_FOUND,
-  POLKADOT_NOT_FOUND,
-  POLKADOT_NOT_FOUND_DESCRIPTION,
   series,
+  setSilent,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -37,14 +38,12 @@ import { generateParachainFiles } from "./paras";
 import { getProvider } from "./providers/";
 import {
   ComputedNetwork,
-  fileMap,
   LaunchConfig,
-  MultiAddressByNode,
   Node,
   Parachain,
+  fileMap,
 } from "./types";
 
-import { setSilent } from "@zombienet/utils";
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
 import { verifyNodes } from "./network-helpers/verifier";
@@ -83,7 +82,7 @@ export async function start(
   setSilent(opts.silent);
   let network: Network | undefined;
   let cronInterval = undefined;
-  let multiAddressByNode: MultiAddressByNode = {};
+
   try {
     // Parse and build Network definition
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
@@ -325,7 +324,7 @@ export async function start(
       },
     ];
 
-    let bootnodes: string[] = [];
+    const bootnodes: string[] = [];
 
     if (launchConfig.settings.bootnode) {
       const bootnodeSpec = await generateBootnodeSpec(networkSpec);
@@ -399,10 +398,15 @@ export async function start(
         );
     });
 
-    const nodeMultiAddresses = await series(
-      promiseGenerators,
-      opts.spawnConcurrency,
-    );
+    await series(promiseGenerators, opts.spawnConcurrency);
+
+    // TODO: handle `addToBootnodes` in a diff serie.
+    // for (const node of networkSpec.relaychain.nodes) {
+    //   if (node.addToBootnodes) {
+    //     bootnodes.push(network.getNodeByName(node.name).multiAddress);
+    //     await addBootNodes(chainSpecFullPath, bootnodes);
+    //   }
+    // }
 
     new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
       [decorators.green("All relay chain nodes spawned...")],

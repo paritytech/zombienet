@@ -76,7 +76,7 @@ const configurationFileChecks = (config: LaunchConfig): void => {
       );
     }
   if (config?.parachains && isIterable(config?.parachains))
-    for (const parachain of config?.parachains) {
+    for (const parachain of config.parachains) {
       if (parachain?.collator_groups && isIterable(parachain?.collator_groups))
         for (const collatorGroup of parachain?.collator_groups || []) {
           validateImageUrl(
@@ -111,7 +111,7 @@ export async function generateNetworkSpec(
     );
   }
 
-  let networkSpec: any = {
+  const networkSpec: any = {
     configBasePath: config.configBasePath,
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
@@ -192,7 +192,7 @@ export async function generateNetworkSpec(
 
   for (const nodeGroup of config.relaychain.node_groups || []) {
     for (let i = 0; i < (nodeGroup.count as number); i++) {
-      let node: NodeConfig = {
+      const node: NodeConfig = {
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
@@ -266,7 +266,7 @@ export async function generateNetworkSpec(
 
       for (const collatorGroup of parachain.collator_groups || []) {
         for (let i = 0; i < (collatorGroup.count as number); i++) {
-          let node: NodeConfig = {
+          const node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
             image: collatorGroup.image || DEFAULT_COLLATOR_IMAGE,
             command: collatorGroup.command || DEFAULT_CUMULUS_COLLATOR_BIN,
@@ -452,7 +452,7 @@ interface UsedNames {
   [properyName: string]: number;
 }
 
-let mUsedNames: UsedNames = {};
+const mUsedNames: UsedNames = {};
 
 export function getUniqueName(name: string): string {
   let uniqueName;
@@ -524,7 +524,7 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
-    args: collatorConfig.args || [],
+    args: args || [],
     chain,
     bootnodes,
     env,

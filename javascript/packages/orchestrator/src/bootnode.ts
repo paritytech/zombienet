@@ -8,20 +8,20 @@ export async function generateNodeMultiAddress(
   args: string[],
   ip: string,
   port: number,
-  useWs: boolean = true,
+  useWs = true,
   certhash?: string,
 ): Promise<NodeMultiAddress> {
   let multiaddress;
-  let pair = await libp2pKeys.generateKeyPairFromSeed(
+  const pair = await libp2pKeys.generateKeyPairFromSeed(
     "Ed25519",
     hexToU8a(hexAddPrefix(key)),
     1024,
   );
-  let peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes);
+  const peerId: PeerId = await PeerId.createFromPrivKey(pair.bytes);
 
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
-    let listenAddrParts = args[listenIndex + 1].split("/");
+    const listenAddrParts = args[listenIndex + 1].split("/");
     listenAddrParts[2] = ip;
     listenAddrParts[4] = port.toString();
     if (certhash) listenAddrParts.push("certhash", certhash);

@@ -53,9 +53,9 @@ export class KubeClient extends Client {
   configPath: string;
   debug: boolean;
   timeout: number;
-  command: string = "kubectl";
+  command = "kubectl";
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
@@ -233,18 +233,13 @@ export class KubeClient extends Client {
   }
 
   // accept a json def
-  async createResource(
-    resourseDef: any,
-    scoped: boolean = false,
-  ): Promise<void> {
+  async createResource(resourseDef: any, scoped = false): Promise<void> {
     await this.runCommand(["apply", "-f", "-"], {
       resourceDef: JSON.stringify(resourseDef),
       scoped,
     });
 
     debug(resourseDef);
-    const name = resourseDef.metadata.name;
-    const kind: string = resourseDef.kind.toLowerCase();
   }
 
   async waitPodReady(pod: string): Promise<void> {
@@ -275,8 +270,8 @@ export class KubeClient extends Client {
         const result = await this.runCommand(args);
         const json = JSON.parse(result.stdout);
 
-        let containerStatuses = json?.containerStatuses ?? [];
-        let initContainerStatuses = json?.initContainerStatuses ?? [];
+        const containerStatuses = json?.containerStatuses ?? [];
+        const initContainerStatuses = json?.initContainerStatuses ?? [];
         for (const status of containerStatuses.concat(initContainerStatuses)) {
           if (status.name === container && state in status.state) return true;
         }
@@ -387,7 +382,7 @@ export class KubeClient extends Client {
     localFilePath: string,
     podFilePath: string,
     container: string | undefined = undefined,
-    unique: boolean = false,
+    unique = false,
   ) {
     if (unique) {
       if (container === TRANSFER_CONTAINER_NAME) {
@@ -399,6 +394,7 @@ export class KubeClient extends Client {
         // we are copying to the main container and could be the case that tar
         // isn't available
         const args = [
+          "cat",
           localFilePath,
           "|",
           this.command,
@@ -417,7 +413,8 @@ export class KubeClient extends Client {
           "/dev/null",
         );
         debug("copyFileToPod", args.join(" "));
-        const result = await execa("cat", [args.join(" ")], { shell: true });
+        // This require local cat binary
+        await this.runCommand(["-c", args.join(" ")], { mainCmd: "bash" });
       }
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
@@ -510,7 +507,7 @@ export class KubeClient extends Client {
   }
 
   async staticSetup(settings: any) {
-    let storageFiles: string[] = (await this.runningOnMinikube())
+    const storageFiles: string[] = (await this.runningOnMinikube())
       ? [
           "node-data-tmp-storage-class-minikube.yaml",
           "node-data-persistent-storage-class-minikube.yaml",
@@ -572,11 +569,13 @@ export class KubeClient extends Client {
   async checkFileServer(): Promise<boolean> {
     const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
     debug("checking fileserver", args);
-    let result = await this.runCommand(args);
+    const result = await this.runCommand(args);
     debug("result", result);
     return result.stdout.includes("Welcome to nginx");
   }
-  async spawnBackchannel() {}
+  async spawnBackchannel() {
+    console.log("Not implemented function");
+  }
 
   async setupCleaner(): Promise<NodeJS.Timer> {
     this.podMonitorAvailable = await this.isPodMonitorAvailable();
@@ -585,7 +584,7 @@ export class KubeClient extends Client {
     await this.cronJobCleanerSetup();
     await this.upsertCronJob();
 
-    let cronInterval = setInterval(
+    const cronInterval = setInterval(
       async () => await this.upsertCronJob(),
       8 * 60 * 1000,
     );
@@ -607,7 +606,7 @@ export class KubeClient extends Client {
       const now = new Date();
       if (this.podMonitorAvailable) {
         const [hr, min] = addMinutes(minutes, now);
-        let schedule = `${min} ${hr} * * *`;
+        const schedule = `${min} ${hr} * * *`;
         await this.updateResource(
           "job-delete-podmonitor.yaml",
           this.namespace,
@@ -664,7 +663,7 @@ export class KubeClient extends Client {
       return subprocess;
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       let subprocess: null | ChildProcessWithoutNullStreams = createTunnel(
         port,
         identifier,
@@ -736,10 +735,13 @@ export class KubeClient extends Client {
       if (opts?.scoped === undefined || opts?.scoped)
         augmentedCmd.push("--namespace", this.namespace);
 
-      const finalArgs = [...augmentedCmd, ...args];
+      const cmd = opts?.mainCmd || this.command;
+
+      // only apply augmented args when we are using the default cmd.
+      const finalArgs =
+        cmd !== this.command ? args : [...augmentedCmd, ...args];
       debug("finalArgs", finalArgs);
 
-      const cmd = opts?.mainCmd || this.command;
       const result = await execa(cmd, finalArgs, {
         input: opts?.resourceDef,
       });
@@ -804,9 +806,8 @@ export class KubeClient extends Client {
       console.log(
         `\n ${decorators.red("Error: ")} \t ${decorators.bright(err)}\n`,
       );
-    } finally {
-      return available;
     }
+    return available;
   }
 
   getPauseArgs(name: string): string[] {
@@ -845,7 +846,7 @@ export class KubeClient extends Client {
     fileName: string,
     fileHash: string,
   ) {
-    let logTable = new CreateLogTable({
+    const logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
     logTable.pushTo([

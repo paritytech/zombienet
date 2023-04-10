@@ -18,9 +18,10 @@ interface PortsInterface {
   [key: string]: number;
 }
 
-interface ParachainCollatorsInterface {
-  [key: number]: number;
-}
+// Commented out as "Never used"
+// interface ParachainCollatorsInterface {
+//   [key: number]: number;
+// }
 
 function parseCmdWithArguments(
   commandWithArgs: string,
@@ -49,9 +50,9 @@ function parseCmdWithArguments(
 
 export async function genCumulusCollatorCmd(
   nodeSetup: Node,
-  cfgPath: string = "/cfg",
-  dataPath: string = "/data",
-  relayDataPath: string = "/relay-data",
+  cfgPath = "/cfg",
+  dataPath = "/data",
+  relayDataPath = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator, commandWithArgs } =
@@ -71,8 +72,6 @@ export async function genCumulusCollatorCmd(
     "--chain": true,
     "--prometheus-port": true,
   };
-
-  const colIndex = getCollatorIndex(parachainId!);
 
   let fullCmd: string[] = [
     nodeSetup.command || DEFAULT_COMMAND,
@@ -103,7 +102,7 @@ export async function genCumulusCollatorCmd(
   ];
 
   const chainParts = chain.split("_");
-  let relayChain =
+  const relayChain =
     chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
 
   if (validator) fullCmd.push(...["--collator"]);
@@ -117,7 +116,7 @@ export async function genCumulusCollatorCmd(
   if (nodeSetup.args.length > 0) {
     let argsFullNode = null;
     let argsParachain = null;
-    let splitIndex = nodeSetup.args.indexOf("--");
+    const splitIndex = nodeSetup.args.indexOf("--");
 
     if (splitIndex < 0) {
       argsParachain = nodeSetup.args;
@@ -225,27 +224,27 @@ export async function genCumulusCollatorCmd(
 
 export async function genCmd(
   nodeSetup: Node,
-  cfgPath: string = "/cfg",
-  dataPath: string = "/data",
+  cfgPath = "/cfg",
+  dataPath = "/data",
   useWrapper = true,
 ): Promise<string[]> {
-  let {
+  const {
     name,
     key,
     chain,
     commandWithArgs,
     fullCommand,
-    command,
     telemetry,
     telemetryUrl,
     prometheus,
     validator,
     bootnodes,
-    args,
     zombieRole,
     jaegerUrl,
     parachainId,
   } = nodeSetup;
+
+  let { command, args } = nodeSetup;
 
   // fullCommand is NOT decorated by the `zombie` wrapper
   // and is used internally in init containers.
@@ -298,7 +297,7 @@ export async function genCmd(
 
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
-    let listenAddrParts = args[listenIndex + 1].split("/");
+    const listenAddrParts = args[listenIndex + 1].split("/");
     listenAddrParts[4] = `${nodeSetup.p2pPort}`;
     const listenAddr = listenAddrParts.join("/");
     args[listenIndex + 1] = listenAddr;
@@ -332,13 +331,16 @@ export async function genCmd(
   return resolvedCmd;
 }
 
+// Commented out as "Never used"
 // helper
-const parachainCollators: ParachainCollatorsInterface =
-  {} as ParachainCollatorsInterface;
-function getCollatorIndex(paraId: number): number {
-  if (parachainCollators[paraId] >= 0)
-    parachainCollators[paraId] = parachainCollators[paraId] + 1;
-  else parachainCollators[paraId] = 0;
+// const parachainCollators: ParachainCollatorsInterface =
+//   {} as ParachainCollatorsInterface;
 
-  return parachainCollators[paraId];
-}
+// Commented out as "Never used"
+// function getCollatorIndex(paraId: number): number {
+//   if (parachainCollators[paraId] >= 0)
+//     parachainCollators[paraId] = parachainCollators[paraId] + 1;
+//   else parachainCollators[paraId] = 0;
+
+//   return parachainCollators[paraId];
+// }

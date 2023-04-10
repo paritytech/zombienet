@@ -121,10 +121,10 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
       cliProgress.Presets.shades_grey,
     );
 
-    for (let binary of binaries) {
+    for (const binary of binaries) {
       promises.push(
-        new Promise<void>(async (resolve, reject) => {
-          let result = options[binary];
+        new Promise<void>(async (resolve) => {
+          const result = options[binary];
           if (!result) {
             console.log("options", options, "binary", binary);
             throw new Error("Binary is not defined");
@@ -147,20 +147,22 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
           const reader = response.body?.getReader();
           const writer = fs.createWriteStream(path.resolve(name));
 
-          while (true) {
-            const read = await reader?.read()!;
+          let i = true;
+          while (i) {
+            const read = await reader?.read();
             if (read?.done) {
               writer.close();
+              i = false;
               resolve();
-              break;
             }
-
-            loaded += read.value.length;
-            progressBar.increment();
-            progressBar.update(loaded, {
-              filename: name,
-            });
-            writer.write(read.value);
+            if (read?.value) {
+              loaded += read.value.length;
+              progressBar.increment();
+              progressBar.update(loaded, {
+                filename: name,
+              });
+              writer.write(read.value);
+            }
           }
         }),
       );
@@ -194,7 +196,6 @@ const latestPolkadotReleaseURL = async (
     );
 
     let obj: any;
-    let tag_name;
 
     const allReleases = await releases.json();
     const release = allReleases.find((r: any) => {
@@ -202,7 +203,7 @@ const latestPolkadotReleaseURL = async (
       return Boolean(obj);
     });
 
-    tag_name = release.tag_name;
+    const { tag_name } = release;
 
     if (!tag_name) {
       throw new Error(

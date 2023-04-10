@@ -155,7 +155,7 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async dumpLogs(showLogPath: boolean = true): Promise<string> {
+  async dumpLogs(showLogPath = true): Promise<string> {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
     if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
@@ -260,15 +260,8 @@ export class Network {
   }
 
   // Testing abstraction
-  async nodeIsUp(
-    nodeName: string,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  ): Promise<boolean> {
+  async nodeIsUp(nodeName: string): Promise<boolean> {
     try {
-      const limitTimeout = setTimeout(() => {
-        throw new Error(`Timeout(${timeout}s)`);
-      }, timeout * 1000);
-
       const node = this.getNodeByName(nodeName);
       await node.apiInstance?.rpc.system.name();
       return true;
@@ -335,11 +328,11 @@ export class Network {
     // Support native VSCode remote extension automatic port forwarding.
     // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
-    let wsUri = ["native", "podman"].includes(provider)
+    const wsUri = ["native", "podman"].includes(provider)
       ? node.wsUri
       : encodeURIComponent(node.wsUri);
 
-    let logCommand: string = "";
+    let logCommand = "";
 
     switch (this.client.providerName) {
       case "podman":

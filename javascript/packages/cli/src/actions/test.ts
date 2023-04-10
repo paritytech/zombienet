@@ -26,7 +26,7 @@ export async function test(
   const opts = { ...program.parent.opts(), ...cmdOpts };
   const dir = opts.dir || "";
 
-  let extension = testFile.slice(testFile.lastIndexOf(".") + 1);
+  const extension = testFile.slice(testFile.lastIndexOf(".") + 1);
 
   if (extension !== "zndsl") {
     console.log(

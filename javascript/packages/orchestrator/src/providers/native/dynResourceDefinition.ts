@@ -44,7 +44,7 @@ export async function createTempNodeDef(
   chain: string,
   fullCommand: string,
 ) {
-  let node: Node = {
+  const node: Node = {
     name: getUniqueName("temp"),
     image,
     fullCommand: fullCommand,

@@ -12,7 +12,7 @@ import { Client } from "../providers/client";
 export async function spawnIntrospector(
   client: Client,
   node: NetworkNode,
-  inCI: boolean = false,
+  inCI = false,
 ): Promise<NetworkNode> {
   const [nodeIp, port] = await client.getNodeInfo(node.name, RPC_HTTP_PORT);
   const wsUri = WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
