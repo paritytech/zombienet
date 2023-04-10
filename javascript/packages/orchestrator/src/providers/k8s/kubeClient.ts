@@ -394,6 +394,7 @@ export class KubeClient extends Client {
         // we are copying to the main container and could be the case that tar
         // isn't available
         const args = [
+          "cat",
           localFilePath,
           "|",
           this.command,
@@ -412,6 +413,8 @@ export class KubeClient extends Client {
           "/dev/null",
         );
         debug("copyFileToPod", args.join(" "));
+        // This require local cat binary
+        await this.runCommand(["-c", args.join(" ")], { mainCmd: "bash" });
       }
     } else {
       const fileBuffer = await fs.readFile(localFilePath);
@@ -732,10 +735,12 @@ export class KubeClient extends Client {
       if (opts?.scoped === undefined || opts?.scoped)
         augmentedCmd.push("--namespace", this.namespace);
 
-      const finalArgs = [...augmentedCmd, ...args];
+      const cmd = opts?.mainCmd || this.command;
+
+      // only apply augmented args when we are using the default cmd.
+      const finalArgs = cmd !== this.command ? args : [...augmentedCmd, ...args];
       debug("finalArgs", finalArgs);
 
-      const cmd = opts?.mainCmd || this.command;
       const result = await execa(cmd, finalArgs, {
         input: opts?.resourceDef,
       });
