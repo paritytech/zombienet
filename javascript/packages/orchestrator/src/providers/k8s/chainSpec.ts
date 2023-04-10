@@ -116,7 +116,8 @@ export async function getChainSpecRaw(
         "exec",
         podName,
         "--",
-        "/cfg/coreutils cat",
+        "/cfg/coreutils",
+        "cat",
         remoteChainSpecRawFullPath,
       ]);
       if (result.exitCode === 0 && result.stdout.length > 0) {
