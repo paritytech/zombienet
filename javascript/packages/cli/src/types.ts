@@ -1,34 +1,70 @@
-import type { HrmpChannelsConfig, ObjectJSON } from "@zombienet/orchestrator";
+// eslint-disable-next-line
+export namespace PolkadotLaunch {
+  export interface LaunchConfig {
+    relaychain: RelayChainConfig;
+    parachains: ParachainConfig[];
+    simpleParachains: SimpleParachainConfig[];
+    hrmpChannels: HrmpChannelsConfig[];
+    types: any;
+    finalization: boolean;
+  }
 
-// Config interfaces
-export interface PL_NodesConfig {
-  name: string;
-  wsPort: number;
-  port: number;
-  flags?: [string];
-}
+  export interface RelayChainConfig {
+    bin: string;
+    chain: string;
+    nodes: {
+      name: string;
+      basePath?: string;
+      wsPort: number;
+      rpcPort?: number;
+      nodeKey?: string;
+      port: number;
+      flags?: string[];
+    }[];
+    genesis?: JSON | ObjectJSON;
+  }
 
-export interface PL_RelayChainConfig {
-  bin?: string;
-  chain: string;
-  nodes: [PL_NodesConfig];
-  genesis?: JSON | ObjectJSON;
-}
+  export interface ParachainConfig {
+    bin: string;
+    id?: string;
+    balance: string;
+    chain?: string;
+    nodes: ParachainNodeConfig[];
+  }
 
-export interface PL_ParaChainConfig {
-  bin?: string;
-  name?: string;
-  id: number;
-  port?: string;
-  balance?: string;
-  nodes: [PL_NodesConfig];
-}
+  export interface ParachainNodeConfig {
+    rpcPort?: number;
+    wsPort: number;
+    port: number;
+    basePath?: string;
+    name?: string;
+    flags: string[];
+  }
 
-export interface PL_ConfigType {
-  relaychain?: PL_RelayChainConfig;
-  parachains?: [PL_ParaChainConfig];
-  simpleParachains?: [PL_NodesConfig & { id: number }];
-  hrmpChannels?: HrmpChannelsConfig[];
-  types?: any;
-  finalization?: boolean;
+  export interface SimpleParachainConfig {
+    bin: string;
+    id: string;
+    port: string;
+    balance: string;
+  }
+
+  export interface HrmpChannelsConfig {
+    sender: number;
+    recipient: number;
+    maxCapacity: number;
+    maxMessageSize: number;
+  }
+
+  export interface CollatorOptions {
+    name?: string;
+    spec?: string;
+    flags?: string[];
+    basePath?: string;
+    chain?: string;
+    onlyOneParachainNode?: boolean;
+  }
+
+  export interface ObjectJSON {
+    [key: string]: ObjectJSON | number | string;
+  }
 }
