@@ -138,33 +138,11 @@ export async function run(
           console.log(
             `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
           );
-
-          switch (network.client.providerName) {
-            case "podman":
-            case "native":
-              console.log(`\n\t ${decorators.green("Deleting network")}`);
-              await network.stop();
-              break;
-            case "kubernetes":
-              if (inCI) {
-                // keep pods running for 30 mins.
-                console.log(
-                  `\n\t${decorators.red(
-                    "One or more test failed, we will keep the namespace up for 30 more minutes",
-                  )}`,
-                );
-                await network.upsertCronJob(30);
-              } else {
-                console.log(`\n\t ${decorators.green("Deleting network")}`);
-                await network.stop();
-              }
-              break;
-          }
-        } else {
-          // All test passed, just remove the network
-          console.log(`\n\t ${decorators.green("Deleting network")}`);
-          await network.stop();
         }
+
+        // All test passed, just remove the network
+        console.log(`\n\t ${decorators.green("Deleting network")}`);
+        await network.stop();
 
         // show logs
         console.log(
