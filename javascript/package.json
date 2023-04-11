@@ -18,8 +18,7 @@
     "package": "npm run -w packages/cli package",
     "package:linux": "npm run -w packages/cli package:linux",
     "package:macos": "npm run -w packages/cli package:macos",
-    "zombie": "node ./packages/cli/dist/cli.js",
-    "prepare": "is-ci || (cd .. && husky install javascript/.husky)"
+    "zombie": "node ./packages/cli/dist/cli.js"
   },
   "engines": {
     "node": ">=18"
@@ -41,7 +40,6 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.3",
-    "is-ci": "^3.0.1",
     "prettier": "^2.8.7",
     "prettier-plugin-organize-imports": "^3.2.2"
   },
