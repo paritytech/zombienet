@@ -1,4 +1,3 @@
-# examples/0001-small-network.toml
 [relaychain]
 default_image = "test-image"
 default_command = "test-polkadot"
