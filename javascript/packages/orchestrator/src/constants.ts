@@ -44,10 +44,8 @@ const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 const GENESIS_STATE_FILENAME = "genesis-state";
 const GENESIS_WASM_FILENAME = "genesis-wasm";
 
-// TODO: replace ${} with {{ZOMBIE:RAWCHAINSPEC}} etc. for consistent style
-const mapNonEnvCmdInsertionPattern = (keywords: string[]) => new RegExp(keywords.map(x => `\\\${\\s*${x}\\s*}`).join("|"), "gi");
-const RAW_CHAIN_SPEC_IN_CMD_PATTERN = mapNonEnvCmdInsertionPattern(["rawChainSpec", "rawSpec"]);
-const PLAIN_CHAIN_SPEC_IN_CMD_PATTERN = mapNonEnvCmdInsertionPattern(["chainSpec", "plainChainSpec", "plainSpec"]);
+const RAW_CHAIN_SPEC_IN_CMD_PATTERN = new RegExp(/{{CHAIN_SPEC:RAW}}/gi);
+const PLAIN_CHAIN_SPEC_IN_CMD_PATTERN = new RegExp(/{{CHAIN_SPEC:PLAIN}}/gi);
 
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
 const TRANSFER_CONTAINER_WAIT_LOG = "waiting for tar to finish";

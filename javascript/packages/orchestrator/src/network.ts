@@ -1,6 +1,7 @@
 import { CreateLogTable, decorators } from "@zombienet/utils";
 import axios from "axios";
 import fs from "fs";
+import { destroyChainSpecProcesses } from "./chainSpec";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
@@ -10,7 +11,6 @@ import {
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
 import { Client } from "./providers/client";
-import { destroyChainSpecProcesses } from "./chainSpec";
 const debug = require("debug")("zombie::network");
 
 export interface NodeMapping {
@@ -151,8 +151,9 @@ export class Network {
 
   async stop() {
     // Cleanup all api instances
-    for (const node of Object.values(this.nodesByName))
+    for (const node of Object.values(this.nodesByName)) {
       node.apiInstance?.disconnect();
+    }
     await destroyChainSpecProcesses();
     await this.client.destroyNamespace();
   }

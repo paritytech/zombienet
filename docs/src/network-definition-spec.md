@@ -32,7 +32,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `local_path`: string;
   - `remote_name`: string;
 - `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
-- `chain_spec_modifier_commands`: (Array of arrays of strings, optional) Set of commands and their arguments to modify the resulting chain spec before the chain is launched with it. In the arguments, `${chainSpec}`, `${plainSpec}`, and `${plainChainSpec}` will be substituted for the plain spec path and run before the raw chain spec is generated, and `${rawChainSpec}` and `${rawSpec}` will be substituted for the raw chain spec path.
+- `chain_spec_modifier_commands`: (Array of `commands`, optional) Set of commands and their arguments to modify the resulting chain spec before the chain is launched with it. `Commands` are themselves arrays of strings (each argument is a string). In the arguments, `{{'plain'|chainSpec}}` will be substituted for the plain spec path and run before the raw chain spec is generated, and `{{'raw'|chainSpec}}` will be substituted for the raw chain spec path.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
 - `nodes`:
@@ -73,7 +73,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `*id`: (Number) The id to assign to this parachain. Must be unique.
   - `add_to_genesis`: (Boolean, default true) flag to add parachain to genesis or register in runtime.
   - `cumulus_based`: (Boolean, default true) flag to use `cumulus` command generation.
-  - `chain_spec_modifier_commands`: (Array of arrays of strings, optional) Set of commands and their arguments to modify the resulting chain spec before the chain is launched with it. In the arguments, `${chainSpec}`, `${plainSpec}`, and `${plainChainSpec}` will be substituted for the plain spec path and run before the raw chain spec is generated, and `${rawChainSpec}` and `${rawSpec}` will be substituted for the raw chain spec path.
+  - `chain_spec_modifier_commands`: (Array of `commands`, optional) Set of commands and their arguments to modify the resulting chain spec before the chain is launched with it. `Commands` are themselves arrays of strings (each argument is a string). In the arguments, `{{'plain'|chainSpec}}` will be substituted for the plain spec path and run before the raw chain spec is generated, and `{{'raw'|chainSpec}}` will be substituted for the raw chain spec path.
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.

@@ -163,6 +163,10 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
     return `{{ZOMBIE:${nodeName}:${key}}}`;
   });
 
+  env.addFilter("chainSpec", function (chainSpecType: string) {
+    return `{{CHAIN_SPEC:${chainSpecType.toUpperCase()}}}`;
+  });
+
   const temmplateContent = fs.readFileSync(filepath).toString();
   const content = env.renderString(temmplateContent, process.env);
 

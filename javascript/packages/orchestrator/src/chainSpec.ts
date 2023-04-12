@@ -9,7 +9,10 @@ import {
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import crypto from "crypto";
 import fs from "fs";
-import { PLAIN_CHAIN_SPEC_IN_CMD_PATTERN, RAW_CHAIN_SPEC_IN_CMD_PATTERN } from "./constants";
+import {
+  PLAIN_CHAIN_SPEC_IN_CMD_PATTERN,
+  RAW_CHAIN_SPEC_IN_CMD_PATTERN,
+} from "./constants";
 import { generateKeyFromSeed } from "./keys";
 import { ChainSpec, ComputedNetwork, HrmpChannelsConfig, Node } from "./types";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
@@ -25,8 +28,8 @@ const processes: { [key: string]: ChildProcessWithoutNullStreams } = {};
 // kill any runnning processes related to non-node chain spec processing
 export async function destroyChainSpecProcesses() {
   for (const key of Object.keys(processes)) {
-		processes[key].kill();
-	}
+    processes[key].kill();
+  }
 }
 
 export type KeyType = "session" | "aura" | "grandpa";
@@ -679,18 +682,26 @@ export async function runCommandWithChainSpec(
   commandArgs: string[],
 ) {
   const chainSpecSubstitutePattern = new RegExp(
-    RAW_CHAIN_SPEC_IN_CMD_PATTERN.source + "|" + PLAIN_CHAIN_SPEC_IN_CMD_PATTERN.source,
+    RAW_CHAIN_SPEC_IN_CMD_PATTERN?.source +
+      "|" +
+      PLAIN_CHAIN_SPEC_IN_CMD_PATTERN?.source,
     "gi",
   );
 
-  const substitutedCommandArgs = commandArgs.map(arg =>
-    `${arg.replaceAll(chainSpecSubstitutePattern, chainSpecFullPath)}`);
-  const chainSpecModifiedPath = chainSpecFullPath.replace('.json', '-modified.json');
+  const substitutedCommandArgs = commandArgs.map(
+    (arg) => `${arg.replaceAll(chainSpecSubstitutePattern, chainSpecFullPath)}`,
+  );
+  const chainSpecModifiedPath = chainSpecFullPath.replace(
+    ".json",
+    "-modified.json",
+  );
 
-  new CreateLogTable({ colWidths: [30, 90] }).pushToPrint([[
-    decorators.green("🧪 Mutating chain spec"),
-    decorators.white(substitutedCommandArgs.join(" ")),
-  ]]);
+  new CreateLogTable({ colWidths: [30, 90] }).pushToPrint([
+    [
+      decorators.green("🧪 Mutating chain spec"),
+      decorators.white(substitutedCommandArgs.join(" ")),
+    ],
+  ]);
 
   try {
     await new Promise<void>(function (resolve, reject) {
@@ -699,7 +710,10 @@ export async function runCommandWithChainSpec(
       }
 
       // spawn the chain spec mutator thread with the command and arguments
-      processes["mutator"] = spawn(substitutedCommandArgs[0], substitutedCommandArgs.slice(1));
+      processes["mutator"] = spawn(
+        substitutedCommandArgs[0],
+        substitutedCommandArgs.slice(1),
+      );
       // flush the modified spec to a different file and then copy it back into the original path
       let spec = fs.createWriteStream(chainSpecModifiedPath);
 

@@ -49,7 +49,7 @@ export interface RelayChainConfig {
   chain_spec_command?: string;
   default_args?: string[];
   default_overrides?: Override[];
-  chain_spec_modifier_commands?: string[][];
+  chain_spec_modifier_commands?: Command[];
   random_nominators_count?: number;
   max_nominations?: number;
   nodes?: NodeConfig[];
@@ -106,7 +106,7 @@ export interface ParachainConfig {
   chain_spec_path?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
-  chain_spec_modifier_commands?: string[][];
+  chain_spec_modifier_commands?: Command[];
   // backward compatibility
   collator?: NodeConfig;
   collators?: NodeConfig[];
@@ -132,8 +132,8 @@ export interface ComputedNetwork {
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
-    chainSpecModifierCommands: string[][];
-    rawChainSpecModifierCommands: string[][];
+    chainSpecModifierCommands: Command[];
+    rawChainSpecModifierCommands: Command[];
     randomNominatorsCount: number;
     maxNominations: number;
     nodes: Node[];
@@ -221,14 +221,16 @@ export interface Parachain {
   balance?: number;
   collators: Node[];
   genesis?: JSON | ObjectJSON;
-  chainSpecModifierCommands: string[][];
-  rawChainSpecModifierCommands: string[][];
+  chainSpecModifierCommands: Command[];
+  rawChainSpecModifierCommands: Command[];
 }
 
 export interface envVars {
   name: string;
   value: string;
 }
+
+export type Command = string[];
 
 export interface ChainSpec {
   name: string;
