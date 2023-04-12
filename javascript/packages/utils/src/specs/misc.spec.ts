@@ -1,5 +1,5 @@
-import { sleep } from "@zombienet/utils";
 import { assert } from "chai";
+import { sleep } from "../misc";
 
 describe("Tests on module 'misc';", () => {
   it("test fn: sleep", async () => {
