@@ -26,6 +26,8 @@ jobs:
         working-directory: "./javascript"
       - run: npm run lint
         working-directory: "./javascript"
+      - run: npm run test
+        working-directory: "./javascript"
 
   build-rust:
     runs-on: ubuntu-latest

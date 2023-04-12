@@ -8,7 +8,7 @@
     "build": "tsc",
     "lint": "npx prettier --check ./src",
     "lint:write": "npx prettier --write ./src",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\"",
     "package": "pkg . -o ../../bins/zombienet",
     "package:linux": "pkg . -o ../../bins/zombienet-linux -t node16-linux-x64,node16-linux-arm64",
     "package:macos": "pkg . -o ../../bins/zombienet-macos -t node16-macos-x64"

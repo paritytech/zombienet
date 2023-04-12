@@ -17,6 +17,7 @@
 *.tsconfig.json
 *.tsbuildinfo
 *.sh
+*.toml
 dist
 LICENSE
 postcss.config.js

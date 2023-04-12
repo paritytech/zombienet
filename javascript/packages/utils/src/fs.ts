@@ -8,7 +8,7 @@ import { decorators } from "./colors";
 import { RelativeLoader } from "./nunjucksRelativeLoader";
 import { LaunchConfig } from "./types";
 
-interface LocalJsonFileContentIF {
+export interface LocalJsonFileContentIF {
   apiVersion: string;
   kind: string;
   metadata: {
@@ -19,7 +19,7 @@ interface LocalJsonFileContentIF {
 export function writeLocalJsonFile(
   path: string,
   fileName: string,
-  content: string | LocalJsonFileContentIF,
+  content: LocalJsonFileContentIF,
 ) {
   fs.writeFileSync(`${path}/${fileName}`, JSON.stringify(content, null, 4));
 }
