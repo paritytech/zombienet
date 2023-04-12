@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+cd javascript
+
+npm run lint && npm run test

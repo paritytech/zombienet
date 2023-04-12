@@ -19,7 +19,7 @@ export function parseLine(line: string) {
   let labelvalue = "";
   let value = "";
   let timestamp = "";
-  let labels: Map<String, String> = new Map();
+  const labels: Map<string, string> = new Map();
   let state = STATE_NAME;
 
   for (let c = 0; c < line.length; ++c) {

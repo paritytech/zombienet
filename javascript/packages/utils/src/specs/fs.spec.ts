@@ -4,7 +4,7 @@ import path from "path";
 import chai, { assert, expect } from "chai";
 import deepEqualInAnyOrder from "deep-equal-in-any-order";
 import readline from "readline";
-import { SinonStub, spy, stub } from "sinon";
+import { SinonStub, stub } from "sinon";
 import { askQuestion, readNetworkConfig, writeLocalJsonFile } from "../fs";
 import { LaunchConfig } from "../types";
 
@@ -74,11 +74,10 @@ describe("Tests on module 'fs';", () => {
           close: () => readlineStub,
         };
       });
-      var question = spy(askQuestion);
 
       return new Promise((resolve, reject) => {
         askQuestion("question?")
-          .then((value) => {
+          .then(() => {
             resolve();
           })
           .catch((err) => {
@@ -96,7 +95,7 @@ describe("Tests on module 'fs';", () => {
     assert.equal(s?.relaychain?.default_image, "test-image");
     assert.equal(s?.relaychain?.default_command, "test-polkadot");
     if (s?.relaychain?.default_args) {
-      let arg = s?.relaychain?.default_args[0];
+      const arg = s?.relaychain?.default_args[0];
       assert.equal(arg, "-lparachain=test");
     }
     assert.equal(s?.relaychain?.chain, "test-rococo");

@@ -14,6 +14,7 @@ import YAML from "yaml";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
+  LOCALHOST,
   P2P_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
@@ -44,7 +45,7 @@ export class NativeClient extends Client {
   debug: boolean;
   timeout: number;
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
@@ -99,16 +100,16 @@ export class NativeClient extends Client {
     return;
   }
   // Podman ONLY support `pods`
-  async staticSetup(_: any): Promise<void> {
+  async staticSetup(): Promise<void> {
     return;
   }
 
-  async createStaticResource(filename: string): Promise<void> {
+  async createStaticResource(): Promise<void> {
     // NOOP, native don't have podmonitor.
     return;
   }
 
-  async createPodMonitor(filename: string, chain: string): Promise<void> {
+  async createPodMonitor(): Promise<void> {
     // NOOP, native don't have podmonitor.
     return;
   }
@@ -120,7 +121,7 @@ export class NativeClient extends Client {
 
   async destroyNamespace(): Promise<void> {
     // get pod names
-    let args = ["bash", "-c"];
+    const args = ["bash", "-c"];
 
     const memo: string[] = [];
     const pids: string[] = Object.keys(this.processMap).reduce((memo, key) => {
@@ -145,10 +146,7 @@ export class NativeClient extends Client {
     }
   }
 
-  async getNodeLogs(
-    name: string,
-    since: number | undefined = undefined,
-  ): Promise<string> {
+  async getNodeLogs(name: string): Promise<string> {
     // For now in native let's just return all the logs
     const lines = await fs.promises.readFile(`${this.tmpDir}/${name}.log`);
     return lines.toString();
@@ -159,7 +157,7 @@ export class NativeClient extends Client {
     await fs.promises.copyFile(`${this.tmpDir}/${podName}.log`, dstFileName);
   }
 
-  upsertCronJob(minutes: number): Promise<void> {
+  upsertCronJob(): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
@@ -175,7 +173,11 @@ export class NativeClient extends Client {
 
   async getNodeInfo(podName: string): Promise<[string, number]> {
     const hostPort = await this.getPortMapping(P2P_PORT, podName);
-    return ["127.0.0.1", hostPort];
+    return [LOCALHOST, hostPort];
+  }
+
+  async getNodeIP(): Promise<string> {
+    return LOCALHOST;
   }
 
   async runCommand(
@@ -331,13 +333,12 @@ export class NativeClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string,
   ): Promise<void> {
     debug(`cp ${podFilePath}  ${localFilePath}`);
     await fs.promises.copyFile(podFilePath, localFilePath);
   }
 
-  async putLocalMagicFile(name: string, container?: string): Promise<void> {
+  async putLocalMagicFile(): Promise<void> {
     // NOOP
     return;
   }
@@ -384,7 +385,7 @@ export class NativeClient extends Client {
     if (result.exitCode > 0) {
       const lines = await this.getNodeLogs(nodeName);
 
-      let logTable = new CreateLogTable({
+      const logTable = new CreateLogTable({
         colWidths: [20, 100],
       });
 
@@ -431,6 +432,10 @@ export class NativeClient extends Client {
     return false;
   }
 
+  async spawnIntrospector() {
+    // NOOP
+  }
+
   getPauseArgs(name: string): string[] {
     return ["-c", `kill -STOP ${this.processMap[name].pid!.toString()}`];
   }
@@ -464,5 +469,9 @@ export class NativeClient extends Client {
 
     await this.wait_node_ready(name);
     return true;
+  }
+
+  getLogsCommand(name: string): string {
+    return `tail -f  ${this.tmpDir}/${name}.log`;
   }
 }

@@ -25,7 +25,7 @@ export async function getRandomPort(): Promise<number> {
 }
 
 export async function getHostIp(): Promise<string> {
-  return await new Promise((resolve, reject) => {
+  return await new Promise((resolve) => {
     dns.lookup(os.hostname(), (_err: unknown, addr: string) => {
       resolve(addr);
     });
@@ -38,12 +38,13 @@ export async function downloadFile(url: string, dest: string): Promise<void> {
       const response = await fetch(url);
       const reader = response.body?.getReader();
       const writer = fs.createWriteStream(dest);
-      while (true) {
+      let i = true;
+      while (i) {
         const read = await reader?.read();
         if (read?.done) {
           writer.close();
+          i = false;
           resolve();
-          break;
         }
         writer.write(read?.value);
       }

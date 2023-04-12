@@ -51,7 +51,7 @@ export class PodmanClient extends Client {
   debug: boolean;
   timeout: number;
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
@@ -88,7 +88,7 @@ export class PodmanClient extends Client {
 
     writeLocalJsonFile(this.tmpDir, "namespace", namespaceDef);
     // Podman don't have the namespace concept yet but we use a isolated network
-    let args = ["network", "create", this.namespace];
+    const args = ["network", "create", this.namespace];
     await this.runCommand(args, { scoped: false });
     return;
   }
@@ -108,7 +108,6 @@ export class PodmanClient extends Client {
 
     const tempoSpec = await genTempoDef(this.namespace);
     await this.createResource(tempoSpec, false, false);
-    const jaegerPort = tempoSpec.spec.containers[0].ports[0].hostPort;
     const tempoPort = tempoSpec.spec.containers[0].ports[1].hostPort;
     console.log(
       `\n\t Monitor: ${decorators.green(
@@ -167,7 +166,7 @@ export class PodmanClient extends Client {
     ]);
   }
 
-  async createPodMonitor(filename: string, chain: string): Promise<void> {
+  async createPodMonitor(): Promise<void> {
     // NOOP, podman don't have podmonitor.
     return;
   }
@@ -225,7 +224,7 @@ export class PodmanClient extends Client {
     await fs.writeFile(dstFileName, logs);
   }
 
-  upsertCronJob(minutes: number): Promise<void> {
+  upsertCronJob(): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
@@ -258,7 +257,7 @@ export class PodmanClient extends Client {
   async getNodeInfo(
     podName: string,
     port?: number,
-    externalView: boolean = false,
+    externalView = false,
   ): Promise<[string, number]> {
     let hostIp, hostPort;
     if (externalView) {
@@ -435,7 +434,6 @@ export class PodmanClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string,
   ): Promise<void> {
     debug(`cp ${this.tmpDir}/${identifier}${podFilePath}  ${localFilePath}`);
     await fs.copyFile(
@@ -444,7 +442,7 @@ export class PodmanClient extends Client {
     );
   }
 
-  async putLocalMagicFile(name: string, container?: string): Promise<void> {
+  async putLocalMagicFile(): Promise<void> {
     // NOOP
     return;
   }
@@ -468,10 +466,7 @@ export class PodmanClient extends Client {
     if (waitReady) await this.wait_pod_ready(name);
   }
 
-  async wait_pod_ready(
-    podName: string,
-    allowDegraded: boolean = true,
-  ): Promise<void> {
+  async wait_pod_ready(podName: string, allowDegraded = true): Promise<void> {
     // loop until ready
     let t = this.timeout;
     const args = ["pod", "ps", "-f", `name=${podName}`, "--format", "json"];
@@ -514,5 +509,9 @@ export class PodmanClient extends Client {
   async spawnIntrospector(wsUri: string) {
     const spec = await getIntrospectorDef(this.namespace, wsUri);
     await this.createResource(spec, false, true);
+  }
+
+  getLogsCommand(name: string): string {
+    return `podman logs -f ${name}_pod-${name}`;
   }
 }

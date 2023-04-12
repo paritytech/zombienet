@@ -15,7 +15,7 @@ export class PrometheusResource {
   private readonly dataPath: string;
 
   constructor(client: Client, private readonly namespace: string) {
-    const nodeRootPath = `${client.tmpDir}/prometeus`;
+    const nodeRootPath = `${client.tmpDir}/prometheus`;
     this.configPath = `${nodeRootPath}/etc`;
     this.dataPath = `${nodeRootPath}/data`;
   }
@@ -44,9 +44,9 @@ export class PrometheusResource {
         __dirname,
         "./configs/prometheus.yml",
       );
-      await fs.copyFile(
-        templateConfigPath,
+      await fs.writeFile(
         `${this.configPath}/prometheus.yml`,
+        templateConfigPath,
       );
     } catch {
       throw new Error("Error generating config for prometheus resource");

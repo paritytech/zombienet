@@ -31,8 +31,7 @@ const colorMap = {
 const colorFns: any = {};
 for (const [color, code] of Object.entries(colorMap)) {
   colorFns[color] = function (input: string): string {
-    let ret = `${code}${input}${reset}`;
-    return ret;
+    return `${code}${input}${reset}`;
   };
 }
 

@@ -152,13 +152,14 @@ program.parse(process.argv);
 
 function asyncAction(cmd: Function) {
   return function () {
+    // eslint-disable-next-line prefer-rest-params
     const args = [...arguments];
     (async () => {
       try {
         if (cmd.name == "spawn") {
-          network = await cmd.apply(null, args);
+          network = await cmd(...args);
         } else {
-          await cmd.apply(null, args);
+          await cmd(...args);
         }
       } catch (err) {
         console.log(

@@ -33,7 +33,7 @@ const KNOWN_MOONBEAM_KEYS: { [name: string]: string } = {
 };
 
 function specHaveSessionsKeys(chainSpec: ChainSpec) {
-  let keys = _specHaveSessionsKeys(chainSpec);
+  const keys = _specHaveSessionsKeys(chainSpec);
 
   return keys || getRuntimeConfig(chainSpec)?.authorMapping;
 }
@@ -47,7 +47,7 @@ async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
 
   const { sr_account } = node.accounts;
 
-  let keys = getAuthorityKeys(chainSpec);
+  const keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
@@ -96,7 +96,7 @@ async function clearAuthorities(specPath: string) {
 }
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
-  let keys = await _generateKeyForNode(nodeName);
+  const keys = await _generateKeyForNode(nodeName);
 
   await cryptoWaitReady();
 
@@ -115,10 +115,7 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
   return keys;
 }
 
-export function getNodeKey(
-  node: Node,
-  useStash: boolean = true,
-): GenesisNodeKey {
+export function getNodeKey(node: Node): GenesisNodeKey {
   const { sr_account, eth_account } = node.accounts;
 
   return [sr_account.address, eth_account.address];
@@ -131,7 +128,7 @@ async function addParaCustom(specPath: string, node: Node) {
   // parachainStaking
   if (!runtimeConfig?.parachainStaking) return;
 
-  const { sr_account, eth_account } = node.accounts;
+  const { eth_account } = node.accounts;
 
   runtimeConfig.parachainStaking.candidates.push([
     eth_account.address,

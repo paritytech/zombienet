@@ -59,7 +59,7 @@
     "commander": "^10.0.0",
     "debug": "^4.3.2",
     "nunjucks": "^3.2.3",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.4"
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.0",
