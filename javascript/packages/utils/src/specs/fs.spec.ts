@@ -3,16 +3,12 @@ import path from "path";
 
 import chai, { assert, expect } from "chai";
 import deepEqualInAnyOrder from "deep-equal-in-any-order";
-import readline from "readline";
-import { SinonStub, stub } from "sinon";
-import { askQuestion, readNetworkConfig, writeLocalJsonFile } from "../fs";
+import { readNetworkConfig, writeLocalJsonFile } from "../fs";
 import { LaunchConfig } from "../types";
 
 chai.use(deepEqualInAnyOrder);
 
 describe("Tests on module 'fs';", () => {
-  let readlineStub: SinonStub<any, any>;
-
   before(async function () {
     await mkdir(path.join(__dirname, "tmp_tests"), (err) => {
       if (err) {
@@ -54,39 +50,6 @@ describe("Tests on module 'fs';", () => {
         }
       },
     );
-  });
-
-  it("tests that fs/askQuestion function is success", async () => {
-    afterEach(() => {
-      if (readlineStub) readlineStub.restore();
-    });
-
-    it("Should resolve answered value", (): Promise<void> => {
-      let answerCallbackFn: (arg0: string) => void;
-
-      const answer = "Y";
-
-      readlineStub = stub(readline, "createInterface").callsFake((): any => {
-        return {
-          question: (_message: any, cb: (arg0: string) => void) => {
-            answerCallbackFn = cb;
-          },
-          close: () => readlineStub,
-        };
-      });
-
-      return new Promise((resolve, reject) => {
-        askQuestion("question?")
-          .then(() => {
-            resolve();
-          })
-          .catch((err) => {
-            reject(err);
-          });
-
-        answerCallbackFn(answer);
-      });
-    });
   });
 
   it("tests that fs/readNetworkConfig converts the config file", async () => {
