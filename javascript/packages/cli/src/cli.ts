@@ -12,15 +12,24 @@ const debug = require("debug")("zombie-cli");
 const program = new Command("zombienet");
 
 let network: Network | undefined;
+let alreadyTryToStop = false;
+
+async function handleTermination(userInterrupted = false) {
+  process.env.terminating = "1";
+  if (network && !alreadyTryToStop) {
+    alreadyTryToStop = true;
+    if (userInterrupted) console.log("Ctrl+c detected...");
+    debug("removing namespace: " + network.namespace);
+    await network.dumpLogs();
+    await network.stop();
+  }
+}
 
 // Ensure to log the uncaught exceptions
 // to debug the problem, also exit because we don't know
 // what happens there.
 process.on("uncaughtException", async (err) => {
-  if (network) {
-    debug("removing namespace: " + network.namespace);
-    await network.stop();
-  }
+  await handleTermination();
   console.log(`uncaughtException`);
   console.log(err);
   debug(err);
@@ -31,10 +40,7 @@ process.on("uncaughtException", async (err) => {
 // accidentally don't have a 'catch' for.
 // http://www.hacksrus.net/blog/2015/08/a-solution-to-swallowed-exceptions-in-es6s-promises/
 process.on("unhandledRejection", async (err) => {
-  if (network) {
-    debug("removing namespace: " + network.namespace);
-    await network.stop();
-  }
+  await handleTermination();
   debug(err);
   console.log(
     `\n${decorators.red("UnhandledRejection: ")} \t ${decorators.bright(
@@ -45,27 +51,18 @@ process.on("unhandledRejection", async (err) => {
 });
 
 // Handle ctrl+c to trigger `exit`.
-let alreadyTry = false;
 process.on("SIGINT", async function () {
-  process.env.terminating = "1";
-  if (network && !alreadyTry) {
-    alreadyTry = true;
-    const msg = "Ctrl+c ... removing namespace: " + network.namespace;
-    console.log(decorators.magenta(msg));
-    debug(msg);
-    await network.stop();
-  }
-  process.exit(2);
+  await handleTermination();
+  process.exit();
+});
+
+process.on("SIGTERM", async function () {
+  await handleTermination();
+  process.exit();
 });
 
 process.on("exit", async function () {
-  process.env.terminating = "1";
-  if (network && !alreadyTry) {
-    alreadyTry = true;
-    debug("removing namespace: " + network.namespace);
-    await network.dumpLogs();
-    await network.stop();
-  }
+  await handleTermination();
   const exitCode = process.exitCode !== undefined ? process.exitCode : 2;
   // use exitCode set by mocha or 2 as default.
   process.exit(exitCode);
