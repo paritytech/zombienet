@@ -18,7 +18,7 @@ async function handleTermination(userInterrupted = false) {
   process.env.terminating = "1";
   if (network && !alreadyTryToStop) {
     alreadyTryToStop = true;
-    if(userInterrupted) console.log("Ctrl+c detected...");
+    if (userInterrupted) console.log("Ctrl+c detected...");
     debug("removing namespace: " + network.namespace);
     await network.dumpLogs();
     await network.stop();
