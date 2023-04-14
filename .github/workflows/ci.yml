@@ -15,7 +15,7 @@ jobs:
         node-version: [18.x, 19.x]
 
     steps:
-      - uses: actions/checkout@v3.5.1
+      - uses: actions/checkout@v3.5.2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3.5.1
+      - uses: actions/checkout@v3.5.2
       - name: Install Rust Stable toolchain
         uses: actions-rs/toolchain@v1
         with:
