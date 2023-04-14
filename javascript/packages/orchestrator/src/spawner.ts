@@ -71,6 +71,7 @@ export const spawnNode = async (
       remoteFilePath: `${client.remoteDir}/${override.remote_name}`,
     });
   }
+  console.log("----------------------------------------");
 
   let keystoreLocalDir;
   if (node.accounts) {
@@ -102,6 +103,15 @@ export const spawnNode = async (
   );
 
   const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
+  console.log("----------------------------------------");
+
+  console.log("node.key", node.key!);
+  console.log("node.args", node.args);
+  console.log("nodeIp", nodeIp);
+  console.log("nodePort", nodePort);
+  console.log("true", true);
+  console.log("node.p2pCertHash", node.p2pCertHash);
+
   const nodeMultiAddress = await generateNodeMultiAddress(
     node.key!,
     node.args,
@@ -110,6 +120,7 @@ export const spawnNode = async (
     true,
     node.p2pCertHash,
   );
+  console.log("----------------------------------------", nodeMultiAddress);
 
   let networkNode: NetworkNode;
 
