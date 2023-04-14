@@ -1,8 +1,8 @@
 import { hexAddPrefix, hexToU8a } from "@polkadot/util";
+import { isMultiAddr } from "@zombienet/utils";
 import { keys as libp2pKeys } from "libp2p-crypto";
 import PeerId from "peer-id";
 import { NodeMultiAddress } from "./types";
-
 export async function generateNodeMultiAddress(
   key: string,
   args: string[],
@@ -21,13 +21,10 @@ export async function generateNodeMultiAddress(
 
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
+    if (!isMultiAddr(args[listenIndex + 1])) {
+      throw new Error("Provided address is not well formatted.");
+    }
     const listenAddrParts = args[listenIndex + 1].split("/");
-    console.log("listenAddrParts", listenAddrParts);
-    console.log("0 ", listenAddrParts[0]);
-    console.log("1 ", listenAddrParts[1]);
-    console.log("2 ", listenAddrParts[2]);
-    console.log("3 ", listenAddrParts[3]);
-    console.log("4 ", listenAddrParts[4]);
     listenAddrParts[2] = ip;
     listenAddrParts[4] = port.toString();
     if (certhash) listenAddrParts.push("certhash", certhash);
