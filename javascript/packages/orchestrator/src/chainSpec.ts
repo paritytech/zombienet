@@ -167,12 +167,9 @@ export async function addAuthority(
 ) {
   try {
     const chainSpec = readAndParseChainSpec(specPath);
-
     const { sr_stash } = node.accounts;
-
     const keys = getAuthorityKeys(chainSpec);
     if (!keys) return;
-
     keys.push(key);
 
     new CreateLogTable({
@@ -595,15 +592,14 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
   });
 }
 
-export function getRuntimeConfig(chainSpec: any) {
-  const runtimeConfig =
+export function getRuntimeConfig(chainSpec: ChainSpec) {
+  return (
     chainSpec.genesis.runtime?.runtime_genesis_config ||
-    chainSpec.genesis.runtime;
-
-  return runtimeConfig;
+    chainSpec.genesis.runtime
+  );
 }
 
-export function readAndParseChainSpec(specPath: string) {
+export function readAndParseChainSpec(specPath: string): ChainSpec {
   const rawdata = fs.readFileSync(specPath);
   let chainSpec;
   try {

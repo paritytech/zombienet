@@ -71,7 +71,6 @@ export const spawnNode = async (
       remoteFilePath: `${client.remoteDir}/${override.remote_name}`,
     });
   }
-  console.log("----------------------------------------");
 
   let keystoreLocalDir;
   if (node.accounts) {

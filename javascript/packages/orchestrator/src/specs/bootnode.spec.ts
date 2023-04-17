@@ -4,8 +4,8 @@ import { describe } from "mocha";
 import { generateNodeMultiAddress } from "../bootnode";
 chai.use(chaiAsPromised);
 
-describe("Test generaeteNodeMultiAddress:", () => {
-  it("without --listen-addr - success", async () => {
+describe("Test bootnode.ts:", () => {
+  it("generateNodeMultiAddress without --listen-addr - success", async () => {
     const check = await generateNodeMultiAddress(
       "2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db186d6e90",
       ["-lparachain=debug"],
@@ -19,7 +19,7 @@ describe("Test generaeteNodeMultiAddress:", () => {
     );
   });
 
-  it("with --listen-addr - success", async () => {
+  it("generateNodeMultiAddress with --listen-addr - success", async () => {
     const check = await generateNodeMultiAddress(
       "2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db186d6e90",
       ["-lparachain=debug", "--listen-addr", "/ip4/10.0.0.2/tcp/30333"],
@@ -33,7 +33,7 @@ describe("Test generaeteNodeMultiAddress:", () => {
     );
   });
 
-  it("with ws=false - success", async () => {
+  it("generateNodeMultiAddress with ws=false - success", async () => {
     const check = await generateNodeMultiAddress(
       "2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db186d6e90",
       ["-lparachain=debug", "--listen-addr", "/ip4/10.0.0.2/tcp/30333"],
@@ -48,7 +48,7 @@ describe("Test generaeteNodeMultiAddress:", () => {
     );
   });
 
-  it("with wrong address in --listen-addr - throw Error", async () => {
+  it("generateNodeMultiAddress with wrong address in --listen-addr - throw Error", async () => {
     return assert.isRejected(
       generateNodeMultiAddress(
         "2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db186d6e90",
