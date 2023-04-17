@@ -2,7 +2,7 @@ import { getRandomPort, getSha256 } from "@zombienet/utils";
 import { getUniqueName } from "../../configGenerator";
 import { TMP_DONE, WAIT_UNTIL_SCRIPT_SUFIX } from "../../constants";
 import { Network } from "../../network";
-import { Node } from "../../types";
+import { Node, ZombieRole } from "../../types";
 import { BootNodeResource, NodeResource } from "./resources";
 
 export async function genBootnodeDef(
@@ -56,7 +56,7 @@ export async function createTempNodeDef(
     env: [],
     telemetryUrl: "",
     overrides: [],
-    zombieRole: "temp",
+    zombieRole: ZombieRole.Temp,
     p2pPort: await getRandomPort(),
     wsPort: await getRandomPort(),
     rpcPort: await getRandomPort(),

@@ -1,4 +1,4 @@
-import { Node } from "../../../types";
+import { Node, ZombieRole } from "../../../types";
 import { NodeResource } from "./nodeResource";
 import { Container, PodSpec, Volume } from "./types";
 
@@ -20,7 +20,7 @@ export class BootNodeResource extends NodeResource {
         labels: {
           "app.kubernetes.io/name": this.namespace,
           "app.kubernetes.io/instance": "bootnode",
-          "zombie-role": "bootnode",
+          "zombie-role": ZombieRole.BootNode,
           app: "zombienet",
           "zombie-ns": this.namespace,
         },

@@ -6,7 +6,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "./constants";
-import { Node } from "./types";
+import { Node, ZombieRole } from "./types";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
@@ -268,12 +268,12 @@ export async function genCmd(
   if (prometheus && !args.includes("--prometheus-external"))
     args.push("--prometheus-external");
 
-  if (jaegerUrl && zombieRole === "node")
+  if (jaegerUrl && zombieRole === ZombieRole.Node)
     args.push(...["--jaeger-agent", jaegerUrl]);
 
   if (validator && !args.includes("--validator")) args.push("--validator");
 
-  if (zombieRole === "collator" && parachainId) {
+  if (zombieRole === ZombieRole.Collator && parachainId) {
     const parachainIdArgIndex = args.findIndex((arg) =>
       arg.includes("--parachain-id"),
     );

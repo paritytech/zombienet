@@ -12,7 +12,7 @@ import {
 import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
-import { Node, Parachain, fileMap } from "./types";
+import { Node, Parachain, ZombieRole, fileMap } from "./types";
 
 const debug = require("debug")("zombie::paras");
 
@@ -230,7 +230,7 @@ export async function generateParachainFiles(
         client.remoteDir as string,
       );
       // cumulus
-      if (parachain.collators[0].zombieRole === "cumulus-collator") {
+      if (parachain.collators[0].zombieRole === ZombieRole.CumulusCollator) {
         const chainSpecPathInNode =
           client.providerName === "native"
             ? chainSpecFullPath
@@ -262,7 +262,7 @@ export async function generateParachainFiles(
       env: [],
       telemetryUrl: "",
       overrides: [],
-      zombieRole: "temp",
+      zombieRole: ZombieRole.Temp,
       p2pPort: await getRandomPort(),
       wsPort: await getRandomPort(),
       rpcPort: await getRandomPort(),
