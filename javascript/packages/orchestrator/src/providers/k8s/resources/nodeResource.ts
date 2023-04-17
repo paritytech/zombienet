@@ -8,7 +8,7 @@ import {
   TRANSFER_CONTAINER_NAME,
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../../constants";
-import { Node } from "../../../types";
+import { Node, ZombieRole } from "../../../types";
 import {
   Container,
   ContainerPort,
@@ -62,7 +62,7 @@ export class NodeResource {
   }
 
   private generateContainerCommand(): Promise<string[]> {
-    if (this.nodeSetupConfig.zombieRole === "cumulus-collator") {
+    if (this.nodeSetupConfig.zombieRole === ZombieRole.CumulusCollator) {
       return genCumulusCollatorCmd(this.nodeSetupConfig);
     }
 
@@ -104,8 +104,10 @@ export class NodeResource {
 
   private shouldAddJaegerContainer() {
     const { zombieRole, jaegerUrl } = this.nodeSetupConfig;
-    const isNodeOrCumulusCollator =
-      zombieRole === "node" || zombieRole === "cumulus-collator";
+    const isNodeOrCumulusCollator = [
+      ZombieRole.Node,
+      ZombieRole.CumulusCollator,
+    ].includes(zombieRole);
     const isJaegerUrlDefined = jaegerUrl && jaegerUrl === "localhost:6831";
 
     return isNodeOrCumulusCollator && isJaegerUrlDefined;

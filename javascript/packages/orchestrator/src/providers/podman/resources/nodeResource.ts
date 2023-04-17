@@ -6,7 +6,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { Node } from "../../../types";
+import { Node, ZombieRole } from "../../../types";
 import { Client } from "../../client";
 import {
   Container,
@@ -133,7 +133,7 @@ export class NodeResource {
   }
 
   private generateContainerCommand(): Promise<string[]> {
-    if (this.nodeSetupConfig.zombieRole === "cumulus-collator") {
+    if (this.nodeSetupConfig.zombieRole === ZombieRole.CumulusCollator) {
       return genCumulusCollatorCmd(this.nodeSetupConfig);
     }
 

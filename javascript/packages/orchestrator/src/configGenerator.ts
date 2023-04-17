@@ -37,6 +37,7 @@ import {
   Override,
   Parachain,
   ParachainConfig,
+  ZombieRole,
   envVars,
 } from "./types";
 
@@ -439,7 +440,7 @@ export async function generateBootnodeSpec(
     telemetryUrl: "",
     prometheus: true, // --prometheus-external
     overrides: [],
-    zombieRole: "bootnode",
+    zombieRole: ZombieRole.BootNode,
     imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
@@ -531,7 +532,7 @@ async function getCollatorNodeFromConfig(
     telemetryUrl: "",
     prometheus: prometheusExternal(networkSpec),
     overrides: [],
-    zombieRole: cumulusBased ? "cumulus-collator" : "collator",
+    zombieRole: cumulusBased ? ZombieRole.CumulusCollator : ZombieRole.Collator,
     parachainId: para_id,
     dbSnapshot: collatorConfig.db_snapshot,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
@@ -610,7 +611,7 @@ async function getNodeFromConfig(
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
-    zombieRole: "node",
+    zombieRole: ZombieRole.Node,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,

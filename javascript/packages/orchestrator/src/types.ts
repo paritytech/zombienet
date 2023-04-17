@@ -160,7 +160,7 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  zombieRole: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
+  zombieRole: ZombieRole;
   group?: string;
   telemetry?: boolean;
   telemetryUrl: string;
@@ -329,3 +329,13 @@ export interface RegisterParachainOptions {
   seed?: string;
   finalization?: boolean;
 }
+
+export enum ZombieRole {
+  Temp = "temp",
+  Node = "node",
+  BootNode = "bootnode",
+  Collator = "collator",
+  CumulusCollator = "cumulus-collator",
+}
+
+export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";

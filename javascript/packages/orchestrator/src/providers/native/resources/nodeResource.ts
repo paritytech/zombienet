@@ -6,15 +6,9 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { Node, envVars } from "../../../types";
+import { Node, ZombieRole, ZombieRoleLabel, envVars } from "../../../types";
 import { Client } from "../../client";
-import {
-  NodeSpec,
-  Port,
-  PortProperty,
-  ProcessEnvironment,
-  ZombieRole,
-} from "./types";
+import { NodeSpec, Port, PortProperty, ProcessEnvironment } from "./types";
 
 export class NodeResource {
   protected readonly configPath: string;
@@ -36,9 +30,14 @@ export class NodeResource {
     await this.createDirectories();
     const ports = await this.generatePorts();
     const command = await this.generateCommand();
-    const zombieRole = this.getZombieRole();
+    const zombieRoleLabel = this.getZombieRoleLabel();
     const env = this.getEnv();
-    const nodeManifest = this.generateNodeSpec(ports, command, zombieRole, env);
+    const nodeManifest = this.generateNodeSpec(
+      ports,
+      command,
+      zombieRoleLabel,
+      env,
+    );
 
     return nodeManifest;
   }
@@ -93,7 +92,7 @@ export class NodeResource {
   }
 
   protected generateCommand() {
-    if (this.nodeSetupConfig.zombieRole === "cumulus-collator") {
+    if (this.nodeSetupConfig.zombieRole === ZombieRole.CumulusCollator) {
       return genCumulusCollatorCmd(
         this.nodeSetupConfig,
         this.configPath,
@@ -106,7 +105,7 @@ export class NodeResource {
     return genCmd(this.nodeSetupConfig, this.configPath, this.dataPath, false);
   }
 
-  protected getZombieRole(): ZombieRole {
+  protected getZombieRoleLabel(): ZombieRoleLabel {
     const { zombieRole, validator } = this.nodeSetupConfig;
 
     if (zombieRole) return zombieRole;
@@ -126,7 +125,7 @@ export class NodeResource {
   protected generateNodeSpec(
     ports: Port[],
     command: string[],
-    zombieRole: ZombieRole,
+    zombieRole: ZombieRoleLabel,
     env: ProcessEnvironment,
   ): NodeSpec {
     return {

@@ -1,7 +1,8 @@
 import { makeDir } from "@zombienet/utils";
 import { genCmd } from "../../../cmdGenerator";
+import { ZombieRole, ZombieRoleLabel } from "../../../types";
 import { NodeResource } from "./nodeResource";
-import { NodeSpec, Port, ProcessEnvironment, ZombieRole } from "./types";
+import { NodeSpec, Port, ProcessEnvironment } from "./types";
 
 export class BootNodeResource extends NodeResource {
   protected async createDirectories() {
@@ -19,14 +20,14 @@ export class BootNodeResource extends NodeResource {
     return genCmd(this.nodeSetupConfig, this.configPath, this.dataPath, false);
   }
 
-  protected getZombieRole(): ZombieRole {
-    return "bootnode";
+  protected getZombieRoleLabel(): ZombieRoleLabel {
+    return ZombieRole.BootNode;
   }
 
   protected generateNodeSpec(
     ports: Port[],
     command: string[],
-    zombieRole: ZombieRole,
+    zombieRole: ZombieRoleLabel,
     env: ProcessEnvironment,
   ): NodeSpec {
     return {

@@ -1,4 +1,4 @@
-import { envVars, Resources } from "../../../types";
+import { envVars, Resources, ZombieRoleLabel } from "../../../types";
 
 type ContainerResource = Resources["resources"];
 
@@ -36,7 +36,7 @@ export interface PodSpec {
   metadata: {
     name: string;
     labels: {
-      "zombie-role": string;
+      "zombie-role": ZombieRoleLabel;
       app: string;
       "app.kubernetes.io/name": string;
       "app.kubernetes.io/instance": string;
