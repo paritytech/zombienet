@@ -19,7 +19,13 @@ import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
 import { getProvider } from "./providers";
 import { Client } from "./providers/client";
-import { Node, NodeMultiAddress, Parachain, ZombieRole, fileMap } from "./types";
+import {
+  Node,
+  NodeMultiAddress,
+  Parachain,
+  ZombieRole,
+  fileMap,
+} from "./types";
 const debug = require("debug")("zombie::spawner");
 
 export const spawnNode = async (
