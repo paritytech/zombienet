@@ -19,7 +19,8 @@
     "package:linux": "npm run -w packages/cli package:linux",
     "package:macos": "npm run -w packages/cli package:macos",
     "zombie": "node ./packages/cli/dist/cli.js",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "postinstall": "cd .. && husky install javascript/.husky"
   },
   "engines": {
     "node": ">=18"

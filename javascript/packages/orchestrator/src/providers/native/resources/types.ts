@@ -6,7 +6,6 @@ export interface ProcessEnvironment {
 
 export type PortProperty = keyof NonNullable<Node["externalPorts"]>;
 
-
 export interface Port {
   containerPort: number;
   name: "prometheus" | "rpc" | "rpc-ws" | "p2p";
