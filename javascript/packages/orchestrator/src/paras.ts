@@ -20,6 +20,7 @@ export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
   parachainFilesPath: string,
+  configBasePath: string | URL,
   relayChainName: string,
   parachain: Parachain,
   relayChainSpecIsRaw: boolean,
@@ -141,7 +142,11 @@ export async function generateParachainFiles(
 
       // modify the plain chain spec with any custom commands
       for (const cmd of parachain.chainSpecModifierCommands) {
-        await runCommandWithChainSpec(chainSpecFullPathPlain, cmd);
+        await runCommandWithChainSpec(
+          chainSpecFullPathPlain,
+          cmd,
+          configBasePath,
+        );
       }
 
       debug("creating chain spec raw");
@@ -192,7 +197,7 @@ export async function generateParachainFiles(
 
     // modify the raw chain spec with any custom commands
     for (const cmd of parachain.rawChainSpecModifierCommands) {
-      await runCommandWithChainSpec(chainSpecFullPath, cmd);
+      await runCommandWithChainSpec(chainSpecFullPath, cmd, configBasePath);
     }
   }
 

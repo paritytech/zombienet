@@ -239,6 +239,7 @@ export async function start(
         namespace,
         tmpDir.path,
         parachainFilesPath,
+        networkSpec.configBasePath,
         chainName,
         parachain,
         relayChainSpecIsRaw,
@@ -334,7 +335,11 @@ export async function start(
 
     // modify the raw chain spec with any custom commands
     for (const cmd of networkSpec.relaychain.rawChainSpecModifierCommands) {
-      await runCommandWithChainSpec(chainSpecFullPath, cmd);
+      await runCommandWithChainSpec(
+        chainSpecFullPath,
+        cmd,
+        networkSpec.configBasePath,
+      );
     }
 
     const monitorIsAvailable = await client.isPodMonitorAvailable();

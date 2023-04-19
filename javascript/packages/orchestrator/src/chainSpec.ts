@@ -14,7 +14,13 @@ import {
   RAW_CHAIN_SPEC_IN_CMD_PATTERN,
 } from "./constants";
 import { generateKeyFromSeed } from "./keys";
-import { ChainSpec, ComputedNetwork, HrmpChannelsConfig, Node } from "./types";
+import {
+  ChainSpec,
+  Command,
+  ComputedNetwork,
+  HrmpChannelsConfig,
+  Node,
+} from "./types";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -679,7 +685,8 @@ export async function getChainIdFromSpec(specPath: string): Promise<string> {
 
 export async function runCommandWithChainSpec(
   chainSpecFullPath: string,
-  commandArgs: string[],
+  commandWithArgs: Command,
+  workingDirectory: string | URL,
 ) {
   const chainSpecSubstitutePattern = new RegExp(
     RAW_CHAIN_SPEC_IN_CMD_PATTERN?.source +
@@ -688,7 +695,7 @@ export async function runCommandWithChainSpec(
     "gi",
   );
 
-  const substitutedCommandArgs = commandArgs.map(
+  const substitutedCommandArgs = commandWithArgs.map(
     (arg) => `${arg.replaceAll(chainSpecSubstitutePattern, chainSpecFullPath)}`,
   );
   const chainSpecModifiedPath = chainSpecFullPath.replace(
@@ -713,6 +720,7 @@ export async function runCommandWithChainSpec(
       processes["mutator"] = spawn(
         substitutedCommandArgs[0],
         substitutedCommandArgs.slice(1),
+        { cwd: workingDirectory },
       );
       // flush the modified spec to a different file and then copy it back into the original path
       let spec = fs.createWriteStream(chainSpecModifiedPath);
@@ -723,8 +731,12 @@ export async function runCommandWithChainSpec(
 
       processes["mutator"].stderr.pipe(process.stderr);
 
-      processes["mutator"].on("close", () => {
-        resolve();
+      processes["mutator"].on("close", (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Process returned error code ${code}!`));
+        }
       });
 
       processes["mutator"].on("error", (err) => {
@@ -799,7 +811,7 @@ export async function customizePlainRelayChain(
 
     // modify the plain chain spec with any custom commands
     for (const cmd of networkSpec.relaychain.chainSpecModifierCommands) {
-      await runCommandWithChainSpec(specPath, cmd);
+      await runCommandWithChainSpec(specPath, cmd, networkSpec.configBasePath);
     }
   } catch (err) {
     console.log(
