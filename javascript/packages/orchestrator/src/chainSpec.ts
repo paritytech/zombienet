@@ -723,7 +723,7 @@ export async function runCommandWithChainSpec(
         { cwd: workingDirectory },
       );
       // flush the modified spec to a different file and then copy it back into the original path
-      let spec = fs.createWriteStream(chainSpecModifiedPath);
+      const spec = fs.createWriteStream(chainSpecModifiedPath);
 
       // `pipe` since it deals with flushing and we need to guarantee that the data is flushed
       // before we resolve the promise.
@@ -747,9 +747,7 @@ export async function runCommandWithChainSpec(
     // copy the modified file back into the original path after the mutation has completed
     fs.copyFileSync(chainSpecModifiedPath, chainSpecFullPath);
   } catch (e: any) {
-    console.error(
-      `\n${decorators.red('Failed to mutate chain spec!')}`,
-    );
+    console.error(`\n${decorators.red("Failed to mutate chain spec!")}`);
     throw e;
   }
 }
