@@ -1,0 +1,18 @@
+[relaychain]
+default_image = "docker.io/parity/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+chain = "rococo-local"
+
+chain_spec_modifier_commands = [[
+  "./change-name-in-chain-spec.sh",
+  "{{'plain'|chainSpec}}",
+]]
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
