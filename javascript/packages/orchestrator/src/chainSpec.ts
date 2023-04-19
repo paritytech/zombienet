@@ -747,13 +747,10 @@ export async function runCommandWithChainSpec(
     // copy the modified file back into the original path after the mutation has completed
     fs.copyFileSync(chainSpecModifiedPath, chainSpecFullPath);
   } catch (e: any) {
-    if (e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
-
-    console.log(
-      `\n\t\t 🚧 ${decorators.yellow(
-        `Chain Spec file ${chainSpecFullPath} is TOO LARGE to customize (more than 2G).`,
-      )} 🚧`,
+    console.error(
+      `\n${decorators.red('Failed to mutate chain spec!')}`,
     );
+    throw e;
   }
 }
 
