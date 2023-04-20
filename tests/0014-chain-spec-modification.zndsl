@@ -5,6 +5,6 @@ Creds: config
 
 alice: is up
 bob: is up
-alice: log line matches "Imported #[0-9]+" within 10 seconds
 
-alice: js-script ./check-testnet-name.js with "Tentset Lacol Ococor" return is 1
+alice: log line matches "Tentset Lacol Ococor"
+alice: log line matches "Imported #[0-9]+" within 10 seconds
