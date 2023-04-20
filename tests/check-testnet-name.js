@@ -6,7 +6,7 @@ async function run(nodeName, networkInfo, args) {
     const expectedName = args[0] ?? "Rococo Local Testnet";
     const testnetName = await api.rpc.system.chain();
 
-    return testnetName == expectedName;
+    return testnetName == expectedName ? 1 : 0;
 }
 
 module.exports = { run }
