@@ -4,10 +4,17 @@ import { describe } from "mocha";
 import { copyFile, unlink } from "node:fs/promises";
 import path from "path";
 
-import { fakeSession, kusamaPath, stringifyBigInt } from "./testHelper";
+import {
+  fakeGenesisKey,
+  fakeNode,
+  fakeSession,
+  kusamaPath,
+  stringifyBigInt,
+} from "./testHelper";
 
 import {
   clearAuthorities,
+  getNodeKey,
   getRuntimeConfig,
   readAndParseChainSpec,
 } from "../chainSpec";
@@ -71,11 +78,28 @@ describe("Test chainspec:", () => {
     assert.equal(cleared.genesis.runtime.staking.validatorCount, 0);
   });
 
-  // it("addBalances - success", async () => {
-  //   await addBalances(kusamaCopiedPath, [JSON.parse(fakeNode)]);
-  //   const addedBalance = readAndParseChainSpec(kusamaCopiedPath);
-  //   console.log("-------------->", addedBalance.genesis.runtime.balances);
-  // });
+  it("getNodeKey - success", async () => {
+    const key = getNodeKey(JSON.parse(fakeNode));
+    assert.equal(key[0], fakeGenesisKey[0]);
+    assert.equal(key[1], fakeGenesisKey[1]);
+    assert.equal(key[2].grandpa, fakeGenesisKey[2].grandpa);
+    assert.equal(key[2].babe, fakeGenesisKey[2].babe);
+    assert.equal(key[2].im_online, fakeGenesisKey[2].im_online);
+    assert.equal(
+      key[2].parachain_validator,
+      fakeGenesisKey[2].parachain_validator,
+    );
+    assert.equal(
+      key[2].authority_discovery,
+      fakeGenesisKey[2].authority_discovery,
+    );
+    assert.equal(key[2].para_validator, fakeGenesisKey[2].para_validator);
+    assert.equal(key[2].para_assignment, fakeGenesisKey[2].para_assignment);
+    assert.equal(key[2].beefy, fakeGenesisKey[2].beefy);
+    assert.equal(key[2].aura, fakeGenesisKey[2].aura);
+  });
+
+  // it("addAuthority", () => {});
   // it("...", () => {});
   // it("...", () => {});
 });
