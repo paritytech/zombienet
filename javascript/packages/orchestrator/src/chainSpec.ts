@@ -756,64 +756,56 @@ export async function customizePlainRelayChain(
   specPath: string,
   networkSpec: ComputedNetwork,
 ): Promise<void> {
-  try {
-    // Relay-chain spec customization logic
-    const plainRelayChainSpec = readAndParseChainSpec(specPath);
-    const keyType = specHaveSessionsKeys(plainRelayChainSpec)
-      ? "session"
-      : "aura";
+  // Relay-chain spec customization logic
+  const plainRelayChainSpec = readAndParseChainSpec(specPath);
+  const keyType = specHaveSessionsKeys(plainRelayChainSpec)
+    ? "session"
+    : "aura";
 
-    // Clear all defaults
-    clearAuthorities(specPath);
+  // Clear all defaults
+  clearAuthorities(specPath);
 
-    // add balances for nodes
-    await addBalances(specPath, networkSpec.relaychain.nodes);
+  // add balances for nodes
+  await addBalances(specPath, networkSpec.relaychain.nodes);
 
-    // add authorities for nodes
-    const validatorKeys = [];
-    for (const node of networkSpec.relaychain.nodes) {
-      if (node.validator) {
-        validatorKeys.push(node.accounts.sr_stash.address);
+  // add authorities for nodes
+  const validatorKeys = [];
+  for (const node of networkSpec.relaychain.nodes) {
+    if (node.validator) {
+      validatorKeys.push(node.accounts.sr_stash.address);
 
-        if (keyType === "session") {
-          const key = getNodeKey(node);
-          await addAuthority(specPath, node, key);
-        } else {
-          await addAuraAuthority(specPath, node.name, node.accounts!);
-          await addGrandpaAuthority(specPath, node.name, node.accounts!);
-        }
-
-        await addStaking(specPath, node);
+      if (keyType === "session") {
+        const key = getNodeKey(node);
+        await addAuthority(specPath, node, key);
+      } else {
+        await addAuraAuthority(specPath, node.name, node.accounts!);
+        await addGrandpaAuthority(specPath, node.name, node.accounts!);
       }
-    }
 
-    if (networkSpec.relaychain.randomNominatorsCount) {
-      await generateNominators(
-        specPath,
-        networkSpec.relaychain.randomNominatorsCount,
-        networkSpec.relaychain.maxNominations,
-        validatorKeys,
-      );
+      await addStaking(specPath, node);
     }
+  }
 
-    if (networkSpec.relaychain.genesis) {
-      await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
-    }
-
-    if (networkSpec.hrmp_channels) {
-      await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
-    }
-
-    // modify the plain chain spec with any custom commands
-    for (const cmd of networkSpec.relaychain.chainSpecModifierCommands) {
-      await runCommandWithChainSpec(specPath, cmd, networkSpec.configBasePath);
-    }
-  } catch (err) {
-    console.log(
-      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
-        err,
-      )}\n`,
+  if (networkSpec.relaychain.randomNominatorsCount) {
+    await generateNominators(
+      specPath,
+      networkSpec.relaychain.randomNominatorsCount,
+      networkSpec.relaychain.maxNominations,
+      validatorKeys,
     );
+  }
+
+  if (networkSpec.relaychain.genesis) {
+    await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
+  }
+
+  if (networkSpec.hrmp_channels) {
+    await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
+  }
+
+  // modify the plain chain spec with any custom commands
+  for (const cmd of networkSpec.relaychain.chainSpecModifierCommands) {
+    await runCommandWithChainSpec(specPath, cmd, networkSpec.configBasePath);
   }
 }
 export default {
