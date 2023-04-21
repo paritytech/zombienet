@@ -489,20 +489,32 @@ export class PodmanClient extends Client {
   }
 
   getPauseArgs(name: string): string[] {
-    return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
+    return [
+      "exec",
+      `${name}_pod-${name}`,
+      "bash",
+      "-c",
+      "echo pause > /tmp/zombiepipe",
+    ];
   }
   getResumeArgs(name: string): string[] {
-    return ["exec", name, "--", "bash", "-c", "echo resume > /tmp/zombiepipe"];
+    return [
+      "exec",
+      `${name}_pod-${name}`,
+      "bash",
+      "-c",
+      "echo resume > /tmp/zombiepipe",
+    ];
   }
 
   async restartNode(name: string, timeout: number | null): Promise<boolean> {
-    const args = ["exec", name, "--", "bash", "-c"];
+    const args = ["exec", `${name}_pod-${name}`, "bash", "-c"];
     const cmd = timeout
       ? `echo restart ${timeout} > /tmp/zombiepipe`
       : `echo restart > /tmp/zombiepipe`;
     args.push(cmd);
 
-    const result = await this.runCommand(args, { scoped: true });
+    const result = await this.runCommand(args, { scoped: false });
     return result.exitCode === 0;
   }
 
