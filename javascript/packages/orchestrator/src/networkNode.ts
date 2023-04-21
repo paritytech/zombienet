@@ -97,15 +97,17 @@ export class NetworkNode implements NetworkNodeInterface {
   async pause() {
     const client = getClient();
     const args = client.getPauseArgs(this.name);
+    const scoped = client.providerName === "kubernetes";
 
-    const result = await client.runCommand(args, { scoped: true });
+    const result = await client.runCommand(args, { scoped });
     return result.exitCode === 0;
   }
 
   async resume() {
     const client = getClient();
     const args = client.getResumeArgs(this.name);
-    const result = await client.runCommand(args, { scoped: true });
+    const scoped = client.providerName === "kubernetes";
+    const result = await client.runCommand(args, { scoped });
     return result.exitCode === 0;
   }
 
