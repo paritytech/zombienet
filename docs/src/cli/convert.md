@@ -12,7 +12,7 @@ zombienet convert <INPUT_FILE>
 
 ### Example
 
-Suppose you have a Polkadot Launch configuration file named `my-project-config.json`. To convert it to a Zombienet configuration file named `my-projectzombienet-config.json`, run:
+Suppose you have a Polkadot Launch configuration file named `my-project-config.json`. To convert it to a Zombienet configuration file named `my-project-config-zombienet.json`, run:
 
 ```bash
 zombienet convert my-project-config.json
