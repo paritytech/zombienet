@@ -1,6 +1,6 @@
 # Convert
 
-The `convert` command is a utility designed to help users convert their old Polkadot Launch configurations to the newer, more flexible Zombienet configuration format. This tool is especially helpful for developers who want to migrate their projects to the updated Zombienet format, without needing to manually rewrite their configurations.
+The `convert` command is a CLI command designed to help users convert their a `Polkadot Launch` configuration to the ` Zombienet` configuration format. This tool is especially helpful for developers to migrate their projects to to Zombienet, without the need to manually rewrite their configurations.
 
 ### Usage
 
