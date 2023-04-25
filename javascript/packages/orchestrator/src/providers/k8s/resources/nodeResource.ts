@@ -177,7 +177,6 @@ export class NodeResource {
           app: "zombienet",
           "app.kubernetes.io/name": this.namespace,
           "app.kubernetes.io/instance": name,
-          "zombie-ns": this.namespace,
         },
         annotations: {
           "prometheus.io/scrape": "true",

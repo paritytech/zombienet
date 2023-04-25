@@ -30,33 +30,55 @@ export interface Container {
   resources?: ContainerResource;
 }
 
+export interface Labels {
+  "zombie-role": ZombieRoleLabel;
+  app: string;
+  "app.kubernetes.io/name": string;
+  "app.kubernetes.io/instance": string;
+}
+
+export interface Annotations {
+  "prometheus.io/scrape": "true";
+  "prometheus.io/port": string;
+}
+
+export interface InnerPodSpec {
+  hostname: string;
+  restartPolicy: "Never" | "OnFailure" | "Always";
+  containers: Container[];
+  initContainers?: Container[];
+  volumes?: Volume[];
+  securityContext?: {
+    fsGroup: number;
+    runAsUser: number;
+    runAsGroup: number;
+  };
+}
+
 export interface PodSpec {
   apiVersion: "v1";
   kind: "Pod";
   metadata: {
     name: string;
-    labels: {
-      "zombie-role": ZombieRoleLabel;
-      app: string;
-      "app.kubernetes.io/name": string;
-      "app.kubernetes.io/instance": string;
-      "zombie-ns": string;
-    };
-    annotations?: {
-      "prometheus.io/scrape": "true";
-      "prometheus.io/port": string;
-    };
+    labels: Labels;
+    annotations?: Annotations;
   };
+  spec: InnerPodSpec;
+}
+
+export interface ServiceSpec {
+  apiVersion: "v1";
+  kind: "Service";
+  metadata: { name: string };
   spec: {
-    hostname: string;
-    restartPolicy: "Never" | "OnFailure";
-    containers: Container[];
-    initContainers?: Container[];
-    volumes?: Volume[];
-    securityContext?: {
-      fsGroup: number;
-      runAsUser: number;
-      runAsGroup: number;
+    selector: {
+      "app.kubernetes.io/instance": string;
     };
+    ports: {
+      name: string;
+      protocol: "TCP" | "UDP";
+      port: number;
+      targetPort: number;
+    }[];
   };
 }
