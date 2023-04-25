@@ -43,7 +43,7 @@
     "chai": "^4.3.7",
     "deep-equal-in-any-order": "^2.0.6",
     "sinon": "^15.0.4",
-    "yaml": "^2.2.1"
+    "yaml": "^2.2.2"
   },
   "publishConfig": {
     "access": "public",
