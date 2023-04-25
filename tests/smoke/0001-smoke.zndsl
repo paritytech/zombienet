@@ -8,7 +8,7 @@ bob: is up
 # Logs assertions
 alice: reports block height is at least 4 within 200 seconds
 alice: log line contains "Imported #2" within 20 seconds
-alice: log line matches glob "*rted #1*" within 10 seconds
+alice: log line matches glob "*rted #2*" within 20 seconds
 alice: log line matches "Imported #[0-9]+" within 10 seconds
 alice: count of log lines containing "imported" is at least 4 within 10 seconds
 
@@ -35,7 +35,6 @@ alice: restart after 20 seconds
 sleep 25 seconds
 alice: is up
 alice: pause
-# Todo add `should fail` support
-# alice: is down
+sleep 2 seconds
 alice: resume
 alice: is up within 120 seconds
