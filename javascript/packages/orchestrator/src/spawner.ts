@@ -19,7 +19,13 @@ import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
 import { getProvider } from "./providers";
 import { Client } from "./providers/client";
-import { Node, NodeMultiAddress, Parachain, fileMap } from "./types";
+import {
+  Node,
+  NodeMultiAddress,
+  Parachain,
+  ZombieRole,
+  fileMap,
+} from "./types";
 const debug = require("debug")("zombie::spawner");
 
 export const spawnNode = async (
@@ -45,7 +51,7 @@ export const spawnNode = async (
 
   let parachainSpecId;
   // for relay chain we can have more than one bootnode.
-  if (node.zombieRole === "node" || node.zombieRole === "collator")
+  if ([ZombieRole.Node, ZombieRole.Collator].includes(node.zombieRole))
     node.bootnodes = node.bootnodes.concat(bootnodes);
 
   if (opts.jaegerUrl) node.jaegerUrl = opts.jaegerUrl;

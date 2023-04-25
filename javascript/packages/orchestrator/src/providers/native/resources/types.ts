@@ -1,12 +1,10 @@
-import { Node } from "../../../types";
+import { Node, ZombieRoleLabel } from "../../../types";
 
 export interface ProcessEnvironment {
   [key: string]: string;
 }
 
 export type PortProperty = keyof NonNullable<Node["externalPorts"]>;
-
-export type ZombieRole = Node["zombieRole"] | "authority" | "full-node";
 
 export interface Port {
   containerPort: number;
@@ -20,7 +18,7 @@ export interface NodeSpec {
     name: string;
     namespace: string;
     labels: {
-      "zombie-role": ZombieRole;
+      "zombie-role": ZombieRoleLabel;
       app: "zombienet";
       "zombie-ns": string;
       name: string;

@@ -1,4 +1,4 @@
-import { Node } from "../../../types";
+import { Node, ZombieRole } from "../../../types";
 import { Client } from "../../client";
 import { NodeResource } from "./nodeResource";
 import { Container, PodSpec, Volume } from "./types";
@@ -19,7 +19,7 @@ export class BootNodeResource extends NodeResource {
         name: "bootnode",
         namespace: this.namespace,
         labels: {
-          "zombie-role": "bootnode",
+          "zombie-role": ZombieRole.BootNode,
           app: "zombienet",
           "zombie-ns": this.namespace,
         },

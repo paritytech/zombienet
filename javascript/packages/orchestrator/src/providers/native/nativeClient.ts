@@ -17,7 +17,7 @@ import {
   LOCALHOST,
   P2P_PORT,
 } from "../../constants";
-import { fileMap } from "../../types";
+import { ZombieRole, fileMap } from "../../types";
 import {
   Client,
   RunCommandOptions,
@@ -350,7 +350,7 @@ export class NativeClient extends Client {
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
     await fs.promises.writeFile(localFilePath, docInYaml);
 
-    if (resourseDef.metadata.labels["zombie-role"] === "temp") {
+    if (resourseDef.metadata.labels["zombie-role"] === ZombieRole.Temp) {
       await this.runCommand(resourseDef.spec.command);
     } else {
       if (resourseDef.spec.command[0] === "bash")
