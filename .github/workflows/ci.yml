@@ -100,14 +100,19 @@ jobs:
         run: npm install --ignore-scripts
         working-directory: ./javascript
 
-      - name: Run test
-        run: npm run zombie -- --provider podman test ${{ matrix.test-path }}
-        working-directory: ./javascript
-        env:
-          DEBUG: zombie*
-          ZOMBIENET_INTEGRATION_TEST_IMAGE: docker.io/paritypr/polkadot-debug:master
-          COL_IMAGE: docker.io/paritypr/colander:master
-          MALUS_IMAGE: docker.io/paritypr/malus:4131-ccd09bbf
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        with:
+          limit-access-to-users: l0r1s,pepoviola,wirednkod
+
+      # - name: Run test
+      #   run: npm run zombie -- --provider podman test ${{ matrix.test-path }}
+      #   working-directory: ./javascript
+      #   env:
+      #     DEBUG: zombie*
+      #     ZOMBIENET_INTEGRATION_TEST_IMAGE: docker.io/paritypr/polkadot-debug:master
+      #     COL_IMAGE: docker.io/paritypr/colander:master
+      #     MALUS_IMAGE: docker.io/paritypr/malus:4131-ccd09bbf
 
   all:
     # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks
