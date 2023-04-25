@@ -47,6 +47,8 @@ export async function generateParachainFiles(
     chainSpecFns.addCollatorSelection,
     chainSpecFns.writeChainSpec,
   ]);
+  const GENESIS_STATE_FILENAME_WITH_ID = `${GENESIS_STATE_FILENAME}-${parachain.id}`;
+  const GENESIS_WASM_FILENAME_WITH_ID = `${GENESIS_WASM_FILENAME}-${parachain.id}`;
 
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
@@ -57,13 +59,12 @@ export async function generateParachainFiles(
   );
 
   let chainSpecFullPath;
-  const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
+  const chainName = `${parachain.chain ? parachain.chain + "-" : ""}${
     parachain.name
-  }-${relayChainName}.json`;
+  }-${relayChainName}`;
+  const chainSpecFileName = `${chainName}.json`;
 
-  const chainSpecFullPathPlain = `${tmpDir}/${
-    parachain.chain ? parachain.chain + "-" : ""
-  }${parachain.name}-${relayChainName}-plain.json`;
+  const chainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
 
   if (parachain.cumulusBased) {
     // need to create the parachain spec
@@ -89,7 +90,7 @@ export async function generateParachainFiles(
           } --disable-default-bootnode`,
           defaultImage: parachain.collators[0].image,
         },
-        relayChainName,
+        chainName,
         chainSpecFullPathPlain,
       );
     }
@@ -222,7 +223,7 @@ export async function generateParachainFiles(
           ` --chain ${chainSpecPathInNode} > `,
         );
       }
-      commands.push(genesisStateGenerator);
+      commands.push(`${genesisStateGenerator}-${parachain.id}`);
     }
     if (parachain.genesisWasmGenerator) {
       let genesisWasmGenerator = parachain.genesisWasmGenerator.replace(
@@ -241,7 +242,7 @@ export async function generateParachainFiles(
           ` --chain ${chainSpecPathInNode} > `,
         );
       }
-      commands.push(genesisWasmGenerator);
+      commands.push(`${genesisWasmGenerator}-${parachain.id}`);
     }
 
     // Native provider doesn't need to wait
@@ -278,7 +279,7 @@ export async function generateParachainFiles(
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `${client.remoteDir}/${GENESIS_STATE_FILENAME}`,
+        `${client.remoteDir}/${GENESIS_STATE_FILENAME_WITH_ID}`,
         stateLocalFilePath,
       );
     }
@@ -286,7 +287,7 @@ export async function generateParachainFiles(
     if (parachain.genesisWasmGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `${client.remoteDir}/${GENESIS_WASM_FILENAME}`,
+        `${client.remoteDir}/${GENESIS_WASM_FILENAME_WITH_ID}`,
         wasmLocalFilePath,
       );
     }
