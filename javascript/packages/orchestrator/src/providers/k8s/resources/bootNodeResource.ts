@@ -22,7 +22,6 @@ export class BootNodeResource extends NodeResource {
           "app.kubernetes.io/instance": "bootnode",
           "zombie-role": ZombieRole.BootNode,
           app: "zombienet",
-          "zombie-ns": this.namespace,
         },
       },
       spec: {
