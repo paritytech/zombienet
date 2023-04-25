@@ -35,8 +35,6 @@ alice: restart after 20 seconds
 sleep 25 seconds
 alice: is up
 alice: pause
-# Todo add `should fail` support
-# alice: is down
 sleep 2 seconds
 alice: resume
 alice: is up within 120 seconds
