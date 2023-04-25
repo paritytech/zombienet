@@ -17,6 +17,8 @@ stages:
 rules:
   - changes:
       - javascript/**/*
+      - tests/**/*
+      - crates/**/*
 
 variables:
   CI_IMAGE: "node:18"
