@@ -32,12 +32,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
       },
     });
 
-    console.log(
-      "------------ fetchResult",
-      fetchResult,
-      fetchResult.status,
-      await fetchResult.json(),
-    );
+    console.log("------------ fetchResult", metricUri);
 
     if (!fetchResult.ok) {
       throw new Error(`Error - status: ${fetchResult.status}`);
@@ -70,12 +65,7 @@ export async function getHistogramBuckets(
     },
   });
 
-  console.log(
-    "------------ fetchResult",
-    fetchResult,
-    fetchResult.status,
-    await fetchResult.json(),
-  );
+  console.log("------------ fetchResult", metricUri);
 
   if (!fetchResult.ok) {
     throw new Error(`Error - status: ${fetchResult.status}`);
