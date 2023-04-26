@@ -120,6 +120,12 @@ export function getLokiUrl(
   return loki_url;
 }
 
+export const Timeout = (time: number) => {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), time * 1000);
+  return controller;
+};
+
 export function getRandom(arr: string[], n: number) {
   let len = arr.length;
   const result = new Array(n),
