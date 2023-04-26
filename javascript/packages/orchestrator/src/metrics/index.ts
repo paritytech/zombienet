@@ -26,7 +26,18 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
     debug(`fetching: ${metricUri}`);
     const fetchResult = await fetch(metricUri, {
       signal: TimeoutAbortController(2).signal,
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
     });
+
+    console.log("------------ fetchResult", fetchResult, fetchResult.ok);
+
+    if (!fetchResult.ok) {
+      throw new Error(`Error - status: ${fetchResult.status}`);
+    }
+
     const response = await fetchResult.json();
 
     metrics = _extractMetrics(response.data);
@@ -48,7 +59,20 @@ export async function getHistogramBuckets(
   debug(`fetching: ${metricUri}`);
   const fetchResult = await fetch(metricUri, {
     signal: TimeoutAbortController(2).signal,
+    method: "GET",
+    headers: {
+      accept: "application/json",
+    },
   });
+
+  console.log("------------ fetchResult", fetchResult, fetchResult.ok);
+
+  if (!fetchResult.ok) {
+    throw new Error(`Error - status: ${fetchResult.status}`);
+  }
+
+  console.log("------------ fetchResult", fetchResult, fetchResult.ok);
+
   const response = await fetchResult.json();
 
   let previousBucketValue = 0;
