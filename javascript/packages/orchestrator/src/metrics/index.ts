@@ -1,6 +1,5 @@
 const debug = require("debug")("zombie::metrics");
-import { decorators } from "@zombienet/utils";
-import axios from "axios";
+import { decorators, Timeout } from "@zombienet/utils";
 import { parseLine } from "./parseLine";
 
 // metrics can have namespace
@@ -25,7 +24,11 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   let metrics = {}; // empty by default
   try {
     debug(`fetching: ${metricUri}`);
-    const response = await axios.get(metricUri, { timeout: 2000 });
+    const fetchResult = await fetch(metricUri, {
+      signal: Timeout(2).signal,
+    });
+    const response = await fetchResult.json();
+
     metrics = _extractMetrics(response.data);
   } catch (err) {
     debug(`ERR: ${err}`);
@@ -43,7 +46,11 @@ export async function getHistogramBuckets(
   metricName: string,
 ): Promise<BucketHash> {
   debug(`fetching: ${metricUri}`);
-  const response = await axios.get(metricUri, { timeout: 2000 });
+  const fetchResult = await fetch(metricUri, {
+    signal: Timeout(2).signal,
+  });
+  const response = await fetchResult.json();
+
   let previousBucketValue = 0;
   const buckets: any = {};
 
