@@ -120,7 +120,7 @@ export function getLokiUrl(
   return loki_url;
 }
 
-export const Timeout = (time: number) => {
+export const TimeoutAbortController = (time: number) => {
   const controller = new AbortController();
   setTimeout(() => controller.abort(), time * 1000);
   return controller;
