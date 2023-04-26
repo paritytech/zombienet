@@ -16,7 +16,7 @@ import {
 } from "./metrics";
 import { getClient } from "./providers/client";
 
-import { Timeout, decorators } from "@zombienet/utils";
+import { TimeoutAbortController, decorators } from "@zombienet/utils";
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
 import { PARA } from "./paras-decorators";
 
@@ -507,7 +507,7 @@ export class NetworkNode implements NetworkNodeInterface {
     const url = `${collatorUrl}/api/traces/${traceId}`;
 
     const fetchResult = await fetch(url, {
-      signal: Timeout(2).signal,
+      signal: TimeoutAbortController(2).signal,
     });
     const response = await fetchResult.json();
 

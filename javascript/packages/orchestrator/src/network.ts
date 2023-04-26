@@ -1,4 +1,8 @@
-import { CreateLogTable, Timeout, decorators } from "@zombienet/utils";
+import {
+  CreateLogTable,
+  TimeoutAbortController,
+  decorators,
+} from "@zombienet/utils";
 import fs from "fs";
 import {
   BAKCCHANNEL_POD_NAME,
@@ -210,7 +214,7 @@ export class Network {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
 
         const fetchResult = await fetch(`${this.backchannelUri}/${key}`, {
-          signal: Timeout(2).signal,
+          signal: TimeoutAbortController(2).signal,
         });
         const response = await fetchResult.json();
         const { status } = response;
