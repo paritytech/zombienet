@@ -2,6 +2,9 @@ import dns from "dns";
 import fs from "fs";
 import { AddressInfo, createServer } from "net";
 import os from "os";
+import { Readable } from "stream";
+import { finished } from "stream/promises";
+import { ReadableStream } from "stream/web";
 import { decorators } from "./colors";
 
 export async function getRandomPort(): Promise<number> {
@@ -34,21 +37,10 @@ export async function getHostIp(): Promise<string> {
 
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
-    await new Promise<void>(async (resolve) => {
-      const response = await fetch(url);
-      const reader = response.body?.getReader();
-      const writer = fs.createWriteStream(dest);
-      let i = true;
-      while (i) {
-        const read = await reader?.read();
-        if (read?.done) {
-          writer.close();
-          i = false;
-          resolve();
-        }
-        writer.write(read?.value);
-      }
-    });
+    const { body } = await fetch(url);
+    const writable = fs.createWriteStream(dest);
+    const readable = Readable.fromWeb(body as ReadableStream);
+    await finished(readable.pipe(writable));
   } catch (err) {
     console.log(
       `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(

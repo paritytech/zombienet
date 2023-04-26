@@ -1,0 +1,40 @@
+Description: Smoke Test
+Network: ./0001-smoke.toml
+Creds: config
+
+alice: is up
+bob: is up
+
+# Logs assertions
+alice: reports block height is at least 4 within 200 seconds
+alice: log line contains "Imported #2" within 20 seconds
+alice: log line matches glob "*rted #2*" within 20 seconds
+alice: log line matches "Imported #[0-9]+" within 10 seconds
+alice: count of log lines containing "imported" is at least 4 within 10 seconds
+
+
+# Events assertions
+alice: system event contains "A candidate was included" within 60 seconds
+alice: system event matches glob "*was backed*" within 20 seconds
+alice: system event matches "paraId(.)*[0-9]+" within 20 seconds
+
+# Custom scripts
+alice: js-script ./0001-custom.js return is greater than 1 within 200 seconds
+alice: js-script ./0001-custom.js within 200 seconds
+alice: js-script ./0001-custom.js with "alice" within 200 seconds
+alice: run ./0001-custom.sh within 200 seconds
+
+# Histogram assertions
+alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets ["0.01"] within 100 seconds
+
+# restart / pause / resume
+# bob: pause
+# collator01: pause
+# alice: is up
+# alice: restart after 20 seconds
+# sleep 25 seconds
+# alice: is up
+# alice: pause
+# sleep 2 seconds
+# alice: resume
+# alice: is up within 120 seconds

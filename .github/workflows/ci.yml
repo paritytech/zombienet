@@ -29,6 +29,16 @@ jobs:
       - run: npm run test
         working-directory: "./javascript"
 
+      - name: Upload build artifacts
+        if: ${{ matrix.node-version == '18.x' }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ runner.os }}-build-${{ github.sha }}
+          path: |
+            javascript/packages/cli/dist
+            javascript/packages/orchestrator/dist
+            javascript/packages/utils/dist
+
   build-rust:
     runs-on: ubuntu-latest
 
@@ -55,10 +65,54 @@ jobs:
       - name: Run tests
         run: cargo test --verbose --all-targets --all-features
 
+  run-podman-tests:
+    runs-on: ubuntu-latest
+    needs: [build, build-rust]
+
+    strategy:
+      matrix:
+        test-path:
+          - ../tests/smoke/0001-smoke.zndsl
+          - ../tests/0013-db-snapshot.zndsl
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3.5.2
+
+      - name: Setup containers registries
+        run: |
+          mkdir -p /etc/containers \
+          && echo "unqualified-search-registries = ['docker.io']" \
+          && sudo tee /etc/containers/registries.conf
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Retrieve build artifacts
+        uses: actions/download-artifact@master
+        with:
+          name: ${{ runner.os }}-build-${{ github.sha }}
+          path: ./javascript/packages
+        
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+        working-directory: ./javascript
+
+      - name: Run test
+        run: npm run zombie -- --provider podman test ${{ matrix.test-path }}
+        working-directory: ./javascript
+        env:
+          DEBUG: zombie*
+          ZOMBIENET_INTEGRATION_TEST_IMAGE: docker.io/paritypr/polkadot-debug:master
+          COL_IMAGE: docker.io/paritypr/colander:master
+          MALUS_IMAGE: docker.io/paritypr/malus:4131-ccd09bbf
+
   all:
     # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks
     # are successful.
-    needs: [build, build-rust]
+    needs: [build, build-rust, run-podman-tests]
     runs-on: ubuntu-latest
     steps:
       - run: echo Success
