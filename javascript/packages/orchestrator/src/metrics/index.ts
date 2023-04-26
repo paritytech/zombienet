@@ -36,7 +36,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
       "------------ fetchResult",
       fetchResult,
       fetchResult.status,
-      fetchResult.json(),
+      await fetchResult.json(),
     );
 
     if (!fetchResult.ok) {
@@ -74,7 +74,7 @@ export async function getHistogramBuckets(
     "------------ fetchResult",
     fetchResult,
     fetchResult.status,
-    fetchResult.json(),
+    await fetchResult.json(),
   );
 
   if (!fetchResult.ok) {
