@@ -1,6 +1,5 @@
 const debug = require("debug")("zombie::metrics");
-import { decorators } from "@zombienet/utils";
-import axios from "axios";
+import { decorators, TimeoutAbortController } from "@zombienet/utils";
 import { parseLine } from "./parseLine";
 
 // metrics can have namespace
@@ -25,8 +24,20 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   let metrics = {}; // empty by default
   try {
     debug(`fetching: ${metricUri}`);
-    const response = await axios.get(metricUri, { timeout: 2000 });
-    metrics = _extractMetrics(response.data);
+    const fetchResult = await fetch(metricUri, {
+      signal: TimeoutAbortController(2).signal,
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
+    });
+
+    if (!fetchResult.ok) {
+      throw new Error(`Error - status: ${fetchResult.status}`);
+    }
+
+    const response = await fetchResult.text();
+    metrics = _extractMetrics(response);
   } catch (err) {
     debug(`ERR: ${err}`);
     console.log(
@@ -43,7 +54,20 @@ export async function getHistogramBuckets(
   metricName: string,
 ): Promise<BucketHash> {
   debug(`fetching: ${metricUri}`);
-  const response = await axios.get(metricUri, { timeout: 2000 });
+  const fetchResult = await fetch(metricUri, {
+    signal: TimeoutAbortController(2).signal,
+    method: "GET",
+    headers: {
+      accept: "application/json",
+    },
+  });
+
+  if (!fetchResult.ok) {
+    throw new Error(`Error - status: ${fetchResult.status}`);
+  }
+
+  const response = await fetchResult.text();
+
   let previousBucketValue = 0;
   const buckets: any = {};
 
@@ -52,7 +76,7 @@ export async function getHistogramBuckets(
     : `${metricName}_bucket`;
   const parsedMetricInput = parseLine(resolvedMetricName);
 
-  for (const line of response.data.split("\n")) {
+  for (const line of response.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
     const parsedLine = parseLine(line);
 
