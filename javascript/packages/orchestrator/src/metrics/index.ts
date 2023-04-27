@@ -36,11 +36,8 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
       throw new Error(`Error - status: ${fetchResult.status}`);
     }
 
-    console.log("---- ", fetchResult.body);
-
-    const response = await fetchResult.json();
-
-    metrics = _extractMetrics(response.data);
+    const response = await fetchResult.text();
+    metrics = _extractMetrics(response);
   } catch (err) {
     debug(`ERR: ${err}`);
     console.log(
@@ -65,13 +62,11 @@ export async function getHistogramBuckets(
     },
   });
 
-  console.log("---- ", fetchResult.body);
-
   if (!fetchResult.ok) {
     throw new Error(`Error - status: ${fetchResult.status}`);
   }
 
-  const response = await fetchResult.json();
+  const response = await fetchResult.text();
 
   let previousBucketValue = 0;
   const buckets: any = {};
@@ -81,7 +76,7 @@ export async function getHistogramBuckets(
     : `${metricName}_bucket`;
   const parsedMetricInput = parseLine(resolvedMetricName);
 
-  for (const line of response.data.split("\n")) {
+  for (const line of response.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
     const parsedLine = parseLine(line);
 
