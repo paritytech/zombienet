@@ -40,8 +40,6 @@ export class NetworkNode implements NetworkNodeInterface {
   userDefinedTypes: any;
   para?: PARA;
   parachainId?: number;
-  lastLogLineCheckedTimestamp?: string;
-  lastLogLineCheckedIndex?: number;
   group?: string;
 
   constructor(
@@ -415,6 +413,8 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     try {
+      let lastLogLineCheckedTimestamp: string;
+      let lastLogLineCheckedIndex: number;
       const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
@@ -425,7 +425,10 @@ export class NetworkNode implements NetworkNodeInterface {
           const dedupedLogs = this._dedupLogs(
             logs.split("\n"),
             client.providerName === "native",
+            lastLogLineCheckedTimestamp,
+            lastLogLineCheckedIndex
           );
+
           const index = dedupedLogs.findIndex((line) => {
             if (client.providerName !== "native") {
               // remove the extra timestamp
@@ -436,10 +439,10 @@ export class NetworkNode implements NetworkNodeInterface {
 
           if (index >= 0) {
             done = true;
-            this.lastLogLineCheckedTimestamp = dedupedLogs[index];
-            this.lastLogLineCheckedIndex = index;
+            lastLogLineCheckedTimestamp = dedupedLogs[index];
+            lastLogLineCheckedIndex = index;
             debug(
-              this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "),
+              lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "),
             );
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -538,12 +541,12 @@ export class NetworkNode implements NetworkNodeInterface {
     return spanNames;
   }
 
-  // prevent to seach in the same log line twice.
-  _dedupLogs(logs: string[], useIndex = false): string[] {
-    if (!this.lastLogLineCheckedTimestamp) return logs;
-    if (useIndex) return logs.slice(this.lastLogLineCheckedIndex);
+  // prevent to search in the same log line twice.
+  _dedupLogs(logs: string[], useIndex = false, lastLogLineCheckedTimestamp: string, lastLogLineCheckedIndex: number): string[] {
+    if (!lastLogLineCheckedTimestamp) return logs;
+    if (useIndex) return logs.slice(lastLogLineCheckedIndex);
 
-    const lastLineTs = this.lastLogLineCheckedTimestamp.split(" ")[0];
+    const lastLineTs = lastLogLineCheckedTimestamp.split(" ")[0];
     const index = logs.findIndex((logLine) => {
       const thisLineTs = logLine.split(" ")[0];
       return thisLineTs > lastLineTs;
