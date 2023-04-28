@@ -426,7 +426,7 @@ export class NetworkNode implements NetworkNodeInterface {
             logs.split("\n"),
             client.providerName === "native",
             lastLogLineCheckedTimestamp,
-            lastLogLineCheckedIndex
+            lastLogLineCheckedIndex,
           );
 
           const index = dedupedLogs.findIndex((line) => {
@@ -441,9 +441,7 @@ export class NetworkNode implements NetworkNodeInterface {
             done = true;
             lastLogLineCheckedTimestamp = dedupedLogs[index];
             lastLogLineCheckedIndex = index;
-            debug(
-              lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "),
-            );
+            debug(lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             logs = await client.getNodeLogs(this.name, 2, true);
@@ -542,7 +540,12 @@ export class NetworkNode implements NetworkNodeInterface {
   }
 
   // prevent to search in the same log line twice.
-  _dedupLogs(logs: string[], useIndex = false, lastLogLineCheckedTimestamp: string, lastLogLineCheckedIndex: number): string[] {
+  _dedupLogs(
+    logs: string[],
+    useIndex = false,
+    lastLogLineCheckedTimestamp: string,
+    lastLogLineCheckedIndex: number,
+  ): string[] {
     if (!lastLogLineCheckedTimestamp) return logs;
     if (useIndex) return logs.slice(lastLogLineCheckedIndex);
 
