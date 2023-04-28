@@ -42,17 +42,3 @@ export async function verifyNodes(network: Network) {
     throw new Error("At least one of the nodes fails to start");
   debug("All nodes checked ok");
 }
-
-
-//
-// const nodeChecker = async (node: NetworkNode) => {
-//   const metricToQuery = node.para
-//     ? decorate(node.para, [getProcessStartTimeKey])[0]()
-//     : getProcessStartTimeKey();
-//   debug(
-//     `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
-//   );
-//   const ready = await node.getMetric(metricToQuery, "isAtLeast", 1, 60 * 5);
-//   debug(`\t ${node.name} ready ${ready}`);
-//   return ready;
-// };
