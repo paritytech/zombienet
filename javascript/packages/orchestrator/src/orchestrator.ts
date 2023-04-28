@@ -28,6 +28,7 @@ import {
   zombieWrapperPath,
 } from "./configGenerator";
 import {
+  DEFAULT_COMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   ZOMBIE_WRAPPER,
@@ -90,7 +91,7 @@ export async function start(
     );
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw } = getProvider(
+    const { initClient, setupChainSpec, getChainSpecRaw, setSubstrateCliArdsVersion } = getProvider(
       networkSpec.settings.provider,
     );
 
@@ -200,6 +201,11 @@ export async function start(
 
     // create namespace
     await client.createNamespace();
+
+
+    // TODO
+    await setSubstrateCliArdsVersion(networkSpec);
+    if(process.env.e === "1") process.exit(0);
 
     // setup cleaner
     if (!opts.monitor) {

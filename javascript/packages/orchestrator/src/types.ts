@@ -183,6 +183,7 @@ export interface Node {
     prometheusPort: number;
     p2pPort: number;
   };
+  substrateCliArgsVersion?: SubstrateCliArgsVersion;
 }
 
 export interface Collator {
@@ -339,3 +340,8 @@ export enum ZombieRole {
 }
 
 export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";
+
+export enum SubstrateCliArgsVersion {
+  V0 = 0,
+  V1 = 1
+}
