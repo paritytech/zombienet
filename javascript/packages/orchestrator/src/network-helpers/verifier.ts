@@ -6,7 +6,6 @@ import { decorate } from "../paras-decorators";
 
 const debug = require("debug")("zombie::helper::verifier");
 
-
 export const nodeChecker = async (node: NetworkNode) => {
   const metricToQuery = node.para
     ? decorate(node.para, [getProcessStartTimeKey])[0]()

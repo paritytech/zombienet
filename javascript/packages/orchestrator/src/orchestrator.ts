@@ -47,7 +47,7 @@ import {
 
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
-import { verifyNodes, nodeChecker } from "./network-helpers/verifier";
+import { nodeChecker, verifyNodes } from "./network-helpers/verifier";
 import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
@@ -91,8 +91,10 @@ export async function start(
     );
 
     // IFF there are network references in cmds we need to switch to concurrency 1
-    if(TOKEN_PLACEHOLDER.test(JSON.stringify(networkSpec))) {
-      debug("Network definition use network references, switching concurrency to 1");
+    if (TOKEN_PLACEHOLDER.test(JSON.stringify(networkSpec))) {
+      debug(
+        "Network definition use network references, switching concurrency to 1",
+      );
       opts.spawnConcurrency = 1;
     }
 
