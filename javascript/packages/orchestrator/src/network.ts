@@ -9,6 +9,7 @@ import {
   BAKCCHANNEL_PORT,
   BAKCCHANNEL_URI_PATTERN,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  TOKEN_PLACEHOLDER,
 } from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
@@ -369,7 +370,8 @@ export class Network {
 
   replaceWithNetworInfo(placeholder: string): string {
     return placeholder.replace(
-      /{{ZOMBIE:(.*?):(.*?)}}/gi,
+      ///{{ZOMBIE:(.*?):(.*?)}}/gi,
+      TOKEN_PLACEHOLDER,
       (_substring, nodeName, key: keyof NetworkNode) => {
         const node = this.getNodeByName(nodeName);
         return node[key];

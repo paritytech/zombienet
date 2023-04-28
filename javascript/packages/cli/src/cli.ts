@@ -39,12 +39,12 @@ process.on("uncaughtException", async (err) => {
 // Ensure that we know about any exception thrown in a promise that we
 // accidentally don't have a 'catch' for.
 // http://www.hacksrus.net/blog/2015/08/a-solution-to-swallowed-exceptions-in-es6s-promises/
-process.on("unhandledRejection", async (err) => {
+process.on("unhandledRejection", async (err: Error) => {
   await handleTermination();
   debug(err);
   console.log(
     `\n${decorators.red("UnhandledRejection: ")} \t ${decorators.bright(
-      err,
+      JSON.stringify(err),
     )}\n`,
   );
   process.exit(1001);
