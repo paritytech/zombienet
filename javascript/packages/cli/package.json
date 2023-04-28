@@ -10,8 +10,8 @@
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\"",
     "package": "pkg . -o ../../bins/zombienet",
-    "package:linux": "pkg . -o ../../bins/zombienet-linux -t node16-linux-x64,node16-linux-arm64",
-    "package:macos": "pkg . -o ../../bins/zombienet-macos -t node16-macos-x64"
+    "package:linux": "pkg . -o ../../bins/zombienet-linux -t node18-linux-x64,node18-linux-arm64",
+    "package:macos": "pkg . -o ../../bins/zombienet-macos -t node18-macos-x64"
   },
   "repository": {
     "type": "git",
@@ -27,9 +27,9 @@
       "../../../scripts/*"
     ],
     "targets": [
-      "node16-macos-x64",
-      "node16-linux-x64",
-      "node16-linux-arm64"
+      "node18-macos-x64",
+      "node18-linux-x64",
+      "node18-linux-arm64"
     ]
   },
   "bin": {
