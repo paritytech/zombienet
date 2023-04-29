@@ -1,5 +1,4 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import axios from "axios";
 import { makeRe } from "minimatch";
 
 import {
@@ -17,7 +16,7 @@ import {
 } from "./metrics";
 import { getClient } from "./providers/client";
 
-import { decorators } from "@zombienet/utils";
+import { TimeoutAbortController, decorators } from "@zombienet/utils";
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
 import { PARA } from "./paras-decorators";
 
@@ -506,7 +505,11 @@ export class NetworkNode implements NetworkNodeInterface {
     collatorUrl: string,
   ): Promise<string[]> {
     const url = `${collatorUrl}/api/traces/${traceId}`;
-    const response = await axios.get(url, { timeout: 2000 });
+
+    const fetchResult = await fetch(url, {
+      signal: TimeoutAbortController(2).signal,
+    });
+    const response = await fetchResult.json();
 
     // filter batches
     const batches = response.data.batches.filter((batch: any) => {

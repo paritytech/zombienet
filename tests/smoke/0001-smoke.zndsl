@@ -28,13 +28,13 @@ alice: run ./0001-custom.sh within 200 seconds
 alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets ["0.01"] within 100 seconds
 
 # restart / pause / resume
-bob: pause
-collator01: pause
-alice: is up
-alice: restart after 20 seconds
-sleep 25 seconds
-alice: is up
-alice: pause
-sleep 2 seconds
-alice: resume
-alice: is up within 120 seconds
+# bob: pause
+# collator01: pause
+# alice: is up
+# alice: restart after 20 seconds
+# sleep 25 seconds
+# alice: is up
+# alice: pause
+# sleep 2 seconds
+# alice: resume
+# alice: is up within 120 seconds

@@ -103,6 +103,8 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
   "base-path": 2,
 };
 
+const TOKEN_PLACEHOLDER = /{{ZOMBIE:(.*?):(.*?)}}/gi;
+
 export {
   REGULAR_BIN_PATH,
   PROMETHEUS_PORT,
@@ -158,4 +160,5 @@ export {
   ARGS_TO_REMOVE,
   UNDYING_COLLATOR_BIN,
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
+  TOKEN_PLACEHOLDER,
 };
