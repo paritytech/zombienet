@@ -370,7 +370,6 @@ export class Network {
 
   replaceWithNetworInfo(placeholder: string): string {
     return placeholder.replace(
-      ///{{ZOMBIE:(.*?):(.*?)}}/gi,
       TOKEN_PLACEHOLDER,
       (_substring, nodeName, key: keyof NetworkNode) => {
         const node = this.getNodeByName(nodeName);

@@ -15,6 +15,7 @@ import {
   validateRuntimeCode,
 } from "../jsapi-helpers";
 import { Network } from "../network";
+import { NetworkNode } from "../networkNode";
 import { FnArgs } from "../types";
 const utilCrypto = require("@polkadot/util-crypto");
 
@@ -127,7 +128,9 @@ const LogMatch = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
-      nodes.map((node: any) => node.findPattern(pattern!, isGlob, timeout)),
+      nodes.map((node: NetworkNode) =>
+        node.findPattern(pattern!, isGlob, timeout),
+      ),
     );
 
     const found = results.every(Boolean);
