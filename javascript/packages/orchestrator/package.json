@@ -36,7 +36,7 @@
   "dependencies": {
     "@polkadot/api": "^10.4.1",
     "@polkadot/keyring": "^12.0.1",
-    "@polkadot/util-crypto": "^12.0.1",
+    "@polkadot/util-crypto": "^12.1.1",
     "@zombienet/utils": "^0.0.19",
     "chai": "^4.3.7",
     "debug": "^4.3.2",
@@ -55,7 +55,7 @@
     "yaml": "^2.2.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
     "@types/fs-extra": "^11.0.1",
     "@types/jsdom": "^21.1.1",
     "@types/minimatch": "^5.1.2",
