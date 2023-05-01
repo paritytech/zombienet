@@ -212,11 +212,6 @@ export async function start(
     // create namespace
     await client.createNamespace();
 
-
-    // TODO
-    await setSubstrateCliArdsVersion(networkSpec);
-    if(process.env.e === "1") process.exit(0);
-
     // setup cleaner
     if (!opts.monitor) {
       cronInterval = await client.setupCleaner();
@@ -227,6 +222,10 @@ export async function start(
     debug(`Creating static resources (bootnode and backchannel services)`);
     await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
+
+    // Set substrate client argument version, needed from breaking change.
+    // see https://github.com/paritytech/substrate/pull/13384
+    await setSubstrateCliArdsVersion(networkSpec);
 
     // create or copy relay chain spec
     await setupChainSpec(

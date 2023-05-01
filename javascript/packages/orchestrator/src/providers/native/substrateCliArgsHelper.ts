@@ -61,8 +61,4 @@ export const setSubstrateCliArdsVersion = async(network: ComputedNetwork) => {
         collator.substrateCliArgsVersion = imgCmdMap.get(uniq_image_cmd).version;
       }
     }
-
-    // DEBUG
-    debug(JSON.stringify(network.relaychain.nodes));
-    debug(JSON.stringify(network.parachains));
 };
