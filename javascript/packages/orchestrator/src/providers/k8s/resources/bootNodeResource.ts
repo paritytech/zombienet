@@ -28,7 +28,7 @@ export class BootNodeResource extends NodeResource {
         hostname: "bootnode",
         containers,
         initContainers,
-        restartPolicy: "Never",
+        restartPolicy: "Always",
         volumes,
         securityContext: {
           fsGroup: 1000,
