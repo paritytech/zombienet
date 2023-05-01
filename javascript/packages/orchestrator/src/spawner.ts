@@ -123,14 +123,14 @@ export const spawnNode = async (
   if (opts.inCI) {
     // in CI we deploy a service (with the pod name) in front of each pod
     // so here we can use the name (as short dns in the ns) to connect to pod.
-    const nodeIp = podDef.metadata.name;
+    const nodeDns = `${podDef.metadata.name}.${namespace}.svc.cluster.local`;
     networkNode = new NetworkNode(
       node.name,
-      WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+      WS_URI_PATTERN.replace("{{IP}}", nodeDns).replace(
         "{{PORT}}",
         endpointPort.toString(),
       ),
-      METRICS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
+      METRICS_URI_PATTERN.replace("{{IP}}", nodeDns).replace(
         "{{PORT}}",
         PROMETHEUS_PORT.toString(),
       ),
