@@ -499,8 +499,9 @@ export class KubeClient extends Client {
   }
 
   async getNodeIP(identifier: string): Promise<string> {
-    // we just return the identifier because a service exists with the same name
-    return identifier;
+    const args = ["get", "pod", identifier, "-o", "jsonpath={.status.podIP}"];
+    const result = await this.runCommand(args);
+    return result.stdout;
   }
 
   async getNodeInfo(
