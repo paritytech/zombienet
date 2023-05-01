@@ -87,7 +87,8 @@ export async function genCumulusCollatorCmd(
     "--rpc-methods unsafe",
   ];
 
-  if(nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0) fullCmd.push("--unsafe-ws-external");
+  if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0)
+    fullCmd.push("--unsafe-ws-external");
   const portFlags = getPortFlagsByCliArgsVersion(nodeSetup);
 
   for (const [k, v] of Object.entries(portFlags)) {
@@ -298,7 +299,8 @@ export async function genCmd(
   if (basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
   args.push(...["--base-path", dataPath]);
 
-  if(nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0) args.push("--unsafe-ws-external");
+  if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0)
+    args.push("--unsafe-ws-external");
 
   const finalArgs: string[] = [
     command,
@@ -319,23 +321,31 @@ export async function genCmd(
   return resolvedCmd;
 }
 
-
 const getPortFlagsByCliArgsVersion = (nodeSetup: Node) => {
   // port flags logic
-  const portFlags: {[key: string]: string} = {
-    "--prometheus-port": (nodeSetup.prometheusPort ? nodeSetup.prometheusPort : PROMETHEUS_PORT).toString()
+  const portFlags: { [key: string]: string } = {
+    "--prometheus-port": (nodeSetup.prometheusPort
+      ? nodeSetup.prometheusPort
+      : PROMETHEUS_PORT
+    ).toString(),
   };
 
-  if(nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0) {
-    portFlags["--rpc-port"] = (nodeSetup.rpcPort ? nodeSetup.rpcPort : RPC_HTTP_PORT).toString();
-    portFlags["--ws-port"] = (nodeSetup.wsPort ? nodeSetup.wsPort : RPC_WS_PORT).toString();
+  if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0) {
+    portFlags["--rpc-port"] = (
+      nodeSetup.rpcPort ? nodeSetup.rpcPort : RPC_HTTP_PORT
+    ).toString();
+    portFlags["--ws-port"] = (
+      nodeSetup.wsPort ? nodeSetup.wsPort : RPC_WS_PORT
+    ).toString();
   } else {
     // use ws port as default
-    const portToUse = nodeSetup.wsPort ? nodeSetup.wsPort :
-      nodeSetup.rpcPort ? nodeSetup.rpcPort :
-      RPC_HTTP_PORT;
+    const portToUse = nodeSetup.wsPort
+      ? nodeSetup.wsPort
+      : nodeSetup.rpcPort
+      ? nodeSetup.rpcPort
+      : RPC_HTTP_PORT;
     portFlags["--rpc-port"] = portToUse.toString();
   }
 
   return portFlags;
-}
+};

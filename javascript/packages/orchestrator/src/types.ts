@@ -343,5 +343,5 @@ export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";
 
 export enum SubstrateCliArgsVersion {
   V0 = 0,
-  V1 = 1
+  V1 = 1,
 }

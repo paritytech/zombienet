@@ -28,7 +28,6 @@ import {
   zombieWrapperPath,
 } from "./configGenerator";
 import {
-  DEFAULT_COMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   TOKEN_PLACEHOLDER,
@@ -101,9 +100,12 @@ export async function start(
 
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw, setSubstrateCliArdsVersion } = getProvider(
-      networkSpec.settings.provider,
-    );
+    const {
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+      setSubstrateCliArdsVersion,
+    } = getProvider(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
