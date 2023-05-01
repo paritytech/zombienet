@@ -82,7 +82,7 @@ comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)+ }
 
 file = { SOI ~ (
     description? ~
-    network ~
+    network+ ~
     creds
     ) ~ (
     comment |

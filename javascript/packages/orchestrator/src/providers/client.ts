@@ -103,13 +103,12 @@ export abstract class Client {
   abstract getLogsCommand(name: string): string;
 }
 
-let client: Client;
+let client: Client | undefined;
 export function getClient(): Client {
   if (!client) throw new Error("Client not initialized");
   return client;
 }
 
-export function setClient(c: Client) {
-  if (client) throw new Error("Client already initialized");
+export function setClient(c: Client | undefined) {
   client = c;
 }

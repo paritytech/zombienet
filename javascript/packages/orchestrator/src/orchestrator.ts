@@ -528,8 +528,8 @@ export async function start(
       await network.dumpLogs();
       await network.stop();
     }
-    if (cronInterval) clearInterval(cronInterval);
-    process.exit(1);
+    clearInterval(cronInterval);
+    throw error;
   }
 }
 

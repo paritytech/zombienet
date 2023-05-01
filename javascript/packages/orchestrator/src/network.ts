@@ -259,7 +259,7 @@ export class Network {
     const nodes = this.groups[nodeOrGroupName];
 
     if (!nodes)
-      throw new Error(`Noode or Group: ${nodeOrGroupName} not present`);
+      throw new Error(`Node or Group: ${nodeOrGroupName} not present`);
     return nodes;
   }
 
@@ -281,6 +281,35 @@ export class Network {
       );
       return false;
     }
+  }
+
+  getNetworkInfo() {
+    return {
+      tmpDir: this.tmpDir,
+      chainSpecPath: this.chainSpecFullPath,
+      relay: this.relay.map((node: any) => {
+        const { name, wsUri, prometheusUri, userDefinedTypes } = node;
+        return { name, wsUri, prometheusUri, userDefinedTypes };
+      }),
+      paras: Object.keys(this.paras).reduce((memo: any, paraId: any) => {
+        const { chainSpecPath, wasmPath, statePath } = this.paras[paraId];
+        memo[paraId] = { chainSpecPath, wasmPath, statePath };
+        memo[paraId].nodes = this.paras[paraId].nodes.map((node) => {
+          return { ...node };
+        });
+        return memo;
+      }, {}),
+      nodesByName: Object.keys(this.nodesByName).reduce(
+        (memo: any, nodeName) => {
+          const { name, wsUri, prometheusUri, userDefinedTypes, parachainId } =
+            this.nodesByName[nodeName];
+          memo[nodeName] = { name, wsUri, prometheusUri, userDefinedTypes };
+          if (parachainId) memo[nodeName].parachainId = parachainId;
+          return memo;
+        },
+        {},
+      ),
+    };
   }
 
   // show links for access and debug

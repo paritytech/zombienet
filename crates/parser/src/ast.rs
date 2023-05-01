@@ -147,7 +147,7 @@ pub struct Assertion {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TestDefinition {
     pub description: Option<String>,
-    pub network: String,
+    pub networks: Vec<String>,
     pub creds: String,
     pub assertions: Vec<Assertion>,
 }

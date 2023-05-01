@@ -107,7 +107,7 @@ program
   .description("Run tests on the network defined")
   .argument("<testFile>", "ZNDSL file (.zndsl) describing the tests")
   .argument(
-    "[runningNetworkSpec]",
+    "[runningNetworksSpec...]",
     "Path to the network spec json, for using a running network for running the test",
   )
   .action(asyncAction(test));

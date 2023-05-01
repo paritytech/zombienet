@@ -11,6 +11,7 @@ import path from "path";
 import { Network, rebuildNetwork } from "../network";
 import { start } from "../orchestrator";
 import { Providers } from "../providers";
+import { setClient } from "../providers/client";
 import { LaunchConfig, TestDefinition } from "../types";
 import assertions from "./assertions";
 import commands from "./commands";
@@ -26,6 +27,87 @@ export interface BackchannelMap {
   [propertyName: string]: any;
 }
 
+function findNetwork(
+  networks: Network[],
+  nodeOrGroupName?: string,
+): Network | undefined {
+  if (!nodeOrGroupName) {
+    return networks[0];
+  }
+
+  const network = networks.find((network) => {
+    try {
+      network.getNodes(nodeOrGroupName);
+      return true;
+    } catch {
+      // continue searching
+    }
+  });
+
+  if (!network)
+    throw new Error(`Node or Group: ${nodeOrGroupName} not present`);
+
+  return network;
+}
+
+function showNetworkLogsLocation(
+  network: Network,
+  logsPath: string,
+  inCI: boolean,
+) {
+  console.log(
+    `\n\t${decorators.magenta(
+      "📓 To see the full logs of the nodes please go to:",
+    )}`,
+  );
+  switch (network.client.providerName) {
+    case "kubernetes":
+      if (inCI) {
+        // show links to grafana and also we need to move the logs to artifacts
+        const networkEndTime = new Date().getTime();
+        for (const node of network.relay) {
+          const loki_url = getLokiUrl(
+            network.namespace,
+            node.name,
+            network.networkStartTime!,
+            networkEndTime,
+          );
+          console.log(
+            `\t${decorators.magenta(node.name)}: ${decorators.green(loki_url)}`,
+          );
+        }
+
+        for (const [paraId, parachain] of Object.entries(network.paras)) {
+          console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
+          for (const node of parachain.nodes) {
+            const loki_url = getLokiUrl(
+              network.namespace,
+              node.name,
+              network.networkStartTime!,
+              networkEndTime,
+            );
+            console.log(
+              `\t\t${decorators.magenta(node.name)}: ${decorators.green(
+                loki_url,
+              )}`,
+            );
+          }
+        }
+
+        // logs are also collected as artifacts
+        console.log(
+          `\n\n\t ${decorators.yellow(
+            "📓 Logs are also available in the artifacts' pipeline in gitlab",
+          )}`,
+        );
+      }
+      break;
+    default:
+      console.log(`\n\t${decorators.magenta(logsPath)}`);
+      break;
+  }
+}
+
 export async function run(
   configBasePath: string,
   testName: string,
@@ -34,27 +116,33 @@ export async function run(
   inCI = false,
   concurrency = 1,
   silent = false,
-  runningNetworkSpecPath: string | undefined,
+  runningNetworksSpec: string[] | undefined,
   dir: string | undefined,
 ) {
   setSilent(silent);
-  let network: Network;
+  const networks: Network[] = [];
   const backchannelMap: BackchannelMap = {};
 
   let suiteName: string = testName;
   if (testDef.description) suiteName += `( ${testDef.description} )`;
 
-  // read network file
-  const networkConfigFilePath = fs.existsSync(testDef.network)
-    ? testDef.network
-    : path.resolve(configBasePath, testDef.network);
+  const networkConfigs: LaunchConfig[] = [];
+  for (let networkConfigFilePath of testDef.networks) {
+    // read network file
+    if (!fs.existsSync(networkConfigFilePath))
+      networkConfigFilePath = path.resolve(
+        configBasePath,
+        networkConfigFilePath,
+      );
+    const networkConfig = readNetworkConfig(networkConfigFilePath);
 
-  const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
+    // set the provider
+    if (!networkConfig.settings)
+      networkConfig.settings = { provider, timeout: DEFAULT_GLOBAL_TIMEOUT };
+    else networkConfig.settings.provider = provider;
 
-  // set the provider
-  if (!config.settings)
-    config.settings = { provider, timeout: DEFAULT_GLOBAL_TIMEOUT };
-  else config.settings.provider = provider;
+    networkConfigs.push(networkConfig);
+  }
 
   // find creds file
   const credsFile = inCI ? "config" : testDef.creds;
@@ -76,131 +164,93 @@ export async function run(
     if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
 
-  if (!creds && config.settings.provider === "kubernetes")
-    throw new Error(`Invalid credential file path: ${credsFile}`);
+  for (const networkConfig of networkConfigs) {
+    if (!creds && networkConfig.settings.provider === "kubernetes")
+      throw new Error(`Invalid credential file path: ${credsFile}`);
+  }
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);
 
   suite.beforeAll("launching", async function () {
-    const launchTimeout = config.settings?.timeout || 500;
-    this.timeout(launchTimeout * 1000);
-    try {
-      if (!runningNetworkSpecPath) {
-        console.log(`\t Launching network... this can take a while.`);
-        network = await start(creds!, config, {
-          spawnConcurrency: concurrency,
-          inCI,
-          silent,
-          dir,
-        });
-      } else {
-        const runningNetworkSpec: any = require(runningNetworkSpecPath);
-        if (provider !== runningNetworkSpec.client.providerName)
-          throw new Error(
-            `Invalid provider, the provider set doesn't match with the running network definition`,
+    for (const [networkConfigIdx, networkConfig] of networkConfigs.entries()) {
+      const launchTimeout = networkConfig.settings?.timeout || 500;
+      this.timeout(launchTimeout * 1000);
+
+      const runningNetworkSpecPath =
+        runningNetworksSpec && runningNetworksSpec[networkConfigIdx];
+      try {
+        if (runningNetworkSpecPath)
+          console.log("runningNetworkSpecPath", runningNetworkSpecPath);
+
+        let network: Network;
+        if (!runningNetworkSpecPath) {
+          console.log(
+            `\n\n\t Launching network ${testDef.networks[networkConfigIdx]} ... this can take a while.`,
           );
+          network = await start(creds!, networkConfig, {
+            spawnConcurrency: concurrency,
+            inCI,
+            silent,
+            dir,
+          });
+        } else {
+          const runningNetworkSpec: any = require(runningNetworkSpecPath);
+          if (provider !== runningNetworkSpec.client.providerName)
+            throw new Error(
+              `Invalid provider, the provider set doesn't match with the running network definition`,
+            );
 
-        const { client, namespace, tmpDir } = runningNetworkSpec;
-        // initialize the Client
-        const initClient = Providers.get(
-          runningNetworkSpec.client.providerName,
-        ).initClient(client.configPath, namespace, tmpDir);
-        // initialize the network
-        network = rebuildNetwork(initClient, runningNetworkSpec);
+          const { client, namespace, tmpDir } = runningNetworkSpec;
+          // initialize the Client
+          const initClient = Providers.get(
+            runningNetworkSpec.client.providerName,
+          ).initClient(client.configPath, namespace, tmpDir);
+          // initialize the network
+          network = rebuildNetwork(initClient, runningNetworkSpec);
+        }
+
+        networks.push(network);
+        network.showNetworkInfo(networkConfig.settings.provider);
+      } catch (err) {
+        console.log(
+          `\n${decorators.red(
+            "Error launching the network!",
+          )} \t ${decorators.bright(err)}`,
+        );
+        for (const network of networks) {
+          await network.stop();
+        }
+        exitMocha(100);
       }
-
-      network.showNetworkInfo(config.settings.provider);
-
-      await sleep(5 * 1000);
-      return;
-    } catch (err) {
-      console.log(
-        `\n${decorators.red(
-          "Error launching the network!",
-        )} \t ${decorators.bright(err)}`,
-      );
-      exitMocha(100);
     }
+
+    await sleep(5 * 1000);
+    return;
   });
 
   suite.afterAll("teardown", async function () {
     this.timeout(180 * 1000);
-    if (network && !network.wasRunning) {
-      const logsPath = await network.dumpLogs(false);
-      const tests = this.test?.parent?.tests;
+    const tests = this.test?.parent?.tests;
 
-      if (tests) {
-        const failed = tests.filter((test) => {
-          return test.state !== "passed";
-        });
-        if (failed.length) {
-          console.log(
-            `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
-          );
-        }
+    const failed = tests?.some((test) => test.state !== "passed") ?? false;
+    if (failed) {
+      console.log(
+        `\n\n\t${decorators.red("❌ One or more of your tests failed...")}`,
+      );
+    }
 
-        // All test passed, just remove the network
-        console.log(`\n\t ${decorators.green("Deleting network")}`);
-        await network.stop();
-
-        // show logs
+    for (const [networkIdx, network] of networks.entries()) {
+      if (network && !network.wasRunning) {
+        console.log("\n");
+        const logsPath = await network.dumpLogs(false);
         console.log(
-          `\n\n\t${decorators.magenta(
-            "📓 To see the full logs of the nodes please go to:",
+          `\n\t ${decorators.green(
+            `Deleting network ${testDef.networks[networkIdx]}`,
           )}`,
         );
-        switch (network.client.providerName) {
-          case "podman":
-          case "native":
-            console.log(`\n\t${decorators.magenta(logsPath)}`);
-            break;
-          case "kubernetes":
-            if (inCI) {
-              // show links to grafana and also we need to move the logs to artifacts
-              const networkEndtime = new Date().getTime();
-              for (const node of network.relay) {
-                const loki_url = getLokiUrl(
-                  network.namespace,
-                  node.name,
-                  network.networkStartTime!,
-                  networkEndtime,
-                );
-                console.log(
-                  `\t${decorators.magenta(node.name)}: ${decorators.green(
-                    loki_url,
-                  )}`,
-                );
-              }
-
-              for (const [paraId, parachain] of Object.entries(network.paras)) {
-                console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                for (const node of parachain.nodes) {
-                  const loki_url = getLokiUrl(
-                    network.namespace,
-                    node.name,
-                    network.networkStartTime!,
-                    networkEndtime,
-                  );
-                  console.log(
-                    `\t\t${decorators.magenta(node.name)}: ${decorators.green(
-                      loki_url,
-                    )}`,
-                  );
-                }
-              }
-
-              // logs are also collaected as artifacts
-              console.log(
-                `\n\n\t ${decorators.yellow(
-                  "📓 Logs are also available in the artifacts' pipeline in gitlab",
-                )}`,
-              );
-            } else {
-              console.log(`\n\t${decorators.magenta(logsPath)}`);
-            }
-            break;
-        }
+        await network.stop();
+        showNetworkLogsLocation(network, logsPath, inCI);
       }
     }
     return;
@@ -220,10 +270,14 @@ export async function run(
     }
 
     const testFn = generator(assertion.parsed.args);
-    const test = new Test(
-      assertion.original_line,
-      async () => await testFn(network, backchannelMap, configBasePath),
-    );
+    const test = new Test(assertion.original_line, async () => {
+      // Find the first network that contains the node and run the test on it.
+      const network = findNetwork(networks, assertion.parsed.args.node_name);
+
+      setClient(network?.client);
+      await testFn(network, backchannelMap, configBasePath);
+      return;
+    });
     suite.addTest(test);
     test.timeout(0);
   }
