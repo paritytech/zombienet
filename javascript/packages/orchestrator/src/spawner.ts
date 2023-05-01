@@ -121,7 +121,9 @@ export const spawnNode = async (
 
   const endpointPort = RPC_WS_PORT;
   if (opts.inCI) {
-    const nodeIp = await client.getNodeIP(podDef.metadata.name);
+    // in CI we deploy a service (with the pod name) in front of each pod
+    // so here we can use the name (as short dns in the ns) to connect to pod.
+    const nodeIp = podDef.metadata.name;
     networkNode = new NetworkNode(
       node.name,
       WS_URI_PATTERN.replace("{{IP}}", nodeIp).replace(
