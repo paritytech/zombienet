@@ -14,6 +14,12 @@ stages:
   - publish
   - deploy
 
+rules:
+  - changes:
+      - javascript/**/*
+      - tests/**/*
+      - crates/**/*
+
 variables:
   CI_IMAGE: "node:18"
   BUILDAH_IMAGE: "quay.io/buildah/stable:v1.27"
