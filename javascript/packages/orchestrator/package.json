@@ -55,7 +55,7 @@
     "yaml": "^2.2.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
     "@types/fs-extra": "^11.0.1",
     "@types/jsdom": "^21.1.1",
     "@types/minimatch": "^5.1.2",
