@@ -136,7 +136,7 @@ export const spawnNode = async (
       opts.userDefinedTypes,
     );
   } else {
-    const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
+    const nodeIdentifier = `service/${podDef.metadata.name}`;
     const fwdPort = await client.startPortForwarding(
       endpointPort,
       nodeIdentifier,
