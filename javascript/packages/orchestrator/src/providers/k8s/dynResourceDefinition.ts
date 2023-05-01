@@ -64,6 +64,5 @@ export async function createTempNodeDef(
     prometheusPort: await getRandomPort(),
   };
 
-  console.log( "fullcommand", node.fullCommand);
   return node;
 }

@@ -102,7 +102,6 @@ export async function genCumulusCollatorCmd(
 
   const collatorPorts: PortsInterface = {
     "--port": 0,
-    // "--ws-port": 0,
     "--rpc-port": 0,
   };
 
@@ -277,12 +276,6 @@ export async function genCmd(
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
 
-  // // port flags logic
-  // const portFlags = {
-  //   "--prometheus-port": nodeSetup.prometheusPort,
-  //   "--rpc-port": nodeSetup.rpcPort,
-  //   "--ws-port": nodeSetup.wsPort,
-  // };
   const portFlags = getPortFlagsByCliArgsVersion(nodeSetup);
 
   for (const [k, v] of Object.entries(portFlags)) {
