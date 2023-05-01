@@ -346,8 +346,8 @@ export class PodmanClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string,
-    chainSpecId: string,
+    keystore?: string,
+    chainSpecId?: string,
     dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
@@ -383,7 +383,7 @@ export class PodmanClient extends Client {
       ]);
     }
 
-    if (keystore) {
+    if (keystore && chainSpecId) {
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       await makeDir(keystoreRemoteDir, true);
       const keystoreIsEmpty =
