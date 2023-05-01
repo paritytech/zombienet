@@ -25,7 +25,7 @@ export async function genNodeDef(
 export function genServiceDef(podSpec: PodSpec): ServiceSpec {
   const serviceResource = new ServiceResource(podSpec);
   return serviceResource.generateSpec();
-};
+}
 
 export function replaceNetworkRef(podDef: any, network: Network) {
   // replace command if needed in containers
