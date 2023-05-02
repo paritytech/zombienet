@@ -108,6 +108,10 @@ export async function generateParachainFiles(
 
       writeChainSpec(chainSpecFullPathPlain, plainData);
 
+      // make genesis overrides first.
+      if (parachain.genesis)
+        await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
+
       // clear auths
       await clearAuthorities(chainSpecFullPathPlain);
 
@@ -136,9 +140,6 @@ export async function generateParachainFiles(
           await addParaCustom(chainSpecFullPathPlain, node);
         }
       }
-
-      if (parachain.genesis)
-        await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
 
       debug("creating chain spec raw");
       // ensure needed file
