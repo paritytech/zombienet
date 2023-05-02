@@ -134,10 +134,10 @@ export class KubeClient extends Client {
     ];
 
     if (dbSnapshot) {
-      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)])
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)]);
     }
 
-    logTable.pushToPrint(logs)
+    logTable.pushToPrint(logs);
 
     await this.createResource(podDef, true);
     if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
