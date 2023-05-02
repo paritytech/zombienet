@@ -18,13 +18,14 @@ import {
   TRANSFER_CONTAINER_NAME,
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
-import { fileMap } from "../../types";
+import { fileMap, ZombieRole } from "../../types";
 import {
   Client,
   RunCommandOptions,
   RunCommandResponse,
   setClient,
 } from "../client";
+import { genServiceDef } from "./dynResourceDefinition";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -135,6 +136,11 @@ export class KubeClient extends Client {
     logTable.print();
 
     await this.createResource(podDef, true);
+    if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
+      const serviceDef = genServiceDef(podDef);
+      await this.createResource(serviceDef, true);
+    }
+
     await this.waitTransferContainerReady(name);
 
     if (dbSnapshot) {

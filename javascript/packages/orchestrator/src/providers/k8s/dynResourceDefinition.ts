@@ -3,7 +3,8 @@ import { getUniqueName } from "../../configGenerator";
 import { TMP_DONE, WAIT_UNTIL_SCRIPT_SUFIX } from "../../constants";
 import { Network } from "../../network";
 import { Node, ZombieRole } from "../../types";
-import { BootNodeResource, NodeResource } from "./resources";
+import { BootNodeResource, NodeResource, ServiceResource } from "./resources";
+import { PodSpec, ServiceSpec } from "./resources/types";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -19,6 +20,11 @@ export async function genNodeDef(
 ): Promise<any> {
   const nodeResource = new NodeResource(namespace, nodeSetup);
   return nodeResource.generateSpec();
+}
+
+export function genServiceDef(podSpec: PodSpec): ServiceSpec {
+  const serviceResource = new ServiceResource(podSpec);
+  return serviceResource.generateSpec();
 }
 
 export function replaceNetworkRef(podDef: any, network: Network) {
