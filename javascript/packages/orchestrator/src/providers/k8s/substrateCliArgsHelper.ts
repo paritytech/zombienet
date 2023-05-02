@@ -4,8 +4,6 @@ import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 import { KubeClient } from "./kubeClient";
 
-const debug = require("debug")("zombie::substrate-cli-helper");
-
 const getVersion = async (
   image: string,
   command: string,
@@ -24,8 +22,6 @@ const getVersion = async (
   const podName = podDef.metadata.name;
   await client.spawnFromDef(podDef);
   const logs = await client.getNodeLogs(podName);
-  debug("logs:");
-  debug(logs);
 
   return logs.includes("--ws-port <PORT>")
     ? SubstrateCliArgsVersion.V0
@@ -57,8 +53,7 @@ export const setSubstrateCliArdsVersion = async (network: ComputedNetwork) => {
 
   // check versions in series
   const promiseGenerators = [];
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for (const [_k, v] of imgCmdMap) {
+  for (const [, v] of imgCmdMap) {
     const getVersionPromise = async () => {
       const version = await getVersion(v.image, v.command);
       v.version = version;

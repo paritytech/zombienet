@@ -324,26 +324,19 @@ export async function genCmd(
 const getPortFlagsByCliArgsVersion = (nodeSetup: Node) => {
   // port flags logic
   const portFlags: { [key: string]: string } = {
-    "--prometheus-port": (nodeSetup.prometheusPort
-      ? nodeSetup.prometheusPort
-      : PROMETHEUS_PORT
+    "--prometheus-port": (
+      nodeSetup.prometheusPort || PROMETHEUS_PORT
     ).toString(),
   };
 
   if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0) {
-    portFlags["--rpc-port"] = (
-      nodeSetup.rpcPort ? nodeSetup.rpcPort : RPC_HTTP_PORT
-    ).toString();
-    portFlags["--ws-port"] = (
-      nodeSetup.wsPort ? nodeSetup.wsPort : RPC_WS_PORT
-    ).toString();
+    portFlags["--rpc-port"] = (nodeSetup.rpcPort || RPC_HTTP_PORT).toString();
+    portFlags["--ws-port"] = (nodeSetup.wsPort || RPC_WS_PORT).toString();
   } else {
     // use ws port as default
     const portToUse = nodeSetup.wsPort
       ? nodeSetup.wsPort
-      : nodeSetup.rpcPort
-      ? nodeSetup.rpcPort
-      : RPC_HTTP_PORT;
+      : nodeSetup.rpcPort || RPC_HTTP_PORT;
     portFlags["--rpc-port"] = portToUse.toString();
   }
 
