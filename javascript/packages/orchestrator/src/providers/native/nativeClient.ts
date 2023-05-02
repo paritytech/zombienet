@@ -275,14 +275,20 @@ export class NativeClient extends Client {
       colWidths: [20, 100],
     });
 
-    logTable.pushToPrint([
+    const logs = [
       [decorators.cyan("Pod"), decorators.green(name)],
       [decorators.cyan("Status"), decorators.green("Launching")],
       [
         decorators.cyan("Command"),
         decorators.white(podDef.spec.command.join(" ")),
       ],
-    ]);
+    ];
+
+    if (dbSnapshot) {
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)]);
+    }
+
+    logTable.pushToPrint(logs);
 
     if (dbSnapshot) {
       // we need to get the snapshot from a public access

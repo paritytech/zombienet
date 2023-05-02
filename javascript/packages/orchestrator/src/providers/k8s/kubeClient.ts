@@ -117,10 +117,10 @@ export class KubeClient extends Client {
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
-    logTable.pushTo([
+    const logs = [
       [decorators.cyan("Pod"), decorators.green(name)],
       [decorators.cyan("Status"), decorators.green("Launching")],
       [
@@ -131,9 +131,13 @@ export class KubeClient extends Client {
         decorators.cyan("Command"),
         decorators.white(podDef.spec.containers[0].command.join(" ")),
       ],
-    ]);
+    ];
 
-    logTable.print();
+    if (dbSnapshot) {
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)])
+    }
+
+    logTable.pushToPrint(logs)
 
     await this.createResource(podDef, true);
     if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
