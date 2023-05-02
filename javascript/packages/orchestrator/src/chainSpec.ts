@@ -679,7 +679,6 @@ export async function customizePlainRelayChain(
       await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
     }
 
-
     // Clear all defaults
     clearAuthorities(specPath);
 
