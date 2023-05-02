@@ -100,9 +100,12 @@ export async function start(
 
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw } = getProvider(
-      networkSpec.settings.provider,
-    );
+    const {
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+      setSubstrateCliArdsVersion,
+    } = getProvider(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
@@ -221,6 +224,10 @@ export async function start(
     debug(`Creating static resources (bootnode and backchannel services)`);
     await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
+
+    // Set substrate client argument version, needed from breaking change.
+    // see https://github.com/paritytech/substrate/pull/13384
+    await setSubstrateCliArdsVersion(networkSpec);
 
     // create or copy relay chain spec
     await setupChainSpec(
