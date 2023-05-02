@@ -674,6 +674,11 @@ export async function customizePlainRelayChain(
       ? "session"
       : "aura";
 
+    // make genesis overrides first.
+    if (networkSpec.relaychain.genesis) {
+      await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
+    }
+
     // Clear all defaults
     clearAuthorities(specPath);
 
@@ -705,10 +710,6 @@ export async function customizePlainRelayChain(
         networkSpec.relaychain.maxNominations,
         validatorKeys,
       );
-    }
-
-    if (networkSpec.relaychain.genesis) {
-      await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
     }
 
     if (networkSpec.hrmp_channels) {
