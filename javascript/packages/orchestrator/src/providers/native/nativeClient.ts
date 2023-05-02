@@ -272,7 +272,7 @@ export class NativeClient extends Client {
     };
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
     const logs = [

@@ -353,7 +353,7 @@ export class PodmanClient extends Client {
     const name = podDef.metadata.name;
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
     const logs = [
