@@ -46,6 +46,7 @@ export async function createTempNodeDef(
   image: string,
   chain: string,
   fullCommand: string,
+  useCommandSuffix = true,
 ) {
   const nodeName = getUniqueName("temp");
   const node: Node = {
@@ -53,7 +54,8 @@ export async function createTempNodeDef(
     key: getSha256(nodeName),
     image,
     fullCommand:
-      fullCommand + " && " + TMP_DONE + " && " + WAIT_UNTIL_SCRIPT_SUFIX, // leave the pod runnig until we finish transfer files
+      fullCommand +
+      (useCommandSuffix ? ` && ${TMP_DONE} && ${WAIT_UNTIL_SCRIPT_SUFIX}` : ""), // leave the pod runnig until we finish transfer files
     chain,
     validator: false,
     invulnerable: false,
