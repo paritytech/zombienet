@@ -36,7 +36,7 @@
   "dependencies": {
     "@polkadot/api": "^10.5.1",
     "@polkadot/keyring": "^12.1.1",
-    "@polkadot/util-crypto": "^12.1.1",
+    "@polkadot/util-crypto": "^12.1.2",
     "@zombienet/utils": "^0.0.19",
     "chai": "^4.3.7",
     "debug": "^4.3.2",
