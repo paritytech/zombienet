@@ -8,7 +8,7 @@ import {
   TRANSFER_CONTAINER_NAME,
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../../constants";
-import { Node, ZombieRole } from "../../../types";
+import { Node, ZombieRole, ZombieRoleLabel } from "../../../types";
 import {
   Container,
   ContainerPort,
@@ -160,12 +160,24 @@ export class NodeResource {
     return containers;
   }
 
+  private computeZombieRoleLabel(): ZombieRoleLabel {
+    const { validator, zombieRole } = this.nodeSetupConfig;
+
+    if (zombieRole) {
+      return zombieRole;
+    }
+
+    return validator ? "authority" : "full-node";
+  }
+
   protected generatePodSpec(
     initContainers: Container[],
     containers: Container[],
     volumes: Volume[],
   ): PodSpec {
-    const { name, validator } = this.nodeSetupConfig;
+    const { name, zombieRole } = this.nodeSetupConfig;
+    const zombieRoleLabel = this.computeZombieRoleLabel();
+    const restartPolicy = zombieRole === ZombieRole.Temp ? "Never" : "Always";
 
     return {
       apiVersion: "v1",
@@ -173,11 +185,10 @@ export class NodeResource {
       metadata: {
         name,
         labels: {
-          "zombie-role": validator ? "authority" : "full-node",
+          "zombie-role": zombieRoleLabel,
           app: "zombienet",
           "app.kubernetes.io/name": this.namespace,
           "app.kubernetes.io/instance": name,
-          "zombie-ns": this.namespace,
         },
         annotations: {
           "prometheus.io/scrape": "true",
@@ -188,7 +199,7 @@ export class NodeResource {
         hostname: name,
         containers,
         initContainers,
-        restartPolicy: "Never",
+        restartPolicy,
         volumes,
         securityContext: {
           fsGroup: 1000,
