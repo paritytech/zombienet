@@ -429,11 +429,7 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: [
-      "--rpc-external",
-      "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333/ws",
-    ],
+    args: ["--rpc-external", "--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
