@@ -59,6 +59,7 @@ export function rebuildNetwork(
       node.wsUri,
       node.prometheusUri,
       node.userDefinedTypes,
+      node.prometheus_prefix,
     );
 
     if (node.parachainId) {
@@ -82,6 +83,7 @@ export class Network {
   paras: {
     [id: number]: {
       chainSpecPath?: string;
+      prometheus_prefix?: string;
       wasmPath?: string;
       statePath?: string;
       nodes: NetworkNode[];
@@ -117,6 +119,7 @@ export class Network {
 
   addPara(
     parachainId: number,
+    prometheus_prefix?: string,
     chainSpecPath?: string,
     wasmPath?: string,
     statePath?: string,
@@ -124,6 +127,7 @@ export class Network {
     if (!this.paras[parachainId]) {
       this.paras[parachainId] = {
         nodes: [],
+        prometheus_prefix,
         chainSpecPath,
         wasmPath,
         statePath,

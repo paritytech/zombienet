@@ -127,8 +127,8 @@ export function getMetricName(metricName: string): string {
   return metricNameTouse;
 }
 
-export function getProcessStartTimeKey() {
-  return "substrate_process_start_time_seconds";
+export function getProcessStartTimeKey(prefix = "substrate") {
+  return prefix + "_process_start_time_seconds";
 }
 
 function _extractMetrics(text: string): Metrics {

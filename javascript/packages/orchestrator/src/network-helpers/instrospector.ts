@@ -38,5 +38,6 @@ export async function spawnIntrospector(
       PORT.toString(),
     ),
     "",
+    node.prometheusPrefix,
   );
 }

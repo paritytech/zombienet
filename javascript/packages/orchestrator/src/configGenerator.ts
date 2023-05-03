@@ -118,6 +118,7 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      prometheusPrefix: config.relaychain.prometheus_prefix || "substrate",
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       maxNominations:
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
@@ -207,6 +208,11 @@ export async function generateNetworkSpec(
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
       };
+
+      if (nodeGroup.prometheus_prefix) {
+        node.prometheus_prefix = nodeGroup.prometheus_prefix;
+      }
+
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
         node,
@@ -355,6 +361,7 @@ export async function generateNetworkSpec(
       let parachainSetup: Parachain = {
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),
+        prometheus_prefix: parachain.prometheus_prefix || "substrate",
         para,
         cumulusBased: isCumulusBased,
         addToGenesis:
@@ -407,7 +414,7 @@ export async function generateNetworkSpec(
     }
   }
 
-  networkSpec.types = config.types ? config.types : {};
+  networkSpec.types = config.types || {};
   if (config.hrmp_channels) networkSpec.hrmp_channels = config.hrmp_channels;
 
   return networkSpec as ComputedNetwork;
@@ -532,6 +539,7 @@ async function getCollatorNodeFromConfig(
     telemetryUrl: "",
     prometheus: prometheusExternal(networkSpec),
     overrides: [],
+    prometheusPrefix: networkSpec.prometheus_prefix || "substrate",
     zombieRole: cumulusBased ? ZombieRole.CumulusCollator : ZombieRole.Collator,
     parachainId: para_id,
     dbSnapshot: collatorConfig.db_snapshot,
@@ -551,9 +559,7 @@ async function getNodeFromConfig(
   globalOverrides: Override[],
   group?: string,
 ): Promise<Node> {
-  const command = node.command
-    ? node.command
-    : networkSpec.relaychain.defaultCommand;
+  const command = node.command || networkSpec.relaychain.defaultCommand;
   const image = node.image || networkSpec.relaychain.defaultImage;
   let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || []);
   if (node.args) args = args.concat(sanitizeArgs(node.args));
@@ -608,6 +614,7 @@ async function getNodeFromConfig(
       : "",
     telemetry: networkSpec.settings?.telemetry ? true : false,
     prometheus: prometheusExternal(networkSpec),
+    prometheusPrefix: node.prometheus_prefix || "substrate",
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,

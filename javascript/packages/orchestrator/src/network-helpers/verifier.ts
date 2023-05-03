@@ -21,7 +21,7 @@ export async function verifyNodes(network: Network) {
   const nodeChecker = async (node: NetworkNode) => {
     const metricToQuery = node.para
       ? decorate(node.para, [getProcessStartTimeKey])[0]()
-      : getProcessStartTimeKey();
+      : getProcessStartTimeKey(node.prometheusPrefix);
     debug(
       `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
     );

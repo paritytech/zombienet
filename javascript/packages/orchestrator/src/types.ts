@@ -53,6 +53,7 @@ export interface RelayChainConfig {
   max_nominations?: number;
   nodes?: NodeConfig[];
   node_groups?: NodeGroupConfig[];
+  prometheus_prefix?: string;
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
 }
@@ -74,6 +75,7 @@ export interface NodeConfig {
   ws_port?: number;
   rpc_port?: number;
   prometheus_port?: number;
+  prometheus_prefix?: string;
   p2p_port?: number;
   db_snapshot?: string;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
@@ -89,6 +91,7 @@ export interface NodeGroupConfig {
   count: string | number;
   resources?: Resources;
   db_snapshot?: string;
+  prometheus_prefix?: string;
 }
 
 export interface ParachainConfig {
@@ -110,6 +113,7 @@ export interface ParachainConfig {
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
   genesis?: JSON | ObjectJSON;
+  prometheus_prefix?: string;
 }
 
 export interface HrmpChannelsConfig {
@@ -173,6 +177,7 @@ export interface Node {
   wsPort: number;
   rpcPort: number;
   prometheusPort: number;
+  prometheusPrefix?: string;
   p2pPort: number;
   p2pCertHash?: string;
   imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
@@ -200,6 +205,7 @@ export interface Collator {
 export interface Parachain {
   id: number;
   name: string;
+  prometheus_prefix?: string;
   chain?: string;
   para: PARA;
   addToGenesis: boolean;

@@ -134,6 +134,7 @@ export const spawnNode = async (
       ),
       nodeMultiAddress,
       opts.userDefinedTypes,
+      node.prometheusPrefix,
     );
   } else {
     const nodeIdentifier = `${podDef.kind}/${podDef.metadata.name}`;
@@ -160,6 +161,7 @@ export const spawnNode = async (
       ),
       nodeMultiAddress,
       opts.userDefinedTypes,
+      node.prometheusPrefix,
     );
   }
 
@@ -170,6 +172,7 @@ export const spawnNode = async (
     if (!network.paras[paraId])
       network.addPara(
         paraId,
+        parachain.prometheus_prefix,
         parachain.chainSpecPath,
         parachain.wasmPath,
         parachain.statePath,
