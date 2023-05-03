@@ -430,7 +430,6 @@ export async function generateBootnodeSpec(
     validator: false,
     invulnerable: false,
     args: [
-      "--ws-external",
       "--rpc-external",
       "--listen-addr",
       "/ip4/0.0.0.0/tcp/30333/ws",
