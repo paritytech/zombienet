@@ -8,8 +8,8 @@ const debug = require("debug")("zombie::helper::verifier");
 
 export const nodeChecker = async (node: NetworkNode) => {
   const metricToQuery = node.para
-    ? decorate(node.para, [getProcessStartTimeKey])[0]()
-    : getProcessStartTimeKey();
+    ? decorate(node.para, [getProcessStartTimeKey])[0](node.prometheusPrefix)
+    : getProcessStartTimeKey(node.prometheusPrefix);
   debug(
     `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
   );

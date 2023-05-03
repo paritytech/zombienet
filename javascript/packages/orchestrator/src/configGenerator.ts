@@ -129,6 +129,10 @@ export async function generateNetworkSpec(
     parachains: [],
   };
 
+  if (config.relaychain.prometheus_prefix)
+    networkSpec.relaychain.prometheusPrefix =
+      config.relaychain.prometheus_prefix;
+
   // check all imageURLs for validity
   // TODO: These checks should be agains all config items that needs check
   configurationFileChecks(config);
@@ -207,6 +211,12 @@ export async function generateNetworkSpec(
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
       };
+      if (nodeGroup.prometheus_prefix) {
+        node.prometheus_prefix = nodeGroup.prometheus_prefix;
+      } else if (config.relaychain.prometheus_prefix) {
+        node.prometheus_prefix = config.relaychain.prometheus_prefix;
+      }
+
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
         node,
@@ -256,7 +266,7 @@ export async function generateNetworkSpec(
           await getCollatorNodeFromConfig(
             networkSpec,
             collatorConfig,
-            parachain.id,
+            parachain,
             paraChainName,
             para,
             bootnodes,
@@ -285,7 +295,7 @@ export async function generateNetworkSpec(
             await getCollatorNodeFromConfig(
               networkSpec,
               node,
-              parachain.id,
+              parachain,
               paraChainName,
               para,
               bootnodes,
@@ -489,7 +499,7 @@ async function getLocalOverridePath(
 async function getCollatorNodeFromConfig(
   networkSpec: any,
   collatorConfig: NodeConfig,
-  para_id: number,
+  parachain: ParachainConfig,
   chain: string, // relay-chain
   para: PARA,
   bootnodes: string[], // parachain bootnodes
@@ -533,13 +543,16 @@ async function getCollatorNodeFromConfig(
     prometheus: prometheusExternal(networkSpec),
     overrides: [],
     zombieRole: cumulusBased ? ZombieRole.CumulusCollator : ZombieRole.Collator,
-    parachainId: para_id,
+    parachainId: parachain.id,
     dbSnapshot: collatorConfig.db_snapshot,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
     p2pCertHash: collatorConfig.p2p_cert_hash,
   };
+
+  if (parachain.prometheus_prefix)
+    node.prometheusPrefix = parachain.prometheus_prefix;
 
   return node;
 }
@@ -617,6 +630,9 @@ async function getNodeFromConfig(
     externalPorts,
     p2pCertHash: node.p2p_cert_hash,
   };
+
+  if (node.prometheus_prefix)
+    nodeSetup.prometheusPrefix = node.prometheus_prefix;
 
   if (group) nodeSetup.group = group;
 

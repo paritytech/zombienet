@@ -53,6 +53,7 @@ export interface RelayChainConfig {
   max_nominations?: number;
   nodes?: NodeConfig[];
   node_groups?: NodeGroupConfig[];
+  prometheus_prefix?: string;
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
 }
@@ -74,6 +75,7 @@ export interface NodeConfig {
   ws_port?: number;
   rpc_port?: number;
   prometheus_port?: number;
+  prometheus_prefix?: string;
   p2p_port?: number;
   db_snapshot?: string;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
@@ -89,6 +91,7 @@ export interface NodeGroupConfig {
   count: string | number;
   resources?: Resources;
   db_snapshot?: string;
+  prometheus_prefix?: string;
 }
 
 export interface ParachainConfig {
@@ -105,6 +108,7 @@ export interface ParachainConfig {
   chain_spec_path?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
+  prometheus_prefix?: string;
   // backward compatibility
   collator?: NodeConfig;
   collators?: NodeConfig[];
@@ -165,6 +169,7 @@ export interface Node {
   telemetry?: boolean;
   telemetryUrl: string;
   prometheus?: boolean;
+  prometheusPrefix?: string;
   overrides: Override[];
   addToBootnodes?: boolean;
   resources?: Resources;
