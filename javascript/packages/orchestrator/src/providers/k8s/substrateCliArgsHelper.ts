@@ -9,7 +9,8 @@ const getVersion = async (
   command: string,
 ): Promise<SubstrateCliArgsVersion> => {
   const client = getClient() as KubeClient;
-  const fullCmd = `${command} --help | grep ws-port`;
+  // use echo to not finish the pod with error status.
+  const fullCmd = `${command} --help | grep ws-port || echo "V1"`;
   const node = await createTempNodeDef(
     "temp",
     image,
