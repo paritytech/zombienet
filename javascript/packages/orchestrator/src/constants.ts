@@ -18,6 +18,13 @@ const DEFAULT_PORTS = {
   prometheusPort: PROMETHEUS_PORT,
 };
 
+// Jaeger agent container exposed port from:
+// https://www.jaegertracing.io/docs/1.6/getting-started/#all-in-one-docker-image
+const JAEGER_AGENT_ZIPKIN_COMPACT_PORT = 5775;
+const JAEGER_AGENT_SERVE_CONFIGS_PORT = 5778;
+const JAEGER_AGENT_THRIFT_COMPACT_PORT = 6831;
+const JAEGER_AGENT_THRIFT_BINARY_PORT = 6832;
+
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 const DEFAULT_COMMAND = "polkadot";
@@ -103,12 +110,18 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
   "base-path": 2,
 };
 
+const TOKEN_PLACEHOLDER = /{{ZOMBIE:(.*?):(.*?)}}/gi;
+
 export {
   REGULAR_BIN_PATH,
   PROMETHEUS_PORT,
   RPC_WS_PORT,
   RPC_HTTP_PORT,
   P2P_PORT,
+  JAEGER_AGENT_ZIPKIN_COMPACT_PORT,
+  JAEGER_AGENT_SERVE_CONFIGS_PORT,
+  JAEGER_AGENT_THRIFT_COMPACT_PORT,
+  JAEGER_AGENT_THRIFT_BINARY_PORT,
   DEFAULT_PORTS,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -158,4 +171,5 @@ export {
   ARGS_TO_REMOVE,
   UNDYING_COLLATOR_BIN,
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
+  TOKEN_PLACEHOLDER,
 };

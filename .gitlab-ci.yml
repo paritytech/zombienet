@@ -14,6 +14,7 @@ stages:
   - publish
   - deploy
 
+
 variables:
   CI_IMAGE: "node:18"
   BUILDAH_IMAGE: "quay.io/buildah/stable:v1.27"
@@ -28,12 +29,16 @@ variables:
   tags:
     - kubernetes-parity-build
 
-# run jobs only on PRs
+# run jobs only on PRs with changes in code.
 .test-refs: &test-refs
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/ # PRs
+    - changes:
+      - javascript/**/*
+      - tests/**/*
+      - crates/**/*
 
 # run jobs always
 .common-refs: &common-refs
@@ -177,7 +182,7 @@ publish-docker-image-description:
 zombienet-smoke:
   stage: deploy
   <<: *kubernetes-env
-  <<: *common-refs
+  <<: *test-refs
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
 
   variables:
@@ -202,7 +207,7 @@ zombienet-smoke:
 zombienet-scale-net-config:
   stage: deploy
   <<: *kubernetes-env
-  <<: *common-refs
+  <<: *test-refs
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
 
   variables:
@@ -227,7 +232,7 @@ zombienet-scale-net-config:
 zombienet-upgrade-node:
   stage: deploy
   <<: *kubernetes-env
-  <<: *common-refs
+  <<: *test-refs
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
 
   variables:
@@ -252,7 +257,7 @@ zombienet-upgrade-node:
 paras:
   stage: deploy
   <<: *kubernetes-env
-  <<: *common-refs
+  <<: *test-refs
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
 
   variables:
@@ -279,7 +284,7 @@ paras:
 db-snapshot:
   stage: deploy
   <<: *kubernetes-env
-  <<: *common-refs
+  <<: *test-refs
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
 
   variables:

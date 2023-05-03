@@ -6,6 +6,18 @@ import { decorate } from "../paras-decorators";
 
 const debug = require("debug")("zombie::helper::verifier");
 
+export const nodeChecker = async (node: NetworkNode) => {
+  const metricToQuery = node.para
+    ? decorate(node.para, [getProcessStartTimeKey])[0]()
+    : getProcessStartTimeKey(node.prometheusPrefix);
+  debug(
+    `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
+  );
+  const ready = await node.getMetric(metricToQuery, "isAtLeast", 1, 60 * 5);
+  debug(`\t ${node.name} ready ${ready}`);
+  return ready;
+};
+
 // Verify that the nodes of the supplied network are up/running.
 // To verify that the node is running we use the startProcessTime from
 // prometheus server exposed in each node.
@@ -18,17 +30,6 @@ const debug = require("debug")("zombie::helper::verifier");
 // at the moment. This value should work ok but we can also optimize later.
 export async function verifyNodes(network: Network) {
   // wait until all the node's are up
-  const nodeChecker = async (node: NetworkNode) => {
-    const metricToQuery = node.para
-      ? decorate(node.para, [getProcessStartTimeKey])[0]()
-      : getProcessStartTimeKey(node.prometheusPrefix);
-    debug(
-      `\t checking node: ${node.name} with prometheusUri: ${node.prometheusUri} - key: ${metricToQuery}`,
-    );
-    const ready = await node.getMetric(metricToQuery, "isAtLeast", 1, 60 * 5);
-    debug(`\t ${node.name} ready ${ready}`);
-    return ready;
-  };
   const nodeCheckGenerators = Object.values(network.nodesByName).map(
     (node: NetworkNode) => {
       return () => nodeChecker(node);

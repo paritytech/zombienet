@@ -30,6 +30,7 @@ import {
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  TOKEN_PLACEHOLDER,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { registerParachain } from "./jsapi-helpers";
@@ -46,7 +47,7 @@ import {
 
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
-import { verifyNodes } from "./network-helpers/verifier";
+import { nodeChecker, verifyNodes } from "./network-helpers/verifier";
 import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
@@ -88,11 +89,23 @@ export async function start(
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
       launchConfig,
     );
+
+    // IFF there are network references in cmds we need to switch to concurrency 1
+    if (TOKEN_PLACEHOLDER.test(JSON.stringify(networkSpec))) {
+      debug(
+        "Network definition use network references, switching concurrency to 1",
+      );
+      opts.spawnConcurrency = 1;
+    }
+
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw } = getProvider(
-      networkSpec.settings.provider,
-    );
+    const {
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+      setSubstrateCliArdsVersion,
+    } = getProvider(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
@@ -211,6 +224,10 @@ export async function start(
     debug(`Creating static resources (bootnode and backchannel services)`);
     await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
+
+    // Set substrate client argument version, needed from breaking change.
+    // see https://github.com/paritytech/substrate/pull/13384
+    await setSubstrateCliArdsVersion(networkSpec);
 
     // create or copy relay chain spec
     await setupChainSpec(
@@ -418,6 +435,8 @@ export async function start(
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
         const basePath = `${tmpDir.path}/${parachain.name}`;
+        // ensure node is up.
+        await nodeChecker(network.relay[0]);
         await registerParachain({
           id: parachain.id,
           wasmPath: `${basePath}/${GENESIS_WASM_FILENAME}`,
