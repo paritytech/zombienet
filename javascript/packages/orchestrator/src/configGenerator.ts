@@ -21,6 +21,7 @@ import {
   DEFAULT_IMAGE,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
+  DEFAULT_PROMETHEUS_PREFIX,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -125,13 +126,10 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
       defaultResources: config.relaychain.default_resources,
+      defaultPrometheusPrefix: config.relaychain.default_prometheus_prefix || DEFAULT_PROMETHEUS_PREFIX
     },
     parachains: [],
   };
-
-  if (config.relaychain.prometheus_prefix)
-    networkSpec.relaychain.prometheusPrefix =
-      config.relaychain.prometheus_prefix;
 
   // check all imageURLs for validity
   // TODO: These checks should be agains all config items that needs check
@@ -210,12 +208,8 @@ export async function generateNetworkSpec(
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
+        prometheus_prefix: nodeGroup.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
       };
-      if (nodeGroup.prometheus_prefix) {
-        node.prometheus_prefix = nodeGroup.prometheus_prefix;
-      } else if (config.relaychain.prometheus_prefix) {
-        node.prometheus_prefix = config.relaychain.prometheus_prefix;
-      }
 
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
@@ -549,10 +543,8 @@ async function getCollatorNodeFromConfig(
     ...ports,
     externalPorts,
     p2pCertHash: collatorConfig.p2p_cert_hash,
+    prometheusPrefix: parachain.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
   };
-
-  if (parachain.prometheus_prefix)
-    node.prometheusPrefix = parachain.prometheus_prefix;
 
   return node;
 }
@@ -629,10 +621,8 @@ async function getNodeFromConfig(
     ...ports,
     externalPorts,
     p2pCertHash: node.p2p_cert_hash,
+    prometheusPrefix: node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
   };
-
-  if (node.prometheus_prefix)
-    nodeSetup.prometheusPrefix = node.prometheus_prefix;
 
   if (group) nodeSetup.group = group;
 
