@@ -1,7 +1,7 @@
 const debug = require("debug")("zombie::metrics");
 import { decorators, TimeoutAbortController } from "@zombienet/utils";
-import { parseLine } from "./parseLine";
 import { DEFAULT_PROMETHEUS_PREFIX } from "../constants";
+import { parseLine } from "./parseLine";
 
 // metrics can have namespace
 export interface Metrics {

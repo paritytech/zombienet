@@ -126,7 +126,9 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
       defaultResources: config.relaychain.default_resources,
-      defaultPrometheusPrefix: config.relaychain.default_prometheus_prefix || DEFAULT_PROMETHEUS_PREFIX
+      defaultPrometheusPrefix:
+        config.relaychain.default_prometheus_prefix ||
+        DEFAULT_PROMETHEUS_PREFIX,
     },
     parachains: [],
   };
@@ -208,7 +210,9 @@ export async function generateNetworkSpec(
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
-        prometheus_prefix: nodeGroup.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
+        prometheus_prefix:
+          nodeGroup.prometheus_prefix ||
+          networkSpec.relaychain.defaultPrometheusPrefix,
         substrate_cli_args_version:
           nodeGroup.substrate_cli_args_version ||
           networkSpec.relaychain.default_substrate_cli_args_version,
@@ -546,7 +550,9 @@ async function getCollatorNodeFromConfig(
     ...ports,
     externalPorts,
     p2pCertHash: collatorConfig.p2p_cert_hash,
-    prometheusPrefix: parachain.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
+    prometheusPrefix:
+      parachain.prometheus_prefix ||
+      networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
   return node;
@@ -624,7 +630,8 @@ async function getNodeFromConfig(
     ...ports,
     externalPorts,
     p2pCertHash: node.p2p_cert_hash,
-    prometheusPrefix: node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
+    prometheusPrefix:
+      node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
   if (group) nodeSetup.group = group;
