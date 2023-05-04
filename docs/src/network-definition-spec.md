@@ -85,12 +85,11 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
-    - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
+    - `packages/orchestrator/src/providers/k8s/index.ts`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
     - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
-
 
   - `collator_groups`:
     - `*name`: (String) Name of the collator.
