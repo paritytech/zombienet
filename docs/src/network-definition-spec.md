@@ -32,7 +32,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `local_path`: string;
   - `remote_name`: string;
 - `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
-- `prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
+- `default_prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
 - `nodes`:

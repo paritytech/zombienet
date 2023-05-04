@@ -44,6 +44,7 @@ export interface RelayChainConfig {
   default_image?: string;
   default_resources?: Resources;
   default_db_snapshot?: string;
+  default_prometheus_prefix?: string;
   chain: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -53,7 +54,6 @@ export interface RelayChainConfig {
   max_nominations?: number;
   nodes?: NodeConfig[];
   node_groups?: NodeGroupConfig[];
-  prometheus_prefix?: string;
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
 }
@@ -131,6 +131,7 @@ export interface ComputedNetwork {
     defaultCommand: string;
     defaultArgs: string[];
     defaultDbSnapshot?: string;
+    defaultPrometheusPrefix: string;
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
