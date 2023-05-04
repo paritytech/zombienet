@@ -45,6 +45,7 @@ export interface RelayChainConfig {
   default_resources?: Resources;
   default_db_snapshot?: string;
   default_prometheus_prefix?: string;
+  default_substrate_cli_args_version?: SubstrateCliArgsVersion;
   chain: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -79,6 +80,7 @@ export interface NodeConfig {
   p2p_port?: number;
   db_snapshot?: string;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface NodeGroupConfig {
@@ -92,6 +94,7 @@ export interface NodeGroupConfig {
   resources?: Resources;
   db_snapshot?: string;
   prometheus_prefix?: string;
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface ParachainConfig {

@@ -209,6 +209,9 @@ export async function generateNetworkSpec(
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
         prometheus_prefix: nodeGroup.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
+        substrate_cli_args_version:
+          nodeGroup.substrate_cli_args_version ||
+          networkSpec.relaychain.default_substrate_cli_args_version,
       };
 
       const nodeSetup = await getNodeFromConfig(
@@ -285,6 +288,11 @@ export async function generateNetworkSpec(
               collatorGroup.resources ||
               networkSpec.relaychain.defaultResources,
           };
+
+          if (collatorGroup.substrate_cli_args_version)
+            node.substrate_cli_args_version =
+              collatorGroup.substrate_cli_args_version;
+
           collators.push(
             await getCollatorNodeFromConfig(
               networkSpec,
@@ -433,12 +441,7 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: [
-      "--ws-external",
-      "--rpc-external",
-      "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333/ws",
-    ],
+    args: ["--rpc-external", "--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
@@ -631,6 +634,13 @@ async function getNodeFromConfig(
     : networkSpec.relaychain.defaultDbSnapshot || null;
 
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
+  if (
+    node.substrate_cli_args_version ||
+    networkSpec.default_substrate_cli_args_version
+  )
+    nodeSetup.substrateCliArgsVersion =
+      node.substrate_cli_args_version ||
+      networkSpec.default_substrate_cli_args_version;
   return nodeSetup;
 }
 
