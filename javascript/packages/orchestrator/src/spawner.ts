@@ -136,6 +136,7 @@ export const spawnNode = async (
       ),
       nodeMultiAddress,
       opts.userDefinedTypes,
+      node.prometheusPrefix,
     );
   } else {
     const nodeIdentifier = `service/${podDef.metadata.name}`;
@@ -162,6 +163,7 @@ export const spawnNode = async (
       ),
       nodeMultiAddress,
       opts.userDefinedTypes,
+      node.prometheusPrefix,
     );
   }
 

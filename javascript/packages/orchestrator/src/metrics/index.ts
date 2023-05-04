@@ -1,5 +1,6 @@
 const debug = require("debug")("zombie::metrics");
 import { decorators, TimeoutAbortController } from "@zombienet/utils";
+import { DEFAULT_PROMETHEUS_PREFIX } from "../constants";
 import { parseLine } from "./parseLine";
 
 // metrics can have namespace
@@ -127,8 +128,8 @@ export function getMetricName(metricName: string): string {
   return metricNameTouse;
 }
 
-export function getProcessStartTimeKey() {
-  return "substrate_process_start_time_seconds";
+export function getProcessStartTimeKey(prefix = DEFAULT_PROMETHEUS_PREFIX) {
+  return `${prefix}_process_start_time_seconds`;
 }
 
 function _extractMetrics(text: string): Metrics {

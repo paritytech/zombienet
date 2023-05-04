@@ -47,6 +47,7 @@ const UNDYING_COLLATOR_BIN = "undying-collator";
 const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-parachain";
 const DEFAULT_COLLATOR_IMAGE = "parity/polkadot-parachain:latest";
 const DEFAULT_MAX_NOMINATIONS = 24; // kusama value is 24
+const DEFAULT_PROMETHEUS_PREFIX = "substrate";
 const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 const GENESIS_STATE_FILENAME = "genesis-state";
 const GENESIS_WASM_FILENAME = "genesis-wasm";
@@ -172,4 +173,5 @@ export {
   UNDYING_COLLATOR_BIN,
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
   TOKEN_PLACEHOLDER,
+  DEFAULT_PROMETHEUS_PREFIX,
 };

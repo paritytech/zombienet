@@ -33,6 +33,7 @@ export class NetworkNode implements NetworkNodeInterface {
   name: string;
   wsUri: string;
   prometheusUri: string;
+  prometheusPrefix: string;
   multiAddress: string;
   apiInstance?: ApiPromise;
   spec?: object | undefined;
@@ -48,11 +49,13 @@ export class NetworkNode implements NetworkNodeInterface {
     prometheusUri: string,
     multiAddress: string,
     userDefinedTypes: any = null,
+    prometheusPrefix = "substrate",
   ) {
     this.name = name;
     this.wsUri = wsUri;
     this.prometheusUri = prometheusUri;
     this.multiAddress = multiAddress;
+    this.prometheusPrefix = prometheusPrefix;
 
     if (userDefinedTypes) this.userDefinedTypes = userDefinedTypes;
   }

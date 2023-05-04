@@ -33,6 +33,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `local_path`: string;
   - `remote_name`: string;
 - `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
+- `default_prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
 - `nodes`:
@@ -55,6 +56,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `ws_port`: (number), WS port to use.;
   - `rpc_port`: (number) RPC port to use;
   - `prometheus_port`: (number) Prometheus port to use;
+  - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
 - `node_groups`:
   - `*name`: (String) Group name, used for naming the nodes (e.g name-1)
   - `*count` (Number), Number of `nodes` to launch for this group.
@@ -65,6 +67,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - name: (String) name of the `env` var.
     - value: (String| number) Value of the env var.
   - `overrides`: Array of `overrides` definitions.
+  - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply to all the nodes of the group; Defaults to 'substrate'.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
   - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
 
@@ -79,6 +82,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.
   - `genesis_state_generator`: (String) Command to generate the state file.
+  - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to all parachain nodes/collators; Defaults to 'substrate'.
   - `collator`:
 
     - `*name`: (String) Name of the collator.
@@ -92,6 +96,7 @@ The network config can be provided both in `json` or `toml` format and each sect
       - value: (String| number) Value of the env var.
 
   - `collator_groups`:
+
     - `*name`: (String) Name of the collator.
     - `*count`: (Number) Number of `collators` to launch for this group.
     - `image`: (String) Image to use.
