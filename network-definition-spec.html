@@ -179,6 +179,7 @@
 </ul>
 </li>
 <li><code>default_resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the nodes by default.</li>
+<li><code>default_prometheus_prefix</code>: A parameter for customizing the metric's prefix. If parameter is placed in <code>relaychain</code> level, it will be &quot;passed&quot; to all <code>relaychain</code> nodes. Defaults to 'substrate'.</li>
 <li><code>random_nominators_count</code>: (number, optional), if is set <em>and the stacking pallet is enabled</em> zombienet will generate <code>x</code> nominators and will be injected in the genesis.</li>
 <li><code>max_nominations</code>: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).</li>
 <li><code>nodes</code>:
@@ -205,6 +206,7 @@
 <li><code>ws_port</code>: (number), WS port to use.;</li>
 <li><code>rpc_port</code>: (number) RPC port to use;</li>
 <li><code>prometheus_port</code>: (number) Prometheus port to use;</li>
+<li><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.</li>
 </ul>
 </li>
 <li><code>node_groups</code>:
@@ -221,6 +223,7 @@
 </ul>
 </li>
 <li><code>overrides</code>: Array of <code>overrides</code> definitions.</li>
+<li><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply to all the nodes of the group; Defaults to 'substrate'.</li>
 <li><code>resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the node.</li>
 <li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.</li>
 </ul>
@@ -251,6 +254,9 @@
 </li>
 <li>
 <p><code>genesis_state_generator</code>: (String) Command to generate the state file.</p>
+</li>
+<li>
+<p><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply only to all parachain nodes/collators; Defaults to 'substrate'.</p>
 </li>
 <li>
 <p><code>collator</code>:</p>
