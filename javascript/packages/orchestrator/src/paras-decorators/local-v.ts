@@ -1,19 +1,15 @@
-
 import { Keyring } from "@polkadot/api";
-import { encodeAddress, cryptoWaitReady } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
-import { decorators } from "@zombienet/utils";
+import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { CreateLogTable, decorators } from "@zombienet/utils";
 import {
   GenesisNodeKey,
-  clearAuthorities as _clearAuthorities,
-  specHaveSessionsKeys as _specHaveSessionsKeys,
   getRuntimeConfig,
   readAndParseChainSpec,
   writeChainSpec,
 } from "../chainSpec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
 import { Node } from "../types";
-import { CreateLogTable } from "@zombienet/utils";
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
   const keys = await _generateKeyForNode(nodeName);
@@ -21,7 +17,9 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
   await cryptoWaitReady();
 
   const eth_keyring = new Keyring({ type: "ethereum" });
-  const eth_account = eth_keyring.createFromUri(`${keys.mnemonic}/m/44'/60'/0'/0/0`);
+  const eth_account = eth_keyring.createFromUri(
+    `${keys.mnemonic}/m/44'/60'/0'/0/0`,
+  );
 
   keys.eth_account = {
     address: eth_account.address,
@@ -31,9 +29,9 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
   return keys;
 }
 
-export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
+export function getNodeKey(node: Node): GenesisNodeKey {
   try {
-    const {  sr_account, eth_account } = node.accounts;
+    const { sr_account, eth_account } = node.accounts;
 
     const key: GenesisNodeKey = [
       eth_account.address,

@@ -22,11 +22,11 @@ import astar from "./astar";
 import bifrost from "./bifrost";
 import efinity from "./efinity";
 import equilibrium from "./equilibrium";
+import local_v from "./local-v";
 import mangata from "./mangata";
 import moonbeam from "./moonbeam";
 import oak from "./oak";
 import statemint from "./statemint";
-import local_v from "./local-v";
 
 function whichPara(chain: string): PARA {
   if (chain.includes("statemint")) return PARA.Statemint;
