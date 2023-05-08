@@ -22,4 +22,3 @@ Below can be found some of the projects that are currently using Zombienet as in
 - [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
 - [Moonbeam](https://github.com/PureStake/moonbeam/tree/master/tests/zombienet)
 - [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
-- [ZombieNet Block Explorer](https://github.com/colorfulnotion/zombienet-explorer)
