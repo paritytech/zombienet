@@ -9,6 +9,7 @@ enum PARA {
   Oak = "oak",
   Mangata = "mangata",
   Generic = "generic",
+  LocalV = "local_v",
 }
 
 interface ParaDecorator {
@@ -21,6 +22,7 @@ import astar from "./astar";
 import bifrost from "./bifrost";
 import efinity from "./efinity";
 import equilibrium from "./equilibrium";
+import local_v from "./local-v";
 import mangata from "./mangata";
 import moonbeam from "./moonbeam";
 import oak from "./oak";
@@ -36,6 +38,7 @@ function whichPara(chain: string): PARA {
   if (/equilibrium|genshiro/.test(chain)) return PARA.Equilibrium;
   if (/oak|turing|neumann/.test(chain)) return PARA.Oak;
   if (/mangata/.test(chain)) return PARA.Mangata;
+  if (/local-v/.test(chain)) return PARA.LocalV;
 
   return PARA.Generic;
 }
@@ -103,6 +106,14 @@ const mangataDecorators: ParaDecorator = Object.keys(mangata).reduce(
   Object.create({}),
 );
 
+const localVDecorators: ParaDecorator = Object.keys(local_v).reduce(
+  (memo, fn) => {
+    memo[fn] = (local_v as ParaDecorator)[fn];
+    return memo;
+  },
+  Object.create({}),
+);
+
 const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
   statemint: statemintDecorators,
@@ -113,6 +124,7 @@ const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   equilibrium: eqDecorators,
   oak: oakDecorators,
   mangata: mangataDecorators,
+  local_v: localVDecorators,
   generic: {},
 };
 
