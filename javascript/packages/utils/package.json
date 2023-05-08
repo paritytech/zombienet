@@ -28,7 +28,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "cli-table3": "^0.6.2",
-    "debug": "^4.3.2",
+    "debug": "^4.3.4",
     "mocha": "^10.2.0",
     "nunjucks": "^3.2.4",
     "toml": "^3.0.0",
