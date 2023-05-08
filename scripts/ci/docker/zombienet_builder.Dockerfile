@@ -10,7 +10,7 @@ RUN npm run build
 FROM node:18-bullseye-slim AS runtime
 
 RUN apt-get update && \
-     apt-get install -y curl gnupg lsb-release jq tini && \
+     apt-get install -y curl gnupg lsb-release jq tini vim && \
 # # install github cli
 # # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 #     echo "deb https://cli.github.com/packages buster main" > /etc/apt/sources.list.d/gh.list && \

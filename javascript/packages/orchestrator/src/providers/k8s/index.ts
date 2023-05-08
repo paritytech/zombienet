@@ -5,6 +5,7 @@ import {
   replaceNetworkRef,
 } from "./dynResourceDefinition";
 import { KubeClient, initClient } from "./kubeClient";
+import { getCliArgsVersion } from "./substrateCliArgsHelper";
 
 export const provider = {
   KubeClient,
@@ -14,4 +15,5 @@ export const provider = {
   setupChainSpec,
   getChainSpecRaw,
   replaceNetworkRef,
+  getCliArgsVersion,
 };

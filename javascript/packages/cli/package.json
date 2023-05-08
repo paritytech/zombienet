@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/cli",
-  "version": "1.3.43",
+  "version": "1.3.50",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "scripts": {
@@ -10,8 +10,8 @@
     "lint:write": "npx prettier --write ./src",
     "test": "echo \"Error: no test specified\"",
     "package": "pkg . -o ../../bins/zombienet",
-    "package:linux": "pkg . -o ../../bins/zombienet-linux -t node16-linux-x64,node16-linux-arm64",
-    "package:macos": "pkg . -o ../../bins/zombienet-macos -t node16-macos-x64"
+    "package:linux": "pkg . -o ../../bins/zombienet-linux -t node18-linux-x64,node18-linux-arm64",
+    "package:macos": "pkg . -o ../../bins/zombienet-macos -t node18-macos-x64"
   },
   "repository": {
     "type": "git",
@@ -27,9 +27,9 @@
       "../../../scripts/*"
     ],
     "targets": [
-      "node16-macos-x64",
-      "node16-linux-x64",
-      "node16-linux-arm64"
+      "node18-macos-x64",
+      "node18-linux-x64",
+      "node18-linux-arm64"
     ]
   },
   "bin": {
@@ -53,8 +53,8 @@
   },
   "dependencies": {
     "@zombienet/dsl-parser-wrapper": "^0.1.7",
-    "@zombienet/orchestrator": "^0.0.34",
-    "@zombienet/utils": "^0.0.18",
+    "@zombienet/orchestrator": "^0.0.39",
+    "@zombienet/utils": "^0.0.19",
     "cli-progress": "^3.12.0",
     "commander": "^10.0.1",
     "debug": "^4.3.2",

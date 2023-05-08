@@ -346,24 +346,30 @@ export class PodmanClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string,
-    chainSpecId: string,
+    keystore?: string,
+    chainSpecId?: string,
     dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
-    logTable.pushToPrint([
+    const logs = [
       [decorators.cyan("Pod"), decorators.green(podDef.metadata.name)],
       [decorators.cyan("Status"), decorators.green("Launching")],
       [
         decorators.cyan("Command"),
         decorators.white(podDef.spec.containers[0].command.join(" ")),
       ],
-    ]);
+    ];
+
+    if (dbSnapshot) {
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)]);
+    }
+
+    logTable.pushToPrint(logs);
 
     // initialize keystore
     const dataPath = podDef.spec.volumes.find(
@@ -383,7 +389,7 @@ export class PodmanClient extends Client {
       ]);
     }
 
-    if (keystore) {
+    if (keystore && chainSpecId) {
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       await makeDir(keystoreRemoteDir, true);
       const keystoreIsEmpty =

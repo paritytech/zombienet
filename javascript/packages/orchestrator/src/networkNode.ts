@@ -1,5 +1,4 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import axios from "axios";
 import { makeRe } from "minimatch";
 
 import {
@@ -17,7 +16,7 @@ import {
 } from "./metrics";
 import { getClient } from "./providers/client";
 
-import { decorators } from "@zombienet/utils";
+import { TimeoutAbortController, decorators } from "@zombienet/utils";
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
 import { PARA } from "./paras-decorators";
 
@@ -34,6 +33,7 @@ export class NetworkNode implements NetworkNodeInterface {
   name: string;
   wsUri: string;
   prometheusUri: string;
+  prometheusPrefix: string;
   multiAddress: string;
   apiInstance?: ApiPromise;
   spec?: object | undefined;
@@ -41,8 +41,6 @@ export class NetworkNode implements NetworkNodeInterface {
   userDefinedTypes: any;
   para?: PARA;
   parachainId?: number;
-  lastLogLineCheckedTimestamp?: string;
-  lastLogLineCheckedIndex?: number;
   group?: string;
 
   constructor(
@@ -51,11 +49,13 @@ export class NetworkNode implements NetworkNodeInterface {
     prometheusUri: string,
     multiAddress: string,
     userDefinedTypes: any = null,
+    prometheusPrefix = "substrate",
   ) {
     this.name = name;
     this.wsUri = wsUri;
     this.prometheusUri = prometheusUri;
     this.multiAddress = multiAddress;
+    this.prometheusPrefix = prometheusPrefix;
 
     if (userDefinedTypes) this.userDefinedTypes = userDefinedTypes;
   }
@@ -416,6 +416,8 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     try {
+      let lastLogLineCheckedTimestamp: string;
+      let lastLogLineCheckedIndex: number;
       const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
@@ -426,7 +428,10 @@ export class NetworkNode implements NetworkNodeInterface {
           const dedupedLogs = this._dedupLogs(
             logs.split("\n"),
             client.providerName === "native",
+            lastLogLineCheckedTimestamp,
+            lastLogLineCheckedIndex,
           );
+
           const index = dedupedLogs.findIndex((line) => {
             if (client.providerName !== "native") {
               // remove the extra timestamp
@@ -437,11 +442,9 @@ export class NetworkNode implements NetworkNodeInterface {
 
           if (index >= 0) {
             done = true;
-            this.lastLogLineCheckedTimestamp = dedupedLogs[index];
-            this.lastLogLineCheckedIndex = index;
-            debug(
-              this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "),
-            );
+            lastLogLineCheckedTimestamp = dedupedLogs[index];
+            lastLogLineCheckedIndex = index;
+            debug(lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             logs = await client.getNodeLogs(this.name, 2, true);
@@ -506,7 +509,11 @@ export class NetworkNode implements NetworkNodeInterface {
     collatorUrl: string,
   ): Promise<string[]> {
     const url = `${collatorUrl}/api/traces/${traceId}`;
-    const response = await axios.get(url, { timeout: 2000 });
+
+    const fetchResult = await fetch(url, {
+      signal: TimeoutAbortController(2).signal,
+    });
+    const response = await fetchResult.json();
 
     // filter batches
     const batches = response.data.batches.filter((batch: any) => {
@@ -535,12 +542,17 @@ export class NetworkNode implements NetworkNodeInterface {
     return spanNames;
   }
 
-  // prevent to seach in the same log line twice.
-  _dedupLogs(logs: string[], useIndex = false): string[] {
-    if (!this.lastLogLineCheckedTimestamp) return logs;
-    if (useIndex) return logs.slice(this.lastLogLineCheckedIndex);
+  // prevent to search in the same log line twice.
+  _dedupLogs(
+    logs: string[],
+    useIndex = false,
+    lastLogLineCheckedTimestamp: string,
+    lastLogLineCheckedIndex: number,
+  ): string[] {
+    if (!lastLogLineCheckedTimestamp) return logs;
+    if (useIndex) return logs.slice(lastLogLineCheckedIndex);
 
-    const lastLineTs = this.lastLogLineCheckedTimestamp.split(" ")[0];
+    const lastLineTs = lastLogLineCheckedTimestamp.split(" ")[0];
     const index = logs.findIndex((logLine) => {
       const thisLineTs = logLine.split(" ")[0];
       return thisLineTs > lastLineTs;

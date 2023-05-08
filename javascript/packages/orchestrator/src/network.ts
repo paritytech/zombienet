@@ -1,11 +1,15 @@
-import { CreateLogTable, decorators } from "@zombienet/utils";
-import axios from "axios";
+import {
+  CreateLogTable,
+  TimeoutAbortController,
+  decorators,
+} from "@zombienet/utils";
 import fs from "fs";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
   BAKCCHANNEL_URI_PATTERN,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  TOKEN_PLACEHOLDER,
 } from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
@@ -209,13 +213,19 @@ export class Network {
       debug(`backchannel uri ${this.backchannelUri}`);
       while (!done) {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
-        const response = await axios.get(`${this.backchannelUri}/${key}`, {
-          timeout: 2000,
-          validateStatus: function (status) {
-            debug(`status: ${status}`);
-            return status === 404 || (status >= 200 && status < 300); // allow 404 as valid
-          },
+
+        const fetchResult = await fetch(`${this.backchannelUri}/${key}`, {
+          signal: TimeoutAbortController(2).signal,
         });
+        const response = await fetchResult.json();
+        const { status } = response;
+
+        debug(`status: ${status}`);
+
+        if (status === 404 || (status >= 200 && status < 300)) {
+          return status === 404 || (status >= 200 && status < 300);
+        }
+
         if (response.status === 200) {
           done = true;
           value = response.data;
@@ -360,7 +370,7 @@ export class Network {
 
   replaceWithNetworInfo(placeholder: string): string {
     return placeholder.replace(
-      /{{ZOMBIE:(.*?):(.*?)}}/gi,
+      TOKEN_PLACEHOLDER,
       (_substring, nodeName, key: keyof NetworkNode) => {
         const node = this.getNodeByName(nodeName);
         return node[key];

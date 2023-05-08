@@ -21,6 +21,7 @@ import {
   DEFAULT_IMAGE,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
+  DEFAULT_PROMETHEUS_PREFIX,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -125,6 +126,9 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
       defaultResources: config.relaychain.default_resources,
+      defaultPrometheusPrefix:
+        config.relaychain.default_prometheus_prefix ||
+        DEFAULT_PROMETHEUS_PREFIX,
     },
     parachains: [],
   };
@@ -206,7 +210,14 @@ export async function generateNetworkSpec(
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
+        prometheus_prefix:
+          nodeGroup.prometheus_prefix ||
+          networkSpec.relaychain.defaultPrometheusPrefix,
+        substrate_cli_args_version:
+          nodeGroup.substrate_cli_args_version ||
+          networkSpec.relaychain.default_substrate_cli_args_version,
       };
+
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
         node,
@@ -256,7 +267,7 @@ export async function generateNetworkSpec(
           await getCollatorNodeFromConfig(
             networkSpec,
             collatorConfig,
-            parachain.id,
+            parachain,
             paraChainName,
             para,
             bootnodes,
@@ -281,11 +292,16 @@ export async function generateNetworkSpec(
               collatorGroup.resources ||
               networkSpec.relaychain.defaultResources,
           };
+
+          if (collatorGroup.substrate_cli_args_version)
+            node.substrate_cli_args_version =
+              collatorGroup.substrate_cli_args_version;
+
           collators.push(
             await getCollatorNodeFromConfig(
               networkSpec,
               node,
-              parachain.id,
+              parachain,
               paraChainName,
               para,
               bootnodes,
@@ -429,12 +445,7 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: [
-      "--ws-external",
-      "--rpc-external",
-      "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333/ws",
-    ],
+    args: ["--rpc-external", "--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
@@ -489,7 +500,7 @@ async function getLocalOverridePath(
 async function getCollatorNodeFromConfig(
   networkSpec: any,
   collatorConfig: NodeConfig,
-  para_id: number,
+  parachain: ParachainConfig,
   chain: string, // relay-chain
   para: PARA,
   bootnodes: string[], // parachain bootnodes
@@ -533,12 +544,15 @@ async function getCollatorNodeFromConfig(
     prometheus: prometheusExternal(networkSpec),
     overrides: [],
     zombieRole: cumulusBased ? ZombieRole.CumulusCollator : ZombieRole.Collator,
-    parachainId: para_id,
+    parachainId: parachain.id,
     dbSnapshot: collatorConfig.db_snapshot,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
     p2pCertHash: collatorConfig.p2p_cert_hash,
+    prometheusPrefix:
+      parachain.prometheus_prefix ||
+      networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
   return node;
@@ -616,6 +630,8 @@ async function getNodeFromConfig(
     ...ports,
     externalPorts,
     p2pCertHash: node.p2p_cert_hash,
+    prometheusPrefix:
+      node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
   if (group) nodeSetup.group = group;
@@ -625,6 +641,13 @@ async function getNodeFromConfig(
     : networkSpec.relaychain.defaultDbSnapshot || null;
 
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
+  if (
+    node.substrate_cli_args_version ||
+    networkSpec.default_substrate_cli_args_version
+  )
+    nodeSetup.substrateCliArgsVersion =
+      node.substrate_cli_args_version ||
+      networkSpec.default_substrate_cli_args_version;
   return nodeSetup;
 }
 

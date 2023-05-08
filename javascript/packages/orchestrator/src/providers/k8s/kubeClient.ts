@@ -18,13 +18,14 @@ import {
   TRANSFER_CONTAINER_NAME,
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
-import { fileMap } from "../../types";
+import { fileMap, ZombieRole } from "../../types";
 import {
   Client,
   RunCommandOptions,
   RunCommandResponse,
   setClient,
 } from "../client";
+import { genServiceDef } from "./dynResourceDefinition";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -116,10 +117,10 @@ export class KubeClient extends Client {
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
-    logTable.pushTo([
+    const logs = [
       [decorators.cyan("Pod"), decorators.green(name)],
       [decorators.cyan("Status"), decorators.green("Launching")],
       [
@@ -130,11 +131,20 @@ export class KubeClient extends Client {
         decorators.cyan("Command"),
         decorators.white(podDef.spec.containers[0].command.join(" ")),
       ],
-    ]);
+    ];
 
-    logTable.print();
+    if (dbSnapshot) {
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)]);
+    }
+
+    logTable.pushToPrint(logs);
 
     await this.createResource(podDef, true);
+    if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
+      const serviceDef = genServiceDef(podDef);
+      await this.createResource(serviceDef, true);
+    }
+
     await this.waitTransferContainerReady(name);
 
     if (dbSnapshot) {
