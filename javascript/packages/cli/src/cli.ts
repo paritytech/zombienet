@@ -25,6 +25,7 @@ async function handleTermination(userInterrupted = false) {
     if (userInterrupted) console.log("Ctrl+c detected...");
     debug("removing namespace: " + network.namespace);
     await network.dumpLogs();
+    console.log(decorators.blue("Tearing down network..."));
     await network.stop();
   }
 }
