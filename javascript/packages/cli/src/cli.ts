@@ -14,6 +14,10 @@ const program = new Command("zombienet");
 let network: Network | undefined;
 let alreadyTryToStop = false;
 
+const setGlobalNetwork = (globalNetwork: Network) => {
+  network = globalNetwork;
+};
+
 async function handleTermination(userInterrupted = false) {
   process.env.terminating = "1";
   if (network && !alreadyTryToStop) {
@@ -154,7 +158,7 @@ function asyncAction(cmd: Function) {
     (async () => {
       try {
         if (cmd.name == "spawn") {
-          network = await cmd(...args);
+          await cmd(...args, setGlobalNetwork);
         } else {
           await cmd(...args);
         }
