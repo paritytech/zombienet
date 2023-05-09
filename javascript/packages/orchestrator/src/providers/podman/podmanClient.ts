@@ -300,6 +300,7 @@ export class PodmanClient extends Client {
         stdout,
       };
     } catch (error) {
+      // We prevent previous commands ran to throw error when we are tearing down the network.
       if (!this.isTearingDown) {
         console.log(
           `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
