@@ -55,6 +55,7 @@ export class PodmanClient extends Client {
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
+  isTearingDown: boolean;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
@@ -66,6 +67,7 @@ export class PodmanClient extends Client {
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
     this.dataDir = DEFAULT_DATA_DIR;
+    this.isTearingDown = false;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -177,6 +179,7 @@ export class PodmanClient extends Client {
   }
 
   async destroyNamespace(): Promise<void> {
+    this.isTearingDown = true;
     // get pod names
     let args = [
       "pod",
@@ -189,11 +192,11 @@ export class PodmanClient extends Client {
     let result = await this.runCommand(args, { scoped: false });
 
     // now remove the pods
-    args = ["pod", "rm", "-f", ...result.stdout.split("\n")];
+    args = ["pod", "rm", "-f", "-i", ...result.stdout.split("\n")];
     result = await this.runCommand(args, { scoped: false });
 
     // now remove the pnetwork
-    args = ["network", "rm", this.namespace];
+    args = ["network", "rm", "-f", this.namespace];
     result = await this.runCommand(args, { scoped: false });
   }
 
@@ -297,10 +300,14 @@ export class PodmanClient extends Client {
         stdout,
       };
     } catch (error) {
-      console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
-      );
-      throw error;
+      // We prevent previous commands ran to throw error when we are tearing down the network.
+      if (!this.isTearingDown) {
+        console.log(
+          `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
+        );
+        throw error;
+      }
+      return { exitCode: 0, stdout: "" };
     }
   }
 
