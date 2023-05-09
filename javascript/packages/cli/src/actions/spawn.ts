@@ -99,5 +99,6 @@ export async function spawn(
   const network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
   // keep the process running
-  await new Promise(() => setInterval(() => {}, 1000));
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setInterval(() => {}, 1000);
 }
