@@ -4,9 +4,9 @@ This Python script is designed to identify and delete "zombie-" prefixed Kuberne
 
 ### Usage
 
-- Ensure that you have the Kubernetes Python client library installed (pip install -r requirements.txt).
-- Update the prefix and time_delta variables in the script to match your desired settings.
-- Run the script with python cluster_cleanup.py.
+- Ensure that the Kubernetes Python client library is installed (`pip install -r requirements.txt`);
+- Update the `prefix` and `time_delta` variables in the script to match the desired settings;
+- Run the script with python `cluster_cleanup.py`;
 
 ### CronJob
 
