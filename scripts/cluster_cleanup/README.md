@@ -1,6 +1,6 @@
 ### Zombie Namespace Cleanup Script
 
-This Python script is designed to identify and delete "zombie-" prefixed Kubernetes namespaces and PodMonitors that are older than 12 hours age. It uses the Kubernetes Python client library to connect to the API server and query the list of namespaces and podmonitors and then deleting of them.
+This Python script is designed to identify and delete "zombie-" prefixed Kubernetes namespaces and PodMonitors that are older than 12 hours of age. It uses the Kubernetes Python client library to connect to the API server and query the list of namespaces and podmonitors and then proceeds with deleting them.
 
 ### Usage
 
