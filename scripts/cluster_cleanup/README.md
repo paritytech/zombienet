@@ -39,4 +39,4 @@ To deploy the CronJob, save the manifest to a file (e.g. cronjob.yaml) and run t
 kubectl apply -f cronjob.yaml
 ```
 
-This will create the CronJob in your cluster and start running it on the specified schedule.
+This will create the CronJob in the cluster and start running it on the specified schedule.
