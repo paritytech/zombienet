@@ -202,13 +202,15 @@ fn parse_custom_script_rule(
             custom_args: args,
             cmp,
             timeout,
+            is_ts: false,
         }),
-        ScriptType::TS => Ok(AssertionKind::CustomTs {
+        ScriptType::TS => Ok(AssertionKind::CustomJs {
             node_name,
             file_path,
             custom_args: args,
             cmp,
             timeout,
+            is_ts: true,
         }),
         ScriptType::SH => Ok(AssertionKind::CustomSh {
             node_name,

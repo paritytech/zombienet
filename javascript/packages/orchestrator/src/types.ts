@@ -328,6 +328,7 @@ export interface FnArgs {
   file_or_uri?: string;
   after?: number;
   seconds?: number;
+  is_ts?: boolean;
 }
 
 export interface RegisterParachainOptions {
