@@ -54,7 +54,7 @@ def send_alert(alertname, severity, message):
             "annotations": {
                 "message": f"{message}"
             },
-            "generatorURL": "http://example.com"
+            "generatorURL": "https://grafana.parity-mgmt.parity.io/"
         }
     ]
     response = requests.post(url, headers=headers, json=payload)
