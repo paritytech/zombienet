@@ -30,7 +30,8 @@ export async function spawn(
   credsFile: string | undefined,
   cmdOpts: any,
   program: any,
-): Promise<Network> {
+  setGlobalNetwork: (network: Network) => void,
+): Promise<void> {
   const opts = { ...program.parent.opts(), ...cmdOpts };
   const dir = opts.dir || "";
   const force = opts.force || false;
@@ -93,8 +94,11 @@ export async function spawn(
     force,
     inCI,
     silent: false,
+    setGlobalNetwork,
   };
   const network = await start(creds, config, options);
   network.showNetworkInfo(config.settings?.provider);
-  return network;
+  // keep the process running
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setInterval(() => {}, 1000);
 }

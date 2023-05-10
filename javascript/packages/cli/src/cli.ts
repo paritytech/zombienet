@@ -14,6 +14,10 @@ const program = new Command("zombienet");
 let network: Network | undefined;
 let alreadyTryToStop = false;
 
+const setGlobalNetwork = (globalNetwork: Network) => {
+  network = globalNetwork;
+};
+
 async function handleTermination(userInterrupted = false) {
   process.env.terminating = "1";
   if (network && !alreadyTryToStop) {
@@ -21,6 +25,7 @@ async function handleTermination(userInterrupted = false) {
     if (userInterrupted) console.log("Ctrl+c detected...");
     debug("removing namespace: " + network.namespace);
     await network.dumpLogs();
+    console.log(decorators.blue("Tearing down network..."));
     await network.stop();
   }
 }
@@ -154,7 +159,7 @@ function asyncAction(cmd: Function) {
     (async () => {
       try {
         if (cmd.name == "spawn") {
-          network = await cmd(...args);
+          await cmd(...args, setGlobalNetwork);
         } else {
           await cmd(...args);
         }
