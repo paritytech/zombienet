@@ -112,6 +112,15 @@ pub enum AssertionKind {
         #[serde(with = "optional_timeout")]
         timeout: Option<Duration>,
     },
+    CustomTs {
+        node_name: NodeName,
+        file_path: PathBuf,
+        custom_args: Option<String>,
+        #[serde(flatten)]
+        cmp: Option<Comparison>,
+        #[serde(with = "optional_timeout")]
+        timeout: Option<Duration>,
+    },
     CustomSh {
         node_name: NodeName,
         file_path: PathBuf,

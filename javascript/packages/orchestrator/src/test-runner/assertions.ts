@@ -293,6 +293,117 @@ const CustomJs = ({
   };
 };
 
+const CustomTs = ({
+  node_name,
+  file_path,
+  custom_args,
+  op,
+  target_value,
+  timeout,
+}: FnArgs) => {
+  timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
+  const comparatorFn = comparators[op!];
+
+  return async (
+    network: Network,
+    _backchannelMap: BackchannelMap,
+    configBasePath: string,
+  ) => {
+    const networkInfo = {
+      tmpDir: network.tmpDir,
+      chainSpecPath: network.chainSpecFullPath,
+      relay: network.relay.map((node: any) => {
+        const { name, wsUri, prometheusUri, userDefinedTypes } = node;
+        return { name, wsUri, prometheusUri, userDefinedTypes };
+      }),
+      paras: Object.keys(network.paras).reduce((memo: any, paraId: any) => {
+        const { chainSpecPath, wasmPath, statePath } = network.paras[paraId];
+        memo[paraId] = { chainSpecPath, wasmPath, statePath };
+        memo[paraId].nodes = network.paras[paraId].nodes.map((node) => {
+          return { ...node };
+        });
+        return memo;
+      }, {}),
+      nodesByName: Object.keys(network.nodesByName).reduce(
+        (memo: any, nodeName) => {
+          const { name, wsUri, prometheusUri, userDefinedTypes, parachainId } =
+            network.nodesByName[nodeName];
+          memo[nodeName] = { name, wsUri, prometheusUri, userDefinedTypes };
+          if (parachainId) memo[nodeName].parachainId = parachainId;
+          return memo;
+        },
+        {},
+      ),
+    };
+
+    const nodes = network.getNodes(node_name!);
+    const call_args = custom_args
+      ? custom_args === ""
+        ? []
+        : custom_args.split(",")
+      : [];
+
+    const resolvedJsFilePath = path.resolve(configBasePath, file_path!);
+
+    // shim with jsdom
+    const dom = new JSDOM(
+      "<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>",
+    );
+    (global as any).window = dom.window;
+    (global as any).document = dom.window.document;
+    (global as any).zombie = {
+      ApiPromise,
+      Keyring,
+      util: utilCrypto,
+      connect,
+      registerParachain,
+    };
+    const jsScript = await import(resolvedJsFilePath);
+
+    let values;
+    try {
+      const resp: any = await Promise.race([
+        Promise.all(
+          nodes.map((node: any) =>
+            jsScript.run(node.name, networkInfo, call_args),
+          ),
+        ),
+        new Promise((resolve) =>
+          setTimeout(() => {
+            const err = new Error(
+              `Timeout(${timeout}), "custom-js ${file_path!} within ${timeout} secs" didn't complete on time.`,
+            );
+            return resolve(err);
+          }, timeout! * 1000),
+        ),
+      ]);
+      if (resp instanceof Error) throw new Error(resp as any);
+      else values = resp;
+    } catch (err: any) {
+      console.log(
+        `\n ${decorators.red(
+          `Error running script: ${file_path!}`,
+        )} \t ${decorators.bright(err.message)}\n`,
+      );
+      throw new Error(err);
+    }
+
+    // remove shim
+    (global as any).window = undefined;
+    (global as any).document = undefined;
+    (global as any).zombie = undefined;
+
+    if (target_value) {
+      for (const value of values) {
+        comparatorFn(value, target_value);
+      }
+    } else {
+      // test don't have matching output
+      expect(true).to.be.ok;
+    }
+  };
+};
+
 const CustomSh = ({
   node_name,
   file_path,
@@ -441,6 +552,7 @@ export default {
   CountLogMatch,
   SystemEvent,
   CustomJs,
+  CustomTs,
   CustomSh,
   ParaBlockHeight,
   ParaIsRegistered,
