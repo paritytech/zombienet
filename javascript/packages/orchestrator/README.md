@@ -325,7 +325,7 @@ npm run build
 ### Build `parser-wrapper` locally (optional)
 
 Building the `parser-wrapper` can help on running/testing locally changes on the test parser.
-In order to build the parser one first needs to run the `wasm-pack`:
+In order to build the parser one first needs to run the `wasm-pack` (make sure that [wasm-pack](https://github.com/rustwasm/wasm-pack) is installed):
 
 ```bash
 cd zombienet/crates/parser-wrapper
