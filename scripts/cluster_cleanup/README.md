@@ -10,7 +10,7 @@ This Python script is designed to identify and delete "zombie-" prefixed Kuberne
 
 ### CronJob
 
-To automate the zombie namespace cleanup process, you can use the following Kubernetes CronJob:
+To automate the zombie namespace cleanup process, the following Kubernetes CronJob can be used:
 
 ```
 apiVersion: batch/v1
