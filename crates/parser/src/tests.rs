@@ -503,7 +503,8 @@ fn custom_js_parse_ok() {
                     "node_name": "alice",
                     "file_path": "./0008-custom.js",
                     "custom_args": null,
-                    "timeout": 200
+                    "timeout": 200,
+                    "is_ts": false
                   }
                 }
             }
@@ -532,7 +533,67 @@ fn custom_js_with_args_parse_ok() {
                     "node_name": "alice",
                     "file_path": "./0008-custom.js",
                     "custom_args": "dave,2000-1,eve",
-                    "timeout": 200
+                    "timeout": 200,
+                    "is_ts": false
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn custom_ts_parse_ok() {
+    let line: &str = r#"alice: ts-script ./0008-custom-ts.ts within 200 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: ts-script ./0008-custom-ts.ts within 200 seconds",
+                "parsed": {
+                  "fn": "CustomJs",
+                  "args": {
+                    "node_name": "alice",
+                    "file_path": "./0008-custom-ts.ts",
+                    "custom_args": null,
+                    "timeout": 200,
+                    "is_ts": true
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn custom_ts_with_args_parse_ok() {
+    let line: &str =
+        r#"alice: ts-script ./0008-custom-ts.ts with "dave,2000-1,eve" within 200 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: ts-script ./0008-custom-ts.ts with \"dave,2000-1,eve\" within 200 seconds",
+                "parsed": {
+                  "fn": "CustomJs",
+                  "args": {
+                    "node_name": "alice",
+                    "file_path": "./0008-custom-ts.ts",
+                    "custom_args": "dave,2000-1,eve",
+                    "timeout": 200,
+                    "is_ts": true
                   }
                 }
             }
