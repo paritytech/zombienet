@@ -58,7 +58,6 @@ def send_alert(alertname, severity, message):
         }
     ]
     response = requests.post(url, headers=headers, json=payload)
-    print(response)
 
 if __name__ == "__main__":
     main()
