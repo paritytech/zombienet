@@ -98,7 +98,7 @@ async fn kv_set(
 ) {
     let item: DbItem = DbItem {
         key: key.clone(),
-        value: String::from_utf8(bytes.to_vec()).unwrap()
+        value: String::from_utf8(bytes.to_vec()).unwrap(),
     };
     state.db.write().unwrap().insert(key, bytes);
     let _ = state.tx.send(serde_json::to_string(&item).unwrap());
@@ -127,7 +127,7 @@ fn handle_error(error: BoxError) -> impl IntoResponse {
 
     (
         StatusCode::INTERNAL_SERVER_ERROR,
-        Cow::from(format!("Unhandled internal error: {}", error)),
+        Cow::from(format!("Unhandled internal error: {error}")),
     )
 }
 

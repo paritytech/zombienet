@@ -3,3 +3,10 @@ dist
 log.md
 .env
 bins
+.DS_Store
+**/target/
+*.swp
+.vscode
+
+# nix
+result

@@ -1,4 +1,4 @@
-FROM docker.io/library/node:16-buster-slim
+FROM docker.io/library/node:18-bullseye-slim
 
 LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.vendor="Parity Technologies" \
@@ -9,7 +9,7 @@ LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.created="${BUILD_DATE}"
 
 RUN apt-get update && \
-    apt-get install -y curl gnupg lsb-release jq tini && \
+    apt-get install -y curl gnupg lsb-release jq tini vim && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -38,17 +38,17 @@ RUN groupadd --gid 10001 nonroot && \
     --uid 10000 nonroot
 
 WORKDIR /home/nonroot/zombie-net
-COPY ./artifacts/dist ./dist
-COPY static-configs ./static-configs
+COPY ./artifacts/packages ./packages
 COPY scripts ./scripts
 COPY tests ./tests
-COPY artifacts/package* ./
+COPY artifacts/package.json ./
+COPY artifacts/package-lock.json ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
 # Change `cli` permissions and link to easy call
-RUN chmod +x ./dist/cli.js
-RUN ln -s /home/nonroot/zombie-net/dist/cli.js /usr/local/bin/zombie
+RUN chmod +x /home/nonroot/zombie-net/packages/cli/dist/cli.js
+RUN ln -s /home/nonroot/zombie-net/packages/cli/dist/cli.js /usr/local/bin/zombie
 
 # Dependency for run test script when run inside container
 RUN mkdir -p /var/log/zombie-net

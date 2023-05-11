@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleaner-{{namespace}}
+spec:
+  schedule: "{{schedule}}"
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      name: namespace-cleaner
+    spec:
+      template:
+        spec:
+          serviceAccountName: zombie-internal-kubectl
+          containers:
+            - name: namespace-cleaner-job
+              image: bitnami/kubectl:1.17.3
+              command:
+                - "bin/bash"
+                - "-c"
+                - "kubectl delete namespace {{namespace}}"
+          restartPolicy: Never

@@ -1,0 +1,55 @@
+name: Zombienet NPM Automated Release
+on:
+  push:
+    branches: [main]
+jobs:
+  publish:
+    name: Build & Publish to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3.5.2
+      - run: npm install
+        working-directory: "./javascript"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+      - name: Build NPM Package
+        run: npm run build
+        working-directory: "./javascript"
+
+      # Pack and upload each package only if version is changed
+      - name: Pack Utils
+        run: npm pack
+        working-directory: "./javascript/packages/utils"
+      - name: Upload Utils
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: "./javascript/packages/utils/*.tgz"
+
+      - name: Pack orchestrator
+        run: npm pack
+        working-directory: "./javascript/packages/orchestrator"
+      - name: Upload Orchestrator
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: "./javascript/packages/orchestrator/*.tgz"
+
+      - name: Pack CLI
+        run: npm pack
+        working-directory: "./javascript/packages/cli"
+      - name: Upload CLI
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: "./javascript/packages/cli/*.tgz"
+
+      - name: NPM Publish automation
+        uses: octokit/request-action@v2.x
+        with:
+          route: POST /repos/paritytech/npm_publish_automation/actions/workflows/publish.yml/dispatches
+          ref: main
+          inputs: '${{ format(''{{ "repo": "{0}", "run_id": "{1}" }}'', github.repository, github.run_id) }}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.NPM_PUBLISH_AUTOMATION_TOKEN }}

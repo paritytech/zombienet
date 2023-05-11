@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "paths": {
+      "@zombienet/utils": ["./packages/utils"],
+      "@zombienet/orchestrator": ["./packages/orchestrator"],
+      "@parity/zombienet": ["./packages/cli"]
+    }
+  }
+}

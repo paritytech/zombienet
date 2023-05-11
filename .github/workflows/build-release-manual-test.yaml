@@ -1,0 +1,58 @@
+name: Zombienet Packages Build Release Manual
+
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch
+
+jobs:
+  build_release_for_linux:
+    name: build_release_for_linux
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3.5.2
+        with:
+          fetch-depth: 0
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          working-directory: './javascript'
+      - run: npm install
+        working-directory: "./javascript"
+      - run: npm run build
+        working-directory: "./javascript"
+      - run: npm run package:linux
+        working-directory: "./javascript"
+      - run: ls ./bins
+        working-directory: "./javascript"
+      - name: Test if zombienet-linux runs
+        run: ./bins/zombienet-linux-x64 version
+        working-directory: "./javascript"
+  build_release_for_mac:
+    name: build_release_for_mac
+    needs: build_release_for_linux
+    runs-on: macos-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3.5.2
+        with:
+          fetch-depth: 0
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          working-directory: './javascript'
+      - run: npm install && npm update
+        working-directory: "./javascript"
+      - run: npm run build
+        working-directory: "./javascript"
+      - run: npm run package:macos
+        working-directory: "./javascript"
+      - name: Test if zombienet-mac runs
+        run: ./bins/zombienet-macos version
+        working-directory: "./javascript"

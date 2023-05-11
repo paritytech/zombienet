@@ -126,6 +126,8 @@ Options:
   -c, --spawn-concurrency <concurrency>  Number of concurrent spawning process to launch, default is 1
   -p, --provider <provider>              Override provider to use (choices: "podman", "kubernetes", "native")
                                          default: kubernetes
+  -d, --dir <path>                       Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)
+  -f, --force                            Force override all prompt commands
   -m, --monitor                          Start as monitor, do not auto cleanup network
   -h, --help                             display help for command
 
@@ -144,7 +146,7 @@ Commands:
 
 One of the goals of `zombienet` is to easily spawn ephemeral networks, providing a simple but
 powerful *cli* that allows you to declare the desired network in `toml` or `json` format. You can
-check the [definition spec](/docs/src/network-definition-spec.md) to view the available options.
+check the [definition spec](https://paritytech.github.io/zombienet/network-definition-spec.html) to view the available options.
 
 A **minimal** configuration example with two validators and one parachain:
 
@@ -174,8 +176,10 @@ id = 100
 Then you can spawn the network by running the following command:
 
 ```bash
-./zombienet-macos spawn examples/0001-small-network.toml
+./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
+
+Note that the command expects two binaries `polkadot` and `adder-collator` to be installed on your system. See further down for how to get them.
 
 You can follow the output of the `steps` to spawn the network and once the network is launched a
 message with the `node`s information like this one is shown
@@ -196,6 +200,8 @@ message with the `node`s information like this one is shown
 │ Direct Link             │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:45589#/explorer                                   │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Prometheus Link         │ http://127.0.0.1:44107/metrics                                                                     │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/alice.log                │ 
 ├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                         Node Information                                                     │
 ├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
@@ -204,6 +210,8 @@ message with the `node`s information like this one is shown
 │ Direct Link             │ https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:46459#/explorer                                   │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Prometheus Link         │ http://127.0.0.1:43831/metrics                                                                     │
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/bob.log                  │ 
 ├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                         Node Information                                                     │
 ├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
@@ -213,7 +221,11 @@ message with the `node`s information like this one is shown
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Prometheus Link         │ http://127.0.0.1:38281/metrics                                                                     │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/collator01.log           │ 
+├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Parachain ID            │ 100                                                                                                │
+└─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
+│ ChainSpec Path          │ /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/rococo-local-100.json             │
 └─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
 ```
@@ -270,7 +282,7 @@ The other goal of `zombienet` is to provide a way to perform test/assertions aga
 network, using a set of `natural language expressions` that allow you to make assertions based on
 metrics, logs and some `built-in` function that query the network using `polkadot.js`. Those
 assertions should be defined in a *.zndsl test*, and the `dsl` (**D**omain **S**pecific **L**anguage) and format is documented in
-[here](/docs/book/cli/test-dsl-definition-spec.md).
+[here](https://paritytech.github.io/zombienet/cli/test-dsl-definition-spec.html).
 
 The following is an small example to spawn a network (using the previous `simple network
 definition`) and assert that:
@@ -307,7 +319,7 @@ Other examples are provided in the [examples](examples) directory.
 You need first to *clone* this repository and run:
 
 ```bash
-cd zombienet
+cd zombienet/javascript
 npm install
 npm run build
 ```
@@ -342,6 +354,18 @@ At the end of the download, the `setup` script will provide a command to run in 
 Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
 ```
 
+### Build adder-collator (needed for running examples with native provider)
+
+You can build it from source like this
+
+```bash
+git clone git@github.com:paritytech/polkadot
+cd polkadot
+cargo build --profile testnet -p test-parachain-adder-collator
+export PATH=$(pwd)/target/testnet:$PATH
+```
+
+
 ### Using Zombienet
 
 With the above steps completed, the `zombienet` CLI is ready to run:
@@ -363,6 +387,36 @@ Commands:
   setup                                    Runs the setup of local environment
   help [command]                           display help for command
 ```
+
+With [nix](https://zero-to-nix.com/) run `nix run github:paritytech/zombienet` or add `inputs.zombienet.url = "github:paritytech/zombienet";` to flake.
+
+
+## Projects using Zombienet
+
+Below can be found some of the projects that are currently using Zombienet as integration or as a testing framework:
+
+**In Parity:**
+
+- [CAPI]()
+- [Cumulus](https://github.com/paritytech/cumulus/tree/master/zombienet/tests)
+- [Polkadot](https://polkadot.network/) in the [testing pipeline](https://github.com/paritytech/polkadot/blob/eafdfc36492384e16e1c253be9d5097fb3f33c60/scripts/ci/gitlab/pipeline/zombienet.yml);
+- [Substrate](https://github.com/paritytech/substrate/tree/master/zombienet)
+- [Substrate Connect](https://github.com/paritytech/substrate-connect/tree/main/.zombienet-tests)
+
+**In the Polkadot ecosystem:**
+
+- [Acurast](https://github.com/Acurast/acurast-substrate/blob/10c3160a297ae6c3092ee692e6d3b632896fca65/Makefile)
+- [Astar](https://github.com/AstarNetwork/Astar/blob/master/.github/workflows/zombienetRpcTest.yml#L44)
+- [Gossamer](https://github.com/ChainSafe/gossamer/issues/2843)
+- [Oak/Turing/Neumann](https://github.com/OAK-Foundation/OAK-blockchain/tree/master/zombienets)
+- [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/rococo-local)
+- [InvArch](https://github.com/InvArch/InvArch-Node/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
+- [Mangata](https://github.com/mangata-finance/mangata-node/tree/develop/devops/zombienet)
+- [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
+- [Moonbeam](https://github.com/PureStake/moonbeam/tree/master/tests/zombienet)
+- [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
+- [ParaSpell✨](https://github.com/paraspell/ui-v2)
+
 
 ## Acknowledgement
 
