@@ -29,6 +29,7 @@
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
+    "@polkadot/util": "^12.1.2",
     "@types/chai": "^4.3.5",
     "chai": "^4.3.7"
   },
