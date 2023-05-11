@@ -248,10 +248,7 @@ const CustomJs = ({
         configBasePath,
         path.parse(file_path!).name + ".js",
       );
-      await fs.writeFile(
-        resolvedJsFilePath,
-        new Uint8Array(Buffer.from(result.outputText)),
-      );
+      await fs.writeFile(resolvedJsFilePath, result.outputText);
     }
 
     // shim with jsdom
