@@ -2,9 +2,11 @@ import { ApiPromise, Keyring } from "@polkadot/api";
 import { decorators, isValidHttpUrl } from "@zombienet/utils";
 import { assert, expect } from "chai";
 import execa from "execa";
+import fs from "fs/promises";
 import { JSDOM } from "jsdom";
 import { makeRe } from "minimatch";
 import path from "path";
+import ts from "typescript";
 import { BackchannelMap } from ".";
 import {
   chainCustomSectionUpgrade,
@@ -237,11 +239,18 @@ const CustomJs = ({
     let resolvedJsFilePath = path.resolve(configBasePath, file_path!);
 
     if (is_ts) {
-      await execa.command(`tsc ${resolvedJsFilePath}`);
+      const source = (await fs.readFile(resolvedJsFilePath)).toString();
+      const result = ts.transpileModule(source, {
+        compilerOptions: { module: ts.ModuleKind.CommonJS },
+      });
 
       resolvedJsFilePath = path.resolve(
         configBasePath,
         path.parse(file_path!).name + ".js",
+      );
+      await fs.writeFile(
+        resolvedJsFilePath,
+        new Uint8Array(Buffer.from(result.outputText)),
       );
     }
 
