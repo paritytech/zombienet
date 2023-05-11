@@ -17,9 +17,9 @@ use ast::{Assertion, AssertionKind, Comparison, NodeName, ParaId, TestDefinition
 mod tests;
 
 enum ScriptType {
-    JS,
-    TS,
-    SH,
+    Javascript,
+    Typescript,
+    Shellscript,
 }
 
 // This include forces recompiling this source file if the grammar file changes.
@@ -196,7 +196,7 @@ fn parse_custom_script_rule(
     }
 
     match script_type {
-        ScriptType::JS => Ok(AssertionKind::CustomJs {
+        ScriptType::Javascript => Ok(AssertionKind::CustomJs {
             node_name,
             file_path,
             custom_args: args,
@@ -204,7 +204,7 @@ fn parse_custom_script_rule(
             timeout,
             is_ts: false,
         }),
-        ScriptType::TS => Ok(AssertionKind::CustomJs {
+        ScriptType::Typescript => Ok(AssertionKind::CustomJs {
             node_name,
             file_path,
             custom_args: args,
@@ -212,7 +212,7 @@ fn parse_custom_script_rule(
             timeout,
             is_ts: true,
         }),
-        ScriptType::SH => Ok(AssertionKind::CustomSh {
+        ScriptType::Shellscript => Ok(AssertionKind::CustomSh {
             node_name,
             file_path,
             custom_args: args,
@@ -527,7 +527,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::custom_js => {
-                let parsed = parse_custom_script_rule(record, ScriptType::JS)?;
+                let parsed = parse_custom_script_rule(record, ScriptType::Javascript)?;
                 let assertion = Assertion {
                     parsed,
                     original_line,
@@ -536,7 +536,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::custom_ts => {
-                let parsed = parse_custom_script_rule(record, ScriptType::TS)?;
+                let parsed = parse_custom_script_rule(record, ScriptType::Typescript)?;
                 let assertion = Assertion {
                     parsed,
                     original_line,
@@ -545,7 +545,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::custom_sh => {
-                let parsed = parse_custom_script_rule(record, ScriptType::SH)?;
+                let parsed = parse_custom_script_rule(record, ScriptType::Shellscript)?;
                 let assertion = Assertion {
                     parsed,
                     original_line,
