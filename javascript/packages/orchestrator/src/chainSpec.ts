@@ -201,10 +201,10 @@ export async function addStaking(specPath: string, node: Node) {
     const runtimeConfig = getRuntimeConfig(chainSpec);
     if (!runtimeConfig?.staking) return;
 
-    const { sr_stash, sr_account } = node.accounts;
+    const { sr_stash } = node.accounts;
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
-      sr_account.address,
+      sr_stash.address,
       stakingBond || 1000000000000,
       "Validator",
     ]);
