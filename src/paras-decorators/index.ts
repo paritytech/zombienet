@@ -19,7 +19,7 @@ import statemint from "./statemint";
 function whichPara(chain: string): PARA {
   if (chain.includes("statemint")) return PARA.Statemint;
   if (/moonbase|moonriver|moonbeam/.test(chain)) return PARA.Moonbeam;
-  if (/efinity|rocfinity/.test(chain)) return PARA.Efinity;
+  if (/efinity|matrix/.test(chain)) return PARA.Efinity;
   if (/acala|karura|mandala/.test(chain)) return PARA.Acala;
 
   return PARA.Generic;
