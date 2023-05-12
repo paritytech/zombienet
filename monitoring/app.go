@@ -52,6 +52,8 @@ func main() {
 		for {
 			updateMetrics(clientset)
 			time.Sleep(1 * time.Minute)
+			zombiePodsCount.Reset()
+			zombieNamespaceOld.Reset()
 		}
 	}()
 
