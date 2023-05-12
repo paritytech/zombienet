@@ -1,9 +1,12 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { decorators, isValidHttpUrl } from "@zombienet/utils";
 import { assert, expect } from "chai";
+import execa from "execa";
+import fs from "fs/promises";
 import { JSDOM } from "jsdom";
 import { makeRe } from "minimatch";
 import path from "path";
+import ts from "typescript";
 import { BackchannelMap } from ".";
 import {
   chainCustomSectionUpgrade,
@@ -189,6 +192,7 @@ const CustomJs = ({
   op,
   target_value,
   timeout,
+  is_ts,
 }: FnArgs) => {
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   const comparatorFn = comparators[op!];
@@ -232,7 +236,20 @@ const CustomJs = ({
         : custom_args.split(",")
       : [];
 
-    const resolvedJsFilePath = path.resolve(configBasePath, file_path!);
+    let resolvedJsFilePath = path.resolve(configBasePath, file_path!);
+
+    if (is_ts) {
+      const source = (await fs.readFile(resolvedJsFilePath)).toString();
+      const result = ts.transpileModule(source, {
+        compilerOptions: { module: ts.ModuleKind.CommonJS },
+      });
+
+      resolvedJsFilePath = path.resolve(
+        configBasePath,
+        path.parse(file_path!).name + ".js",
+      );
+      await fs.writeFile(resolvedJsFilePath, result.outputText);
+    }
 
     // shim with jsdom
     const dom = new JSDOM(
@@ -278,6 +295,9 @@ const CustomJs = ({
     }
 
     // remove shim
+    if (is_ts) {
+      await execa.command(`rm -rf  ${resolvedJsFilePath}`);
+    }
     (global as any).window = undefined;
     (global as any).document = undefined;
     (global as any).zombie = undefined;

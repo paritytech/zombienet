@@ -70,10 +70,15 @@ The first lines are used to define the **header fields**:
   - `node-name`: trace with traceID <id> contains ["name", "name2",...]
     - alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]
 
-- Custom js scripts: Allow to run a defined script and assert on the completeness or return value.
+- Custom js scripts: Allow to run a defined JS script and assert on the completeness or return value.
 
   - `node-name`: js-script _script_relative_path_ [ return is *comparator target_value*] [within x seconds]
     - alice: js-script ./0008-custom.js return is greater than 1 within 200 seconds
+
+- Custom ts scripts: Allow to run a defined TS script and assert on the completeness or return value.
+
+  - `node-name`: ts-script _script_relative_path_ [ return is *comparator target_value*] [within x seconds]
+    - alice: ts-script ./0008-custom-ts.ts return is greater than 1 within 200 seconds
 
 - Backchannel wait for value and register to use
   - node-name: wait for `var name` and use as `X` [within 30 seconds]
