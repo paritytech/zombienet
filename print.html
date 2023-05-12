@@ -903,11 +903,21 @@ For example:</p>
 </ul>
 </li>
 <li>
-<p>Custom js scripts: Allow to run a defined script and assert on the completeness or return value.</p>
+<p>Custom js scripts: Allow to run a defined JS script and assert on the completeness or return value.</p>
 <ul>
 <li><code>node-name</code>: js-script <em>script_relative_path</em> [ return is <em>comparator target_value</em>] [within x seconds]
 <ul>
 <li>alice: js-script ./0008-custom.js return is greater than 1 within 200 seconds</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Custom ts scripts: Allow to run a defined TS script and assert on the completeness or return value.</p>
+<ul>
+<li><code>node-name</code>: ts-script <em>script_relative_path</em> [ return is <em>comparator target_value</em>] [within x seconds]
+<ul>
+<li>alice: ts-script ./0008-custom-ts.ts return is greater than 1 within 200 seconds</li>
 </ul>
 </li>
 </ul>
