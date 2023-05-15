@@ -55,6 +55,7 @@ export class PodmanClient extends Client {
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
+  isTearingDown: boolean;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
@@ -66,6 +67,7 @@ export class PodmanClient extends Client {
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
     this.dataDir = DEFAULT_DATA_DIR;
+    this.isTearingDown = false;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -177,6 +179,7 @@ export class PodmanClient extends Client {
   }
 
   async destroyNamespace(): Promise<void> {
+    this.isTearingDown = true;
     // get pod names
     let args = [
       "pod",
@@ -189,11 +192,11 @@ export class PodmanClient extends Client {
     let result = await this.runCommand(args, { scoped: false });
 
     // now remove the pods
-    args = ["pod", "rm", "-f", ...result.stdout.split("\n")];
+    args = ["pod", "rm", "-f", "-i", ...result.stdout.split("\n")];
     result = await this.runCommand(args, { scoped: false });
 
     // now remove the pnetwork
-    args = ["network", "rm", this.namespace];
+    args = ["network", "rm", "-f", this.namespace];
     result = await this.runCommand(args, { scoped: false });
   }
 
@@ -297,10 +300,14 @@ export class PodmanClient extends Client {
         stdout,
       };
     } catch (error) {
-      console.log(
-        `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
-      );
-      throw error;
+      // We prevent previous commands ran to throw error when we are tearing down the network.
+      if (!this.isTearingDown) {
+        console.log(
+          `\n ${decorators.red("Error: ")} \t ${decorators.bright(error)}\n`,
+        );
+        throw error;
+      }
+      return { exitCode: 0, stdout: "" };
     }
   }
 
@@ -346,24 +353,30 @@ export class PodmanClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
-    keystore: string,
-    chainSpecId: string,
+    keystore?: string,
+    chainSpecId?: string,
     dbSnapshot?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
-    logTable.pushToPrint([
+    const logs = [
       [decorators.cyan("Pod"), decorators.green(podDef.metadata.name)],
       [decorators.cyan("Status"), decorators.green("Launching")],
       [
         decorators.cyan("Command"),
         decorators.white(podDef.spec.containers[0].command.join(" ")),
       ],
-    ]);
+    ];
+
+    if (dbSnapshot) {
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)]);
+    }
+
+    logTable.pushToPrint(logs);
 
     // initialize keystore
     const dataPath = podDef.spec.volumes.find(
@@ -383,7 +396,7 @@ export class PodmanClient extends Client {
       ]);
     }
 
-    if (keystore) {
+    if (keystore && chainSpecId) {
       const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       await makeDir(keystoreRemoteDir, true);
       const keystoreIsEmpty =
@@ -489,20 +502,32 @@ export class PodmanClient extends Client {
   }
 
   getPauseArgs(name: string): string[] {
-    return ["exec", name, "--", "bash", "-c", "echo pause > /tmp/zombiepipe"];
+    return [
+      "exec",
+      `${name}_pod-${name}`,
+      "bash",
+      "-c",
+      "echo pause > /tmp/zombiepipe",
+    ];
   }
   getResumeArgs(name: string): string[] {
-    return ["exec", name, "--", "bash", "-c", "echo resume > /tmp/zombiepipe"];
+    return [
+      "exec",
+      `${name}_pod-${name}`,
+      "bash",
+      "-c",
+      "echo resume > /tmp/zombiepipe",
+    ];
   }
 
   async restartNode(name: string, timeout: number | null): Promise<boolean> {
-    const args = ["exec", name, "--", "bash", "-c"];
+    const args = ["exec", `${name}_pod-${name}`, "bash", "-c"];
     const cmd = timeout
       ? `echo restart ${timeout} > /tmp/zombiepipe`
       : `echo restart > /tmp/zombiepipe`;
     args.push(cmd);
 
-    const result = await this.runCommand(args, { scoped: true });
+    const result = await this.runCommand(args, { scoped: false });
     return result.exitCode === 0;
   }
 

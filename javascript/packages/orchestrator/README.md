@@ -322,6 +322,24 @@ npm install
 npm run build
 ```
 
+### Build `parser-wrapper` locally (optional)
+
+Building the `parser-wrapper` can help on running/testing locally changes on the test parser.
+In order to build the parser one first needs to run the `wasm-pack` (make sure that [wasm-pack](https://github.com/rustwasm/wasm-pack) is installed):
+
+```bash
+cd zombienet/crates/parser-wrapper
+wasm-pack build --release --target nodejs --scope zombienet
+```
+
+Once it is done, the next step is to create a symlink to the created `pkg` from inside the javascript directory, as can be seen below:
+
+```bash
+cd zombienet/javascript
+npm link ../crates/parser-wrapper/pkg/
+npm run build
+```
+
 ### Download and install needed artifacts (optional)
 
 For an easier and faster setup of your local environment, run:

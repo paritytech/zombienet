@@ -28,10 +28,12 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `chain_spec_path`: (String) Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
 - `chain_spec_command`: (String) Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
 - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+- `default_substrate_cli_args_version`: (0|1) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
 - `default_overrides`: (Array of objects) An array of overrides to upload to the nodes, objects with:
   - `local_path`: string;
   - `remote_name`: string;
 - `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
+- `default_prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
 - `chain_spec_modifier_commands`: (Array of `commands`, optional) Set of commands and their arguments to modify the resulting chain spec before the chain is launched with it. `Commands` are themselves arrays of strings (each argument is a string). In the arguments, `{{'plain'|chainSpec}}` will be substituted for the plain spec path and run before the raw chain spec is generated, and `{{'raw'|chainSpec}}` will be substituted for the raw chain spec path.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
@@ -41,6 +43,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `command`: (String) Override default command.
   - `command_with_args`: (String) Override default command and args.
   - `args`: (Array of strings) Arguments to be passed to the `command`.
+  - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
   - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
   - `invulnerable`: (Boolean, default false) If true, the node will be added to `invulnerables` in the chain spec.
   - `balance`: (number, default 2000000000000) Balance to set in `balances` for node's account.
@@ -54,6 +57,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `ws_port`: (number), WS port to use.;
   - `rpc_port`: (number) RPC port to use;
   - `prometheus_port`: (number) Prometheus port to use;
+  - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
 - `node_groups`:
   - `*name`: (String) Group name, used for naming the nodes (e.g name-1)
   - `*count` (Number), Number of `nodes` to launch for this group.
@@ -64,7 +68,9 @@ The network config can be provided both in `json` or `toml` format and each sect
     - name: (String) name of the `env` var.
     - value: (String| number) Value of the env var.
   - `overrides`: Array of `overrides` definitions.
+  - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply to all the nodes of the group; Defaults to 'substrate'.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
+  - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
 
 ## `parachains`
 
@@ -78,18 +84,21 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.
   - `genesis_state_generator`: (String) Command to generate the state file.
+  - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to all parachain nodes/collators; Defaults to 'substrate'.
   - `collator`:
 
     - `*name`: (String) Name of the collator.
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+    - `packages/orchestrator/src/providers/k8s/index.ts`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
     - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
 
   - `collator_groups`:
+
     - `*name`: (String) Name of the collator.
     - `*count`: (Number) Number of `collators` to launch for this group.
     - `image`: (String) Image to use.
@@ -99,6 +108,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
+      - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.
 
   - `onboard_as_parachain`: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread
   - `register_para`: (Boolean, default true) flag to specify whether the para should be registered. The `add_to_genesis` flag **must** be set to false for this flag to have any effect.

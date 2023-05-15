@@ -26,8 +26,6 @@ updates:
     ignore:
     - dependency-name: "execa"
       update-types: ["version-update:semver-major"]
-    - dependency-name: "axios"
-      update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 4
 
   - package-ecosystem: npm

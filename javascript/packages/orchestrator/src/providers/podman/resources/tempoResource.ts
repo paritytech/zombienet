@@ -38,7 +38,7 @@ export class TempoResource {
         __dirname,
         `./configs/tempo.yaml`,
       );
-      await fs.writeFile(`${this.configPath}/tempo.yaml`, templateConfigPath);
+      await fs.copyFile(templateConfigPath, `${this.configPath}/tempo.yaml`);
     } catch {
       throw new Error("Error generating config for tempo resource");
     }

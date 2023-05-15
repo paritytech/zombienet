@@ -31,6 +31,7 @@ import {
 import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  TOKEN_PLACEHOLDER,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { registerParachain } from "./jsapi-helpers";
@@ -47,10 +48,11 @@ import {
 
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
-import { verifyNodes } from "./network-helpers/verifier";
+import { nodeChecker, verifyNodes } from "./network-helpers/verifier";
 import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
+import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
 
 const debug = require("debug")("zombie");
 
@@ -68,6 +70,7 @@ export interface OrcOptionsInterface {
   dir?: string;
   force?: boolean;
   silent?: boolean; // Mute logging output
+  setGlobalNetwork?: (network: Network) => void;
 }
 
 export async function start(
@@ -89,6 +92,15 @@ export async function start(
     const networkSpec: ComputedNetwork = await generateNetworkSpec(
       launchConfig,
     );
+
+    // IFF there are network references in cmds we need to switch to concurrency 1
+    if (TOKEN_PLACEHOLDER.test(JSON.stringify(networkSpec))) {
+      debug(
+        "Network definition use network references, switching concurrency to 1",
+      );
+      opts.spawnConcurrency = 1;
+    }
+
     debug(JSON.stringify(networkSpec, null, 4));
 
     const { initClient, setupChainSpec, getChainSpecRaw } = getProvider(
@@ -151,6 +163,9 @@ export async function start(
     if (networkSpec.settings.node_spawn_timeout)
       client.timeout = networkSpec.settings.node_spawn_timeout;
     network = new Network(client, namespace, tmpDir.path);
+    if (options?.setGlobalNetwork) {
+      options.setGlobalNetwork(network);
+    }
 
     const zombieTable = new CreateLogTable({
       head: [
@@ -212,6 +227,10 @@ export async function start(
     debug(`Creating static resources (bootnode and backchannel services)`);
     await client.staticSetup(networkSpec.settings);
     await client.createPodMonitor("pod-monitor.yaml", chainName);
+
+    // Set substrate client argument version, needed from breaking change.
+    // see https://github.com/paritytech/substrate/pull/13384
+    await setSubstrateCliArgsVersion(networkSpec, client);
 
     // create or copy relay chain spec
     await setupChainSpec(
@@ -429,6 +448,8 @@ export async function start(
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
         const basePath = `${tmpDir.path}/${parachain.name}`;
+        // ensure node is up.
+        await nodeChecker(network.relay[0]);
         await registerParachain({
           id: parachain.id,
           wasmPath: `${basePath}/${GENESIS_WASM_FILENAME}`,

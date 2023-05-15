@@ -10,6 +10,7 @@
   - [Podman](./features/podman.md)
   - [Native](./features/native.md)
 - [Cli usage](./cli/index.md)
+  - [Convert](./cli/convert.md)
   - [Setup](./cli/setup.md)
   - [Spawning](./cli/spawn.md)
     - [Using env vars](./cli/env_vars.md)

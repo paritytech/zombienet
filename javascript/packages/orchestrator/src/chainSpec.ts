@@ -221,10 +221,10 @@ export async function addStaking(specPath: string, node: Node) {
     const runtimeConfig = getRuntimeConfig(chainSpec);
     if (!runtimeConfig?.staking) return;
 
-    const { sr_stash, sr_account } = node.accounts;
+    const { sr_stash } = node.accounts;
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
-      sr_account.address,
+      sr_stash.address,
       stakingBond || 1000000000000,
       "Validator",
     ]);
@@ -756,56 +756,65 @@ export async function customizePlainRelayChain(
   specPath: string,
   networkSpec: ComputedNetwork,
 ): Promise<void> {
-  // Relay-chain spec customization logic
-  const plainRelayChainSpec = readAndParseChainSpec(specPath);
-  const keyType = specHaveSessionsKeys(plainRelayChainSpec)
-    ? "session"
-    : "aura";
+  try {
+    // Relay-chain spec customization logic
+    const plainRelayChainSpec = readAndParseChainSpec(specPath);
+    const keyType = specHaveSessionsKeys(plainRelayChainSpec)
+      ? "session"
+      : "aura";
 
-  // Clear all defaults
-  clearAuthorities(specPath);
-
-  // add balances for nodes
-  await addBalances(specPath, networkSpec.relaychain.nodes);
-
-  // add authorities for nodes
-  const validatorKeys = [];
-  for (const node of networkSpec.relaychain.nodes) {
-    if (node.validator) {
-      validatorKeys.push(node.accounts.sr_stash.address);
-
-      if (keyType === "session") {
-        const key = getNodeKey(node);
-        await addAuthority(specPath, node, key);
-      } else {
-        await addAuraAuthority(specPath, node.name, node.accounts!);
-        await addGrandpaAuthority(specPath, node.name, node.accounts!);
-      }
-
-      await addStaking(specPath, node);
+    // make genesis overrides first.
+    if (networkSpec.relaychain.genesis) {
+      await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
     }
-  }
 
-  if (networkSpec.relaychain.randomNominatorsCount) {
-    await generateNominators(
-      specPath,
-      networkSpec.relaychain.randomNominatorsCount,
-      networkSpec.relaychain.maxNominations,
-      validatorKeys,
+    // Clear all defaults
+    clearAuthorities(specPath);
+
+    // add balances for nodes
+    await addBalances(specPath, networkSpec.relaychain.nodes);
+
+    // add authorities for nodes
+    const validatorKeys = [];
+    for (const node of networkSpec.relaychain.nodes) {
+      if (node.validator) {
+        validatorKeys.push(node.accounts.sr_stash.address);
+
+        if (keyType === "session") {
+          const key = getNodeKey(node);
+          await addAuthority(specPath, node, key);
+        } else {
+          await addAuraAuthority(specPath, node.name, node.accounts!);
+          await addGrandpaAuthority(specPath, node.name, node.accounts!);
+        }
+
+        await addStaking(specPath, node);
+      }
+    }
+
+    if (networkSpec.relaychain.randomNominatorsCount) {
+      await generateNominators(
+        specPath,
+        networkSpec.relaychain.randomNominatorsCount,
+        networkSpec.relaychain.maxNominations,
+        validatorKeys,
+      );
+    }
+
+    if (networkSpec.hrmp_channels) {
+      await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
+    }
+
+    // modify the plain chain spec with any custom commands
+    for (const cmd of networkSpec.relaychain.chainSpecModifierCommands) {
+      await runCommandWithChainSpec(specPath, cmd, networkSpec.configBasePath);
+    }
+  } catch (err) {
+    console.log(
+      `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
     );
-  }
-
-  if (networkSpec.relaychain.genesis) {
-    await changeGenesisConfig(specPath, networkSpec.relaychain.genesis);
-  }
-
-  if (networkSpec.hrmp_channels) {
-    await addHrmpChannelsToGenesis(specPath, networkSpec.hrmp_channels);
-  }
-
-  // modify the plain chain spec with any custom commands
-  for (const cmd of networkSpec.relaychain.chainSpecModifierCommands) {
-    await runCommandWithChainSpec(specPath, cmd, networkSpec.configBasePath);
   }
 }
 export default {

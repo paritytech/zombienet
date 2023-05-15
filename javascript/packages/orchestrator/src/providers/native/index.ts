@@ -5,6 +5,7 @@ import {
   replaceNetworkRef,
 } from "./dynResourceDefinition";
 import { NativeClient, initClient } from "./nativeClient";
+import { getCliArgsVersion } from "./substrateCliArgsHelper";
 
 export const provider = {
   NativeClient,
@@ -14,4 +15,5 @@ export const provider = {
   setupChainSpec,
   getChainSpecRaw,
   replaceNetworkRef,
+  getCliArgsVersion,
 };

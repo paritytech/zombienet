@@ -22,14 +22,13 @@ export class BootNodeResource extends NodeResource {
           "app.kubernetes.io/instance": "bootnode",
           "zombie-role": ZombieRole.BootNode,
           app: "zombienet",
-          "zombie-ns": this.namespace,
         },
       },
       spec: {
         hostname: "bootnode",
         containers,
         initContainers,
-        restartPolicy: "Never",
+        restartPolicy: "Always",
         volumes,
         securityContext: {
           fsGroup: 1000,

@@ -44,6 +44,8 @@ export interface RelayChainConfig {
   default_image?: string;
   default_resources?: Resources;
   default_db_snapshot?: string;
+  default_prometheus_prefix?: string;
+  default_substrate_cli_args_version?: SubstrateCliArgsVersion;
   chain: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -75,9 +77,11 @@ export interface NodeConfig {
   ws_port?: number;
   rpc_port?: number;
   prometheus_port?: number;
+  prometheus_prefix?: string;
   p2p_port?: number;
   db_snapshot?: string;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface NodeGroupConfig {
@@ -90,6 +94,8 @@ export interface NodeGroupConfig {
   count: string | number;
   resources?: Resources;
   db_snapshot?: string;
+  prometheus_prefix?: string;
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface ParachainConfig {
@@ -106,6 +112,7 @@ export interface ParachainConfig {
   chain_spec_path?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
+  prometheus_prefix?: string;
   chain_spec_modifier_commands?: Command[];
   // backward compatibility
   collator?: NodeConfig;
@@ -129,6 +136,7 @@ export interface ComputedNetwork {
     defaultCommand: string;
     defaultArgs: string[];
     defaultDbSnapshot?: string;
+    defaultPrometheusPrefix: string;
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
@@ -169,6 +177,7 @@ export interface Node {
   telemetry?: boolean;
   telemetryUrl: string;
   prometheus?: boolean;
+  prometheusPrefix?: string;
   overrides: Override[];
   addToBootnodes?: boolean;
   resources?: Resources;
@@ -187,6 +196,7 @@ export interface Node {
     prometheusPort: number;
     p2pPort: number;
   };
+  substrateCliArgsVersion?: SubstrateCliArgsVersion;
 }
 
 export interface Collator {
@@ -326,6 +336,7 @@ export interface FnArgs {
   file_or_uri?: string;
   after?: number;
   seconds?: number;
+  is_ts?: boolean;
 }
 
 export interface RegisterParachainOptions {
@@ -347,3 +358,8 @@ export enum ZombieRole {
 }
 
 export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";
+
+export enum SubstrateCliArgsVersion {
+  V0 = 0,
+  V1 = 1,
+}

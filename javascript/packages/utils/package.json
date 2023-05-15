@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/utils",
-  "version": "0.0.18",
+  "version": "0.0.20",
   "description": "Useful utilities for ZombieNet Framework",
   "main": "dist/index.js",
   "author": "Parity Technologies <admin@parity.io>",
@@ -28,22 +28,22 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "cli-table3": "^0.6.2",
-    "debug": "^4.3.2",
+    "debug": "^4.3.4",
     "mocha": "^10.2.0",
     "nunjucks": "^3.2.4",
     "toml": "^3.0.0",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.4",
+    "@types/chai": "^4.3.5",
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/mocha": "^10.0.1",
     "@types/nunjucks": "^3.2.2",
     "@types/sinon": "^10.0.14",
     "chai": "^4.3.7",
     "deep-equal-in-any-order": "^2.0.6",
-    "sinon": "^15.0.3",
-    "yaml": "^2.2.1"
+    "sinon": "^15.0.4",
+    "yaml": "^2.2.2"
   },
   "publishConfig": {
     "access": "public",
