@@ -1,7 +1,6 @@
 { self, ... }: {
   perSystem = { config, self', inputs', pkgs, system, ... }:
     let
-      # reuse existing ignores to clone source
       version = (builtins.fromJSON (builtins.readFile ./javascript/packages/cli/package.json)).version;
       name = "zombienet";
       releases = "https://github.com/paritytech/${name}/releases/download";
@@ -17,7 +16,6 @@
             url = "${releases}/v${version}/${name}-linux-x64";
             sha256 = "sha256-uf4eykvGEvqtCBfX4eCQe4f4SpagV4VBYVA4hgBzg1w=";
           };
-
     in
     {
       packages = rec {
