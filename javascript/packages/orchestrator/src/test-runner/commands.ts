@@ -1,14 +1,13 @@
 const chai = require("chai");
 
 import { sleep } from "@zombienet/utils";
-import { BackchannelMap } from ".";
 import { Network } from "../network";
 import { FnArgs } from "../types";
 
 const { expect } = chai;
 
 const Pause = ({ node_name }: FnArgs) => {
-  return async (network: Network, backchannelMap: BackchannelMap) => {
+  return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(nodes.map((node: any) => node.pause()));
 
@@ -19,7 +18,7 @@ const Pause = ({ node_name }: FnArgs) => {
 };
 
 const Resume = ({ node_name }: FnArgs) => {
-  return async (network: Network, backchannelMap: BackchannelMap) => {
+  return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(nodes.map((node: any) => node.resume()));
 
@@ -30,7 +29,7 @@ const Resume = ({ node_name }: FnArgs) => {
 };
 const Restart = ({ node_name, after }: FnArgs) => {
   after = after || 5; // at least 1 seconds
-  return async (network: Network, backchannelMap: BackchannelMap) => {
+  return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
       nodes.map((node: any) => node.restart(after)),

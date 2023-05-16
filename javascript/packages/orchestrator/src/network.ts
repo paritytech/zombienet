@@ -1,11 +1,15 @@
-import { CreateLogTable, decorators } from "@zombienet/utils";
-import axios from "axios";
+import {
+  CreateLogTable,
+  TimeoutAbortController,
+  decorators,
+} from "@zombienet/utils";
 import fs from "fs";
 import {
   BAKCCHANNEL_POD_NAME,
   BAKCCHANNEL_PORT,
   BAKCCHANNEL_URI_PATTERN,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  TOKEN_PLACEHOLDER,
 } from "./constants";
 import { Metrics } from "./metrics";
 import { NetworkNode } from "./networkNode";
@@ -91,20 +95,25 @@ export class Network {
   nodesByName: NodeMapping = {};
   namespace: string;
   client: Client;
-  launched: boolean;
-  wasRunning: boolean;
+  launched = false;
+  wasRunning = false;
   tmpDir: string;
-  backchannelUri: string = "";
+  backchannelUri = "";
+  chainId?: string;
   chainSpecFullPath?: string;
   tracing_collator_url?: string;
   networkStartTime?: number;
 
-  constructor(client: Client, namespace: string, tmpDir: string) {
+  constructor(
+    client: Client,
+    namespace: string,
+    tmpDir: string,
+    startTime: number = new Date().getTime(),
+  ) {
     this.client = client;
     this.namespace = namespace;
-    this.launched = false;
-    this.wasRunning = false;
     this.tmpDir = tmpDir;
+    this.networkStartTime = startTime;
   }
 
   addPara(
@@ -150,10 +159,10 @@ export class Network {
     await this.client.destroyNamespace();
   }
 
-  async dumpLogs(showLogPath: boolean = true): Promise<string> {
+  async dumpLogs(showLogPath = true): Promise<string> {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
-    fs.mkdirSync(logsPath);
+    if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
     const paraNodes: NetworkNode[] = Object.values(this.paras).reduce(
       (memo: NetworkNode[], value) => memo.concat(value.nodes),
       [],
@@ -204,13 +213,19 @@ export class Network {
       debug(`backchannel uri ${this.backchannelUri}`);
       while (!done) {
         if (expired) throw new Error(`Timeout(${timeout}s)`);
-        const response = await axios.get(`${this.backchannelUri}/${key}`, {
-          timeout: 2000,
-          validateStatus: function (status) {
-            debug(`status: ${status}`);
-            return status === 404 || (status >= 200 && status < 300); // allow 404 as valid
-          },
+
+        const fetchResult = await fetch(`${this.backchannelUri}/${key}`, {
+          signal: TimeoutAbortController(2).signal,
         });
+        const response = await fetchResult.json();
+        const { status } = response;
+
+        debug(`status: ${status}`);
+
+        if (status === 404 || (status >= 200 && status < 300)) {
+          return status === 404 || (status >= 200 && status < 300);
+        }
+
         if (response.status === 200) {
           done = true;
           value = response.data;
@@ -255,15 +270,8 @@ export class Network {
   }
 
   // Testing abstraction
-  async nodeIsUp(
-    nodeName: string,
-    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  ): Promise<boolean> {
+  async nodeIsUp(nodeName: string): Promise<boolean> {
     try {
-      const limitTimeout = setTimeout(() => {
-        throw new Error(`Timeout(${timeout}s)`);
-      }, timeout * 1000);
-
       const node = this.getNodeByName(nodeName);
       await node.apiInstance?.rpc.system.name();
       return true;
@@ -285,7 +293,7 @@ export class Network {
           content: decorators.green("Network launched 🚀🚀"),
         },
       ],
-      colWidths: [30, 170],
+      colWidths: [30, 100],
       wordWrap: true,
     });
     logTable.pushTo([
@@ -330,11 +338,11 @@ export class Network {
     // Support native VSCode remote extension automatic port forwarding.
     // VSCode doesn't parse the encoded URI and we have no reason to encode
     // `localhost:port`.
-    let wsUri = ["native", "podman"].includes(provider)
+    const wsUri = ["native", "podman"].includes(provider)
       ? node.wsUri
       : encodeURIComponent(node.wsUri);
 
-    let logCommand: string = "";
+    let logCommand = "";
 
     switch (this.client.providerName) {
       case "podman":
@@ -362,7 +370,7 @@ export class Network {
 
   replaceWithNetworInfo(placeholder: string): string {
     return placeholder.replace(
-      /{{ZOMBIE:(.*?):(.*?)}}/gi,
+      TOKEN_PLACEHOLDER,
       (_substring, nodeName, key: keyof NetworkNode) => {
         const node = this.getNodeByName(nodeName);
         return node[key];

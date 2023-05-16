@@ -1,8 +1,10 @@
-import axios from "axios";
 import dns from "dns";
 import fs from "fs";
 import { AddressInfo, createServer } from "net";
 import os from "os";
+import { Readable } from "stream";
+import { finished } from "stream/promises";
+import { ReadableStream } from "stream/web";
 import { decorators } from "./colors";
 
 export async function getRandomPort(): Promise<number> {
@@ -26,8 +28,8 @@ export async function getRandomPort(): Promise<number> {
 }
 
 export async function getHostIp(): Promise<string> {
-  return await new Promise((resolve, reject) => {
-    dns.lookup(os.hostname(), (err: any, addr: any) => {
+  return await new Promise((resolve) => {
+    dns.lookup(os.hostname(), (_err: unknown, addr: string) => {
       resolve(addr);
     });
   });
@@ -35,19 +37,10 @@ export async function getHostIp(): Promise<string> {
 
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
-    await new Promise<void>(async (resolve) => {
-      const { data } = await axios({
-        url,
-        method: "GET",
-        responseType: "stream",
-      });
-
-      const writer = fs.createWriteStream(dest);
-      data.pipe(writer);
-      data.on("end", () => {
-        resolve();
-      });
-    });
+    const { body } = await fetch(url);
+    const writable = fs.createWriteStream(dest);
+    const readable = Readable.fromWeb(body as ReadableStream);
+    await finished(readable.pipe(writable));
   } catch (err) {
     console.log(
       `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(

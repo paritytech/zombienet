@@ -6,7 +6,25 @@ export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function generateNamespace(n: number = 16): string {
+export async function retry(
+  delayMs: number,
+  timeoutMs: number,
+  fn: () => Promise<boolean | undefined>,
+  errMsg: string,
+) {
+  do {
+    if (await fn()) {
+      return;
+    }
+
+    await sleep(delayMs);
+    timeoutMs -= delayMs;
+  } while (timeoutMs > 0);
+
+  throw new Error(`Timeout(${timeoutMs}) for: ${errMsg}`);
+}
+
+export function generateNamespace(n = 16): string {
   const buf = randomBytes(n);
   return buf.toString("hex");
 }
@@ -18,7 +36,7 @@ export function getSha256(input: string): string {
 export function addMinutes(howMany: number, baseDate?: Date): [number, number] {
   const baseTs = baseDate ? baseDate.getTime() : new Date().getTime();
 
-  let targetTs = baseTs + howMany * 60 * 1000;
+  const targetTs = baseTs + howMany * 60 * 1000;
   const targetDate = new Date(targetTs);
   return [targetDate.getUTCHours(), targetDate.getUTCMinutes()];
 }
@@ -48,7 +66,9 @@ export function filterConsole(excludePatterns: string[], options?: any) {
   };
 
   const { console: consoleObject, methods } = options;
-  const originalMethods = methods.map((method: any) => consoleObject[method]);
+  const originalMethods = methods.map(
+    (method: string) => consoleObject[method],
+  );
 
   const check = (output: string) => {
     for (const pattern of excludePatterns) {
@@ -100,12 +120,18 @@ export function getLokiUrl(
   return loki_url;
 }
 
+export const TimeoutAbortController = (time: number) => {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), time * 1000);
+  return controller;
+};
+
 export function getRandom(arr: string[], n: number) {
-  let result = new Array(n),
-    len = arr.length,
+  let len = arr.length;
+  const result = new Array(n),
     taken = new Array(len);
   while (n--) {
-    let x = Math.floor(Math.random() * len);
+    const x = Math.floor(Math.random() * len);
     result[n] = arr[x in taken ? taken[x] : x];
     taken[x] = --len in taken ? taken[len] : len;
   }

@@ -18,6 +18,13 @@ const DEFAULT_PORTS = {
   prometheusPort: PROMETHEUS_PORT,
 };
 
+// Jaeger agent container exposed port from:
+// https://www.jaegertracing.io/docs/1.6/getting-started/#all-in-one-docker-image
+const JAEGER_AGENT_ZIPKIN_COMPACT_PORT = 5775;
+const JAEGER_AGENT_SERVE_CONFIGS_PORT = 5778;
+const JAEGER_AGENT_THRIFT_COMPACT_PORT = 6831;
+const JAEGER_AGENT_THRIFT_BINARY_PORT = 6832;
+
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 const DEFAULT_COMMAND = "polkadot";
@@ -38,15 +45,18 @@ const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
 const DEFAULT_ADDER_COLLATOR_BIN = "adder-collator";
 const UNDYING_COLLATOR_BIN = "undying-collator";
 const DEFAULT_CUMULUS_COLLATOR_BIN = "polkadot-parachain";
-const DEFAULT_COLLATOR_IMAGE = " parity/polkadot-parachain:latest";
+const DEFAULT_COLLATOR_IMAGE = "parity/polkadot-parachain:latest";
 const DEFAULT_MAX_NOMINATIONS = 24; // kusama value is 24
+const DEFAULT_PROMETHEUS_PREFIX = "substrate";
 const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 const GENESIS_STATE_FILENAME = "genesis-state";
 const GENESIS_WASM_FILENAME = "genesis-wasm";
 
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
-const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo waiting for copy files to finish; sleep 1; done; echo copy files has finished`;
-const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "waiting for copy files to finish"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
+const TRANSFER_CONTAINER_WAIT_LOG = "waiting for tar to finish";
+const NODE_CONTAINER_WAIT_LOG = "waiting for copy files to finish";
+const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo ${NODE_CONTAINER_WAIT_LOG}; sleep 1; done; echo copy files has finished`;
+const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "${NODE_CONTAINER_WAIT_LOG}"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
 const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 const ZOMBIE_BUCKET = "zombienet-logs";
 const WS_URI_PATTERN = "ws://{{IP}}:{{PORT}}";
@@ -101,12 +111,18 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
   "base-path": 2,
 };
 
+const TOKEN_PLACEHOLDER = /{{ZOMBIE:(.*?):(.*?)}}/gi;
+
 export {
   REGULAR_BIN_PATH,
   PROMETHEUS_PORT,
   RPC_WS_PORT,
   RPC_HTTP_PORT,
   P2P_PORT,
+  JAEGER_AGENT_ZIPKIN_COMPACT_PORT,
+  JAEGER_AGENT_SERVE_CONFIGS_PORT,
+  JAEGER_AGENT_THRIFT_COMPACT_PORT,
+  JAEGER_AGENT_THRIFT_BINARY_PORT,
   DEFAULT_PORTS,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -131,6 +147,8 @@ export {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   TMP_DONE,
+  TRANSFER_CONTAINER_WAIT_LOG,
+  NODE_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
   TRANSFER_CONTAINER_NAME,
   ZOMBIE_BUCKET,
@@ -154,4 +172,6 @@ export {
   ARGS_TO_REMOVE,
   UNDYING_COLLATOR_BIN,
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
+  TOKEN_PLACEHOLDER,
+  DEFAULT_PROMETHEUS_PREFIX,
 };

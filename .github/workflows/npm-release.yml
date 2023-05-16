@@ -7,12 +7,12 @@ jobs:
     name: Build & Publish to NPM
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3.5.2
       - run: npm install
         working-directory: "./javascript"
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "18.x"
       - name: Build NPM Package
         run: npm run build
         working-directory: "./javascript"

@@ -1,8 +1,8 @@
-const chai = require("chai");
 import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
+  setSilent,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -31,20 +31,24 @@ export async function run(
   testName: string,
   testDef: TestDefinition,
   provider: string,
-  inCI: boolean = false,
-  concurrency: number = 1,
+  inCI = false,
+  concurrency = 1,
+  silent = false,
   runningNetworkSpecPath: string | undefined,
+  dir: string | undefined,
 ) {
+  setSilent(silent);
   let network: Network;
-  let backchannelMap: BackchannelMap = {};
+  const backchannelMap: BackchannelMap = {};
 
   let suiteName: string = testName;
   if (testDef.description) suiteName += `( ${testDef.description} )`;
 
   // read network file
-  let networkConfigFilePath = fs.existsSync(testDef.network)
+  const networkConfigFilePath = fs.existsSync(testDef.network)
     ? testDef.network
     : path.resolve(configBasePath, testDef.network);
+
   const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
 
   // set the provider
@@ -53,7 +57,7 @@ export async function run(
   else config.settings.provider = provider;
 
   // find creds file
-  let credsFile = inCI ? "config" : testDef.creds;
+  const credsFile = inCI ? "config" : testDef.creds;
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {
@@ -63,7 +67,7 @@ export async function run(
       `${process.env.HOME}/.kube`,
       "/etc/zombie-net",
     ];
-    let credsFileExistInPath: string | undefined = possiblePaths.find(
+    const credsFileExistInPath: string | undefined = possiblePaths.find(
       (path) => {
         const t = `${path}/${credsFile}`;
         return fs.existsSync(t);
@@ -82,13 +86,13 @@ export async function run(
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {
-      if (runningNetworkSpecPath)
-        console.log("runningNetworkSpecPath", runningNetworkSpecPath);
       if (!runningNetworkSpecPath) {
         console.log(`\t Launching network... this can take a while.`);
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
+          silent,
+          dir,
         });
       } else {
         const runningNetworkSpec: any = require(runningNetworkSpecPath);
@@ -134,33 +138,11 @@ export async function run(
           console.log(
             `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
           );
-
-          switch (network.client.providerName) {
-            case "podman":
-            case "native":
-              console.log(`\n\t ${decorators.green("Deleting network")}`);
-              await network.stop();
-              break;
-            case "kubernetes":
-              if (inCI) {
-                // keep pods running for 30 mins.
-                console.log(
-                  `\n\t${decorators.red(
-                    "One or more test failed, we will keep the namespace up for 30 more minutes",
-                  )}`,
-                );
-                await network.upsertCronJob(30);
-              } else {
-                console.log(`\n\t ${decorators.green("Deleting network")}`);
-                await network.stop();
-              }
-              break;
-          }
-        } else {
-          // All test passed, just remove the network
-          console.log(`\n\t ${decorators.green("Deleting network")}`);
-          await network.stop();
         }
+
+        // All test passed, just remove the network
+        console.log(`\n\t ${decorators.green("Deleting network")}`);
+        await network.stop();
 
         // show logs
         console.log(
@@ -193,7 +175,7 @@ export async function run(
 
               for (const [paraId, parachain] of Object.entries(network.paras)) {
                 console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                for (const node of parachain?.nodes) {
+                for (const node of parachain.nodes) {
                   const loki_url = getLokiUrl(
                     network.namespace,
                     node.name,
@@ -225,7 +207,7 @@ export async function run(
   });
 
   for (const assertion of testDef.assertions) {
-    let generator = fns[assertion.parsed.fn as keyof Fns];
+    const generator = fns[assertion.parsed.fn as keyof Fns];
     debug(generator);
 
     if (!generator) {
@@ -237,7 +219,7 @@ export async function run(
       process.exit(1);
     }
 
-    let testFn = generator(assertion.parsed.args);
+    const testFn = generator(assertion.parsed.args);
     const test = new Test(
       assertion.original_line,
       async () => await testFn(network, backchannelMap, configBasePath),
