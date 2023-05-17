@@ -61,6 +61,21 @@ fn parse_taget_value(pair: Pair<Rule>) -> Result<u64, ParserError> {
         .map_err(|_| ParserError::ParseError(format!("Can't parse {target_str} as u64")))
 }
 
+fn parse_math_ops(pair: Pair<Rule>) -> Result<ast::MathOps, ParserError> {
+    println!("!!---------------->  {:?}", pair);
+    let mut pairs = pair.into_inner();
+
+    let math_ops = get_pair(&mut pairs, "math_ops")?;
+
+    let sign = match math_ops.as_rule() {
+        Rule::plus => ast::MathOps::Plus,
+        Rule::minus => ast::MathOps::Minus,
+        _ => return Err(ParserError::UnreachableRule(format!("{math_ops:?}"))),
+    };
+
+    Ok(sign)
+}
+
 fn parse_comparison(pair: Pair<Rule>) -> Result<ast::Comparison, ParserError> {
     let mut inner_pairs = pair.into_inner();
     let op_rule = get_pair(&mut inner_pairs, "op_rule")?;
@@ -324,6 +339,36 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                     parsed: AssertionKind::ParaBlockHeight {
                         node_name: name,
                         para_id,
+                        op: comparison.op,
+                        target_value: comparison.target_value,
+                        timeout,
+                    },
+                    original_line,
+                };
+
+                assertions.push(assertion);
+            }
+            Rule::calc_metrics => {
+                // Pairs should be in order:
+                // name, para_id, block_height, minus, finalized_height, [timeout]
+                let mut pairs = record.into_inner();
+                let name = parse_name(get_pair(&mut pairs, "name")?)?;
+                let metric_name = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
+                let math_ops = parse_math_ops(get_pair(&mut pairs, "math_ops")?)?;
+                let metric_name_calc = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
+                let comparison = parse_comparison(get_pair(&mut pairs, "comparison")?)?;
+                let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
+                    Some(parse_within(within_rule)?)
+                } else {
+                    None
+                };
+
+                let assertion = Assertion {
+                    parsed: AssertionKind::CalcMetrics {
+                        node_name: name.to_owned(),
+                        metric_name,
+                        math_ops: math_ops,
+                        metric_name_calc,
                         op: comparison.op,
                         target_value: comparison.target_value,
                         timeout,
@@ -655,7 +700,7 @@ fn get_pair<'a>(
     match pairs.next() {
         Some(p) => Ok(p),
         None => Err(ParserError::Unexpected(format!(
-            "Pair {rule_name} should exists"
+            "Pair {rule_name} should exist"
         ))),
     }
 }

@@ -12,6 +12,12 @@ pub enum Operator {
     IsAtMost,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Copy, Clone)]
+pub enum MathOps {
+    Minus,
+    Plus,
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Comparison {
     pub op: Operator,
@@ -38,6 +44,16 @@ pub enum AssertionKind {
     ParaBlockHeight {
         node_name: NodeName,
         para_id: ParaId,
+        op: Operator,
+        target_value: u64,
+        #[serde(with = "optional_timeout")]
+        timeout: Option<Duration>,
+    },
+    CalcMetrics {
+        node_name: NodeName,
+        metric_name: String,
+        math_ops: MathOps,
+        metric_name_calc: String,
         op: Operator,
         target_value: u64,
         #[serde(with = "optional_timeout")]
