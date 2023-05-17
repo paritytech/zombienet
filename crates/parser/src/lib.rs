@@ -62,11 +62,8 @@ fn parse_taget_value(pair: Pair<Rule>) -> Result<u64, ParserError> {
 }
 
 fn parse_math_ops(pair: Pair<Rule>) -> Result<ast::MathOps, ParserError> {
-    println!("!!---------------->  {:?}", pair);
     let mut pairs = pair.into_inner();
-
     let math_ops = get_pair(&mut pairs, "math_ops")?;
-
     let sign = match math_ops.as_rule() {
         Rule::plus => ast::MathOps::Plus,
         Rule::minus => ast::MathOps::Minus,
