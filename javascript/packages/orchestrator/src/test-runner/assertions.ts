@@ -90,13 +90,9 @@ const CalcMetrics = ({
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
   const mathFn =
-    math_ops === "Minus"
-      ? (a: number, b: number): number => {
-          return a - b;
+        (a: number, b: number): number => {
+          return math_ops === "Minus ? a - b : a + b;
         }
-      : (a: number, b: number): number => {
-          return a + b;
-        };
 
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
