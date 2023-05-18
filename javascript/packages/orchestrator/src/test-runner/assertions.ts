@@ -89,6 +89,15 @@ const CalcMetrics = ({
   timeout,
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
+  const mathFn =
+    math_ops === "Minus"
+      ? (a: number, b: number): number => {
+          return a - b;
+        }
+      : (a: number, b: number): number => {
+          return a + b;
+        };
+
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const promise_a = nodes.map((node: any) =>
@@ -110,16 +119,11 @@ const CalcMetrics = ({
     );
 
     const values = await Promise.all([...promise_a, ...promise_b]);
-    let value = 0;
-    switch (math_ops) {
-      case "Minus":
-        value = values[0] - values[1];
-        break;
-      case "Plus":
-        value = values[0] + values[1];
-        break;
+
+    for (let i = 0; i++; i < nodes.length) {
+      const value = mathFn(values[i], values[i + nodes.length]);
+      comparatorFn(value as number, target_value as number);
     }
-    comparatorFn(value as number, target_value as number);
   };
 };
 
