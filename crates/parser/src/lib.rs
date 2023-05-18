@@ -350,9 +350,9 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 // name, para_id, block_height, minus, finalized_height, [timeout]
                 let mut pairs = record.into_inner();
                 let name = parse_name(get_pair(&mut pairs, "name")?)?;
-                let metric_name = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
+                let metric_name_a = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
                 let math_ops = parse_math_ops(get_pair(&mut pairs, "math_ops")?)?;
-                let metric_name_calc = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
+                let metric_name_b = get_pair(&mut pairs, "metric_name")?.as_str().to_string();
                 let comparison = parse_comparison(get_pair(&mut pairs, "comparison")?)?;
                 let timeout: Option<Duration> = if let Some(within_rule) = pairs.next() {
                     Some(parse_within(within_rule)?)
@@ -363,9 +363,9 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 let assertion = Assertion {
                     parsed: AssertionKind::CalcMetrics {
                         node_name: name.to_owned(),
-                        metric_name,
+                        metric_name_a,
                         math_ops: math_ops,
-                        metric_name_calc,
+                        metric_name_b,
                         op: comparison.op,
                         target_value: comparison.target_value,
                         timeout,

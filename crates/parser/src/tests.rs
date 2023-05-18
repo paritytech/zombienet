@@ -182,9 +182,9 @@ fn report_parse_calc_ok() {
             "fn": "CalcMetrics",
             "args": {
               "node_name": "alice",
-              "metric_name": "block height",
+              "metric_name_a": "block height",
               "math_ops":  "Minus",
-              "metric_name_calc": "finalised block",
+              "metric_name_b": "finalised block",
               "op": "IsAtLeast",
               "target_value": 10,
               "timeout": 200

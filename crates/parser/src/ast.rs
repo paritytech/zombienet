@@ -51,9 +51,9 @@ pub enum AssertionKind {
     },
     CalcMetrics {
         node_name: NodeName,
-        metric_name: String,
+        metric_name_a: String,
         math_ops: MathOps,
-        metric_name_calc: String,
+        metric_name_b: String,
         op: Operator,
         target_value: u64,
         #[serde(with = "optional_timeout")]

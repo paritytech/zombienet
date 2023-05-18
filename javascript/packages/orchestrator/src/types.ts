@@ -318,7 +318,8 @@ export interface FnArgs {
   timeout?: number;
   target_value?: number;
   metric_name?: string;
-  metric_name_calc?: string;
+  metric_name_a?: string;
+  metric_name_b?: string;
   math_ops?: string;
   buckets?: string[];
   span_id?: string;

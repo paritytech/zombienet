@@ -81,9 +81,9 @@ const Report = ({
 
 const CalcMetrics = ({
   node_name,
-  metric_name,
+  metric_name_a,
   math_ops,
-  metric_name_calc,
+  metric_name_b,
   target_value,
   op,
   timeout,
@@ -91,25 +91,25 @@ const CalcMetrics = ({
   const comparatorFn = comparators[op!];
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
-    const promise1 = nodes.map((node: any) =>
+    const promise_a = nodes.map((node: any) =>
       node.getMetric(
-        metric_name!,
+        metric_name_a!,
         toChaiComparator(op!),
         target_value!,
         timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
       ),
     );
 
-    const promise2 = nodes.map((node: any) =>
+    const promise_b = nodes.map((node: any) =>
       node.getMetric(
-        metric_name_calc!,
+        metric_name_b!,
         toChaiComparator(op!),
         target_value!,
         timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
       ),
     );
 
-    const values = await Promise.all([...promise1, ...promise2]);
+    const values = await Promise.all([...promise_a, ...promise_b]);
     let value = 0;
     switch (math_ops) {
       case "Minus":
