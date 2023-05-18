@@ -514,6 +514,8 @@ export async function start(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );
 
+    // clean cache before dump the info.
+    network.cleanMetricsCache();
     await fs.promises.writeFile(
       `${tmpDir.path}/zombie.json`,
       JSON.stringify(network),
