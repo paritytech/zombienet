@@ -89,10 +89,9 @@ const CalcMetrics = ({
   timeout,
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
-  const mathFn =
-        (a: number, b: number): number => {
-          return math_ops === "Minus ? a - b : a + b;
-        }
+  const mathFn = (a: number, b: number): number => {
+    return math_ops === "Minus" ? a - b : a + b;
+  };
 
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
