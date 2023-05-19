@@ -69,6 +69,7 @@ export interface OrcOptionsInterface {
   dir?: string;
   force?: boolean;
   silent?: boolean; // Mute logging output
+  setGlobalNetwork?: (network: Network) => void;
 }
 
 export async function start(
@@ -161,6 +162,9 @@ export async function start(
     if (networkSpec.settings.node_spawn_timeout)
       client.timeout = networkSpec.settings.node_spawn_timeout;
     network = new Network(client, namespace, tmpDir.path);
+    if (options?.setGlobalNetwork) {
+      options.setGlobalNetwork(network);
+    }
 
     const zombieTable = new CreateLogTable({
       head: [
@@ -510,6 +514,8 @@ export async function start(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );
 
+    // clean cache before dump the info.
+    network.cleanMetricsCache();
     await fs.promises.writeFile(
       `${tmpDir.path}/zombie.json`,
       JSON.stringify(network),

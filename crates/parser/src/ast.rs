@@ -111,6 +111,7 @@ pub enum AssertionKind {
         cmp: Option<Comparison>,
         #[serde(with = "optional_timeout")]
         timeout: Option<Duration>,
+        is_ts: bool,
     },
     CustomSh {
         node_name: NodeName,

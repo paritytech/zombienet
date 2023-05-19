@@ -16,6 +16,12 @@ use ast::{Assertion, AssertionKind, Comparison, NodeName, ParaId, TestDefinition
 #[cfg(test)]
 mod tests;
 
+enum ScriptType {
+    Javascript,
+    Typescript,
+    Shellscript,
+}
+
 // This include forces recompiling this source file if the grammar file changes.
 // Uncomment it when doing changes to the .pest file
 const _GRAMMAR: &str = include_str!("zombienet.pest");
@@ -155,7 +161,10 @@ fn parse_lines_count_match_pattern_rule(
     Ok((name, match_type, pattern, comparison, timeout))
 }
 
-fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<AssertionKind, ParserError> {
+fn parse_custom_script_rule(
+    record: Pair<Rule>,
+    script_type: ScriptType,
+) -> Result<AssertionKind, ParserError> {
     let mut pairs = record.into_inner();
     let node_name = parse_name(get_pair(&mut pairs, "name")?)?;
     let file_path_str = get_pair(&mut pairs, "file_path")?.as_str();
@@ -186,22 +195,30 @@ fn parse_custom_script_rule(record: Pair<Rule>, is_js: bool) -> Result<Assertion
         }
     }
 
-    if is_js {
-        Ok(AssertionKind::CustomJs {
+    match script_type {
+        ScriptType::Javascript => Ok(AssertionKind::CustomJs {
             node_name,
             file_path,
             custom_args: args,
             cmp,
             timeout,
-        })
-    } else {
-        Ok(AssertionKind::CustomSh {
+            is_ts: false,
+        }),
+        ScriptType::Typescript => Ok(AssertionKind::CustomJs {
             node_name,
             file_path,
             custom_args: args,
             cmp,
             timeout,
-        })
+            is_ts: true,
+        }),
+        ScriptType::Shellscript => Ok(AssertionKind::CustomSh {
+            node_name,
+            file_path,
+            custom_args: args,
+            cmp,
+            timeout,
+        }),
     }
 }
 
@@ -510,7 +527,16 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::custom_js => {
-                let parsed = parse_custom_script_rule(record, true)?;
+                let parsed = parse_custom_script_rule(record, ScriptType::Javascript)?;
+                let assertion = Assertion {
+                    parsed,
+                    original_line,
+                };
+
+                assertions.push(assertion);
+            }
+            Rule::custom_ts => {
+                let parsed = parse_custom_script_rule(record, ScriptType::Typescript)?;
                 let assertion = Assertion {
                     parsed,
                     original_line,
@@ -519,7 +545,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::custom_sh => {
-                let parsed = parse_custom_script_rule(record, false)?;
+                let parsed = parse_custom_script_rule(record, ScriptType::Shellscript)?;
                 let assertion = Assertion {
                     parsed,
                     original_line,

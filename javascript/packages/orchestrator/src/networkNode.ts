@@ -542,6 +542,10 @@ export class NetworkNode implements NetworkNodeInterface {
     return spanNames;
   }
 
+  cleanMetricsCache() {
+    this.cachedMetrics = undefined;
+  }
+
   // prevent to search in the same log line twice.
   _dedupLogs(
     logs: string[],

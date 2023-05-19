@@ -2,5 +2,8 @@ Description: Db Snapshot test
 Network: ./0013-db-snapshot.toml
 Creds: config
 
-# check balance
+# check balance with js script
 alice: js-script ./check-balance.js with "alice" return is 900000999940423862 within 200 seconds
+
+# check balance with ts script
+alice: ts-script ./check-balance-ts.ts with "alice" return is 900000999940423862 within 200 seconds
