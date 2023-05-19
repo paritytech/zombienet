@@ -41,7 +41,12 @@ op_lt        = { "<" | "is lower than" }
 op_gt        = { ">" | "is greater than" | "greater than" }
 op_eq        = { "==" | "=" | "equals" | "is equal to" | "is" }
 op_ineq      = { "!=" }
-comparison = { (op_lte | op_gte | op_gt | op_lt | op_eq | op_ineq) ~ int+ }
+comparison   = { (op_lte | op_gte | op_gt | op_lt | op_eq | op_ineq) ~ int+ }
+
+// Math ops
+minus       = { "-" | "minus" }
+plus        = { "+" | "plus" }
+math_ops    = { plus | minus }
 
 // commons
 node_name = { name ~ colon }
@@ -59,6 +64,7 @@ creds = { "Creds:" ~ ("config" | file_path) }
 is_up = { node_name ~ "is up" ~ within? }
 para_is_registered = { node_name ~ parachain ~ "is registered" ~ within? }
 para_block_height = { node_name ~ parachain ~ "block height" ~ comparison ~ within? }
+calc_metrics = { node_name ~ "reports" ~ metric_name ~ math_ops ~ metric_name ~ comparison ~ within? }
 para_runtime_upgrade = { node_name ~ parachain ~ "perform upgrade with" ~ ( uri | file_path ) ~ within? }
 para_runtime_dummy_upgrade = { node_name ~ parachain ~ "perform dummy upgrade" ~ within? }
 histogram = { node_name ~ "reports histogram" ~ metric_name ~ "has" ~ (comparison | int+) ~ "samples in buckets" ~ square_brackets_strings ~ within? }
@@ -90,6 +96,7 @@ file = { SOI ~ (
     is_up |
     para_is_registered |
     para_block_height |
+    calc_metrics |
     para_runtime_upgrade |
     para_runtime_dummy_upgrade |
     histogram |

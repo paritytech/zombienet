@@ -79,6 +79,49 @@ const Report = ({
   };
 };
 
+const CalcMetrics = ({
+  node_name,
+  metric_name_a,
+  math_ops,
+  metric_name_b,
+  target_value,
+  op,
+  timeout,
+}: FnArgs) => {
+  const comparatorFn = comparators[op!];
+  const mathFn = (a: number, b: number): number => {
+    return math_ops === "Minus" ? a - b : a + b;
+  };
+
+  return async (network: Network) => {
+    const nodes = network.getNodes(node_name!);
+    const promise_a = nodes.map((node: any) =>
+      node.getMetric(
+        metric_name_a!,
+        toChaiComparator(op!),
+        target_value!,
+        timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+      ),
+    );
+
+    const promise_b = nodes.map((node: any) =>
+      node.getMetric(
+        metric_name_b!,
+        toChaiComparator(op!),
+        target_value!,
+        timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+      ),
+    );
+
+    const values = await Promise.all([...promise_a, ...promise_b]);
+
+    for (let i = 0; i++; i < nodes.length) {
+      const value = mathFn(values[i], values[i + nodes.length]);
+      comparatorFn(value as number, target_value as number);
+    }
+  };
+};
+
 const Histogram = ({
   node_name,
   metric_name,
@@ -462,6 +505,7 @@ export default {
   SystemEvent,
   CustomJs,
   CustomSh,
+  CalcMetrics,
   ParaBlockHeight,
   ParaIsRegistered,
   ParaRuntimeUpgrade,
