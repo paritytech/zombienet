@@ -209,7 +209,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async getMetric(
     rawMetricName: string,
-    comparator: string,
+    comparator?: string,
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number | undefined> {
@@ -231,7 +231,7 @@ export class NetworkNode implements NetworkNodeInterface {
       if (value !== undefined) {
         if (
           desiredMetricValue === null ||
-          compare(comparator, value, desiredMetricValue)
+          compare(comparator!, value, desiredMetricValue)
         ) {
           debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
           return value;
@@ -251,7 +251,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (
             value !== undefined &&
             desiredMetricValue !== null &&
-            compare(comparator, value, desiredMetricValue)
+            compare(comparator!, value, desiredMetricValue)
           ) {
             done = true;
           } else {
@@ -291,6 +291,74 @@ export class NetworkNode implements NetworkNodeInterface {
       return value;
     }
   }
+
+
+async getCalMetric(
+    rawMetricName_a: string,
+    rawMetricName_b: string,
+    math_op: string,
+    comparator: string,
+    desiredMetricValue: number,
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  ): Promise<number | undefined> {
+    let value;
+    let timedout = false;
+    try {
+      const mathFn = (a: number, b: number): number => {
+        return math_op === "Minus" ? a - b : a + b;
+      };
+
+      const getValue = async () => {
+        let c = 0;
+        let done = false;
+        while (!done) {
+          c++;
+          let [value_a, value_b] = await Promise.all([this.getMetric(rawMetricName_a), this.getMetric(rawMetricName_b)]);
+          const value = mathFn(value_a as number, value_b as number);
+          if (
+            value !== undefined &&
+            compare(comparator, value, desiredMetricValue)
+          ) {
+            done = true;
+          } else {
+            debug(
+              `current values for: [${rawMetricName_a}, ${rawMetricName_b}] are [${value_a}, ${value_b}], keep trying...`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+      };
+
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) =>
+          setTimeout(() => {
+            timedout = true;
+            const err = new Error(
+              `Timeout(${timeout}), "getting desired calc metric value ${desiredMetricValue} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
+      ]);
+      if (resp instanceof Error) {
+        // use `undefined` metrics values in `equal` comparations as `0`
+        if (timedout && comparator === "equal" && desiredMetricValue === 0)
+          value = 0;
+        else throw resp;
+      }
+
+      return value || 0;
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
+          err?.message,
+        )}\n`,
+      );
+      return value;
+    }
+  }
+
 
   async getHistogramSamplesInBuckets(
     rawmetricName: string,
