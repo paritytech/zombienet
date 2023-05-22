@@ -115,7 +115,7 @@ const CalcMetrics = ({
 
     const values = await Promise.all([...promise_a, ...promise_b]);
 
-    for (let i = 0; i++; i < nodes.length) {
+    for (let i = 0; i < nodes.length; i++) {
       const value = mathFn(values[i], values[i + nodes.length]);
       comparatorFn(value as number, target_value as number);
     }
