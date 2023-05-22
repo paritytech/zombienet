@@ -90,8 +90,6 @@ const CalcMetrics = ({
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
 
-
-
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(

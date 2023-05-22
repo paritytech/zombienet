@@ -241,7 +241,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const getValue = async () => {
         let c = 0;
         let done = false;
-        while (!done) {
+        while (!done && !timedout) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
@@ -293,7 +293,7 @@ export class NetworkNode implements NetworkNodeInterface {
   }
 
 
-async getCalMetric(
+async getCalcMetric(
     rawMetricName_a: string,
     rawMetricName_b: string,
     math_op: string,
@@ -309,12 +309,10 @@ async getCalMetric(
       };
 
       const getValue = async () => {
-        let c = 0;
         let done = false;
-        while (!done) {
-          c++;
-          let [value_a, value_b] = await Promise.all([this.getMetric(rawMetricName_a), this.getMetric(rawMetricName_b)]);
-          const value = mathFn(value_a as number, value_b as number);
+        while (!done && !timedout) {
+          const [value_a, value_b] = await Promise.all([this.getMetric(rawMetricName_a), this.getMetric(rawMetricName_b)]);
+          value = mathFn(value_a as number, value_b as number);
           if (
             value !== undefined &&
             compare(comparator, value, desiredMetricValue)
@@ -348,7 +346,7 @@ async getCalMetric(
         else throw resp;
       }
 
-      return value || 0;
+      return value;
     } catch (err: any) {
       console.log(
         `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
