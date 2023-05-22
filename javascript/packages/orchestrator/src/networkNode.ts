@@ -292,8 +292,7 @@ export class NetworkNode implements NetworkNodeInterface {
     }
   }
 
-
-async getCalcMetric(
+  async getCalcMetric(
     rawMetricName_a: string,
     rawMetricName_b: string,
     math_op: string,
@@ -311,7 +310,10 @@ async getCalcMetric(
       const getValue = async () => {
         let done = false;
         while (!done && !timedout) {
-          const [value_a, value_b] = await Promise.all([this.getMetric(rawMetricName_a), this.getMetric(rawMetricName_b)]);
+          const [value_a, value_b] = await Promise.all([
+            this.getMetric(rawMetricName_a),
+            this.getMetric(rawMetricName_b),
+          ]);
           value = mathFn(value_a as number, value_b as number);
           if (
             value !== undefined &&
@@ -356,7 +358,6 @@ async getCalcMetric(
       return value;
     }
   }
-
 
   async getHistogramSamplesInBuckets(
     rawmetricName: string,

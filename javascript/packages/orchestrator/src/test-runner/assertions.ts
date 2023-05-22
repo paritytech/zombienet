@@ -104,26 +104,6 @@ const CalcMetrics = ({
         ),
       ),
     );
-    // const promise_a = nodes.map((node: any) =>
-    //   node.getMetric(
-    //     metric_name_a!,
-    //     toChaiComparator(op!),
-    //   ),
-    // );
-
-    // const promise_b = nodes.map((node: any) =>
-    //   node.getMetric(
-    //     metric_name_b!,
-    //     toChaiComparator(op!)
-    //   ),
-    // );
-
-    // const values = await Promise.all([...promise_a, ...promise_b]);
-
-    // for (let i = 0; i < nodes.length; i++) {
-    //   const value = mathFn(values[i], values[i + nodes.length]);
-    //   comparatorFn(value as number, target_value as number);
-    // }
     for (const value of results) {
       comparatorFn(value as number, target_value as number);
     }
