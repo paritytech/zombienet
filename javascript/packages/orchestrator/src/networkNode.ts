@@ -209,7 +209,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async getMetric(
     rawMetricName: string,
-    comparator: string,
+    comparator?: string,
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number | undefined> {
@@ -231,7 +231,7 @@ export class NetworkNode implements NetworkNodeInterface {
       if (value !== undefined) {
         if (
           desiredMetricValue === null ||
-          compare(comparator, value, desiredMetricValue)
+          compare(comparator!, value, desiredMetricValue)
         ) {
           debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
           return value;
@@ -241,7 +241,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const getValue = async () => {
         let c = 0;
         let done = false;
-        while (!done) {
+        while (!done && !timedout) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
@@ -251,7 +251,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (
             value !== undefined &&
             desiredMetricValue !== null &&
-            compare(comparator, value, desiredMetricValue)
+            compare(comparator!, value, desiredMetricValue)
           ) {
             done = true;
           } else {
@@ -289,6 +289,72 @@ export class NetworkNode implements NetworkNodeInterface {
         )}\n`,
       );
       return value;
+    }
+  }
+
+  async getCalcMetric(
+    rawMetricNameA: string,
+    rawMetricNameB: string,
+    mathOp: string,
+    comparator: string,
+    desiredMetricValue: number,
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  ): Promise<number> {
+    let value;
+    let timedOut = false;
+    try {
+      const mathFn = (a: number, b: number): number => {
+        return mathOp === "Minus" ? a - b : a + b;
+      };
+
+      const getValue = async () => {
+        while (!timedOut) {
+          const [valueA, valueB] = await Promise.all([
+            this.getMetric(rawMetricNameA),
+            this.getMetric(rawMetricNameB),
+          ]);
+          value = mathFn(valueA as number, valueB as number);
+          if (
+            value !== undefined &&
+            compare(comparator, value, desiredMetricValue)
+          ) {
+            break;
+          } else {
+            debug(
+              `current values for: [${rawMetricNameA}, ${rawMetricNameB}] are [${valueA}, ${valueB}], keep trying...`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+      };
+
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) =>
+          setTimeout(() => {
+            timedOut = true;
+            const err = new Error(
+              `Timeout(${timeout}), "getting desired calc metric value ${desiredMetricValue} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
+      ]);
+      if (resp instanceof Error) {
+        // use `undefined` metrics values in `equal` comparations as `0`
+        if (timedOut && comparator === "equal" && desiredMetricValue === 0)
+          value = 0;
+        else throw resp;
+      }
+
+      return value as number;
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
+          err?.message,
+        )}\n`,
+      );
+      return value as number;
     }
   }
 
