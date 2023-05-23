@@ -89,35 +89,23 @@ const CalcMetrics = ({
   timeout,
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
-  const mathFn = (a: number, b: number): number => {
-    return math_ops === "Minus" ? a - b : a + b;
-  };
 
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
-    const promise_a = nodes.map((node: any) =>
-      node.getMetric(
-        metric_name_a!,
-        toChaiComparator(op!),
-        target_value!,
-        timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+    const results: number[] = await Promise.all(
+      nodes.map((node: any) =>
+        node.getCalcMetric(
+          metric_name_a,
+          metric_name_b,
+          math_ops,
+          toChaiComparator(op!),
+          target_value!,
+          timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+        ),
       ),
     );
-
-    const promise_b = nodes.map((node: any) =>
-      node.getMetric(
-        metric_name_b!,
-        toChaiComparator(op!),
-        target_value!,
-        timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-      ),
-    );
-
-    const values = await Promise.all([...promise_a, ...promise_b]);
-
-    for (let i = 0; i < nodes.length; i++) {
-      const value = mathFn(values[i], values[i + nodes.length]);
-      comparatorFn(value as number, target_value as number);
+    for (const value of results) {
+      comparatorFn(value, target_value);
     }
   };
 };
