@@ -92,7 +92,7 @@ const CalcMetrics = ({
 
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
-    const results = await Promise.all(
+    const results: number[] = await Promise.all(
       nodes.map((node: any) =>
         node.getCalcMetric(
           metric_name_a,
@@ -105,7 +105,7 @@ const CalcMetrics = ({
       ),
     );
     for (const value of results) {
-      comparatorFn(value as number, target_value as number);
+      comparatorFn(value, target_value);
     }
   };
 };

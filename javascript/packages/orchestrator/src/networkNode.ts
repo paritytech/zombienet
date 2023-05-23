@@ -293,36 +293,35 @@ export class NetworkNode implements NetworkNodeInterface {
   }
 
   async getCalcMetric(
-    rawMetricName_a: string,
-    rawMetricName_b: string,
-    math_op: string,
+    rawMetricNameA: string,
+    rawMetricNameB: string,
+    mathOp: string,
     comparator: string,
     desiredMetricValue: number,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
-  ): Promise<number | undefined> {
+  ): Promise<number> {
     let value;
-    let timedout = false;
+    let timedOut = false;
     try {
       const mathFn = (a: number, b: number): number => {
-        return math_op === "Minus" ? a - b : a + b;
+        return mathOp === "Minus" ? a - b : a + b;
       };
 
       const getValue = async () => {
-        let done = false;
-        while (!done && !timedout) {
+        while (!timedOut) {
           const [value_a, value_b] = await Promise.all([
-            this.getMetric(rawMetricName_a),
-            this.getMetric(rawMetricName_b),
+            this.getMetric(rawMetricNameA),
+            this.getMetric(rawMetricNameB),
           ]);
           value = mathFn(value_a as number, value_b as number);
           if (
             value !== undefined &&
             compare(comparator, value, desiredMetricValue)
           ) {
-            done = true;
+            break;
           } else {
             debug(
-              `current values for: [${rawMetricName_a}, ${rawMetricName_b}] are [${value_a}, ${value_b}], keep trying...`,
+              `current values for: [${rawMetricNameA}, ${rawMetricNameB}] are [${value_a}, ${value_b}], keep trying...`,
             );
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
@@ -333,7 +332,7 @@ export class NetworkNode implements NetworkNodeInterface {
         getValue(),
         new Promise((resolve) =>
           setTimeout(() => {
-            timedout = true;
+            timedOut = true;
             const err = new Error(
               `Timeout(${timeout}), "getting desired calc metric value ${desiredMetricValue} within ${timeout} secs".`,
             );
@@ -343,19 +342,19 @@ export class NetworkNode implements NetworkNodeInterface {
       ]);
       if (resp instanceof Error) {
         // use `undefined` metrics values in `equal` comparations as `0`
-        if (timedout && comparator === "equal" && desiredMetricValue === 0)
+        if (timedOut && comparator === "equal" && desiredMetricValue === 0)
           value = 0;
         else throw resp;
       }
 
-      return value;
+      return value as number;
     } catch (err: any) {
       console.log(
         `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
           err?.message,
         )}\n`,
       );
-      return value;
+      return value as number;
     }
   }
 
