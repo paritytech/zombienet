@@ -309,11 +309,11 @@ export class NetworkNode implements NetworkNodeInterface {
 
       const getValue = async () => {
         while (!timedOut) {
-          const [value_a, value_b] = await Promise.all([
+          const [valueA, valueB] = await Promise.all([
             this.getMetric(rawMetricNameA),
             this.getMetric(rawMetricNameB),
           ]);
-          value = mathFn(value_a as number, value_b as number);
+          value = mathFn(valueA as number, valueB as number);
           if (
             value !== undefined &&
             compare(comparator, value, desiredMetricValue)
@@ -321,7 +321,7 @@ export class NetworkNode implements NetworkNodeInterface {
             break;
           } else {
             debug(
-              `current values for: [${rawMetricNameA}, ${rawMetricNameB}] are [${value_a}, ${value_b}], keep trying...`,
+              `current values for: [${rawMetricNameA}, ${rawMetricNameB}] are [${valueA}, ${valueB}], keep trying...`,
             );
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
