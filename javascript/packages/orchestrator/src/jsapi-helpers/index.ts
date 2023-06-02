@@ -84,13 +84,13 @@ async function registerParachain({
 }
 
 export {
-  connect,
-  registerParachain,
+  chainCustomSectionUpgrade,
   chainUpgradeFromLocalFile,
   chainUpgradeFromUrl,
-  chainCustomSectionUpgrade,
-  validateRuntimeCode,
+  connect,
+  findPatternInSystemEventSubscription,
   paraGetBlockHeight,
   paraIsRegistered,
-  findPatternInSystemEventSubscription,
+  registerParachain,
+  validateRuntimeCode,
 };

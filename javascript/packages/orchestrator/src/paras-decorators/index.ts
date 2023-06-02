@@ -136,4 +136,4 @@ function decorate(para: PARA, fns: Function[]) {
   return decorated;
 }
 
-export { whichPara, decorate, PARA };
+export { PARA, decorate, whichPara };
