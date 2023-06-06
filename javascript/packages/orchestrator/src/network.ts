@@ -380,4 +380,10 @@ export class Network {
       },
     );
   }
+
+  cleanMetricsCache() {
+    for (const node of Object.values(this.nodesByName)) {
+      node.cleanMetricsCache();
+    }
+  }
 }

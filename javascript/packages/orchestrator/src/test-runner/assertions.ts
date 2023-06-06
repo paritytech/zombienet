@@ -79,6 +79,37 @@ const Report = ({
   };
 };
 
+const CalcMetrics = ({
+  node_name,
+  metric_name_a,
+  math_ops,
+  metric_name_b,
+  target_value,
+  op,
+  timeout,
+}: FnArgs) => {
+  const comparatorFn = comparators[op!];
+
+  return async (network: Network) => {
+    const nodes = network.getNodes(node_name!);
+    const results: number[] = await Promise.all(
+      nodes.map((node: any) =>
+        node.getCalcMetric(
+          metric_name_a,
+          metric_name_b,
+          math_ops,
+          toChaiComparator(op!),
+          target_value!,
+          timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+        ),
+      ),
+    );
+    for (const value of results) {
+      comparatorFn(value, target_value);
+    }
+  };
+};
+
 const Histogram = ({
   node_name,
   metric_name,
@@ -462,6 +493,7 @@ export default {
   SystemEvent,
   CustomJs,
   CustomSh,
+  CalcMetrics,
   ParaBlockHeight,
   ParaIsRegistered,
   ParaRuntimeUpgrade,

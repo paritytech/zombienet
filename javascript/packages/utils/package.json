@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/utils",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Useful utilities for ZombieNet Framework",
   "main": "dist/index.js",
   "author": "Parity Technologies <admin@parity.io>",
@@ -39,11 +39,11 @@
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/mocha": "^10.0.1",
     "@types/nunjucks": "^3.2.2",
-    "@types/sinon": "^10.0.14",
+    "@types/sinon": "^10.0.15",
     "chai": "^4.3.7",
     "deep-equal-in-any-order": "^2.0.6",
-    "sinon": "^15.0.4",
-    "yaml": "^2.2.2"
+    "sinon": "^15.1.0",
+    "yaml": "^2.3.1"
   },
   "publishConfig": {
     "access": "public",
