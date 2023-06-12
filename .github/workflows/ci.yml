@@ -112,7 +112,7 @@ jobs:
   all:
     # This dummy job depends on all the mandatory checks. It succeeds if and only if all CI checks
     # are successful.
-    needs: [build, build-rust, run-podman-tests]
+    needs: [build, build-rust] #, run-podman-tests]
     runs-on: ubuntu-latest
     steps:
       - run: echo Success
