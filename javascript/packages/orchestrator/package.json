@@ -12,6 +12,9 @@
     "type": "git",
     "url": "git+https://github.com/paritytech/zombienet.git"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "build": "tsc && npm run copy:podman",
