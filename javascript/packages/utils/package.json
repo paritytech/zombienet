@@ -18,6 +18,9 @@
     "utils",
     "zombienet"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "build": "tsc",

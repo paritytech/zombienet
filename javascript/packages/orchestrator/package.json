@@ -12,6 +12,9 @@
     "type": "git",
     "url": "git+https://github.com/paritytech/zombienet.git"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "clean": "rm -rf ./dist/*",
     "build": "tsc && npm run copy:podman",
@@ -36,7 +39,7 @@
   "dependencies": {
     "@polkadot/api": "^10.7.3",
     "@polkadot/keyring": "^12.3.2",
-    "@polkadot/util-crypto": "^12.1.2",
+    "@polkadot/util-crypto": "^12.3.2",
     "@zombienet/utils": "^0.0.21",
     "chai": "^4.3.7",
     "debug": "^4.3.4",
