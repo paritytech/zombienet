@@ -272,6 +272,7 @@ export async function generateNetworkSpec(
             para,
             bootnodes,
             isCumulusBased,
+            collatorConfig.name, // group of 1
           ),
         );
       }
@@ -306,6 +307,7 @@ export async function generateNetworkSpec(
               para,
               bootnodes,
               isCumulusBased,
+              collatorGroup.name,
             ),
           );
         }
@@ -505,6 +507,7 @@ async function getCollatorNodeFromConfig(
   para: PARA,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
+  group?: string,
 ): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args)
@@ -555,6 +558,7 @@ async function getCollatorNodeFromConfig(
       networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
+  if (group) node.group = group;
   return node;
 }
 
