@@ -272,7 +272,7 @@ export async function generateNetworkSpec(
             para,
             bootnodes,
             isCumulusBased,
-            collatorConfig.name // group of 1
+            collatorConfig.name, // group of 1
           ),
         );
       }
@@ -307,7 +307,7 @@ export async function generateNetworkSpec(
               para,
               bootnodes,
               isCumulusBased,
-              collatorGroup.name
+              collatorGroup.name,
             ),
           );
         }
