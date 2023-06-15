@@ -156,7 +156,7 @@ export interface Node {
   name: string;
   key?: string;
   accounts?: any;
-  balance?: number;
+  balance?: bigint;
   command?: string;
   commandWithArgs?: string;
   fullCommand?: string;
