@@ -29,7 +29,8 @@ import oak from "./oak";
 import statemint from "./statemint";
 
 function whichPara(chain: string): PARA {
-  if (chain.includes("statemint")) return PARA.Statemint;
+  if (chain.includes("statemint") || chain.includes("asset-hub-polkadot"))
+    return PARA.Statemint;
   if (/moonbase|moonriver|moonbeam/.test(chain)) return PARA.Moonbeam;
   if (/efinity|matrix/.test(chain)) return PARA.Efinity;
   if (/acala|karura|mandala/.test(chain)) return PARA.Acala;
