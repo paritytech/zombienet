@@ -52,7 +52,7 @@ const moonbeamDecorators: ParaDecorator = Object.keys(moonbeam).reduce(
   Object.create({}),
 );
 
-const AssetHubPolkadotDecorators: ParaDecorator = Object.keys(
+const assetHubPolkadotDecorators: ParaDecorator = Object.keys(
   asset_hub_polkadot,
 ).reduce((memo, fn) => {
   memo[fn] = (asset_hub_polkadot as ParaDecorator)[fn];
@@ -116,7 +116,7 @@ const localVDecorators: ParaDecorator = Object.keys(local_v).reduce(
 
 const decorators: { [para in PARA]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
-  asset_hub_polkadot: AssetHubPolkadotDecorators,
+  asset_hub_polkadot: assetHubPolkadotDecorators,
   efinity: efinityDecorators,
   acala: acalaDecorators,
   astar: astarDecorators,
