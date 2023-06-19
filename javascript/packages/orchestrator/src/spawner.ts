@@ -87,7 +87,10 @@ export const spawnNode = async (
 
     await makeDir(nodeFilesPath, true);
 
-    const isStatemint = parachain && parachain.chain?.includes("statemint");
+    const isStatemint =
+      parachain &&
+      (parachain.chain?.includes("statemint") ||
+        parachain.chain?.includes("asset-hub-polkadot"));
     const keystoreFiles = await generateKeystoreFiles(
       node,
       nodeFilesPath,
