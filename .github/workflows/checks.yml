@@ -7,9 +7,11 @@ on:
 
 jobs:
   spellcheck:
-    name: Spelling
+    name: Check Spelling
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
       - uses: streetsidesoftware/cspell-action@c5eae96241f654d2437c16bdfad146ff33a025cc # v2.7.0
+        with:
+          path: javascript
