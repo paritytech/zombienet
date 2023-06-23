@@ -1,6 +1,6 @@
 /// Helpers
 WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
-/// matches permited node's names
+/// matches permitted node's names
 name = @{ (ASCII_ALPHANUMERIC | "-")+ }
 /// matched any integer
 int   = @{ "-" ? ~ ("0" | '1'..'9' ~ '0'..'9' * ) }
