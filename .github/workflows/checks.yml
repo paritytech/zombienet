@@ -5,15 +5,15 @@ on:
     branches:
       - main
 
-defaults:
-  run:
-    working-directory: ./javascript
-
 jobs:
   spellcheck:
     name: Check Spelling
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v3
-      - uses: streetsidesoftware/cspell-action@c5eae96241f654d2437c16bdfad146ff33a025cc # v2.7.0  
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "18"
+      - run: npm install -g cspell
+      - run: cd javascript && cspell .
