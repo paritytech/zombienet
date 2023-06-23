@@ -157,7 +157,7 @@
 <li>Custom api calls (through polkadot.js)</li>
 <li>Commands</li>
 </ul>
-<p>Each of this abstractions are expresed by sentences defined in a <strong>natural language style</strong>, so each test line will be mapped to a test tu run.</p>
+<p>Each of this abstractions are expressed by sentences defined in a <strong>natural language style</strong>, so each test line will be mapped to a test tu run.</p>
 <p>Also, the test file (*.zndsl) includes a pre-defined <strong>header fields</strong> used to define information about the suite (e.g. <code>network configuration</code> and <code>credentials</code> location)</p>
 <h2 id="test-name"><a class="header" href="#test-name">Test Name</a></h2>
 <p>Zombienet use the <code>filename</code> as <strong>test name</strong> removing all leading number chars before the first <code>-</code> occuency. As explample a test filename <code>0001-dispute-valid-block.zndsl</code> will produce <code>dispute-valid-block</code> as test name and will be show in the report output of the test runner.</p>
@@ -234,7 +234,7 @@
 </ul>
 </li>
 <li>
-<p>Tracing assertion: Match an array of <code>span names</code> from the supplyed traceID. <em>NOTE</em> this is <strong>not</strong> supported with the native provider.</p>
+<p>Tracing assertion: Match an array of <code>span names</code> from the supplied traceID. <em>NOTE</em> this is <strong>not</strong> supported with the native provider.</p>
 <ul>
 <li><code>node-name</code>: trace with traceID <id> contains [&quot;name&quot;, &quot;name2&quot;,...]
 <ul>
@@ -275,7 +275,7 @@
 </li>
 </ul>
 <h3 id="commands-only-works-with-podman-and-kubernetes-providers"><a class="header" href="#commands-only-works-with-podman-and-kubernetes-providers">Commands (Only works with podman and kubernetes providers)</a></h3>
-<p>Commands allow to interact with the nodes, given the ability to run some pre-defined commands or an arbitary command in the node.</p>
+<p>Commands allow to interact with the nodes, given the ability to run some pre-defined commands or an arbitrary command in the node.</p>
 <ul>
 <li>restart
 <ul>
@@ -286,7 +286,7 @@ Will pause (SIGSTOP) the process</li>
 <li>node-name: resume
 Will pause (SIGCONT) the process</li>
 <li>sleep x
-Will sleep the test-runner for <code>x</code> ammount of seconds.</li>
+Will sleep the test-runner for <code>x</code> amount of seconds.</li>
 </ul>
 </li>
 </ul>
