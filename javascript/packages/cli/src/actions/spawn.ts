@@ -14,7 +14,7 @@ import {
 } from "../constants";
 
 /**
- * Spawn - spawns ephemeral networks, providing a simple but poweful cli that allow you to declare
+ * Spawn - spawns ephemeral networks, providing a simple but powerful cli that allow you to declare
  * the desired network in toml or json format.
  * Read more here: https://paritytech.github.io/zombienet/cli/spawn.html
  * @param configFile: config file, supported both json and toml formats

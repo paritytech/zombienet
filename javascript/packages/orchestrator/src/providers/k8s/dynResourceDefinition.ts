@@ -55,7 +55,7 @@ export async function createTempNodeDef(
     image,
     fullCommand:
       fullCommand +
-      (useCommandSuffix ? ` && ${TMP_DONE} && ${WAIT_UNTIL_SCRIPT_SUFIX}` : ""), // leave the pod runnig until we finish transfer files
+      (useCommandSuffix ? ` && ${TMP_DONE} && ${WAIT_UNTIL_SCRIPT_SUFIX}` : ""), // leave the pod running until we finish transfer files
     chain,
     validator: false,
     invulnerable: false,

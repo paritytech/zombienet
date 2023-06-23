@@ -123,7 +123,7 @@ function download_from_remote {
   log INFO "Found github api org:${org} repo:${repo} branch:${branch} gh_dir:${gh_dir}"
 
   function gh_download_content {
-    # recursively dowload content of github dir
+    # recursively download content of github dir
     local url dir
     url=$1 dir=$2
     mkdir -p "${OUTPUT_DIR}/${dir}"

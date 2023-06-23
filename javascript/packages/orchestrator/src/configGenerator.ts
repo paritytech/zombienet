@@ -257,7 +257,7 @@ export async function generateNetworkSpec(
             );
 
       // collator could by defined in groups or
-      // just using one collator definiton
+      // just using one collator definition
       const collators = [];
       const collatorConfigs = parachain.collator ? [parachain.collator] : [];
       if (parachain.collators) collatorConfigs.push(...parachain.collators);

@@ -27,7 +27,7 @@ id = 100
   command = "adder-collator"
 ```
 
-Then you can spwan the network by running the following command:
+Then you can spawn the network by running the following command:
 
 ```bash
 ./zombienet-macos spawn examples/0001-small-network.toml

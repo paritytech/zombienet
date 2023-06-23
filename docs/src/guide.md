@@ -93,7 +93,7 @@ Using kubernetes as provider we can simply spawn this network by running:
 ./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
 ```
 
-or simplier, since kubernetes is the default provider as:
+or simpler, since kubernetes is the default provider as:
 
 ```bash
 ./zombienet-linux spawn examples/0001-small-network.toml

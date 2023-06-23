@@ -147,7 +147,7 @@
 <p>ZombieNet aims to be a testing framework for Substrate based blockchains, providing a simple CLI tool that allowS users to spawn and test ephemeral networks. The assertions used in the tests can include on-chain storage, metrics, logs and custom JS scripts that interact with the chain. To make these easy to define, Zombienet uses a built-in natural language tool to write tests as smoothly as possible.</p>
 <p>Internally, it's a JS library designed to run on NodeJS and support different backend providers to run the various blockchain nodes. Currently, Kubernetes, Podman and native are the supported providers.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<p>ZombieNet releases are available in <code>github</code>. Each one provide an executable for both <code>linux</code> and <code>macos</code> crated with <a href="https://github.com/vercel/pkg">pkg</a> and allow to run <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed <strong>but</strong> each <code>provider</code> define it's own requirements (e.g. k8s, podman).</p>
+<p>ZombieNet releases are available in <code>github</code>. Each one provide an executable for both <code>linux</code> and <code>macos</code> created with <a href="https://github.com/vercel/pkg">pkg</a> and allow to run <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed <strong>but</strong> each <code>provider</code> define it's own requirements (e.g. k8s, podman).</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="kubernetes-requirements"><a class="header" href="#kubernetes-requirements">Kubernetes requirements</a></h1>
 <p>Zombienet should work with any k8s cluster (e.g <a href="https://cloud.google.com/kubernetes-engine">GKE</a>, <a href="https://docs.docker.com/desktop/kubernetes/">docker-desktop</a>, <a href="https://kind.sigs.k8s.io/">kind</a>) <strong>but</strong> you need to have <code>kubectl</code> installed to interact with your cluster.</p>
 <p>Also, you need <em>permission</em> to create resources (e.g <code>namespaces</code>, <code>pods</code> and <code>cronJobs</code>) in the target cluster.</p>
@@ -238,7 +238,7 @@ Please add the dir to your $PATH by running the command:
  export PATH=/home/&lt;username&gt;/zombienet/dist:$PATH
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="spawning"><a class="header" href="#spawning">Spawning</a></h1>
-<p>One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but poweful <em>cli</em> that allow you to declare the desired network in <code>toml</code> or <code>json</code> format. You can check the <a href="cli/../network-definition-spec.html">definition spec</a> to view the available options.</p>
+<p>One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but powerful <em>cli</em> that allow you to declare the desired network in <code>toml</code> or <code>json</code> format. You can check the <a href="cli/../network-definition-spec.html">definition spec</a> to view the available options.</p>
 <p>A <strong>minimal</strong> configuration example with two validators and one parachain:</p>
 <pre><code class="language-toml">[settings]
 timeout = 1000
@@ -261,7 +261,7 @@ id = 100
   image = &quot;paritypr/colander:4131-ccd09bbf&quot;
   command = &quot;adder-collator&quot;
 </code></pre>
-<p>Then you can spwan the network by running the following command:</p>
+<p>Then you can spawn the network by running the following command:</p>
 <pre><code class="language-bash">./zombienet-macos spawn examples/0001-small-network.toml
 </code></pre>
 <p>You can follow the output of the <code>steps</code> to spawn the network and once the network is launched a message with the <code>node</code>s information like this one is show</p>
@@ -337,7 +337,7 @@ export COL_IMAGE=docker.io/paritypr/colander:4131-ccd09bbf
 <div style="break-before: page; page-break-before: always;"></div><h1 id="testing"><a class="header" href="#testing">Testing</a></h1>
 <p>The other goal of ZombieNet is provide a way to perform test/assertions agins the spawned network, using a set of <code>natural language expressions</code> that allow to make assertions based on metrics, logs and some <code>built-in</code> function that query the network using <code>polkadot.js</code>.
 Those assertions should be defined in a <em>feature test</em>, and the <code>dsl</code> and format is documented in <a href="cli/./test-dsl-definition-spec.html">here</a>.</p>
-<p>The following is an small example to spawn a network (using the previos <code>simple network definition</code>) and assert that:</p>
+<p>The following is an small example to spawn a network (using the previous <code>simple network definition</code>) and assert that:</p>
 <ul>
 <li>Both <code>nodes</code> are running</li>
 <li>The definded <code>parachain</code> is registered</li>

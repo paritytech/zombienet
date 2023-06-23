@@ -275,7 +275,7 @@ export class NetworkNode implements NetworkNodeInterface {
         ),
       ]);
       if (resp instanceof Error) {
-        // use `undefined` metrics values in `equal` comparations as `0`
+        // use `undefined` metrics values in `equal` comparisons as `0`
         if (timedout && comparator === "equal" && desiredMetricValue === 0)
           value = 0;
         else throw resp;
@@ -341,7 +341,7 @@ export class NetworkNode implements NetworkNodeInterface {
         ),
       ]);
       if (resp instanceof Error) {
-        // use `undefined` metrics values in `equal` comparations as `0`
+        // use `undefined` metrics values in `equal` comparisons as `0`
         if (timedOut && comparator === "equal" && desiredMetricValue === 0)
           value = 0;
         else throw resp;
