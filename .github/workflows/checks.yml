@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+defaults:
+  run:
+    working-directory: ./javascript
+
 jobs:
   spellcheck:
     name: Check Spelling
@@ -12,6 +16,4 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
-      - uses: streetsidesoftware/cspell-action@c5eae96241f654d2437c16bdfad146ff33a025cc # v2.7.0
-        with:
-          path: javascript
+      - uses: streetsidesoftware/cspell-action@c5eae96241f654d2437c16bdfad146ff33a025cc # v2.7.0  
