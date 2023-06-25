@@ -134,7 +134,7 @@ export async function generateNetworkSpec(
   };
 
   // check all imageURLs for validity
-  // TODO: These checks should be agains all config items that needs check
+  // TODO: These checks should be against all config items that needs check
   configurationFileChecks(config);
 
   if (config.relaychain.genesis)

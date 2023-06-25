@@ -5,9 +5,9 @@ import {
 } from "@zombienet/utils";
 import fs from "fs";
 import {
-  BAKCCHANNEL_POD_NAME,
-  BAKCCHANNEL_PORT,
-  BAKCCHANNEL_URI_PATTERN,
+  BACKCHANNEL_POD_NAME,
+  BACKCHANNEL_PORT,
+  BACKCHANNEL_URI_PATTERN,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   TOKEN_PLACEHOLDER,
 } from "./constants";
@@ -200,10 +200,10 @@ export class Network {
       if (!this.backchannelUri) {
         // create port-fw
         const port = await this.client.startPortForwarding(
-          BAKCCHANNEL_PORT,
-          BAKCCHANNEL_POD_NAME,
+          BACKCHANNEL_PORT,
+          BACKCHANNEL_POD_NAME,
         );
-        this.backchannelUri = BAKCCHANNEL_URI_PATTERN.replace(
+        this.backchannelUri = BACKCHANNEL_URI_PATTERN.replace(
           "{{PORT}}",
           port.toString(),
         );
