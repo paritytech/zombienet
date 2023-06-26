@@ -53,6 +53,7 @@ export interface InnerPodSpec {
     runAsUser: number;
     runAsGroup: number;
   };
+  delay?: DelayInterface;
 }
 
 export interface PodSpec {
@@ -80,5 +81,12 @@ export interface ServiceSpec {
       port: number;
       targetPort: number;
     }[];
+    delay?: DelayInterface;
   };
+}
+
+export interface DelayInterface {
+  latency: string;
+  correlation: string;
+  jitter: string;
 }

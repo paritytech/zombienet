@@ -8,7 +8,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { PodSpec, ServiceSpec } from "./types";
+import { DelayInterface, PodSpec, ServiceSpec } from "./types";
 
 export class ServiceResource {
   constructor(private readonly podSpec: PodSpec) {}
@@ -16,8 +16,21 @@ export class ServiceResource {
   public generateSpec() {
     const ports = this.generatePorts();
     const name = this.podSpec.metadata.name;
+    const delay = this.podSpec.spec?.delay;
 
-    return this.generateServiceSpec(name, ports);
+    if (delay?.latency.slice(-2) !== "ms") {
+      throw Error(
+        "Latency value should include the 'ms' indicator (e.g. '100ms')",
+      );
+    }
+
+    if (delay?.jitter.slice(-2) !== "ms") {
+      throw Error(
+        "Jitter value should include the 'ms' indicator (e.g. '100ms')",
+      );
+    }
+
+    return this.generateServiceSpec(name, ports, delay);
   }
 
   private shouldExposeJaegerPorts(): boolean {
@@ -89,6 +102,7 @@ export class ServiceResource {
   private generateServiceSpec(
     name: string,
     ports: ServiceSpec["spec"]["ports"],
+    delay?: DelayInterface,
   ): ServiceSpec {
     return {
       apiVersion: "v1",
@@ -97,6 +111,7 @@ export class ServiceResource {
       spec: {
         selector: { "app.kubernetes.io/instance": name },
         ports,
+        delay,
       },
     };
   }
