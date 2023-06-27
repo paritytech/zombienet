@@ -3,7 +3,12 @@ import { getUniqueName } from "../../configGenerator";
 import { TMP_DONE, WAIT_UNTIL_SCRIPT_SUFIX } from "../../constants";
 import { Network } from "../../network";
 import { Node, ZombieRole } from "../../types";
-import { BootNodeResource, NodeResource, ServiceResource } from "./resources";
+import {
+  BootNodeResource,
+  ChaosResource,
+  NodeResource,
+  ServiceResource,
+} from "./resources";
 import { ChaosSpec, PodSpec, ServiceSpec } from "./resources/types";
 
 export async function genBootnodeDef(
@@ -23,8 +28,13 @@ export async function genNodeDef(
 }
 
 export function genServiceDef(podSpec: PodSpec): ServiceSpec | ChaosSpec {
-  const serviceResource = new ServiceResource(podSpec);
-  return serviceResource.generateSpec();
+  let resource: ServiceResource | ChaosResource;
+  if (podSpec.spec.delay) {
+    resource = new ChaosResource(podSpec);
+    resource.generateSpec();
+  }
+  resource = new ServiceResource(podSpec);
+  return resource.generateSpec();
 }
 
 export function replaceNetworkRef(podDef: any, network: Network) {

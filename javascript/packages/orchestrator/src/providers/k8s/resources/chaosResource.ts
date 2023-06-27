@@ -8,15 +8,28 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { PodSpec, ServiceSpec } from "./types";
+import { ChaosSpec, DelayInterface, PodSpec, ServiceSpec } from "./types";
 
-export class ServiceResource {
+export class ChaosResource {
   constructor(private readonly podSpec: PodSpec) {}
 
   public generateSpec() {
     const ports = this.generatePorts();
     const name = this.podSpec.metadata.name;
-    return this.generateServiceSpec(name, ports);
+    const delay = this.podSpec.spec.delay!;
+
+    if (delay.latency.slice(-2) !== "ms") {
+      throw Error(
+        "Latency value should include the 'ms' indicator (e.g. '100ms')",
+      );
+    }
+
+    if (delay?.jitter.slice(-2) !== "ms") {
+      throw Error(
+        "Jitter value should include the 'ms' indicator (e.g. '100ms')",
+      );
+    }
+    return this.generateChaosSpec(name, ports, delay);
   }
 
   private shouldExposeJaegerPorts(): boolean {
@@ -85,17 +98,19 @@ export class ServiceResource {
     return ports;
   }
 
-  private generateServiceSpec(
+  private generateChaosSpec(
     name: string,
-    ports: ServiceSpec["spec"]["ports"],
-  ): ServiceSpec {
+    ports: ChaosSpec["spec"]["ports"],
+    delay: DelayInterface,
+  ): ChaosSpec {
     return {
-      apiVersion: "v1",
-      kind: "Service",
+      apiVersion: "chaos-mesh.org/v1alpha1",
+      kind: "NetworkChaos",
       metadata: { name },
       spec: {
         selector: { "app.kubernetes.io/instance": name },
         ports,
+        delay,
       },
     };
   }
