@@ -4,7 +4,7 @@ import { TMP_DONE, WAIT_UNTIL_SCRIPT_SUFIX } from "../../constants";
 import { Network } from "../../network";
 import { Node, ZombieRole } from "../../types";
 import { BootNodeResource, NodeResource, ServiceResource } from "./resources";
-import { PodSpec, ServiceSpec } from "./resources/types";
+import { ChaosSpec, PodSpec, ServiceSpec } from "./resources/types";
 
 export async function genBootnodeDef(
   namespace: string,
@@ -22,7 +22,7 @@ export async function genNodeDef(
   return nodeResource.generateSpec();
 }
 
-export function genServiceDef(podSpec: PodSpec): ServiceSpec {
+export function genServiceDef(podSpec: PodSpec): ServiceSpec | ChaosSpec {
   const serviceResource = new ServiceResource(podSpec);
   return serviceResource.generateSpec();
 }

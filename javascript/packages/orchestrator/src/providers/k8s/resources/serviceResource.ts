@@ -8,7 +8,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { DelayInterface, PodSpec, ServiceSpec } from "./types";
+import { ChaosSpec, DelayInterface, PodSpec, ServiceSpec } from "./types";
 
 export class ServiceResource {
   constructor(private readonly podSpec: PodSpec) {}
@@ -18,19 +18,21 @@ export class ServiceResource {
     const name = this.podSpec.metadata.name;
     const delay = this.podSpec.spec?.delay;
 
-    if (delay?.latency.slice(-2) !== "ms") {
-      throw Error(
-        "Latency value should include the 'ms' indicator (e.g. '100ms')",
-      );
-    }
+    if (delay) {
+      if (delay?.latency.slice(-2) !== "ms") {
+        throw Error(
+          "Latency value should include the 'ms' indicator (e.g. '100ms')",
+        );
+      }
 
-    if (delay?.jitter.slice(-2) !== "ms") {
-      throw Error(
-        "Jitter value should include the 'ms' indicator (e.g. '100ms')",
-      );
+      if (delay && delay?.jitter.slice(-2) !== "ms") {
+        throw Error(
+          "Jitter value should include the 'ms' indicator (e.g. '100ms')",
+        );
+      }
+      return this.generateChaosSpec(name, ports, delay);
     }
-
-    return this.generateServiceSpec(name, ports, delay);
+    return this.generateServiceSpec(name, ports);
   }
 
   private shouldExposeJaegerPorts(): boolean {
@@ -102,11 +104,26 @@ export class ServiceResource {
   private generateServiceSpec(
     name: string,
     ports: ServiceSpec["spec"]["ports"],
-    delay?: DelayInterface,
   ): ServiceSpec {
     return {
       apiVersion: "v1",
       kind: "Service",
+      metadata: { name },
+      spec: {
+        selector: { "app.kubernetes.io/instance": name },
+        ports,
+      },
+    };
+  }
+
+  private generateChaosSpec(
+    name: string,
+    ports: ChaosSpec["spec"]["ports"],
+    delay: DelayInterface,
+  ): ChaosSpec {
+    return {
+      apiVersion: "chaos-mesh.org/v1alpha1",
+      kind: "NetworkChaos",
       metadata: { name },
       spec: {
         selector: { "app.kubernetes.io/instance": name },

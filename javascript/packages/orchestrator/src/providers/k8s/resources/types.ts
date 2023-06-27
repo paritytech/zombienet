@@ -81,7 +81,24 @@ export interface ServiceSpec {
       port: number;
       targetPort: number;
     }[];
-    delay?: DelayInterface;
+  };
+}
+
+export interface ChaosSpec {
+  apiVersion: "chaos-mesh.org/v1alpha1";
+  kind: "NetworkChaos";
+  metadata: { name: string };
+  spec: {
+    selector: {
+      [key: string]: string; // namespaces or pod
+    };
+    ports: {
+      name: string;
+      protocol: "TCP" | "UDP";
+      port: number;
+      targetPort: number;
+    }[];
+    delay: DelayInterface;
   };
 }
 
