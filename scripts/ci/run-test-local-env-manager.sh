@@ -87,7 +87,7 @@ function parse_args {
   }
 
   # shellcheck disable=SC2214
-  while getopts i:t:l:h:uo:-: OPT; do
+  while getopts i:t:g:h:uo:-: OPT; do
     # support long options: https://stackoverflow.com/a/28466267/519360
     if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
       OPT="${OPTARG%%=*}"       # extract long option name
@@ -127,7 +127,7 @@ function run_test {
   else
     C=$CONCURRENCY
   fi;
-  if [[  -z $TEST_TO_RUN ]]; then
+  if [[ ! -z $TEST_TO_RUN ]]; then
     TEST_FOUND=0
     for i in $(find ${OUTPUT_DIR} -name "${TEST_TO_RUN}"| head -1); do
       TEST_FOUND=1
