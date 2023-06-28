@@ -66,6 +66,7 @@ function set_defaults_for_globals {
   EXIT_STATUS=0
   LOCAL_DIR=""
   TEST_TO_RUN=""
+  CONCURRENCY=2
 
 
   LAUNCH_ARGUMENTS=""
