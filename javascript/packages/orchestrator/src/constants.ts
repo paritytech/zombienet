@@ -52,6 +52,9 @@ const FINISH_MAGIC_FILE = "/tmp/finished.txt";
 const GENESIS_STATE_FILENAME = "genesis-state";
 const GENESIS_WASM_FILENAME = "genesis-wasm";
 
+const RAW_CHAIN_SPEC_IN_CMD_PATTERN = new RegExp(/{{CHAIN_SPEC:RAW}}/gi);
+const PLAIN_CHAIN_SPEC_IN_CMD_PATTERN = new RegExp(/{{CHAIN_SPEC:PLAIN}}/gi);
+
 const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
 const TRANSFER_CONTAINER_WAIT_LOG = "waiting for tar to finish";
 const NODE_CONTAINER_WAIT_LOG = "waiting for copy files to finish";
@@ -156,7 +159,9 @@ export {
   METRICS_URI_PATTERN,
   NODE_CONTAINER_WAIT_LOG,
   P2P_PORT,
+  PLAIN_CHAIN_SPEC_IN_CMD_PATTERN,
   PROMETHEUS_PORT,
+  RAW_CHAIN_SPEC_IN_CMD_PATTERN,
   REGULAR_BIN_PATH,
   RPC_HTTP_PORT,
   RPC_WS_PORT,

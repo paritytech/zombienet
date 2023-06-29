@@ -270,6 +270,27 @@ export COL_IMAGE=docker.io/paritypr/colander:master
 ./zombienet-macos spawn examples/0001-small-network.toml
 ```
 
+#### Custom commands to modify the resulting chain-specs
+
+If you want to customize the chain specification, plain or raw, that one of your chains will be launched with, beyond
+what Zombienet provides by default, you can do so with `chain_spec_modifier_commands`.
+
+The `chain_spec_modifier_commands` option allows you to specify a list of CLI commands that will use, modify and return 
+the modified chain-spec before it is used to launch the network. These commands can modify the chain specification in any way you need.
+
+```toml
+...
+[[parachains]]
+id = 100
+chain_spec_modifier_commands = [[
+  "/path/to/your_custom_script.sh",
+  "{{'plain'|chainSpec}}"
+]]
+...
+```
+
+For a more in-depth example with a chain-querying tool `chainql`, you can visit the [examples](examples) directory.
+
 ##### Teardown
 
 You can teardown the network (and cleanup the used resources) by terminating the process (`ctrl+c`).

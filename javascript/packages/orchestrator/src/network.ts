@@ -4,6 +4,7 @@ import {
   decorators,
 } from "@zombienet/utils";
 import fs from "fs";
+import { destroyChainSpecProcesses } from "./chainSpec";
 import {
   BACKCHANNEL_POD_NAME,
   BACKCHANNEL_PORT,
@@ -154,8 +155,10 @@ export class Network {
 
   async stop() {
     // Cleanup all api instances
-    for (const node of Object.values(this.nodesByName))
+    for (const node of Object.values(this.nodesByName)) {
       node.apiInstance?.disconnect();
+    }
+    await destroyChainSpecProcesses();
     await this.client.destroyNamespace();
   }
 

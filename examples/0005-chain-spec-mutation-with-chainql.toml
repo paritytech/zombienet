@@ -1,0 +1,31 @@
+# examples/0005-chain-spec-mutation-with-chainql.toml
+[relaychain]
+default_image = "docker.io/parity/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+[[parachains]]
+id = 100
+# make sure to have chainql installed (`cargo install chainql`)
+# https://github.com/UniqueNetwork/chainql
+chain_spec_modifier_commands = [[
+  "chainql",
+  "--tla-code=rawSpec=import '{{'raw'|chainSpec}}'",
+  "--tla-str=pullFrom=wss://rococo-rockmine-rpc.polkadot.io:443",
+  "--trace-format=explaining",
+  "chainqlCopyBalances.jsonnet",
+]]
+
+  [[parachains.collator_groups]]
+  count = 2
+  name = "collator"

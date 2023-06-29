@@ -1,6 +1,6 @@
 import { decorators, getRandomPort } from "@zombienet/utils";
 import fs from "fs";
-import chainSpecFns, { isRawSpec } from "./chainSpec";
+import chainSpecFns, { isRawSpec, runCommandWithChainSpec } from "./chainSpec";
 import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
@@ -20,6 +20,7 @@ export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
   parachainFilesPath: string,
+  configBasePath: string | URL,
   relayChainName: string,
   parachain: Parachain,
   relayChainSpecIsRaw: boolean,
@@ -141,6 +142,15 @@ export async function generateParachainFiles(
         }
       }
 
+      // modify the plain chain spec with any custom commands
+      for (const cmd of parachain.chainSpecModifierCommands) {
+        await runCommandWithChainSpec(
+          chainSpecFullPathPlain,
+          cmd,
+          configBasePath,
+        );
+      }
+
       debug("creating chain spec raw");
       // ensure needed file
       if (parachain.chain)
@@ -186,6 +196,11 @@ export async function generateParachainFiles(
 
     // add spec file to copy to all collators.
     parachain.specPath = chainSpecFullPath;
+
+    // modify the raw chain spec with any custom commands
+    for (const cmd of parachain.rawChainSpecModifierCommands) {
+      await runCommandWithChainSpec(chainSpecFullPath, cmd, configBasePath);
+    }
   }
 
   // state and wasm files are only needed:

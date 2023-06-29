@@ -51,6 +51,7 @@ export interface RelayChainConfig {
   chain_spec_command?: string;
   default_args?: string[];
   default_overrides?: Override[];
+  chain_spec_modifier_commands?: Command[];
   random_nominators_count?: number;
   max_nominations?: number;
   nodes?: NodeConfig[];
@@ -112,6 +113,7 @@ export interface ParachainConfig {
   cumulus_based?: boolean;
   bootnodes?: string[];
   prometheus_prefix?: string;
+  chain_spec_modifier_commands?: Command[];
   // backward compatibility
   collator?: NodeConfig;
   collators?: NodeConfig[];
@@ -138,6 +140,8 @@ export interface ComputedNetwork {
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
+    chainSpecModifierCommands: Command[];
+    rawChainSpecModifierCommands: Command[];
     randomNominatorsCount: number;
     maxNominations: number;
     nodes: Node[];
@@ -227,12 +231,16 @@ export interface Parachain {
   balance?: number;
   collators: Node[];
   genesis?: JSON | ObjectJSON;
+  chainSpecModifierCommands: Command[];
+  rawChainSpecModifierCommands: Command[];
 }
 
 export interface envVars {
   name: string;
   value: string;
 }
+
+export type Command = string[];
 
 export interface ChainSpec {
   name: string;
