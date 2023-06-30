@@ -194,7 +194,7 @@ publish-docker-image-description:
   stage: zombienet
   image: "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
   needs:
-    - job: build-push-image-substrate-pr
+    - job: publish-docker-pr
   extends:
     - .kubernetes-env
     - .test-refs
