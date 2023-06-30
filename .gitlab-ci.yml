@@ -216,7 +216,7 @@ publish-docker-image-description:
 
 zombienet-smoke:
   extends:
-    - .zombienet-substrate-common
+    - .zombienet-common
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
       --local-dir="${LOCAL_DIR}"
@@ -224,7 +224,7 @@ zombienet-smoke:
 
 zombienet-scale-net-config:
   extends:
-    - .zombienet-substrate-common
+    - .zombienet-common
   variables:
     LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests/scale-net"
   script:
@@ -234,7 +234,7 @@ zombienet-scale-net-config:
 
 zombienet-upgrade-node:
   extends:
-    - .zombienet-substrate-common
+    - .zombienet-common
   variables:
     GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/k8s"
 
@@ -254,7 +254,7 @@ zombienet-upgrade-node:
 
 paras:
   extends:
-    - .zombienet-substrate-common
+    - .zombienet-common
   variables:
     GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/paras"
 
@@ -275,7 +275,7 @@ paras:
 
 db-snapshot:
   extends:
-    - .zombienet-substrate-common
+    - .zombienet-common
   script:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
       --local-dir="${LOCAL_DIR}"
