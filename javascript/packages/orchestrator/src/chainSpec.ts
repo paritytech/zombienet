@@ -584,13 +584,13 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
             )} [ key : ${key} ]`,
           ],
         ]);
-        debug(`[ ${key}: ${obj2[key]} ]`);
+        debug(`[ ${key}: ${JSON.stringify(obj2[key])} ]`);
       }
     } else {
       console.error(
         `\n\t\t  ${decorators.reverse(
           decorators.red("⚠ Bad Genesis Configuration"),
-        )} [ ${key}: ${obj1[key]} ]`,
+        )} [ ${key}: ${JSON.stringify(obj1[key])} ]`,
       );
     }
   });
