@@ -97,10 +97,16 @@ export async function addBalances(specPath: string, nodes: Node[]) {
     const chainSpec = readAndParseChainSpec(specPath);
     const runtimeConfig = getRuntimeConfig(chainSpec);
     // Create a balance map
-    const balanceMap = runtimeConfig.balances.balances.reduce((memo: Record<string, number|BigInt>, balance:[string, number|BigInt]) => {
-      memo[balance[0]] = balance[1];
-      return memo;
-    }, {});
+    const balanceMap = runtimeConfig.balances.balances.reduce(
+      (
+        memo: Record<string, number | BigInt>,
+        balance: [string, number | BigInt],
+      ) => {
+        memo[balance[0]] = balance[1];
+        return memo;
+      },
+      {},
+    );
 
     for (const node of nodes) {
       if (node.balance) {
