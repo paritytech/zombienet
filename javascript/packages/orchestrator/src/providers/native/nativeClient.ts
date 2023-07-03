@@ -405,7 +405,7 @@ export class NativeClient extends Client {
       return;
 
     // check if the process is still alive, IFF return node ready
-    // Since could be that the LOG env is set to the minimun.
+    // Since could be that the LOG env is set to the minimum.
     result = await this.runCommand(["-c", `ps ${pid}`], {
       allowFail: true,
     });
