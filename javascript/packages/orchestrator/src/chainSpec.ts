@@ -110,7 +110,7 @@ export async function addBalances(specPath: string, nodes: Node[]) {
 
     for (const node of nodes) {
       if (node.balance) {
-        const stash_key = node.accounts.sr_stash.address;
+        const stashKey = node.accounts.sr_stash.address;
 
         const balanceToAdd = stakingBond
           ? node.validator && node.balance > stakingBond
@@ -118,12 +118,12 @@ export async function addBalances(specPath: string, nodes: Node[]) {
             : stakingBond! + BigInt(1)
           : node.balance;
 
-        balanceMap[stash_key] = balanceToAdd;
+        balanceMap[stashKey] = balanceToAdd;
 
         const logLine = `👤 Added Balance ${
           node.balance
         } for ${decorators.green(node.name)} - ${decorators.magenta(
-          stash_key,
+          stashKey,
         )}`;
         new CreateLogTable({
           colWidths: [120],
