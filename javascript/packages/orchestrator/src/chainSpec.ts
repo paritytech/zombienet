@@ -96,6 +96,12 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   try {
     const chainSpec = readAndParseChainSpec(specPath);
     const runtimeConfig = getRuntimeConfig(chainSpec);
+    // Create a balance map
+    const balanceMap = runtimeConfig.balances.balances.reduce((memo: Record<string, number|BigInt>, balance:[string, number|BigInt]) => {
+      memo[balance[0]] = balance[1];
+      return memo;
+    }, {});
+
     for (const node of nodes) {
       if (node.balance) {
         const stash_key = node.accounts.sr_stash.address;
@@ -105,7 +111,8 @@ export async function addBalances(specPath: string, nodes: Node[]) {
             ? node.balance
             : stakingBond! + BigInt(1)
           : node.balance;
-        runtimeConfig.balances.balances.push([stash_key, balanceToAdd]);
+
+        balanceMap[stash_key] = balanceToAdd;
 
         const logLine = `👤 Added Balance ${
           node.balance
@@ -118,6 +125,8 @@ export async function addBalances(specPath: string, nodes: Node[]) {
         }).pushToPrint([[logLine]]);
       }
     }
+
+    runtimeConfig.balances.balances = Object.entries(balanceMap);
 
     writeChainSpec(specPath, chainSpec);
   } catch (err) {
