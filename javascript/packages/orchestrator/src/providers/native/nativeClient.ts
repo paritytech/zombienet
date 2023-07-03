@@ -385,52 +385,57 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand(["-c", `ps ${pid}`], {
+    let result = await this.runCommand(["-c", `ps ${pid}`], {
       allowFail: true,
     });
     if (result.exitCode > 0) {
-      const lines = await this.getNodeLogs(nodeName);
-
-      const logTable = new CreateLogTable({
-        colWidths: [20, 100],
-      });
-
-      logTable.pushToPrint([
-        [decorators.cyan("Pod"), decorators.green(nodeName)],
-        [
-          decorators.cyan("Status"),
-          decorators.reverse(decorators.red("Error")),
-        ],
-        [
-          decorators.cyan("Message"),
-          decorators.white(`Process: ${pid}, for node: ${nodeName} dies.`),
-        ],
-        [decorators.cyan("Output"), decorators.white(lines)],
-      ]);
-
-      // throw
+      await this.informProcessDie(pid!, nodeName);
       throw new Error();
     }
 
-    // check log lines grow between 2/6/12 secs
+    // check log lines grows
     const lines_1 = await this.runCommand(["-c", `wc -l ${logs}`]);
-    await sleep(2000);
+    await sleep(1000);
     const lines_2 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
-    await sleep(6000);
+    await sleep(1000);
     const lines_3 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_3.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
 
-    await sleep(12000);
-    const lines_4 = await this.runCommand(["-c", `wc -l ${logs}`]);
-    if (parseInt(lines_4.stdout.trim()) > parseInt(lines_1.stdout.trim()))
-      return;
+    // check if the process is still alive, IFF return node ready
+    // Since could be that the LOG env is set to the minimun.
+    result = await this.runCommand(["-c", `ps ${pid}`], {
+      allowFail: true,
+    });
+    if (result.exitCode > 0) {
+      await this.informProcessDie(pid!, nodeName);
+      throw new Error();
+    }
 
-    throw new Error(
-      `Log lines of process: ${pid} ( node: ${nodeName} ) doesn't grow, please check logs at ${logs}`,
-    );
+    return;
+  }
+
+  async informProcessDie(pid: number, nodeName: string): Promise<void> {
+    const lines = await this.getNodeLogs(nodeName);
+
+    const logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(nodeName)],
+      [
+        decorators.cyan("Status"),
+        decorators.reverse(decorators.red("Error")),
+      ],
+      [
+        decorators.cyan("Message"),
+        decorators.white(`Process: ${pid}, for node: ${nodeName} dies.`),
+      ],
+      [decorators.cyan("Output"), decorators.white(lines)],
+    ]);
   }
 
   async isPodMonitorAvailable(): Promise<boolean> {
