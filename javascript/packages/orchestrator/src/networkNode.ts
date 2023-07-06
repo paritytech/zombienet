@@ -455,12 +455,15 @@ export class NetworkNode implements NetworkNodeInterface {
         getValue(),
         new Promise(
           (resolve) =>
-            setTimeout(() => {
-              const err = new Error(
-                `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
-              );
-              return resolve(err);
-            }, (timeout + 2) * 1000), //extra 2s for processing log
+            setTimeout(
+              () => {
+                const err = new Error(
+                  `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
+                );
+                return resolve(err);
+              },
+              (timeout + 2) * 1000,
+            ), //extra 2s for processing log
         ),
       ]);
       if (resp instanceof Error) throw resp;
