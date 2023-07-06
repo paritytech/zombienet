@@ -7,7 +7,24 @@ import { finished } from "stream/promises";
 import { ReadableStream } from "stream/web";
 import { decorators } from "./colors";
 
-export async function getRandomPort(): Promise<number> {
+const usedPorts = new Map<number, number>();
+
+export interface GetRandomPortOptions {
+  maxRetries?: number;
+  timeout?: number;
+}
+
+/**
+ * Get a random available TCP port.
+ *
+ * Note that this function is prone to race conditions: a different process can start using the
+ * returned port before the caller of this function can start their server. However, in-process
+ * race conditions are prevented by storing the returned ports, so that a quick succession of
+ * calls to this function never returns a duplicate port.
+ */
+export async function getRandomPort(
+  options?: GetRandomPortOptions,
+): Promise<number> {
   const inner = async () => {
     return new Promise((resolve, reject) => {
       const server = createServer();
@@ -23,8 +40,26 @@ export async function getRandomPort(): Promise<number> {
     });
   };
 
-  const port: number = (await inner()) as number;
-  return port;
+  let retries = 0;
+  const maxRetries = options?.maxRetries || 10;
+  const timeout = options?.timeout || 10 * 60 * 1000; // 10 minutes
+  while (retries < maxRetries) {
+    retries++;
+    const port: number = (await inner()) as number;
+    const portUsedTimestamp = usedPorts.get(port);
+    const now = Date.now();
+    if (portUsedTimestamp === undefined || portUsedTimestamp < now) {
+      usedPorts.set(port, now + timeout);
+      return port;
+    } else {
+      // Warning: port already used previously
+      console.error(`Warning: port ${port} already used, retrying`);
+    }
+  }
+
+  throw new Error(
+    `Couldn't find an available TCP port after ${maxRetries} tries`,
+  );
 }
 
 export async function getHostIp(): Promise<string> {

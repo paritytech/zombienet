@@ -666,6 +666,68 @@ fn custom_sh_parse_ok() {
 }
 
 #[test]
+fn commented_line_parse_ok() {
+    let line: &str = r#"
+    alice: run ./0008-custom.sh within 200 seconds
+    # some comment
+    "#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: run ./0008-custom.sh within 200 seconds",
+                "parsed": {
+                    "fn": "CustomSh",
+                    "args": {
+                        "node_name": "alice",
+                        "file_path": "./0008-custom.sh",
+                        "custom_args": null,
+                        "timeout": 200
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn commented_line_empty_parse_ok() {
+    let line: &str = r#"
+    alice: run ./0008-custom.sh within 200 seconds
+    #
+    "#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: run ./0008-custom.sh within 200 seconds",
+                "parsed": {
+                    "fn": "CustomSh",
+                    "args": {
+                        "node_name": "alice",
+                        "file_path": "./0008-custom.sh",
+                        "custom_args": null,
+                        "timeout": 200
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn is_up_parse_err() {
     let result = parse("alice: is upp");
     assert!(result.is_err());
