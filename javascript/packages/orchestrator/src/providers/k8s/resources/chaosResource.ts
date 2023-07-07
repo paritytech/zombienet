@@ -8,7 +8,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { ChaosSpec, DelayInterface, PodSpec, ServiceSpec } from "./types";
+import { BadNetworkSettings, ChaosSpec, PodSpec, ServiceSpec } from "./types";
 
 export class ChaosResource {
   constructor(private readonly podSpec: PodSpec) {}
@@ -101,14 +101,14 @@ export class ChaosResource {
   private generateChaosSpec(
     name: string,
     ports: ChaosSpec["spec"]["ports"],
-    delay: DelayInterface,
+    delay: BadNetworkSettings,
   ): ChaosSpec {
     return {
       apiVersion: "chaos-mesh.org/v1alpha1",
       kind: "NetworkChaos",
       metadata: { name },
       spec: {
-        selector: { "app.kubernetes.io/instance": name },
+        selector: { namespaces: name },
         ports,
         delay,
       },

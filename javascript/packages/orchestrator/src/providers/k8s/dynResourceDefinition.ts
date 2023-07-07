@@ -27,13 +27,13 @@ export async function genNodeDef(
   return nodeResource.generateSpec();
 }
 
-export function genServiceDef(podSpec: PodSpec): ServiceSpec | ChaosSpec {
-  let resource: ServiceResource | ChaosResource;
-  if (podSpec.spec.delay) {
-    resource = new ChaosResource(podSpec);
-    resource.generateSpec();
-  }
-  resource = new ServiceResource(podSpec);
+export function genChaosDef(podSpec: PodSpec): ChaosSpec {
+  const resource = new ChaosResource(podSpec);
+  return resource.generateSpec();
+}
+
+export function genServiceDef(podSpec: PodSpec): ServiceSpec {
+  const resource = new ServiceResource(podSpec);
   return resource.generateSpec();
 }
 

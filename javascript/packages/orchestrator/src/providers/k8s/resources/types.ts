@@ -1,4 +1,9 @@
-import { envVars, Resources, ZombieRoleLabel } from "../../../types";
+import {
+  BadNetworkSettings,
+  envVars,
+  Resources,
+  ZombieRoleLabel,
+} from "../../../types";
 
 type ContainerResource = Resources["resources"];
 
@@ -53,7 +58,7 @@ export interface InnerPodSpec {
     runAsUser: number;
     runAsGroup: number;
   };
-  delay?: DelayInterface;
+  delay?: BadNetworkSettings;
 }
 
 export interface PodSpec {
@@ -89,21 +94,21 @@ export interface ChaosSpec {
   kind: "NetworkChaos";
   metadata: { name: string };
   spec: {
-    selector: {
-      [key: string]: string; // namespaces or pod
-    };
+    selector: SelectorTypeNS | SelectorTypePods;
     ports: {
       name: string;
       protocol: "TCP" | "UDP";
       port: number;
       targetPort: number;
     }[];
-    delay: DelayInterface;
+    delay: BadNetworkSettings;
   };
 }
 
-export interface DelayInterface {
-  latency: string;
-  correlation: string;
-  jitter: string;
+interface SelectorTypeNS {
+  namespaces: string;
+}
+
+interface SelectorTypePods {
+  pods: string;
 }

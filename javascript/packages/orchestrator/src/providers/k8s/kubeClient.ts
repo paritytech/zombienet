@@ -25,7 +25,7 @@ import {
   RunCommandResponse,
   setClient,
 } from "../client";
-import { genServiceDef } from "./dynResourceDefinition";
+import { genChaosDef, genServiceDef } from "./dynResourceDefinition";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -141,8 +141,8 @@ export class KubeClient extends Client {
 
     await this.createResource(podDef, true);
     if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
-      const serviceDef = genServiceDef(podDef);
-      await this.createResource(serviceDef, true);
+      const genFn = podDef.spec.delay ? genChaosDef : genServiceDef;
+      await this.createResource(genFn(podDef));
     }
 
     await this.waitTransferContainerReady(name);
