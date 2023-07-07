@@ -1,0 +1,29 @@
+[settings]
+global_delay = "yes"
+timeout = 666
+
+[relaychain]
+default_image = "docker.io/parity/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+
+chain = "rococo-local"
+
+  [[relaychain.node_groups]]
+  name = "a"
+  args = [ "-lparachain=debug", "--database=paritydb-experimental" ]
+  count = 5
+
+  [[relaychain.node_groups]]
+  name = "b"
+  count = 5
+
+[[parachains]]
+id = 100
+
+  [[parachains.collator_groups]]
+    count = 2
+    [parachains.collator_groups.collator]
+    name = "collator"
+    command = "polkadot-parachain"
+    image = "docker.io/parity/polkadot-parachain:latest"
