@@ -15,7 +15,7 @@ const options: OptIf = {};
  * @param opts Options from cli, currently only support `yes` to bypass the confirmation to download the binaries
  * @returns
  */
-export async function setup(params: any, opts: any) {
+export async function setup(params: any, opts?: any) {
   const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
 
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
