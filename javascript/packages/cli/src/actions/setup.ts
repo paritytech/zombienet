@@ -88,7 +88,7 @@ export async function setup(params: any, opts?: any) {
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
   console.log("Total approx. size: ", count, "MB");
-  if (!opts.yes) {
+  if (!opts?.yes) {
     const response = await askQuestion(
       decorators.yellow("\nDo you want to continue? (y/n)"),
     );
