@@ -128,6 +128,7 @@ program
       "zombienet setup polkadot polkadot-parachain",
     )}`,
   )
+  .addOption(new Option("-y, --yes", "Bypass confirmation"))
   .action(asyncAction(setup));
 
 program

@@ -12,9 +12,10 @@ const options: OptIf = {};
  * Setup - easily download latest artifacts and make them executable in order to use them with zombienet
  * Read more here: https://paritytech.github.io/zombienet/cli/setup.html
  * @param params binaries that willbe downloaded and set up. Possible values: `polkadot` `polkadot-parachain`
+ * @param opts Options from cli, currently only support `yes` to bypass the confirmation to download the binaries
  * @returns
  */
-export async function setup(params: any) {
+export async function setup(params: any, opts?: any) {
   const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
 
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
@@ -87,15 +88,17 @@ export async function setup(params: any) {
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
   console.log("Total approx. size: ", count, "MB");
-  const response = await askQuestion(
-    decorators.yellow("\nDo you want to continue? (y/n)"),
-  );
-  if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
-    console.log("Invalid input. Exiting...");
-    return;
-  }
-  if (response.toLowerCase() === "n") {
-    return;
+  if (!opts?.yes) {
+    const response = await askQuestion(
+      decorators.yellow("\nDo you want to continue? (y/n)"),
+    );
+    if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
+      console.log("Invalid input. Exiting...");
+      return;
+    }
+    if (response.toLowerCase() === "n") {
+      return;
+    }
   }
   downloadBinaries(params);
   return;
