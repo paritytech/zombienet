@@ -397,7 +397,6 @@ Below can be found some of the projects that are currently using Zombienet as in
 
 **In Parity:**
 
-- [CAPI]()
 - [Cumulus](https://github.com/paritytech/cumulus/tree/master/zombienet/tests)
 - [Polkadot](https://polkadot.network/) in the [testing pipeline](https://github.com/paritytech/polkadot/blob/eafdfc36492384e16e1c253be9d5097fb3f33c60/scripts/ci/gitlab/pipeline/zombienet.yml);
 - [Substrate](https://github.com/paritytech/substrate/tree/master/zombienet)

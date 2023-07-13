@@ -41,7 +41,7 @@
     "@types/chai": "^4.3.5",
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/mocha": "^10.0.1",
-    "@types/nunjucks": "^3.2.2",
+    "@types/nunjucks": "^3.2.3",
     "@types/sinon": "^10.0.15",
     "chai": "^4.3.7",
     "deep-equal-in-any-order": "^2.0.6",

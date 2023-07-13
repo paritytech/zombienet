@@ -617,7 +617,7 @@ async function getNodeFromConfig(
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
     invulnerable: node.invulnerable,
-    balance: node.balance,
+    balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,

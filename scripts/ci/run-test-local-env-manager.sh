@@ -17,17 +17,20 @@ gcloud components install kubectl
 Usage: ${SCRIPT_NAME} OPTION
 
 OPTION
- -t, --test          OPTIONAL Test file to run
+  -t, --test         OPTIONAL Test file to run
                      If omitted "all" test in the tests directory will be used.
+  -l, --local-dir    Directory where the test/config files lives, can be absolute or
+                     relatives to ${SCRIPT_PATH}
+  -c, --concurrency  OPTIONAL concurrency for spawn nodes
   -h, --help         OPTIONAL Print this help message
   -o, --output-dir   OPTIONAL
-                     Path to dir where to save contens of --github-remote-dir
+                     Path to dir where to save contens of --local-dir
                      Defaults to ${SCRIPT_PATH}
                      specified, it will be ifered from there.
 
 EXAMPLES
 Run tests
-${SCRIPT_NAME} -g https://github.com/paritytech/polkadot/tree/master/zombienet_tests
+${SCRIPT_NAME} -l https://github.com/paritytech/polkadot/tree/master/zombienet_tests
 
 EOF
 }
@@ -61,8 +64,9 @@ function set_defaults_for_globals {
   cd "${SCRIPT_PATH}"
 
   EXIT_STATUS=0
-  GH_REMOTE_DIR=""
+  LOCAL_DIR=""
   TEST_TO_RUN=""
+  CONCURRENCY=2
 
 
   LAUNCH_ARGUMENTS=""
@@ -78,14 +82,13 @@ function parse_args {
   }
 
   function check_args {
-    if [[ -n "${GH_REMOTE_DIR}" &&
-          ! "${GH_REMOTE_DIR}" =~ https:\/\/github.com\/ ]] ; then
-      log DIE "Not a github URL"
+    if [[ ! -n "${LOCAL_DIR}" ]] ; then
+      log DIE "Not LOCAL_DIR Set"
     fi
   }
 
   # shellcheck disable=SC2214
-  while getopts i:t:g:h:uo:-: OPT; do
+  while getopts i:t:l:h:uo:-: OPT; do
     # support long options: https://stackoverflow.com/a/28466267/519360
     if [ "$OPT" = "-" ]; then   # long option: reformulate OPT and OPTARG
       OPT="${OPTARG%%=*}"       # extract long option name
@@ -94,7 +97,8 @@ function parse_args {
     fi
     case "$OPT" in
       t | test)                 needs_arg ; TEST_TO_RUN="${OPTARG}"  ;;
-      g | github-remote-dir)    needs_arg ; GH_REMOTE_DIR="${OPTARG}"          ;;
+      c | concurrency)          needs_arg ; CONCURRENCY="${OPTARG}"  ;;
+      l | local-dir)            needs_arg ; LOCAL_DIR="${OPTARG}"          ;;
       h | help )                usage     ; exit 0                             ;;
       o | output-dir)           needs_arg ; OUTPUT_DIR="${OPTARG}"             ;;
       ??* )                     log DIE "Illegal option --${OPT}" ;;
@@ -108,9 +112,7 @@ function parse_args {
 function copy_to_isolated {
   cd "${SCRIPT_PATH}"
   echo $(pwd)
-  echo $(ls)
-  echo $(ls ../..)
-  cp -r ../../tests/* "${OUTPUT_DIR}"
+  cp -r "${LOCAL_DIR}"/* "${OUTPUT_DIR}"
 }
 function run_test {
   # RUN_IN_CONTAINER is env var that is set in the dockerfile
@@ -121,11 +123,16 @@ function run_test {
   cd "${OUTPUT_DIR}"
   set -x
   set +e
+  if [[ ! -z $CONCURRENCY ]]; then
+    C=2
+  else
+    C=$CONCURRENCY
+  fi;
   if [[ ! -z $TEST_TO_RUN ]]; then
     TEST_FOUND=0
     for i in $(find ${OUTPUT_DIR} -name "${TEST_TO_RUN}"| head -1); do
       TEST_FOUND=1
-      zombie test $i
+      zombie -c $CONCURRENCY test $i
       EXIT_STATUS=$?
     done;
     if [[ $TEST_FOUND -lt 1 ]]; then
@@ -134,7 +141,7 @@ function run_test {
   else
     for i in $(find ${OUTPUT_DIR} -name *.zndsl | sort); do
       echo "running test: ${i}"
-      zombie test $i
+      zombie -c $CONCURRENCY test $i
       TEST_EXIT_STATUS=$?
       EXIT_STATUS=$((EXIT_STATUS+TEST_EXIT_STATUS))
     done;

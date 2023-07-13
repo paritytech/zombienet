@@ -84,7 +84,7 @@ resume = { node_name ~ "resume" }
 restart = { node_name ~ "restart" ~ ("after" ~ int+ ~ seconds)? }
 
 /// COMMENTS
-comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)+ }
+comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)* }
 
 
 file = { SOI ~ (

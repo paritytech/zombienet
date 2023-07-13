@@ -17,5 +17,6 @@ spec:
           - tempo
           - monitoring
           - parachain-exporter
+          - default
   policyTypes:
   - Ingress
