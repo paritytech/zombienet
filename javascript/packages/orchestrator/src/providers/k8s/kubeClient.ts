@@ -141,8 +141,11 @@ export class KubeClient extends Client {
 
     await this.createResource(podDef, true);
     if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
-      const genFn = podDef.spec.delay ? genChaosDef : genServiceDef;
-      await this.createResource(genFn(podDef));
+      const serviceDef = genServiceDef(podDef);
+      await this.createResource(serviceDef, true);
+      if (podDef.spec.delay) {
+        await this.createResource(genChaosDef(podDef), true);
+      }
     }
 
     await this.waitTransferContainerReady(name);

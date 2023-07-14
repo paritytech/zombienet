@@ -95,12 +95,6 @@ export interface ChaosSpec {
   metadata: { name: string };
   spec: {
     selector: SelectorTypeNS | SelectorTypePods;
-    ports: {
-      name: string;
-      protocol: "TCP" | "UDP";
-      port: number;
-      targetPort: number;
-    }[];
     delay: BadNetworkSettings;
   };
 }
