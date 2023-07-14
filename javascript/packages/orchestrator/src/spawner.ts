@@ -177,7 +177,7 @@ export const spawnNode = async (
     if (!network.paras[paraId])
       network.addPara(
         paraId,
-        parachain.chainSpecPath,
+        parachain.specPath,
         parachain.wasmPath,
         parachain.statePath,
       );
