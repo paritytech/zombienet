@@ -8,7 +8,9 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { BadNetworkSettings, ChaosSpec, PodSpec, ServiceSpec } from "./types";
+import { ChaosSpec, PodSpec, ServiceSpec } from "./types";
+
+import { BadNetworkSettings } from "../../../types";
 
 export class ChaosResource {
   constructor(private readonly podSpec: PodSpec) {}
@@ -108,7 +110,7 @@ export class ChaosResource {
       kind: "NetworkChaos",
       metadata: { name },
       spec: {
-        selector: { namespaces: name },
+        selector: { pods: name },
         ports,
         delay,
       },
