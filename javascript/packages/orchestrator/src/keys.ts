@@ -63,14 +63,14 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
 export async function generateKeystoreFiles(
   node: Node,
   path: string,
-  isStatemint = false,
+  isAssetHubPolkadot = false,
 ): Promise<string[]> {
   const keystoreDir = `${path}/keystore`;
   await makeDir(keystoreDir);
 
   const paths: string[] = [];
   const keysHash = {
-    aura: isStatemint
+    aura: isAssetHubPolkadot
       ? node.accounts.ed_account.publicKey
       : node.accounts.sr_account.publicKey,
     babe: node.accounts.sr_account.publicKey,

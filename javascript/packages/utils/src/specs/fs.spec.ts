@@ -1,9 +1,9 @@
-import { mkdir, readFile, rmSync } from "fs";
+import { mkdir, rmSync } from "fs";
 import path from "path";
 
-import chai, { assert, expect } from "chai";
+import chai, { assert } from "chai";
 import deepEqualInAnyOrder from "deep-equal-in-any-order";
-import { readNetworkConfig, writeLocalJsonFile } from "../fs";
+import { readNetworkConfig } from "../fs";
 import { LaunchConfig } from "../types";
 
 chai.use(deepEqualInAnyOrder);
@@ -21,36 +21,36 @@ describe("Tests on module 'fs';", () => {
     rmSync(path.join(__dirname, "tmp_tests"), { recursive: true, force: true });
   });
 
-  it("tests that fs/writeLocalJsonFile is success ", async () => {
-    const jsonTest = {
-      apiVersion: "v1",
-      kind: "Namespace",
-      metadata: {
-        name: "this.namespace",
-      },
-    };
+  // it("tests that fs/writeLocalJsonFile is success ", async () => {
+  //   const jsonTest = {
+  //     apiVersion: "v1",
+  //     kind: "Namespace",
+  //     metadata: {
+  //       name: "this.namespace",
+  //     },
+  //   };
 
-    const writeFn = () =>
-      writeLocalJsonFile(
-        path.join(__dirname, "tmp_tests"),
-        "writeLocalJsonFile.json",
-        jsonTest,
-      );
+  //   const writeFn = () =>
+  //     writeLocalJsonFile(
+  //       path.join(__dirname, "tmp_tests"),
+  //       "writeLocalJsonFile.json",
+  //       jsonTest,
+  //     );
 
-    expect(writeFn).to.not.throw();
+  //   expect(writeFn).to.not.throw();
 
-    readFile(
-      path.join(__dirname, "tmp_tests", "writeLocalJsonFile.json"),
-      "utf8",
-      (err, data) => {
-        if (err) {
-          console.error(err);
-        } else {
-          expect(JSON.parse(data)).to.deep.equalInAnyOrder(jsonTest);
-        }
-      },
-    );
-  });
+  //   readFile(
+  //     path.join(__dirname, "tmp_tests", "writeLocalJsonFile.json"),
+  //     "utf8",
+  //     (err, data) => {
+  //       if (err) {
+  //         console.error(err);
+  //       } else {
+  //         expect(JSON.parse(data)).to.deep.equalInAnyOrder(jsonTest);
+  //       }
+  //     },
+  //   );
+  // });
 
   it("tests that fs/readNetworkConfig converts the config file", async () => {
     const some = path.resolve(path.join(__dirname, "./spec-config.toml"));

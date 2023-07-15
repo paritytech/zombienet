@@ -134,7 +134,7 @@ export async function generateNetworkSpec(
   };
 
   // check all imageURLs for validity
-  // TODO: These checks should be agains all config items that needs check
+  // TODO: These checks should be against all config items that needs check
   configurationFileChecks(config);
 
   if (config.relaychain.genesis)
@@ -257,7 +257,7 @@ export async function generateNetworkSpec(
             );
 
       // collator could by defined in groups or
-      // just using one collator definiton
+      // just using one collator definition
       const collators = [];
       const collatorConfigs = parachain.collator ? [parachain.collator] : [];
       if (parachain.collators) collatorConfigs.push(...parachain.collators);
@@ -272,6 +272,7 @@ export async function generateNetworkSpec(
             para,
             bootnodes,
             isCumulusBased,
+            collatorConfig.name, // group of 1
           ),
         );
       }
@@ -306,6 +307,7 @@ export async function generateNetworkSpec(
               para,
               bootnodes,
               isCumulusBased,
+              collatorGroup.name,
             ),
           );
         }
@@ -505,6 +507,7 @@ async function getCollatorNodeFromConfig(
   para: PARA,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
+  group?: string,
 ): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args)
@@ -555,6 +558,7 @@ async function getCollatorNodeFromConfig(
       networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
+  if (group) node.group = group;
   return node;
 }
 
@@ -613,7 +617,7 @@ async function getNodeFromConfig(
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
     invulnerable: node.invulnerable,
-    balance: node.balance,
+    balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,

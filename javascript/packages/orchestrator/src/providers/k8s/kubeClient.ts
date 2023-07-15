@@ -590,7 +590,7 @@ export class KubeClient extends Client {
   async setupCleaner(): Promise<NodeJS.Timer> {
     this.podMonitorAvailable = await this.isPodMonitorAvailable();
 
-    // create CronJob cleanner for namespace
+    // create CronJob cleaner for namespace
     await this.cronJobCleanerSetup();
     await this.upsertCronJob();
 

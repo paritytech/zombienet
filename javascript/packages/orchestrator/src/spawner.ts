@@ -87,11 +87,14 @@ export const spawnNode = async (
 
     await makeDir(nodeFilesPath, true);
 
-    const isStatemint = parachain && parachain.chain?.includes("statemint");
+    const isAssetHubPolkadot =
+      parachain &&
+      (parachain.chain?.includes("statemint") ||
+        parachain.chain?.includes("asset-hub-polkadot"));
     const keystoreFiles = await generateKeystoreFiles(
       node,
       nodeFilesPath,
-      isStatemint,
+      isAssetHubPolkadot,
     );
     keystoreLocalDir = path.dirname(keystoreFiles[0]);
   }
@@ -174,7 +177,7 @@ export const spawnNode = async (
     if (!network.paras[paraId])
       network.addPara(
         paraId,
-        parachain.chainSpecPath,
+        parachain.specPath,
         parachain.wasmPath,
         parachain.statePath,
       );

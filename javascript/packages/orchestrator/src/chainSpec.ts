@@ -16,7 +16,7 @@ const debug = require("debug")("zombie::chain-spec");
 const JSONStream = require("JSONStream");
 
 // track 1st staking as default;
-let stakingBond: number | undefined;
+let stakingBond: bigint | undefined;
 
 export type KeyType = "session" | "aura" | "grandpa";
 
@@ -73,7 +73,7 @@ export function clearAuthorities(specPath: string) {
 
     // Clear staking
     if (runtimeConfig?.staking) {
-      stakingBond = runtimeConfig.staking.stakers[0][2];
+      stakingBond = BigInt(runtimeConfig.staking.stakers[0][2]);
       runtimeConfig.staking.stakers = [];
       runtimeConfig.staking.invulnerables = [];
       runtimeConfig.staking.validatorCount = 0;
@@ -96,28 +96,41 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   try {
     const chainSpec = readAndParseChainSpec(specPath);
     const runtimeConfig = getRuntimeConfig(chainSpec);
+    // Create a balance map
+    const balanceMap = runtimeConfig.balances.balances.reduce(
+      (
+        memo: Record<string, number | BigInt>,
+        balance: [string, number | BigInt],
+      ) => {
+        memo[balance[0]] = balance[1];
+        return memo;
+      },
+      {},
+    );
+
     for (const node of nodes) {
       if (node.balance) {
-        const stash_key = node.accounts.sr_stash.address;
+        const stashKey = node.accounts.sr_stash.address;
 
         const balanceToAdd = stakingBond
           ? node.validator && node.balance > stakingBond
             ? node.balance
-            : stakingBond! + 1
+            : stakingBond! + BigInt(1)
           : node.balance;
-        runtimeConfig.balances.balances.push([stash_key, balanceToAdd]);
+
+        balanceMap[stashKey] = balanceToAdd;
 
         const logLine = `👤 Added Balance ${
           node.balance
-        } for ${decorators.green(node.name)} - ${decorators.magenta(
-          stash_key,
-        )}`;
+        } for ${decorators.green(node.name)} - ${decorators.magenta(stashKey)}`;
         new CreateLogTable({
           colWidths: [120],
           doubleBorder: true,
         }).pushToPrint([[logLine]]);
       }
     }
+
+    runtimeConfig.balances.balances = Object.entries(balanceMap);
 
     writeChainSpec(specPath, chainSpec);
   } catch (err) {
@@ -206,7 +219,7 @@ export async function addStaking(specPath: string, node: Node) {
     runtimeConfig.staking.stakers.push([
       sr_stash.address,
       sr_stash.address,
-      stakingBond || 1000000000000,
+      stakingBond || BigInt(1000000000000),
       "Validator",
     ]);
 
@@ -354,7 +367,7 @@ export async function generateNominators(
       // create account
       const nom = await generateKeyFromSeed(`nom-${i}`);
       // add to balances
-      const balanceToAdd = stakingBond! + 1;
+      const balanceToAdd = stakingBond! + BigInt(1);
       runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
       // random nominations
       const count = crypto.randomInt(maxForRandom) % maxNominations;
@@ -584,13 +597,13 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
             )} [ key : ${key} ]`,
           ],
         ]);
-        debug(`[ ${key}: ${obj2[key]} ]`);
+        debug(`[ ${key}: ${JSON.stringify(obj2[key])} ]`);
       }
     } else {
       console.error(
         `\n\t\t  ${decorators.reverse(
           decorators.red("⚠ Bad Genesis Configuration"),
-        )} [ ${key}: ${obj1[key]} ]`,
+        )} [ ${key}: ${JSON.stringify(obj1[key])} ]`,
       );
     }
   });

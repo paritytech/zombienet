@@ -168,6 +168,38 @@ fn report_parse_ok() {
 }
 
 #[test]
+fn report_parse_calc_ok() {
+    let line: &str =
+        r#"alice: reports block height minus finalised block is at least 10 within 200 seconds"#;
+    let data = r#"{
+      "description": null,
+      "network": "./a.toml",
+      "creds": "config",
+      "assertions": [
+        {
+          "original_line": "alice: reports block height minus finalised block is at least 10 within 200 seconds",
+          "parsed": {
+            "fn": "CalcMetrics",
+            "args": {
+              "node_name": "alice",
+              "metric_name_a": "block height",
+              "math_ops":  "Minus",
+              "metric_name_b": "finalised block",
+              "op": "IsAtLeast",
+              "target_value": 10,
+              "timeout": 200
+            }
+          }
+        }
+      ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn para_dummy_upgrade_parse_ok() {
     let line: &str = r#"alice: parachain 100 perform dummy upgrade within 200 seconds"#;
     let data = r#"{
@@ -608,6 +640,68 @@ fn custom_ts_with_args_parse_ok() {
 #[test]
 fn custom_sh_parse_ok() {
     let line: &str = r#"alice: run ./0008-custom.sh within 200 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: run ./0008-custom.sh within 200 seconds",
+                "parsed": {
+                    "fn": "CustomSh",
+                    "args": {
+                        "node_name": "alice",
+                        "file_path": "./0008-custom.sh",
+                        "custom_args": null,
+                        "timeout": 200
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn commented_line_parse_ok() {
+    let line: &str = r#"
+    alice: run ./0008-custom.sh within 200 seconds
+    # some comment
+    "#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: run ./0008-custom.sh within 200 seconds",
+                "parsed": {
+                    "fn": "CustomSh",
+                    "args": {
+                        "node_name": "alice",
+                        "file_path": "./0008-custom.sh",
+                        "custom_args": null,
+                        "timeout": 200
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
+fn commented_line_empty_parse_ok() {
+    let line: &str = r#"
+    alice: run ./0008-custom.sh within 200 seconds
+    #
+    "#;
     let data = r#"{
         "description": null,
         "network": "./a.toml",

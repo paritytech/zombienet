@@ -1,6 +1,6 @@
 [package]
 name = "dsl-parser-wrapper"
-version = "0.1.8"
+version = "0.1.10"
 edition = "2021"
 description = "Zombienet DSL parser: produces a test definition, in json format, that can be used with the ZombieNet's test-runnner."
 license = "GPL-3.0-or-later"

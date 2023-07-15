@@ -219,7 +219,7 @@ export async function start(
     // setup cleaner
     if (!opts.monitor) {
       cronInterval = await client.setupCleaner();
-      debug("Cleanner job configured");
+      debug("Cleaner job configured");
     }
 
     // Create bootnode and backchannel services

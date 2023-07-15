@@ -21,7 +21,7 @@ Zombienet aims to be a testing framework for Substrate based blockchains, provid
 tool that allows users to spawn and test ephemeral networks. The assertions used in the tests can
 include on-chain storage, metrics, logs and custom javascript scripts that interact with the chain.
 To make it easy to define those, zombienet has a `natural language` built-in allowing developers to
-write tests as smooth as posible.
+write tests as smooth as possible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are

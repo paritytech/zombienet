@@ -190,7 +190,7 @@ export async function run(
                 }
               }
 
-              // logs are also collaected as artifacts
+              // logs are also collected as artifacts
               console.log(
                 `\n\n\t ${decorators.yellow(
                   "📓 Logs are also available in the artifacts' pipeline in gitlab",

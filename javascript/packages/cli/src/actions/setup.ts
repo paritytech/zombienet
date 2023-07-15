@@ -9,12 +9,13 @@ interface OptIf {
 
 const options: OptIf = {};
 /**
- * Setup - easily download latest artifacts and make them executablein order to use them with zombienet
+ * Setup - easily download latest artifacts and make them executable in order to use them with zombienet
  * Read more here: https://paritytech.github.io/zombienet/cli/setup.html
  * @param params binaries that willbe downloaded and set up. Possible values: `polkadot` `polkadot-parachain`
+ * @param opts Options from cli, currently only support `yes` to bypass the confirmation to download the binaries
  * @returns
  */
-export async function setup(params: any) {
+export async function setup(params: any, opts?: any) {
   const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
 
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
@@ -87,15 +88,17 @@ export async function setup(params: any) {
     console.log("-", a, "\t Approx. size ", size, " MB");
   });
   console.log("Total approx. size: ", count, "MB");
-  const response = await askQuestion(
-    decorators.yellow("\nDo you want to continue? (y/n)"),
-  );
-  if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
-    console.log("Invalid input. Exiting...");
-    return;
-  }
-  if (response.toLowerCase() === "n") {
-    return;
+  if (!opts?.yes) {
+    const response = await askQuestion(
+      decorators.yellow("\nDo you want to continue? (y/n)"),
+    );
+    if (response.toLowerCase() !== "n" && response.toLowerCase() !== "y") {
+      console.log("Invalid input. Exiting...");
+      return;
+    }
+    if (response.toLowerCase() === "n") {
+      return;
+    }
   }
   downloadBinaries(params);
   return;
@@ -130,6 +133,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
             throw new Error("Binary is not defined");
           }
           const { url, name } = result;
+          const filepath = path.resolve(name);
 
           if (!url) throw new Error("No url for downloading, was provided");
 
@@ -145,7 +149,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
 
           const progressBar = multibar.create(parseInt(contentLength, 10), 0);
           const reader = response.body?.getReader();
-          const writer = fs.createWriteStream(path.resolve(name));
+          const writer = fs.createWriteStream(filepath);
 
           let i = true;
           while (i) {
@@ -164,6 +168,8 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
               writer.write(read.value);
             }
           }
+          // make the file exec
+          await fs.promises.chmod(filepath, 755);
         }),
       );
     }
