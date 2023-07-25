@@ -161,6 +161,7 @@ export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
         beefy: encodeAddress(ec_account.publicKey),
         aura: sr_account.address,
         nimbus: sr_account.address,
+        vrf: sr_account.address,
       },
     ];
 
