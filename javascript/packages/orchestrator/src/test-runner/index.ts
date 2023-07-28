@@ -49,8 +49,6 @@ export async function run(
     ? testDef.network
     : path.resolve(configBasePath, testDef.network);
 
-  console.log("networkConfigFilePath", networkConfigFilePath);
-
   const config: LaunchConfig = readNetworkConfig(networkConfigFilePath);
 
   // set the provider
@@ -85,8 +83,6 @@ export async function run(
   const suite = Suite.create(mocha.suite, suiteName);
 
   suite.beforeAll("launching", async function () {
-    console.log("config: ", config);
-
     const launchTimeout = config.settings?.timeout || 500;
     this.timeout(launchTimeout * 1000);
     try {

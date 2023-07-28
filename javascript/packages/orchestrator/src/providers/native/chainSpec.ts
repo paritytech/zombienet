@@ -22,7 +22,6 @@ export async function setupChainSpec(
   // 2: User provide the chainSpecCommand (without the --raw option)
   const client = getClient();
 
-  console.log("0000000000000 ", chainConfig);
   if (chainConfig.chainSpecPath) {
     // copy file to temp to use
     await fsPromises.copyFile(chainConfig.chainSpecPath, chainFullPath);
