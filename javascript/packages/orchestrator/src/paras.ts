@@ -13,6 +13,7 @@ import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
 import { Node, Parachain, ZombieRole, fileMap } from "./types";
+import path from "path";
 
 const debug = require("debug")("zombie::paras");
 
@@ -50,8 +51,8 @@ export async function generateParachainFiles(
   const GENESIS_STATE_FILENAME_WITH_ID = `${GENESIS_STATE_FILENAME}-${parachain.id}`;
   const GENESIS_WASM_FILENAME_WITH_ID = `${GENESIS_WASM_FILENAME}-${parachain.id}`;
 
-  const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
-  const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
+  const stateLocalFilePath = `${parachainFilesPath}${path.sep}${GENESIS_STATE_FILENAME}`;
+  const wasmLocalFilePath = `${parachainFilesPath}${path.sep}${GENESIS_WASM_FILENAME}`;
   const client = getClient();
 
   const { setupChainSpec, getChainSpecRaw } = Providers.get(
@@ -64,12 +65,12 @@ export async function generateParachainFiles(
   }-${relayChainName}`;
   const chainSpecFileName = `${chainName}.json`;
 
-  const chainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
+  const chainSpecFullPathPlain = `${tmpDir}${path.sep}${chainName}-plain.json`;
 
   if (parachain.cumulusBased) {
     // need to create the parachain spec
     // file name template is [para chain-]<para name>-<relay chain>
-    const relayChainSpecFullPathPlain = `${tmpDir}/${relayChainName}-plain.json`;
+    const relayChainSpecFullPathPlain = `${tmpDir}${path.sep}${relayChainName}-plain.json`;
 
     // Check if the chain-spec file is provided.
     if (parachain.chainSpecPath) {
@@ -95,7 +96,7 @@ export async function generateParachainFiles(
       );
     }
 
-    chainSpecFullPath = `${tmpDir}/${chainSpecFileName}`;
+    chainSpecFullPath = `${tmpDir}${path.sep}${chainSpecFileName}`;
     if (!(await isRawSpec(chainSpecFullPathPlain))) {
       // fields
       const plainData = readAndParseChainSpec(chainSpecFullPathPlain);
@@ -146,7 +147,7 @@ export async function generateParachainFiles(
       if (parachain.chain)
         fs.copyFileSync(
           chainSpecFullPathPlain,
-          `${tmpDir}/${parachain.chain}-${parachain.name}-plain.json`,
+          `${tmpDir}${path.sep}${parachain.chain}-${parachain.name}-plain.json`,
         );
       // generate the raw chain spec
       await getChainSpecRaw(

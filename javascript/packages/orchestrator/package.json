@@ -51,7 +51,6 @@
     "libp2p-crypto": "^0.21.2",
     "minimatch": "^9.0.3",
     "mocha": "^10.2.0",
-    "napi-maybe-compressed-blob": "^0.0.11",
     "peer-id": "^0.16.0",
     "tmp-promise": "^3.0.3",
     "typescript": "^5.1.6",

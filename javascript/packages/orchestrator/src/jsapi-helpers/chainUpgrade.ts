@@ -1,7 +1,7 @@
 import { ApiPromise, Keyring } from "@polkadot/api";
 import { blake2AsHex, cryptoWaitReady } from "@polkadot/util-crypto";
 import { promises as fsPromises } from "fs";
-import { compress, decompress } from "napi-maybe-compressed-blob";
+//import { compress, decompress } from "napi-maybe-compressed-blob";
 import { DEFAULT_INDIVIDUAL_TEST_TIMEOUT } from "../constants";
 const debug = require("debug")("zombie::js-helpers::chain-upgrade");
 
@@ -47,27 +47,28 @@ export async function chainUpgradeFromLocalFile(
 export async function chainCustomSectionUpgrade(
   api: ApiPromise,
 ): Promise<string> {
-  const code: any = await api.rpc.state.getStorage(":code");
-  const codeHex = code.toString().slice(2);
-  const codeBuf = Buffer.from(hexToBytes(codeHex));
-  const decompressed = decompress(codeBuf);
+  // const code: any = await api.rpc.state.getStorage(":code");
+  // const codeHex = code.toString().slice(2);
+  // const codeBuf = Buffer.from(hexToBytes(codeHex));
+  // const decompressed = decompress(codeBuf);
 
-  // add a custom section
-  // Same as echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A" >> file.wasm
-  const customSection = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a];
-  const withCustomSectionCode = Buffer.concat([
-    decompressed,
-    Buffer.from(customSection),
-  ]);
+  // // add a custom section
+  // // Same as echo -n -e "\x00\x07\x05\x64\x75\x6D\x6D\x79\x0A" >> file.wasm
+  // const customSection = [0x00, 0x07, 0x05, 0x64, 0x75, 0x6d, 0x6d, 0x79, 0x0a];
+  // const withCustomSectionCode = Buffer.concat([
+  //   decompressed,
+  //   Buffer.from(customSection),
+  // ]);
 
-  // compress again
-  const compressed = compress(withCustomSectionCode);
-  const hash = blake2AsHex(compressed);
-  debug(`New compressed hash : ${hash}`);
+  // // compress again
+  // const compressed = compress(withCustomSectionCode);
+  // const hash = blake2AsHex(compressed);
+  // debug(`New compressed hash : ${hash}`);
 
-  await performChainUpgrade(api, compressed.toString("hex"));
+  // await performChainUpgrade(api, compressed.toString("hex"));
 
-  return hash;
+  // return hash;
+  return "NOT supported for windows version"
 }
 
 export async function validateRuntimeCode(
@@ -80,7 +81,7 @@ export async function validateRuntimeCode(
     let done;
     while (!done) {
       const currentHash = await api.query.paras.currentCodeHash(paraId);
-      console.log(`parachain ${paraId} current code hash : ${currentHash}`);
+      console.log(`parachain ${paraId} current code hash : ${currentHash}, desired hash: ${hash}`);
       if (hash === currentHash.toString()) break;
       // wait 2 secs between checks
       await new Promise((resolve) => setTimeout(resolve, 2000));

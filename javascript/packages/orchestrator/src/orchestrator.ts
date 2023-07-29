@@ -52,6 +52,7 @@ import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
 import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
+import path from "path";
 
 const debug = require("debug")("zombie");
 
@@ -144,14 +145,14 @@ export async function start(
       }
     }
 
-    const localMagicFilepath = `${tmpDir.path}/finished.txt`;
+    const localMagicFilepath = `${tmpDir.path}${path.sep}finished.txt`;
     // Create MAGIC file to stop temp/init containers
     fs.openSync(localMagicFilepath, "w");
 
     // Define chain name and file name to use.
     const chainSpecFileName = `${networkSpec.relaychain.chain}.json`;
     const chainName = networkSpec.relaychain.chain;
-    const chainSpecFullPath = `${tmpDir.path}/${chainSpecFileName}`;
+    const chainSpecFullPath = `${tmpDir.path}${path.sep}${chainSpecFileName}`;
     const chainSpecFullPathPlain = chainSpecFullPath.replace(
       ".json",
       "-plain.json",
@@ -201,7 +202,7 @@ export async function start(
       process.exit(1);
     }
 
-    const zombieWrapperLocalPath = `${tmpDir.path}/${ZOMBIE_WRAPPER}`;
+    const zombieWrapperLocalPath = `${tmpDir.path}${path.sep}${ZOMBIE_WRAPPER}`;
     const zombieWrapperContent = await fs.promises.readFile(zombieWrapperPath);
     await fs.promises.writeFile(
       zombieWrapperLocalPath,
@@ -251,7 +252,7 @@ export async function start(
     network.chainId = chainSpecContent.id;
 
     const parachainFilesPromiseGenerator = async (parachain: Parachain) => {
-      const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
+      const parachainFilesPath = `${tmpDir.path}${path.sep}${parachain.name}`;
       await makeDir(parachainFilesPath);
       await generateParachainFiles(
         namespace,
@@ -272,9 +273,9 @@ export async function start(
     await series(parachainPromiseGenerators, opts.spawnConcurrency);
 
     for (const parachain of networkSpec.parachains) {
-      const parachainFilesPath = `${tmpDir.path}/${parachain.name}`;
-      const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
-      const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
+      const parachainFilesPath = `${tmpDir.path}${path.sep}${parachain.name}`;
+      const stateLocalFilePath = `${parachainFilesPath}${path.sep}${GENESIS_STATE_FILENAME}`;
+      const wasmLocalFilePath = `${parachainFilesPath}${path.sep}${GENESIS_WASM_FILENAME}`;
       if (parachain.addToGenesis && !relayChainSpecIsRaw)
         await addParachainToGenesis(
           chainSpecFullPathPlain,
@@ -395,7 +396,7 @@ export async function start(
         // cache the chainSpec with bootnodes
         const fileBuffer = await fs.promises.readFile(chainSpecFullPath);
         const fileHash = getSha256(fileBuffer.toString());
-        const parts = chainSpecFullPath.split("/");
+        const parts = chainSpecFullPath.split(path.sep);
         const fileName = parts[parts.length - 1];
         await (client as KubeClient).uploadToFileserver(
           chainSpecFullPath,
@@ -436,13 +437,13 @@ export async function start(
     for (const parachain of networkSpec.parachains) {
       if (!parachain.addToGenesis && parachain.registerPara) {
         // register parachain on a running network
-        const basePath = `${tmpDir.path}/${parachain.name}`;
+        const basePath = `${tmpDir.path}${path.sep}${parachain.name}`;
         // ensure node is up.
         await nodeChecker(network.relay[0]);
         await registerParachain({
           id: parachain.id,
-          wasmPath: `${basePath}/${GENESIS_WASM_FILENAME}`,
-          statePath: `${basePath}/${GENESIS_STATE_FILENAME}`,
+          wasmPath: `${basePath}${path.sep}${GENESIS_WASM_FILENAME}`,
+          statePath: `${basePath}${path.sep}${GENESIS_STATE_FILENAME}`,
           apiUrl: network.relay[0].wsUri,
           onboardAsParachain: parachain.onboardAsParachain,
         });
@@ -517,7 +518,7 @@ export async function start(
     // clean cache before dump the info.
     network.cleanMetricsCache();
     await fs.promises.writeFile(
-      `${tmpDir.path}/zombie.json`,
+      `${tmpDir.path}${path.sep}zombie.json`,
       JSON.stringify(network),
     );
 

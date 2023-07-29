@@ -14,6 +14,7 @@ import { Providers } from "../providers";
 import { LaunchConfig, TestDefinition } from "../types";
 import assertions from "./assertions";
 import commands from "./commands";
+import os from "os";
 
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 
@@ -64,6 +65,7 @@ export async function run(
     const possiblePaths = [
       ".",
       "..",
+      `${os.homedir()}/.kube`,
       `${process.env.HOME}/.kube`,
       "/etc/zombie-net",
     ];

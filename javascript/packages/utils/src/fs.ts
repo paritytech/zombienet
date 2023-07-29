@@ -7,6 +7,7 @@ import yaml from "yaml";
 import { decorators } from "./colors";
 import { RelativeLoader } from "./nunjucksRelativeLoader";
 import { LaunchConfig } from "./types";
+import os from "os";
 
 export interface LocalJsonFileContentIF {
   apiVersion: string;
@@ -71,7 +72,7 @@ export async function makeDir(dir: string, recursive = false) {
 export function getCredsFilePath(credsFile: string): string | undefined {
   if (fs.existsSync(credsFile)) return credsFile;
 
-  const possiblePaths = [".", "..", `${process.env.HOME}/.kube`];
+  const possiblePaths = [".", "..", `${os.homedir()}/.kube`];
   const credsFileExistInPath: string | undefined = possiblePaths.find(
     (path) => {
       const t = `${path}/${credsFile}`;
