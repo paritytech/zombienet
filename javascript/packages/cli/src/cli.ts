@@ -124,7 +124,7 @@ program
   )
   .argument(
     "<binaries...>",
-    `the binaries that you want to be downloaded, provided in a row without any separators;\nThey are downloaded in current directory and appropriate executable permissions are assigned.\nPossible options: 'polkadot', 'polkadot-parachain'\n${decorators.blue(
+    `the binaries that you want to be downloaded, provided in a row without any separators;\nThey are downloaded in current directory and appropriate executable permissions are assigned.\nPossible options: 'polkadot', 'polkadot-parachain', 'polkadot-prepare-worker', 'polkadot-execute-worker'\n${decorators.blue(
       "zombienet setup polkadot polkadot-parachain",
     )}`,
   )

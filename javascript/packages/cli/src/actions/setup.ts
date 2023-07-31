@@ -16,7 +16,12 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
-  const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
+  const POSSIBLE_BINARIES = [
+    "polkadot",
+    "polkadot-parachain",
+    "polkadot-prepare-worker",
+    "polkadot-execute-worker",
+  ];
 
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
   if (!["linux", "darwin"].includes(process.platform)) {
@@ -79,7 +84,9 @@ export async function setup(params: any, opts?: any) {
         decorators.red(
           `"${a}" is not one of the possible options for this setup and will be skipped;`,
         ),
-        decorators.green(` Valid options: polkadot polkadot-parachain`),
+        decorators.green(
+          ` Valid options: polkadot polkadot-parachain polkadot-prepare-worker polkadot-execute-worker`,
+        ),
       );
       return;
     }
