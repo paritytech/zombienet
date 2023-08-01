@@ -118,7 +118,9 @@ export async function setup(params: any, opts?: any) {
         decorators.red(
           `"${a}" is not one of the possible options for this setup and will be skipped;`,
         ),
-        decorators.green(` Valid options: polkadot polkadot-parachain`),
+        decorators.green(
+          ` Valid options: 'polkadot', 'polkadot-parachain', 'all'`,
+        ),
       );
       return;
     }
@@ -150,7 +152,6 @@ export async function setup(params: any, opts?: any) {
       return;
     }
     if (response.toLowerCase() === "n") {
-      console.log("paraaaaams", params);
       return;
     }
   }
