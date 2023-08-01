@@ -23,6 +23,7 @@ variables:
   IMAGE_NAME: $DOCKERHUB_REPO/zombienet
   BUILDAH_IMAGE: "quay.io/buildah/stable:v1.29"
   BUILDAH_COMMAND: "buildah --storage-driver overlay2"
+  RUN_IN_CONTAINER: "1"
 
 .kubernetes-env: &kubernetes-env
   image: $CI_IMAGE
