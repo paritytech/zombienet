@@ -334,7 +334,7 @@ This allows to use the `setup` script, making everything ready for a ZombieNet d
 You can use the following arguments:
 
 `--help` shows the different options and commands for using the Zombienet CLI.
-`--binaries` or `-b`: enables providing the binaries that you want to be downloaded and installed during the setup. Possible options: `all`, `polkadot`, `polkadot-parachain`. *Note:* Downloading `polkadot` will automatically download also the binaries of `polkadot-prepare-worker`, `polkadot-execute-worker`. Since Polkadotv1.0 all 3 binaries are needed for the node to run as a validator;
+`--binaries` or `-b`: enables providing the binaries that you want to be downloaded and installed during the setup. Possible options: `all`, `polkadot`, `polkadot-parachain`. *Note:* Downloading `polkadot` will automatically download also the binaries of `polkadot-prepare-worker`, `polkadot-execute-worker`. Since Polkadot v1.0 all 3 binaries are needed for the node to run as a validator;
 
 For example:
 
