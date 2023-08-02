@@ -88,7 +88,6 @@ export async function setup(params: any, opts?: any) {
 
   // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
   // as polkadot do not release a binary for MacOS
-  console.log("PARAMS: ", params);
   if (params[0] === "all") {
     params = [POLKADOT, POLKADOT_PARACHAIN];
   }
