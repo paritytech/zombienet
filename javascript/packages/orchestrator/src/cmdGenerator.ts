@@ -6,9 +6,17 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "./constants";
-import { Node } from "./types";
+import { Node, SubstrateCliArgsVersion, ZombieRole } from "./types";
 
 const debug = require("debug")("zombie::cmdGenerator");
+
+interface ParachainArgsInterface {
+  [key: string]: boolean;
+}
+
+interface PortsInterface {
+  [key: string]: number;
+}
 
 function parseCmdWithArguments(
   commandWithArgs: string,
@@ -37,9 +45,9 @@ function parseCmdWithArguments(
 
 export async function genCumulusCollatorCmd(
   nodeSetup: Node,
-  cfgPath: string = "/cfg",
-  dataPath: string = "/data",
-  relayDataPath: string = "/relay-data",
+  cfgPath = "/cfg",
+  dataPath = "/data",
+  relayDataPath = "/relay-data",
   useWrapper = true,
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator, commandWithArgs } =
@@ -50,17 +58,16 @@ export async function genCumulusCollatorCmd(
     return parseCmdWithArguments(commandWithArgs, useWrapper);
   }
 
-  const parachainAddedArgs: any = {
+  const parachainAddedArgs: ParachainArgsInterface = {
     "--name": true,
     "--collator": true,
     "--base-path": true,
     "--port": true,
     "--ws-port": true,
+    "--rpc-port": true,
     "--chain": true,
     "--prometheus-port": true,
   };
-
-  const colIndex = getCollatorIndex(parachainId!);
 
   let fullCmd: string[] = [
     nodeSetup.command || DEFAULT_COMMAND,
@@ -74,38 +81,35 @@ export async function genCumulusCollatorCmd(
     dataPath,
     "--listen-addr",
     `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
-    "--rpc-port",
-    (nodeSetup.rpcPort ? nodeSetup.rpcPort : RPC_HTTP_PORT).toString(),
-    "--ws-port",
-    (nodeSetup.wsPort ? nodeSetup.wsPort : RPC_WS_PORT).toString(),
     "--prometheus-external",
-    "--prometheus-port",
-    (nodeSetup.prometheusPort
-      ? nodeSetup.prometheusPort
-      : PROMETHEUS_PORT
-    ).toString(),
     "--rpc-cors all",
     "--unsafe-rpc-external",
     "--rpc-methods unsafe",
-    "--unsafe-ws-external",
   ];
 
+  if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0)
+    fullCmd.push("--unsafe-ws-external");
+  const portFlags = getPortFlagsByCliArgsVersion(nodeSetup);
+
+  for (const [k, v] of Object.entries(portFlags)) {
+    fullCmd.push(...[k, v.toString()]);
+  }
+
   const chainParts = chain.split("_");
-  let relayChain =
+  const relayChain =
     chainParts.length > 1 ? chainParts[chainParts.length - 1] : chainParts[0];
 
   if (validator) fullCmd.push(...["--collator"]);
 
-  const collatorPorts: any = {
+  const collatorPorts: PortsInterface = {
     "--port": 0,
-    "--ws-port": 0,
     "--rpc-port": 0,
   };
 
   if (nodeSetup.args.length > 0) {
     let argsFullNode = null;
     let argsParachain = null;
-    let splitIndex = nodeSetup.args.indexOf("--");
+    const splitIndex = nodeSetup.args.indexOf("--");
 
     if (splitIndex < 0) {
       argsParachain = nodeSetup.args;
@@ -213,27 +217,27 @@ export async function genCumulusCollatorCmd(
 
 export async function genCmd(
   nodeSetup: Node,
-  cfgPath: string = "/cfg",
-  dataPath: string = "/data",
+  cfgPath = "/cfg",
+  dataPath = "/data",
   useWrapper = true,
 ): Promise<string[]> {
-  let {
+  const {
     name,
     key,
     chain,
     commandWithArgs,
     fullCommand,
-    command,
     telemetry,
     telemetryUrl,
     prometheus,
     validator,
     bootnodes,
-    args,
     zombieRole,
     jaegerUrl,
     parachainId,
   } = nodeSetup;
+
+  let { command, args } = nodeSetup;
 
   // fullCommand is NOT decorated by the `zombie` wrapper
   // and is used internally in init containers.
@@ -257,12 +261,12 @@ export async function genCmd(
   if (prometheus && !args.includes("--prometheus-external"))
     args.push("--prometheus-external");
 
-  if (jaegerUrl && zombieRole === "node")
+  if (jaegerUrl && zombieRole === ZombieRole.Node)
     args.push(...["--jaeger-agent", jaegerUrl]);
 
   if (validator && !args.includes("--validator")) args.push("--validator");
 
-  if (zombieRole === "collator" && parachainId) {
+  if (zombieRole === ZombieRole.Collator && parachainId) {
     const parachainIdArgIndex = args.findIndex((arg) =>
       arg.includes("--parachain-id"),
     );
@@ -273,12 +277,7 @@ export async function genCmd(
   if (bootnodes && bootnodes.length)
     args.push("--bootnodes", bootnodes.join(" "));
 
-  // port flags logic
-  const portFlags = {
-    "--prometheus-port": nodeSetup.prometheusPort,
-    "--rpc-port": nodeSetup.rpcPort,
-    "--ws-port": nodeSetup.wsPort,
-  };
+  const portFlags = getPortFlagsByCliArgsVersion(nodeSetup);
 
   for (const [k, v] of Object.entries(portFlags)) {
     args.push(...[k, v.toString()]);
@@ -286,19 +285,22 @@ export async function genCmd(
 
   const listenIndex = args.findIndex((arg) => arg === "--listen-addr");
   if (listenIndex >= 0) {
-    let listenAddrParts = args[listenIndex + 1].split("/");
+    const listenAddrParts = args[listenIndex + 1].split("/");
     listenAddrParts[4] = `${nodeSetup.p2pPort}`;
     const listenAddr = listenAddrParts.join("/");
     args[listenIndex + 1] = listenAddr;
   } else {
     // no --listen-add args
-    args.push(...[`--listen-addr /ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
   }
 
   // set our base path
   const basePathFlagIndex = args.findIndex((arg) => arg === "--base-path");
   if (basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
   args.push(...["--base-path", dataPath]);
+
+  if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0)
+    args.push("--unsafe-ws-external");
 
   const finalArgs: string[] = [
     command,
@@ -311,7 +313,6 @@ export async function genCmd(
     "--unsafe-rpc-external",
     "--rpc-methods",
     "unsafe",
-    "--unsafe-ws-external",
     ...args,
   ];
 
@@ -320,12 +321,24 @@ export async function genCmd(
   return resolvedCmd;
 }
 
-// helper
-const parachainCollators: any = {};
-function getCollatorIndex(paraId: number): number {
-  if (parachainCollators[paraId] >= 0)
-    parachainCollators[paraId] = parachainCollators[paraId] + 1;
-  else parachainCollators[paraId] = 0;
+const getPortFlagsByCliArgsVersion = (nodeSetup: Node) => {
+  // port flags logic
+  const portFlags: { [key: string]: string } = {
+    "--prometheus-port": (
+      nodeSetup.prometheusPort || PROMETHEUS_PORT
+    ).toString(),
+  };
 
-  return parachainCollators[paraId];
-}
+  if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0) {
+    portFlags["--rpc-port"] = (nodeSetup.rpcPort || RPC_HTTP_PORT).toString();
+    portFlags["--ws-port"] = (nodeSetup.wsPort || RPC_WS_PORT).toString();
+  } else {
+    // use ws port as default
+    const portToUse = nodeSetup.wsPort
+      ? nodeSetup.wsPort
+      : nodeSetup.rpcPort || RPC_HTTP_PORT;
+    portFlags["--rpc-port"] = portToUse.toString();
+  }
+
+  return portFlags;
+};

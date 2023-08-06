@@ -1,14 +1,15 @@
-import { sleep } from "@zombienet/utils";
+import { promises as fsPromises, writeFileSync } from "fs";
 import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
+  NODE_CONTAINER_WAIT_LOG,
 } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
-const debug = require("debug")("zombie::kube::chain-spec");
+import { KubeClient } from "./kubeClient";
 
-const fs = require("fs").promises;
+const debug = require("debug")("zombie::kube::chain-spec");
 
 export async function setupChainSpec(
   namespace: string,
@@ -19,9 +20,9 @@ export async function setupChainSpec(
   // We have two options to get the chain-spec file, neither should use the `raw` file/argument
   // 1: User provide the file (we DON'T expect the raw file)
   // 2: User provide the chainSpecCommand (without the --raw option)
-  const client = getClient();
+  const client = getClient() as KubeClient;
   if (chainConfig.chainSpecPath) {
-    await fs.copyFile(chainConfig.chainSpecPath, chainFullPath);
+    await fsPromises.copyFile(chainConfig.chainSpecPath, chainFullPath);
   } else {
     if (chainConfig.chainSpecCommand) {
       const { defaultImage, chainSpecCommand } = chainConfig;
@@ -42,7 +43,10 @@ export async function setupChainSpec(
       const podName = podDef.metadata.name;
       await client.spawnFromDef(podDef);
 
-      debug("copy file from pod");
+      debug("waiting for chain-spec");
+      await client.waitLog(podName, podName, NODE_CONTAINER_WAIT_LOG);
+
+      debug("Getting the chain spec file from pod to the local environment.");
       await client.copyFileFromPod(
         podName,
         plainChainSpecOutputFilePath,
@@ -62,7 +66,7 @@ export async function getChainSpecRaw(
   chainCommand: string,
   chainFullPath: string,
 ): Promise<any> {
-  const client = getClient();
+  const client = getClient() as KubeClient;
   const plainPath = chainFullPath.replace(".json", "-plain.json");
 
   const remoteChainSpecFullPath =
@@ -91,25 +95,8 @@ export async function getChainSpecRaw(
     },
   ]);
 
-  // let's just wait 2 secs before download
-  // Creating the raw version can take a couple of seconds, loop until the `build-spec` command is done
-  // or timedout (20 seconds) and fallback to the validation.
-  for (let i = 0; i < 10; i++) {
-    try {
-      await client.runCommand([
-        "exec",
-        podName,
-        "--",
-        "ls",
-        "/tmp/zombie-tmp-done",
-      ]);
-      // we can go ahead
-      break;
-    } catch (_) {
-      debug("waiting for raw chain-spec");
-      await sleep(2000);
-    }
-  }
+  debug("waiting for raw chainSpec");
+  await client.waitLog(podName, podName, NODE_CONTAINER_WAIT_LOG);
 
   debug("Getting the raw chain spec file from pod to the local environment.");
   await client.copyFileFromPod(
@@ -122,10 +109,6 @@ export async function getChainSpecRaw(
   // We had some issues where the `raw` file is empty
   // let's add some extra checks here to ensure we are ok.
   let isValid = false;
-  try {
-    let content = require(chainFullPath);
-    isValid = true;
-  } catch (_) {}
 
   if (!isValid) {
     try {
@@ -133,16 +116,19 @@ export async function getChainSpecRaw(
         "exec",
         podName,
         "--",
+        "/cfg/coreutils",
         "cat",
         remoteChainSpecRawFullPath,
       ]);
       if (result.exitCode === 0 && result.stdout.length > 0) {
         // TODO: remove this debug when we get this fixed.
         debug(result.stdout);
-        fs.writeFileSync(chainFullPath, result.stdout);
+        writeFileSync(chainFullPath, result.stdout);
         isValid = true;
       }
-    } catch (_) {}
+    } catch (e) {
+      debug(e);
+    }
   }
 
   if (!isValid) throw new Error(`Invalid chain spec raw file generated.`);

@@ -1,4 +1,4 @@
-FROM docker.io/library/node:16-buster-slim
+FROM docker.io/library/node:18-bullseye-slim
 
 LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.vendor="Parity Technologies" \
@@ -9,7 +9,7 @@ LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.created="${BUILD_DATE}"
 
 RUN apt-get update && \
-    apt-get install -y curl gnupg lsb-release jq tini && \
+    apt-get install -y curl gnupg lsb-release jq tini vim && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -57,8 +57,6 @@ RUN mkdir -p /etc/zombie-net
 RUN chown -R nonroot. /etc/zombie-net
 
 # Use the non-root user to run our application
-# Tell run test script that it runs in container
-ENV RUN_IN_CONTAINER 1
 USER nonroot
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
 ENTRYPOINT ["tini", "--", "bash"]

@@ -1,17 +1,18 @@
 import { decorators, getRandomPort } from "@zombienet/utils";
 import fs from "fs";
-import chainSpecFns, { isRawSpec } from "./chain-spec";
+import chainSpecFns, { isRawSpec } from "./chainSpec";
 import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  K8S_WAIT_UNTIL_SCRIPT_SUFIX,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
 import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
-import { fileMap, Node, Parachain } from "./types";
+import { Node, Parachain, ZombieRole, fileMap } from "./types";
 
 const debug = require("debug")("zombie::paras");
 
@@ -19,10 +20,11 @@ export async function generateParachainFiles(
   namespace: string,
   tmpDir: string,
   parachainFilesPath: string,
-  chainName: string,
+  relayChainName: string,
   parachain: Parachain,
+  relayChainSpecIsRaw: boolean,
 ): Promise<void> {
-  let [
+  const [
     addAuraAuthority,
     addAuthority,
     changeGenesisConfig,
@@ -45,6 +47,8 @@ export async function generateParachainFiles(
     chainSpecFns.addCollatorSelection,
     chainSpecFns.writeChainSpec,
   ]);
+  const GENESIS_STATE_FILENAME_WITH_ID = `${GENESIS_STATE_FILENAME}-${parachain.id}`;
+  const GENESIS_WASM_FILENAME_WITH_ID = `${GENESIS_WASM_FILENAME}-${parachain.id}`;
 
   const stateLocalFilePath = `${parachainFilesPath}/${GENESIS_STATE_FILENAME}`;
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
@@ -55,20 +59,21 @@ export async function generateParachainFiles(
   );
 
   let chainSpecFullPath;
-  const chainSpecFileName = `${parachain.chain ? parachain.chain + "-" : ""}${
+  const chainName = `${parachain.chain ? parachain.chain + "-" : ""}${
     parachain.name
-  }-${chainName}.json`;
+  }-${relayChainName}`;
+  const chainSpecFileName = `${chainName}.json`;
 
-  const chainSpecFullPathPlain = `${tmpDir}/${
-    parachain.chain ? parachain.chain + "-" : ""
-  }${parachain.name}-${chainName}-plain.json`;
+  const chainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
 
   if (parachain.cumulusBased) {
-    // need to create the parachain spec parachain file name is [para chain-]<para name>-<relay chain>
-    const relayChainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
+    // need to create the parachain spec
+    // file name template is [para chain-]<para name>-<relay chain>
+    const relayChainSpecFullPathPlain = `${tmpDir}/${relayChainName}-plain.json`;
 
     // Check if the chain-spec file is provided.
     if (parachain.chainSpecPath) {
+      debug("parachain chain spec provided");
       await fs.promises.copyFile(
         parachain.chainSpecPath,
         chainSpecFullPathPlain,
@@ -103,6 +108,10 @@ export async function generateParachainFiles(
 
       writeChainSpec(chainSpecFullPathPlain, plainData);
 
+      // make genesis overrides first.
+      if (parachain.genesis)
+        await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
+
       // clear auths
       await clearAuthorities(chainSpecFullPathPlain);
 
@@ -132,9 +141,6 @@ export async function generateParachainFiles(
         }
       }
 
-      if (parachain.genesis)
-        await changeGenesisConfig(chainSpecFullPathPlain, parachain.genesis);
-
       debug("creating chain spec raw");
       // ensure needed file
       if (parachain.chain)
@@ -148,7 +154,7 @@ export async function generateParachainFiles(
         parachain.collators[0].image,
         `${parachain.chain ? parachain.chain + "-" : ""}${
           parachain.name
-        }-${chainName}`,
+        }-${relayChainName}`,
         parachain.collators[0].command!,
         chainSpecFullPath,
       );
@@ -182,8 +188,17 @@ export async function generateParachainFiles(
     parachain.specPath = chainSpecFullPath;
   }
 
+  // state and wasm files are only needed:
+  // IFF the relaychain is NOT RAW or
+  // IFF the relaychain is raw and addToGenesis is false for the parachain
+  const stateAndWasmAreNeeded = !(
+    relayChainSpecIsRaw && parachain.addToGenesis
+  );
   // check if we need to create files
-  if (parachain.genesisStateGenerator || parachain.genesisWasmGenerator) {
+  if (
+    stateAndWasmAreNeeded &&
+    (parachain.genesisStateGenerator || parachain.genesisWasmGenerator)
+  ) {
     const filesToCopyToNodes: fileMap[] = [];
     if (parachain.cumulusBased && chainSpecFullPath)
       filesToCopyToNodes.push({
@@ -191,7 +206,7 @@ export async function generateParachainFiles(
         remoteFilePath: `${client.remoteDir}/${chainSpecFileName}`,
       });
 
-    let commands = [];
+    const commands = [];
     if (parachain.genesisStateGenerator) {
       let genesisStateGenerator = parachain.genesisStateGenerator.replace(
         "{{CLIENT_REMOTE_DIR}}",
@@ -209,7 +224,7 @@ export async function generateParachainFiles(
           ` --chain ${chainSpecPathInNode} > `,
         );
       }
-      commands.push(genesisStateGenerator);
+      commands.push(`${genesisStateGenerator}-${parachain.id}`);
     }
     if (parachain.genesisWasmGenerator) {
       let genesisWasmGenerator = parachain.genesisWasmGenerator.replace(
@@ -217,7 +232,7 @@ export async function generateParachainFiles(
         client.remoteDir as string,
       );
       // cumulus
-      if (parachain.collators[0].zombieRole === "cumulus-collator") {
+      if (parachain.collators[0].zombieRole === ZombieRole.CumulusCollator) {
         const chainSpecPathInNode =
           client.providerName === "native"
             ? chainSpecFullPath
@@ -228,26 +243,28 @@ export async function generateParachainFiles(
           ` --chain ${chainSpecPathInNode} > `,
         );
       }
-      commands.push(genesisWasmGenerator);
+      commands.push(`${genesisWasmGenerator}-${parachain.id}`);
     }
 
     // Native provider doesn't need to wait
-    if (client.providerName !== "native")
+    if (client.providerName == "kubernetes")
+      commands.push(K8S_WAIT_UNTIL_SCRIPT_SUFIX);
+    else if (client.providerName == "podman")
       commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
 
-    let node: Node = {
+    const node: Node = {
       name: getUniqueName("temp-collator"),
       validator: false,
       invulnerable: false,
       image: parachain.collators[0].image || DEFAULT_COLLATOR_IMAGE,
       fullCommand: commands.join(" && "),
-      chain: chainName,
+      chain: relayChainName,
       bootnodes: [],
       args: [],
       env: [],
       telemetryUrl: "",
       overrides: [],
-      zombieRole: "temp",
+      zombieRole: ZombieRole.Temp,
       p2pPort: await getRandomPort(),
       wsPort: await getRandomPort(),
       rpcPort: await getRandomPort(),
@@ -263,7 +280,7 @@ export async function generateParachainFiles(
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `${client.remoteDir}/${GENESIS_STATE_FILENAME}`,
+        `${client.remoteDir}/${GENESIS_STATE_FILENAME_WITH_ID}`,
         stateLocalFilePath,
       );
     }
@@ -271,7 +288,7 @@ export async function generateParachainFiles(
     if (parachain.genesisWasmGenerator) {
       await client.copyFileFromPod(
         podDef.metadata.name,
-        `${client.remoteDir}/${GENESIS_WASM_FILENAME}`,
+        `${client.remoteDir}/${GENESIS_WASM_FILENAME_WITH_ID}`,
         wasmLocalFilePath,
       );
     }

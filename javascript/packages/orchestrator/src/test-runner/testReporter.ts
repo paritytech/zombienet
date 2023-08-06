@@ -33,7 +33,7 @@ class TestReporter {
       colWidths: [30, 100],
     });
 
-    let announcement = new CreateLogTable({
+    const announcement = new CreateLogTable({
       colWidths: [120],
     });
     announcement.pushToPrint([
@@ -61,7 +61,7 @@ class TestReporter {
           ],
         ]);
       })
-      .on(EVENT_TEST_FAIL, (test: Mocha.Test, err: any) => {
+      .on(EVENT_TEST_FAIL, (test: Mocha.Test) => {
         new CreateLogTable({
           colWidths: [30, 100],
         }).pushToPrint([

@@ -21,6 +21,7 @@ import {
   DEFAULT_IMAGE,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
+  DEFAULT_PROMETHEUS_PREFIX,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -28,16 +29,17 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { decorate, PARA, whichPara } from "./paras-decorators";
+import { PARA, decorate, whichPara } from "./paras-decorators";
 import {
   ComputedNetwork,
-  envVars,
   LaunchConfig,
   Node,
   NodeConfig,
   Override,
   Parachain,
   ParachainConfig,
+  ZombieRole,
+  envVars,
 } from "./types";
 
 const debug = require("debug")("zombie::config-manager");
@@ -76,7 +78,7 @@ const configurationFileChecks = (config: LaunchConfig): void => {
       );
     }
   if (config?.parachains && isIterable(config?.parachains))
-    for (const parachain of config?.parachains) {
+    for (const parachain of config.parachains) {
       if (parachain?.collator_groups && isIterable(parachain?.collator_groups))
         for (const collatorGroup of parachain?.collator_groups || []) {
           validateImageUrl(
@@ -111,7 +113,7 @@ export async function generateNetworkSpec(
     );
   }
 
-  let networkSpec: any = {
+  const networkSpec: any = {
     configBasePath: config.configBasePath,
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
@@ -124,12 +126,15 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
       defaultResources: config.relaychain.default_resources,
+      defaultPrometheusPrefix:
+        config.relaychain.default_prometheus_prefix ||
+        DEFAULT_PROMETHEUS_PREFIX,
     },
     parachains: [],
   };
 
   // check all imageURLs for validity
-  // TODO: These checks should be agains all config items that needs check
+  // TODO: These checks should be against all config items that needs check
   configurationFileChecks(config);
 
   if (config.relaychain.genesis)
@@ -191,8 +196,8 @@ export async function generateNetworkSpec(
   }
 
   for (const nodeGroup of config.relaychain.node_groups || []) {
-    for (let i = 0; i < nodeGroup.count; i++) {
-      let node: NodeConfig = {
+    for (let i = 0; i < (nodeGroup.count as number); i++) {
+      const node: NodeConfig = {
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
@@ -205,7 +210,14 @@ export async function generateNetworkSpec(
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
+        prometheus_prefix:
+          nodeGroup.prometheus_prefix ||
+          networkSpec.relaychain.defaultPrometheusPrefix,
+        substrate_cli_args_version:
+          nodeGroup.substrate_cli_args_version ||
+          networkSpec.relaychain.default_substrate_cli_args_version,
       };
+
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
         node,
@@ -245,7 +257,7 @@ export async function generateNetworkSpec(
             );
 
       // collator could by defined in groups or
-      // just using one collator definiton
+      // just using one collator definition
       const collators = [];
       const collatorConfigs = parachain.collator ? [parachain.collator] : [];
       if (parachain.collators) collatorConfigs.push(...parachain.collators);
@@ -255,21 +267,22 @@ export async function generateNetworkSpec(
           await getCollatorNodeFromConfig(
             networkSpec,
             collatorConfig,
-            parachain.id,
+            parachain,
             paraChainName,
             para,
             bootnodes,
             isCumulusBased,
+            collatorConfig.name, // group of 1
           ),
         );
       }
 
       for (const collatorGroup of parachain.collator_groups || []) {
-        for (let i = 0; i < collatorGroup.count; i++) {
-          let node: NodeConfig = {
+        for (let i = 0; i < (collatorGroup.count as number); i++) {
+          const node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
-            image: collatorGroup.image || networkSpec.relaychain.defaultImage,
-            command: collatorGroup.command,
+            image: collatorGroup.image || DEFAULT_COLLATOR_IMAGE,
+            command: collatorGroup.command || DEFAULT_CUMULUS_COLLATOR_BIN,
             args: sanitizeArgs(collatorGroup.args || [], { "listen-addr": 2 }),
             validator: true, // groups are always validators
             invulnerable: false,
@@ -280,15 +293,21 @@ export async function generateNetworkSpec(
               collatorGroup.resources ||
               networkSpec.relaychain.defaultResources,
           };
+
+          if (collatorGroup.substrate_cli_args_version)
+            node.substrate_cli_args_version =
+              collatorGroup.substrate_cli_args_version;
+
           collators.push(
             await getCollatorNodeFromConfig(
               networkSpec,
               node,
-              parachain.id,
+              parachain,
               paraChainName,
               para,
               bootnodes,
               isCumulusBased,
+              collatorGroup.name,
             ),
           );
         }
@@ -364,6 +383,10 @@ export async function generateNetworkSpec(
           parachain.register_para === undefined
             ? true
             : parachain.register_para, // register by default
+        onboardAsParachain:
+          parachain.onboard_as_parachain !== undefined
+            ? parachain.onboard_as_parachain
+            : true, // onboard by default
         collators,
       };
 
@@ -424,18 +447,13 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: [
-      "--ws-external",
-      "--rpc-external",
-      "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333/ws",
-    ],
+    args: ["--rpc-external", "--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
     prometheus: true, // --prometheus-external
     overrides: [],
-    zombieRole: "bootnode",
+    zombieRole: ZombieRole.BootNode,
     imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
@@ -448,7 +466,7 @@ interface UsedNames {
   [properyName: string]: number;
 }
 
-let mUsedNames: UsedNames = {};
+const mUsedNames: UsedNames = {};
 
 export function getUniqueName(name: string): string {
   let uniqueName;
@@ -484,21 +502,20 @@ async function getLocalOverridePath(
 async function getCollatorNodeFromConfig(
   networkSpec: any,
   collatorConfig: NodeConfig,
-  para_id: number,
+  parachain: ParachainConfig,
   chain: string, // relay-chain
   para: PARA,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
+  group?: string,
 ): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args)
     args = args.concat(sanitizeArgs(collatorConfig.args, { "listen-addr": 2 }));
 
-  const env = [
-    { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-    { name: "RUST_BACKTRACE", value: "FULL" },
-  ];
-  if (collatorConfig.env) env.push(...collatorConfig.env);
+  const env = collatorConfig.env
+    ? DEFAULT_ENV.concat(collatorConfig.env)
+    : DEFAULT_ENV;
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
@@ -522,21 +539,26 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
-    args: collatorConfig.args || [],
+    args: args || [],
     chain,
     bootnodes,
     env,
     telemetryUrl: "",
     prometheus: prometheusExternal(networkSpec),
     overrides: [],
-    zombieRole: cumulusBased ? "cumulus-collator" : "collator",
-    parachainId: para_id,
+    zombieRole: cumulusBased ? ZombieRole.CumulusCollator : ZombieRole.Collator,
+    parachainId: parachain.id,
     dbSnapshot: collatorConfig.db_snapshot,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
+    p2pCertHash: collatorConfig.p2p_cert_hash,
+    prometheusPrefix:
+      parachain.prometheus_prefix ||
+      networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
+  if (group) node.group = group;
   return node;
 }
 
@@ -595,7 +617,7 @@ async function getNodeFromConfig(
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
     invulnerable: node.invulnerable,
-    balance: node.balance,
+    balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,
@@ -607,10 +629,13 @@ async function getNodeFromConfig(
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
-    zombieRole: "node",
+    zombieRole: ZombieRole.Node,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
     externalPorts,
+    p2pCertHash: node.p2p_cert_hash,
+    prometheusPrefix:
+      node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
   if (group) nodeSetup.group = group;
@@ -620,6 +645,13 @@ async function getNodeFromConfig(
     : networkSpec.relaychain.defaultDbSnapshot || null;
 
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
+  if (
+    node.substrate_cli_args_version ||
+    networkSpec.default_substrate_cli_args_version
+  )
+    nodeSetup.substrateCliArgsVersion =
+      node.substrate_cli_args_version ||
+      networkSpec.default_substrate_cli_args_version;
   return nodeSetup;
 }
 
@@ -691,7 +723,7 @@ const prometheusExternal = (networkSpec: ComputedNetwork): boolean => {
     : true;
 };
 
-const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
+export function getFirstCollatorCommand(parachain: ParachainConfig): string {
   let cmd;
   if (parachain.collator) {
     cmd = parachain.collator.command_with_args || parachain.collator.command;
@@ -707,4 +739,4 @@ const getFirstCollatorCommand = (parachain: ParachainConfig): string => {
   debug(`cmd is ${cmd}`);
   cmd = cmd.split(" ")[0];
   return cmd.split("/").pop()!;
-};
+}

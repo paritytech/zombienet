@@ -1,5 +1,5 @@
 # Our first stage, that is the Builder
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN npm install
@@ -7,10 +7,10 @@ RUN npm run clean
 RUN npm run build
 
 # Our Second stage, that creates an image for production
-FROM node:16-buster-slim AS runtime
+FROM node:18-bullseye-slim AS runtime
 
 RUN apt-get update && \
-     apt-get install -y curl gnupg lsb-release jq tini && \
+     apt-get install -y curl gnupg lsb-release jq tini vim && \
 # # install github cli
 # # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 #     echo "deb https://cli.github.com/packages buster main" > /etc/apt/sources.list.d/gh.list && \
@@ -72,8 +72,6 @@ RUN mkdir -p /etc/zombie-net
 RUN chown -R nonroot. /etc/zombie-net
 
 # Use the non-root user to run our application
-# Tell run test script that it runs in container
-ENV RUN_IN_CONTAINER 1
 USER nonroot
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
 ENTRYPOINT ["tini", "--", "bash"]

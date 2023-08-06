@@ -10,6 +10,7 @@
   - [Podman](./features/podman.md)
   - [Native](./features/native.md)
 - [Cli usage](./cli/index.md)
+  - [Convert](./cli/convert.md)
   - [Setup](./cli/setup.md)
   - [Spawning](./cli/spawn.md)
     - [Using env vars](./cli/env_vars.md)
@@ -19,4 +20,5 @@
 - [Network definition spec](./network-definition-spec.md)
 - [Testing DSL spec](./cli/test-dsl-definition-spec.md)
 - [Development](./development.md)
+- [Projects](./projects.md)
 - [Acknowledgement](./acknowledgement.md)

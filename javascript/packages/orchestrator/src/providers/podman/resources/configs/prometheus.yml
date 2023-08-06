@@ -1,0 +1,17 @@
+# config
+global:
+  scrape_interval: 5s
+  external_labels:
+    monitor: "zombienet-monitor"
+
+# Scraping Prometheus itself
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "dynamic"
+    file_sd_configs:
+      - files:
+          - /data/sd_config*.yaml
+          - /data/sd_config*.json
+        refresh_interval: 5s

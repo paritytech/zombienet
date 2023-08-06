@@ -1,7 +1,7 @@
 const debug = require("debug")("zombie::metrics");
-import { decorators } from "@zombienet/utils";
-import axios from "axios";
-import { parseLine } from "./parse-line";
+import { decorators, TimeoutAbortController } from "@zombienet/utils";
+import { DEFAULT_PROMETHEUS_PREFIX } from "../constants";
+import { parseLine } from "./parseLine";
 
 // metrics can have namespace
 export interface Metrics {
@@ -25,8 +25,20 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
   let metrics = {}; // empty by default
   try {
     debug(`fetching: ${metricUri}`);
-    const response = await axios.get(metricUri, { timeout: 2000 });
-    metrics = _extractMetrics(response.data);
+    const fetchResult = await fetch(metricUri, {
+      signal: TimeoutAbortController(2).signal,
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
+    });
+
+    if (!fetchResult.ok) {
+      throw new Error(`Error - status: ${fetchResult.status}`);
+    }
+
+    const response = await fetchResult.text();
+    metrics = _extractMetrics(response);
   } catch (err) {
     debug(`ERR: ${err}`);
     console.log(
@@ -34,9 +46,8 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
         `fetching metrics from: ${metricUri}`,
       )}`,
     );
-  } finally {
-    return metrics;
   }
+  return metrics;
 }
 
 export async function getHistogramBuckets(
@@ -44,16 +55,29 @@ export async function getHistogramBuckets(
   metricName: string,
 ): Promise<BucketHash> {
   debug(`fetching: ${metricUri}`);
-  const response = await axios.get(metricUri, { timeout: 2000 });
+  const fetchResult = await fetch(metricUri, {
+    signal: TimeoutAbortController(2).signal,
+    method: "GET",
+    headers: {
+      accept: "application/json",
+    },
+  });
+
+  if (!fetchResult.ok) {
+    throw new Error(`Error - status: ${fetchResult.status}`);
+  }
+
+  const response = await fetchResult.text();
+
   let previousBucketValue = 0;
-  let buckets: any = {};
+  const buckets: any = {};
 
   const resolvedMetricName = metricName.includes("_bucket")
     ? metricName
     : `${metricName}_bucket`;
   const parsedMetricInput = parseLine(resolvedMetricName);
 
-  for (const line of response.data.split("\n")) {
+  for (const line of response.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
     const parsedLine = parseLine(line);
 
@@ -96,6 +120,7 @@ export function getMetricName(metricName: string): string {
     case "peers count":
     case "peers":
       metricNameTouse = metricKeysMapping.PeersCount;
+      break;
     default:
       break;
   }
@@ -103,16 +128,15 @@ export function getMetricName(metricName: string): string {
   return metricNameTouse;
 }
 
-export function getProcessStartTimeKey() {
-  return "substrate_process_start_time_seconds";
+export function getProcessStartTimeKey(prefix = DEFAULT_PROMETHEUS_PREFIX) {
+  return `${prefix}_process_start_time_seconds`;
 }
 
 function _extractMetrics(text: string): Metrics {
-  let rawMetrics: Metrics = {};
+  const rawMetrics: Metrics = {};
   rawMetrics["_raw"] = {};
   for (const line of text.split("\n")) {
     if (line.length === 0 || line[0] === "#") continue; // comments and empty lines
-    const [key] = line.split(" ", 1);
     const parsedLine = parseLine(line);
     const metricValue = parseInt(parsedLine.value);
 
@@ -121,8 +145,8 @@ function _extractMetrics(text: string): Metrics {
     const ns = parts[0];
     const rawMetricNameWithOutNs = parts.slice(1).join("_");
 
-    let labelStrings = [];
-    let labelStringsWithOutChain = [];
+    const labelStrings = [];
+    const labelStringsWithOutChain = [];
     for (const [k, v] of parsedLine.labels.entries()) {
       labelStrings.push(`${k}="${v}"`);
       if (k !== "chain") labelStringsWithOutChain.push(`${k}="${v}"`);

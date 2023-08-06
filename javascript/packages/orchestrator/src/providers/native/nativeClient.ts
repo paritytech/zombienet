@@ -14,9 +14,10 @@ import YAML from "yaml";
 import {
   DEFAULT_DATA_DIR,
   DEFAULT_REMOTE_DIR,
+  LOCALHOST,
   P2P_PORT,
 } from "../../constants";
-import { fileMap } from "../../types";
+import { ZombieRole, fileMap } from "../../types";
 import {
   Client,
   RunCommandOptions,
@@ -44,7 +45,7 @@ export class NativeClient extends Client {
   debug: boolean;
   timeout: number;
   tmpDir: string;
-  podMonitorAvailable: boolean = false;
+  podMonitorAvailable = false;
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
@@ -99,16 +100,16 @@ export class NativeClient extends Client {
     return;
   }
   // Podman ONLY support `pods`
-  async staticSetup(_: any): Promise<void> {
+  async staticSetup(): Promise<void> {
     return;
   }
 
-  async createStaticResource(filename: string): Promise<void> {
+  async createStaticResource(): Promise<void> {
     // NOOP, native don't have podmonitor.
     return;
   }
 
-  async createPodMonitor(filename: string, chain: string): Promise<void> {
+  async createPodMonitor(): Promise<void> {
     // NOOP, native don't have podmonitor.
     return;
   }
@@ -120,7 +121,7 @@ export class NativeClient extends Client {
 
   async destroyNamespace(): Promise<void> {
     // get pod names
-    let args = ["bash", "-c"];
+    const args = ["bash", "-c"];
 
     const memo: string[] = [];
     const pids: string[] = Object.keys(this.processMap).reduce((memo, key) => {
@@ -131,17 +132,21 @@ export class NativeClient extends Client {
       return memo;
     }, memo);
 
-    if (pids.length > 0) {
-      args.push(`kill -9 ${pids.join(" ")}`);
+    const result = await this.runCommand(
+      ["bash", "-c", `ps ax| awk '{print $1}'| grep -E '${pids.join("|")}'`],
+      { allowFail: true },
+    );
+    if (result.exitCode === 0) {
+      const pidsToKill = result.stdout.split("\n");
+      if (pidsToKill.length > 0) {
+        args.push(`kill -9 ${pids.join(" ")}`);
 
-      await this.runCommand(args);
+        await this.runCommand(args);
+      }
     }
   }
 
-  async getNodeLogs(
-    name: string,
-    since: number | undefined = undefined,
-  ): Promise<string> {
+  async getNodeLogs(name: string): Promise<string> {
     // For now in native let's just return all the logs
     const lines = await fs.promises.readFile(`${this.tmpDir}/${name}.log`);
     return lines.toString();
@@ -152,7 +157,7 @@ export class NativeClient extends Client {
     await fs.promises.copyFile(`${this.tmpDir}/${podName}.log`, dstFileName);
   }
 
-  upsertCronJob(minutes: number): Promise<void> {
+  upsertCronJob(): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
@@ -168,7 +173,11 @@ export class NativeClient extends Client {
 
   async getNodeInfo(podName: string): Promise<[string, number]> {
     const hostPort = await this.getPortMapping(P2P_PORT, podName);
-    return ["127.0.0.1", hostPort];
+    return [LOCALHOST, hostPort];
+  }
+
+  async getNodeIP(): Promise<string> {
+    return LOCALHOST;
   }
 
   async runCommand(
@@ -263,17 +272,23 @@ export class NativeClient extends Client {
     };
 
     let logTable = new CreateLogTable({
-      colWidths: [20, 100],
+      colWidths: [25, 100],
     });
 
-    logTable.pushToPrint([
+    const logs = [
       [decorators.cyan("Pod"), decorators.green(name)],
       [decorators.cyan("Status"), decorators.green("Launching")],
       [
         decorators.cyan("Command"),
         decorators.white(podDef.spec.command.join(" ")),
       ],
-    ]);
+    ];
+
+    if (dbSnapshot) {
+      logs.push([decorators.cyan("DB Snapshot"), decorators.green(dbSnapshot)]);
+    }
+
+    logTable.pushToPrint(logs);
 
     if (dbSnapshot) {
       // we need to get the snapshot from a public access
@@ -324,13 +339,12 @@ export class NativeClient extends Client {
     identifier: string,
     podFilePath: string,
     localFilePath: string,
-    container?: string,
   ): Promise<void> {
     debug(`cp ${podFilePath}  ${localFilePath}`);
     await fs.promises.copyFile(podFilePath, localFilePath);
   }
 
-  async putLocalMagicFile(name: string, container?: string): Promise<void> {
+  async putLocalMagicFile(): Promise<void> {
     // NOOP
     return;
   }
@@ -342,7 +356,7 @@ export class NativeClient extends Client {
     const localFilePath = `${this.tmpDir}/${name}.yaml`;
     await fs.promises.writeFile(localFilePath, docInYaml);
 
-    if (resourseDef.metadata.labels["zombie-role"] === "temp") {
+    if (resourseDef.metadata.labels["zombie-role"] === ZombieRole.Temp) {
       await this.runCommand(resourseDef.spec.command);
     } else {
       if (resourseDef.spec.command[0] === "bash")
@@ -351,10 +365,11 @@ export class NativeClient extends Client {
       debug(resourseDef.spec.command);
 
       const log = fs.createWriteStream(this.processMap[name].logs);
-      const nodeProcess = spawn(this.command, [
-        "-c",
-        ...resourseDef.spec.command,
-      ]);
+      const nodeProcess = spawn(
+        this.command,
+        ["-c", ...resourseDef.spec.command],
+        { env: { ...process.env, ...resourseDef.spec.env } },
+      );
       debug(nodeProcess.pid);
       nodeProcess.stdout.pipe(log);
       nodeProcess.stderr.pipe(log);
@@ -370,57 +385,63 @@ export class NativeClient extends Client {
     await sleep(1000);
     const procNodeName = this.processMap[nodeName];
     const { pid, logs } = procNodeName;
-    const result = await this.runCommand(["-c", `ps ${pid}`], {
+    let result = await this.runCommand(["-c", `ps ${pid}`], {
       allowFail: true,
     });
     if (result.exitCode > 0) {
-      const lines = await this.getNodeLogs(nodeName);
-
-      let logTable = new CreateLogTable({
-        colWidths: [20, 100],
-      });
-
-      logTable.pushToPrint([
-        [decorators.cyan("Pod"), decorators.green(nodeName)],
-        [
-          decorators.cyan("Status"),
-          decorators.reverse(decorators.red("Error")),
-        ],
-        [
-          decorators.cyan("Message"),
-          decorators.white(`Process: ${pid}, for node: ${nodeName} dies.`),
-        ],
-        [decorators.cyan("Output"), decorators.white(lines)],
-      ]);
-
-      // throw
+      await this.informProcessDie(pid!, nodeName);
       throw new Error();
     }
 
-    // check log lines grow between 2/6/12 secs
+    // check log lines grows
     const lines_1 = await this.runCommand(["-c", `wc -l ${logs}`]);
-    await sleep(2000);
+    await sleep(1000);
     const lines_2 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_2.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
-    await sleep(6000);
+    await sleep(1000);
     const lines_3 = await this.runCommand(["-c", `wc -l ${logs}`]);
     if (parseInt(lines_3.stdout.trim()) > parseInt(lines_1.stdout.trim()))
       return;
 
-    await sleep(12000);
-    const lines_4 = await this.runCommand(["-c", `wc -l ${logs}`]);
-    if (parseInt(lines_4.stdout.trim()) > parseInt(lines_1.stdout.trim()))
-      return;
+    // check if the process is still alive, IFF return node ready
+    // Since could be that the LOG env is set to the minimum.
+    result = await this.runCommand(["-c", `ps ${pid}`], {
+      allowFail: true,
+    });
+    if (result.exitCode > 0) {
+      await this.informProcessDie(pid!, nodeName);
+      throw new Error();
+    }
 
-    throw new Error(
-      `Log lines of process: ${pid} ( node: ${nodeName} ) doesn't grow, please check logs at ${logs}`,
-    );
+    return;
+  }
+
+  async informProcessDie(pid: number, nodeName: string): Promise<void> {
+    const lines = await this.getNodeLogs(nodeName);
+
+    const logTable = new CreateLogTable({
+      colWidths: [20, 100],
+    });
+
+    logTable.pushToPrint([
+      [decorators.cyan("Pod"), decorators.green(nodeName)],
+      [decorators.cyan("Status"), decorators.reverse(decorators.red("Error"))],
+      [
+        decorators.cyan("Message"),
+        decorators.white(`Process: ${pid}, for node: ${nodeName} dies.`),
+      ],
+      [decorators.cyan("Output"), decorators.white(lines)],
+    ]);
   }
 
   async isPodMonitorAvailable(): Promise<boolean> {
     // NOOP
     return false;
+  }
+
+  async spawnIntrospector() {
+    // NOOP
   }
 
   getPauseArgs(name: string): string[] {
@@ -456,5 +477,9 @@ export class NativeClient extends Client {
 
     await this.wait_node_ready(name);
     return true;
+  }
+
+  getLogsCommand(name: string): string {
+    return `tail -f  ${this.tmpDir}/${name}.log`;
   }
 }
