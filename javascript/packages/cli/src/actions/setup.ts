@@ -264,7 +264,7 @@ const latestPolkadotReleaseURL = async (
     });
 
     if (!release) {
-      console.log(
+      throw Error(
         `In repo '${repo}', there is no release for: '${name}'! Exiting...`,
       );
     }
