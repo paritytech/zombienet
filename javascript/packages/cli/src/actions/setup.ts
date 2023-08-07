@@ -8,8 +8,8 @@ interface OptIf {
 }
 
 const POLKADOT = "polkadot";
-const POLKADOT_PREPARE_WORKER = "polkadot";
-const POLKADOT_EXECUTE_WORKER = "polkadot";
+const POLKADOT_PREPARE_WORKER = "polkadot-prepare-worker";
+const POLKADOT_EXECUTE_WORKER = "polkadot-execute-worker";
 const CUMULUS = "cumulus";
 const POLKADOT_PARACHAIN = "polkadot-parachain";
 
