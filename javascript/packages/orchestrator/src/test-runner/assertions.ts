@@ -1,4 +1,4 @@
-import { ApiPromise, Keyring } from "@polkadot/api";
+import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
 import { decorators, isValidHttpUrl } from "@zombienet/utils";
 import { assert, expect } from "chai";
 import execa from "execa";
@@ -291,6 +291,7 @@ const CustomJs = ({
     (global as any).zombie = {
       ApiPromise,
       Keyring,
+      WsProvider,
       util: utilCrypto,
       connect,
       registerParachain,
