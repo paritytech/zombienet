@@ -40,6 +40,7 @@ export interface Settings {
 }
 
 export interface RelayChainConfig {
+  default_keystore_key_types?: string[];
   default_command?: string;
   default_image?: string;
   default_resources?: Resources;
@@ -64,6 +65,7 @@ export interface NodeConfig {
   image?: string;
   command?: string;
   command_with_args?: string;
+  keystore_key_types?: string[];
   args?: string[];
   validator: boolean;
   invulnerable: boolean;
@@ -176,6 +178,7 @@ export interface Node {
   prometheusPrefix?: string;
   overrides: Override[];
   addToBootnodes?: boolean;
+  keystore_key_types?: string[];
   resources?: Resources;
   parachainId?: number;
   jaegerUrl?: string;

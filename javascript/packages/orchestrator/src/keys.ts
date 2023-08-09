@@ -65,11 +65,27 @@ export async function generateKeystoreFiles(
   path: string,
   isAssetHubPolkadot = false,
 ): Promise<string[]> {
+  console.log(
+    "------------- generateKeystoreFiles ---------------------------",
+  );
+  console.log("------- NODE: ", node.keystore_key_types);
+  console.log(
+    "------------- generateKeystoreFiles ---------------------------",
+  );
+
   const keystoreDir = `${path}/keystore`;
   await makeDir(keystoreDir);
 
   const paths: string[] = [];
-  const keysHash = {
+
+  console.log("node.keystore_key_types ==> ", node.keystore_key_types);
+
+  interface DefaultKeystoreKeyTypes {
+    [key: string]: string;
+  }
+  let keysHash: DefaultKeystoreKeyTypes = {};
+
+  const default_keystore_key_types: DefaultKeystoreKeyTypes = {
     aura: isAssetHubPolkadot
       ? node.accounts.ed_account.publicKey
       : node.accounts.sr_account.publicKey,
@@ -84,6 +100,28 @@ export async function generateKeystoreFiles(
     rand: node.accounts.sr_account.publicKey, // Randomness (Moonbeam)
     rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
   };
+
+  const keyTypes = [
+    "aura",
+    "babe",
+    "imon",
+    "gran",
+    "audi",
+    "asgn",
+    "para",
+    "beef",
+    "nmbs",
+    "rand",
+    "rate",
+  ];
+
+  node.keystore_key_types?.forEach((key_type: string) => {
+    if (keyTypes.includes(key_type))
+      keysHash[key_type] = default_keystore_key_types[key_type];
+  });
+
+  if (!keysHash || Object.keys(keysHash).length === 0)
+    keysHash = default_keystore_key_types;
 
   for (const [k, v] of Object.entries(keysHash)) {
     const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");

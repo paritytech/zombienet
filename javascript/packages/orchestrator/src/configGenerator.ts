@@ -42,6 +42,20 @@ import {
   envVars,
 } from "./types";
 
+const default_keystore_key_types: string[] = [
+  "aura",
+  "babe",
+  "imon",
+  "gran",
+  "audi",
+  "asgn",
+  "para",
+  "beef",
+  "nmbs",
+  "rand",
+  "rate",
+];
+
 const debug = require("debug")("zombie::config-manager");
 
 // get the path of the zombie wrapper
@@ -119,6 +133,9 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      default_keystore_key_types:
+        config.relaychain.default_keystore_key_types ||
+        default_keystore_key_types,
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       maxNominations:
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
@@ -539,6 +556,8 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
+    keystore_key_types:
+      collatorConfig.keystore_key_types || default_keystore_key_types,
     args: args || [],
     chain,
     bootnodes,
@@ -619,6 +638,10 @@ async function getNodeFromConfig(
     invulnerable: node.invulnerable,
     balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
+    keystore_key_types:
+      node.keystore_key_types ||
+      networkSpec.relaychain.default_keystore_key_types ||
+      default_keystore_key_types,
     env,
     bootnodes: relayChainBootnodes,
     telemetryUrl: networkSpec.settings?.telemetry
