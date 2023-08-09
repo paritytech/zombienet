@@ -65,20 +65,10 @@ export async function generateKeystoreFiles(
   path: string,
   isAssetHubPolkadot = false,
 ): Promise<string[]> {
-  console.log(
-    "------------- generateKeystoreFiles ---------------------------",
-  );
-  console.log("------- NODE: ", node.keystore_key_types);
-  console.log(
-    "------------- generateKeystoreFiles ---------------------------",
-  );
-
   const keystoreDir = `${path}/keystore`;
   await makeDir(keystoreDir);
 
   const paths: string[] = [];
-
-  console.log("node.keystore_key_types ==> ", node.keystore_key_types);
 
   interface DefaultKeystoreKeyTypes {
     [key: string]: string;
