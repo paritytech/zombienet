@@ -93,6 +93,15 @@ export async function generateKeystoreFiles(
   };
 
   node.keystore_key_types?.forEach((key_type: string) => {
+    console.log(
+      "!!!! node.keystore_key_types",
+      key_type,
+      node.keystore_key_types,
+    );
+    console.log(
+      "!!!! node.keystore_key_types",
+      DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type),
+    );
     if (DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type))
       keysHash[key_type] = default_keystore_key_types[key_type];
   });
