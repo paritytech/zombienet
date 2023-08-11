@@ -8,6 +8,7 @@ import {
 import { makeDir } from "@zombienet/utils";
 import fs from "fs";
 import { Node } from "./types";
+import { DEFAULT_KEYSTORE_KEY_TYPES } from "./constants";
 
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -91,22 +92,8 @@ export async function generateKeystoreFiles(
     rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
   };
 
-  const keyTypes = [
-    "aura",
-    "babe",
-    "imon",
-    "gran",
-    "audi",
-    "asgn",
-    "para",
-    "beef",
-    "nmbs",
-    "rand",
-    "rate",
-  ];
-
   node.keystore_key_types?.forEach((key_type: string) => {
-    if (keyTypes.includes(key_type))
+    if (DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type))
       keysHash[key_type] = default_keystore_key_types[key_type];
   });
 

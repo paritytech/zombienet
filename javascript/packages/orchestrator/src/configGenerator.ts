@@ -19,6 +19,7 @@ import {
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
+  DEFAULT_KEYSTORE_KEY_TYPES,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
   DEFAULT_PROMETHEUS_PREFIX,
@@ -41,20 +42,6 @@ import {
   ZombieRole,
   envVars,
 } from "./types";
-
-const default_keystore_key_types: string[] = [
-  "aura",
-  "babe",
-  "imon",
-  "gran",
-  "audi",
-  "asgn",
-  "para",
-  "beef",
-  "nmbs",
-  "rand",
-  "rate",
-];
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -135,7 +122,7 @@ export async function generateNetworkSpec(
       defaultArgs: config.relaychain.default_args || [],
       default_keystore_key_types:
         config.relaychain.default_keystore_key_types ||
-        default_keystore_key_types,
+        DEFAULT_KEYSTORE_KEY_TYPES,
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       maxNominations:
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
@@ -557,7 +544,7 @@ async function getCollatorNodeFromConfig(
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
     keystore_key_types:
-      collatorConfig.keystore_key_types || default_keystore_key_types,
+      collatorConfig.keystore_key_types || DEFAULT_KEYSTORE_KEY_TYPES,
     args: args || [],
     chain,
     bootnodes,
@@ -641,7 +628,7 @@ async function getNodeFromConfig(
     keystore_key_types:
       node.keystore_key_types ||
       networkSpec.relaychain.default_keystore_key_types ||
-      default_keystore_key_types,
+      DEFAULT_KEYSTORE_KEY_TYPES,
     env,
     bootnodes: relayChainBootnodes,
     telemetryUrl: networkSpec.settings?.telemetry
