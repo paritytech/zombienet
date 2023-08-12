@@ -21,7 +21,7 @@ Zombienet aims to be a testing framework for Substrate based blockchains, provid
 tool that allows users to spawn and test ephemeral networks. The assertions used in the tests can
 include on-chain storage, metrics, logs and custom javascript scripts that interact with the chain.
 To make it easy to define those, zombienet has a `natural language` built-in allowing developers to
-write tests as smooth as posible.
+write tests as smooth as possible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
@@ -319,6 +319,24 @@ You need first to *clone* this repository and run:
 ```bash
 cd zombienet/javascript
 npm install
+npm run build
+```
+
+### Build `parser-wrapper` locally (optional)
+
+Building the `parser-wrapper` can help on running/testing locally changes on the test parser.
+In order to build the parser one first needs to run the `wasm-pack` (make sure that [wasm-pack](https://github.com/rustwasm/wasm-pack) is installed):
+
+```bash
+cd zombienet/crates/parser-wrapper
+wasm-pack build --release --target nodejs --scope zombienet
+```
+
+Once it is done, the next step is to create a symlink to the created `pkg` from inside the javascript directory, as can be seen below:
+
+```bash
+cd zombienet/javascript
+npm link ../crates/parser-wrapper/pkg/
 npm run build
 ```
 

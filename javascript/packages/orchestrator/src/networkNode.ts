@@ -1,6 +1,5 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
-import axios from "axios";
-import minimatch from "minimatch";
+import { makeRe } from "minimatch";
 
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
@@ -10,15 +9,16 @@ import {
 } from "./constants";
 import {
   BucketHash,
+  Metrics,
   fetchMetrics,
   getHistogramBuckets,
   getMetricName,
-  Metrics,
 } from "./metrics";
 import { getClient } from "./providers/client";
 
-import { decorators } from "@zombienet/utils";
+import { TimeoutAbortController, decorators } from "@zombienet/utils";
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
+import { PARA } from "./paras-decorators";
 
 const debug = require("debug")("zombie::network-node");
 
@@ -33,14 +33,14 @@ export class NetworkNode implements NetworkNodeInterface {
   name: string;
   wsUri: string;
   prometheusUri: string;
+  prometheusPrefix: string;
   multiAddress: string;
   apiInstance?: ApiPromise;
   spec?: object | undefined;
   cachedMetrics?: Metrics;
   userDefinedTypes: any;
+  para?: PARA;
   parachainId?: number;
-  lastLogLineCheckedTimestamp?: string;
-  lastLogLineCheckedIndex?: number;
   group?: string;
 
   constructor(
@@ -49,11 +49,13 @@ export class NetworkNode implements NetworkNodeInterface {
     prometheusUri: string,
     multiAddress: string,
     userDefinedTypes: any = null,
+    prometheusPrefix = "substrate",
   ) {
     this.name = name;
     this.wsUri = wsUri;
     this.prometheusUri = prometheusUri;
     this.multiAddress = multiAddress;
+    this.prometheusPrefix = prometheusPrefix;
 
     if (userDefinedTypes) this.userDefinedTypes = userDefinedTypes;
   }
@@ -95,15 +97,17 @@ export class NetworkNode implements NetworkNodeInterface {
   async pause() {
     const client = getClient();
     const args = client.getPauseArgs(this.name);
+    const scoped = client.providerName === "kubernetes";
 
-    const result = await client.runCommand(args, { scoped: true });
+    const result = await client.runCommand(args, { scoped });
     return result.exitCode === 0;
   }
 
   async resume() {
     const client = getClient();
     const args = client.getResumeArgs(this.name);
-    const result = await client.runCommand(args, { scoped: true });
+    const scoped = client.providerName === "kubernetes";
+    const result = await client.runCommand(args, { scoped });
     return result.exitCode === 0;
   }
 
@@ -162,7 +166,7 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredValue: number,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
-    let value: number = 0;
+    let value = 0;
     try {
       const getValue = async () => {
         while (desiredValue > value) {
@@ -170,7 +174,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (!this.apiInstance) await this.connectApi();
 
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          let blockNumber = await paraGetBlockHeight(
+          const blockNumber = await paraGetBlockHeight(
             this.apiInstance as ApiPromise,
             parachainId,
           );
@@ -205,7 +209,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   async getMetric(
     rawMetricName: string,
-    comparator: string,
+    comparator?: string,
     desiredMetricValue: number | null = null,
     timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number | undefined> {
@@ -227,7 +231,7 @@ export class NetworkNode implements NetworkNodeInterface {
       if (value !== undefined) {
         if (
           desiredMetricValue === null ||
-          compare(comparator, value, desiredMetricValue)
+          compare(comparator!, value, desiredMetricValue)
         ) {
           debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
           return value;
@@ -237,7 +241,7 @@ export class NetworkNode implements NetworkNodeInterface {
       const getValue = async () => {
         let c = 0;
         let done = false;
-        while (!done) {
+        while (!done && !timedout) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
@@ -247,7 +251,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (
             value !== undefined &&
             desiredMetricValue !== null &&
-            compare(comparator, value, desiredMetricValue)
+            compare(comparator!, value, desiredMetricValue)
           ) {
             done = true;
           } else {
@@ -271,7 +275,7 @@ export class NetworkNode implements NetworkNodeInterface {
         ),
       ]);
       if (resp instanceof Error) {
-        // use `undefined` metrics values in `equal` comparations as `0`
+        // use `undefined` metrics values in `equal` comparisons as `0`
         if (timedout && comparator === "equal" && desiredMetricValue === 0)
           value = 0;
         else throw resp;
@@ -285,6 +289,72 @@ export class NetworkNode implements NetworkNodeInterface {
         )}\n`,
       );
       return value;
+    }
+  }
+
+  async getCalcMetric(
+    rawMetricNameA: string,
+    rawMetricNameB: string,
+    mathOp: string,
+    comparator: string,
+    desiredMetricValue: number,
+    timeout = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  ): Promise<number> {
+    let value;
+    let timedOut = false;
+    try {
+      const mathFn = (a: number, b: number): number => {
+        return mathOp === "Minus" ? a - b : a + b;
+      };
+
+      const getValue = async () => {
+        while (!timedOut) {
+          const [valueA, valueB] = await Promise.all([
+            this.getMetric(rawMetricNameA),
+            this.getMetric(rawMetricNameB),
+          ]);
+          value = mathFn(valueA as number, valueB as number);
+          if (
+            value !== undefined &&
+            compare(comparator, value, desiredMetricValue)
+          ) {
+            break;
+          } else {
+            debug(
+              `current values for: [${rawMetricNameA}, ${rawMetricNameB}] are [${valueA}, ${valueB}], keep trying...`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+      };
+
+      const resp = await Promise.race([
+        getValue(),
+        new Promise((resolve) =>
+          setTimeout(() => {
+            timedOut = true;
+            const err = new Error(
+              `Timeout(${timeout}), "getting desired calc metric value ${desiredMetricValue} within ${timeout} secs".`,
+            );
+            return resolve(err);
+          }, timeout * 1000),
+        ),
+      ]);
+      if (resp instanceof Error) {
+        // use `undefined` metrics values in `equal` comparisons as `0`
+        if (timedOut && comparator === "equal" && desiredMetricValue === 0)
+          value = 0;
+        else throw resp;
+      }
+
+      return value as number;
+    } catch (err: any) {
+      console.log(
+        `\n\t ${decorators.red("Error: ")} \n\t\t ${decorators.bright(
+          err?.message,
+        )}\n`,
+      );
+      return value as number;
     }
   }
 
@@ -308,10 +378,8 @@ export class NetworkNode implements NetworkNodeInterface {
       }
 
       const getValue = async () => {
-        let c = 0;
         let done = false;
         while (!done) {
-          c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
           histogramBuckets = await getHistogramBuckets(
             this.prometheusUri,
@@ -364,12 +432,12 @@ export class NetworkNode implements NetworkNodeInterface {
   ): Promise<number> {
     try {
       let total_count = 0;
-      const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
       const getValue = async (): Promise<number> => {
         await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
-        let logs = await client.getNodeLogs(this.name, undefined, true);
+        const logs = await client.getNodeLogs(this.name, undefined, true);
 
         for (let line of logs.split("\n")) {
           if (client.providerName !== "native") {
@@ -387,12 +455,15 @@ export class NetworkNode implements NetworkNodeInterface {
         getValue(),
         new Promise(
           (resolve) =>
-            setTimeout(() => {
-              const err = new Error(
-                `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
-              );
-              return resolve(err);
-            }, (timeout + 2) * 1000), //extra 2s for processing log
+            setTimeout(
+              () => {
+                const err = new Error(
+                  `Timeout(${timeout}), "getting log pattern ${pattern} within ${timeout} secs".`,
+                );
+                return resolve(err);
+              },
+              (timeout + 2) * 1000,
+            ), //extra 2s for processing log
         ),
       ]);
       if (resp instanceof Error) throw resp;
@@ -414,7 +485,9 @@ export class NetworkNode implements NetworkNodeInterface {
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<boolean> {
     try {
-      const re = isGlob ? minimatch.makeRe(pattern) : new RegExp(pattern, "ig");
+      let lastLogLineCheckedTimestamp: string;
+      let lastLogLineCheckedIndex: number;
+      const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
       let logs = await client.getNodeLogs(this.name, undefined, true);
@@ -424,7 +497,10 @@ export class NetworkNode implements NetworkNodeInterface {
           const dedupedLogs = this._dedupLogs(
             logs.split("\n"),
             client.providerName === "native",
+            lastLogLineCheckedTimestamp,
+            lastLogLineCheckedIndex,
           );
+
           const index = dedupedLogs.findIndex((line) => {
             if (client.providerName !== "native") {
               // remove the extra timestamp
@@ -435,11 +511,9 @@ export class NetworkNode implements NetworkNodeInterface {
 
           if (index >= 0) {
             done = true;
-            this.lastLogLineCheckedTimestamp = dedupedLogs[index];
-            this.lastLogLineCheckedIndex = index;
-            debug(
-              this.lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "),
-            );
+            lastLogLineCheckedTimestamp = dedupedLogs[index];
+            lastLogLineCheckedIndex = index;
+            debug(lastLogLineCheckedTimestamp.split(" ").slice(1).join(" "));
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             logs = await client.getNodeLogs(this.name, 2, true);
@@ -504,7 +578,11 @@ export class NetworkNode implements NetworkNodeInterface {
     collatorUrl: string,
   ): Promise<string[]> {
     const url = `${collatorUrl}/api/traces/${traceId}`;
-    const response = await axios.get(url, { timeout: 2000 });
+
+    const fetchResult = await fetch(url, {
+      signal: TimeoutAbortController(2).signal,
+    });
+    const response = await fetchResult.json();
 
     // filter batches
     const batches = response.data.batches.filter((batch: any) => {
@@ -533,12 +611,21 @@ export class NetworkNode implements NetworkNodeInterface {
     return spanNames;
   }
 
-  // prevent to seach in the same log line twice.
-  _dedupLogs(logs: string[], useIndex = false): string[] {
-    if (!this.lastLogLineCheckedTimestamp) return logs;
-    if (useIndex) return logs.slice(this.lastLogLineCheckedIndex);
+  cleanMetricsCache() {
+    this.cachedMetrics = undefined;
+  }
 
-    const lastLineTs = this.lastLogLineCheckedTimestamp.split(" ")[0];
+  // prevent to search in the same log line twice.
+  _dedupLogs(
+    logs: string[],
+    useIndex = false,
+    lastLogLineCheckedTimestamp: string,
+    lastLogLineCheckedIndex: number,
+  ): string[] {
+    if (!lastLogLineCheckedTimestamp) return logs;
+    if (useIndex) return logs.slice(lastLogLineCheckedIndex);
+
+    const lastLineTs = lastLogLineCheckedTimestamp.split(" ")[0];
     const index = logs.findIndex((logLine) => {
       const thisLineTs = logLine.split(" ")[0];
       return thisLineTs > lastLineTs;
@@ -548,7 +635,7 @@ export class NetworkNode implements NetworkNodeInterface {
 
   _getMetric(
     metricName: string,
-    metricShouldExists: boolean = true,
+    metricShouldExists = true,
   ): number | undefined {
     if (!this.cachedMetrics) throw new Error("Metrics not availables");
 

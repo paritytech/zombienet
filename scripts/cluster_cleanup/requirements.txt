@@ -1,0 +1,3 @@
+kubernetes
+pytz
+requests

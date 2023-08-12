@@ -15,7 +15,6 @@ default_command = "polkadot"
 [[parachains]]
 id = 1282
 chain = "moonbase-local"
-cumulus_based = true
 
   [parachains.collator]
   name = "alith"
@@ -26,7 +25,6 @@ cumulus_based = true
 [[parachains]]
 id = 2001
 chain = "bifrost-kusama-local"
-cumulus_based = true
 
   [parachains.collator]
   name = "alice"
@@ -35,6 +33,16 @@ cumulus_based = true
   args = ["-lparachain=debug"]
 
 
+[[parachains]]
+id = 2002
+chain = "turing-dev"
+cumulus_based = true
+
+  [parachains.collator]
+  name = "alister"
+  image = "{{OAK_COL_IMAGE}}"
+  command = "/oak/oak-collator"
+  args = ["-lparachain=debug"]
 
 [types.Header]
 number = "u64"

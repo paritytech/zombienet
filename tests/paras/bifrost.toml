@@ -20,7 +20,6 @@ default_command = "polkadot"
 [[parachains]]
 id = 2001
 chain = "bifrost-kusama-local"
-cumulus_based = true
 
   [parachains.collator]
   name = "alice"

@@ -1,19 +1,19 @@
 import { Keyring } from "@polkadot/api";
 import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
-import { decorators } from "@zombienet/utils";
+import { CreateLogTable, decorators } from "@zombienet/utils";
 import {
   clearAuthorities as _clearAuthorities,
+  specHaveSessionsKeys as _specHaveSessionsKeys,
   getRuntimeConfig,
   readAndParseChainSpec,
-  specHaveSessionsKeys as _specHaveSessionsKeys,
   writeChainSpec,
-} from "../chain-spec";
+} from "../chainSpec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
 import { ChainSpec, Node } from "../types";
 
 // track 1st staking as default;
-let paraStakingBond: number | undefined;
+let paraStakingBond: bigint | undefined;
 
 export type GenesisNodeKey = [string, string];
 
@@ -33,7 +33,7 @@ const KNOWN_MOONBEAM_KEYS: { [name: string]: string } = {
 };
 
 function specHaveSessionsKeys(chainSpec: ChainSpec) {
-  let keys = _specHaveSessionsKeys(chainSpec);
+  const keys = _specHaveSessionsKeys(chainSpec);
 
   return keys || getRuntimeConfig(chainSpec)?.authorMapping;
 }
@@ -47,18 +47,31 @@ async function addAuthority(specPath: string, node: Node, key: GenesisNodeKey) {
 
   const { sr_account } = node.accounts;
 
-  let keys = getAuthorityKeys(chainSpec);
+  const keys = getAuthorityKeys(chainSpec);
   if (!keys) return;
 
   keys.push(key);
 
-  console.log(
-    `\t👤 Added Genesis Authority ${decorators.green(
-      node.name,
-    )} - ${decorators.magenta(sr_account.address)}`,
-  );
+  new CreateLogTable({
+    colWidths: [30, 20, 70],
+  }).pushToPrint([
+    [
+      decorators.cyan("👤 Added Genesis Authority"),
+      decorators.green(node.name),
+      decorators.magenta(sr_account.address),
+    ],
+  ]);
 
-  console.log(chainSpec.genesis.runtime.authorMapping);
+  chainSpec?.genesis?.runtime?.authorMapping?.mappings &&
+    new CreateLogTable({
+      colWidths: [20, 50, 50],
+    }).pushToPrint(
+      chainSpec.genesis.runtime.authorMapping.mappings.map((map: string[]) => [
+        decorators.cyan("mapping"),
+        ...map,
+      ]),
+    );
+
   writeChainSpec(specPath, chainSpec);
 }
 
@@ -83,7 +96,7 @@ async function clearAuthorities(specPath: string) {
 }
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
-  let keys = await _generateKeyForNode(nodeName);
+  const keys = await _generateKeyForNode(nodeName);
 
   await cryptoWaitReady();
 
@@ -102,10 +115,7 @@ async function generateKeyForNode(nodeName?: string): Promise<any> {
   return keys;
 }
 
-export function getNodeKey(
-  node: Node,
-  useStash: boolean = true,
-): GenesisNodeKey {
+export function getNodeKey(node: Node): GenesisNodeKey {
   const { sr_account, eth_account } = node.accounts;
 
   return [sr_account.address, eth_account.address];
@@ -118,14 +128,27 @@ async function addParaCustom(specPath: string, node: Node) {
   // parachainStaking
   if (!runtimeConfig?.parachainStaking) return;
 
-  const { sr_account, eth_account } = node.accounts;
+  const { eth_account } = node.accounts;
+
+  const stakingBond = paraStakingBond || BigInt("1000000000000000000000");
+  const reservedBalance = BigInt("100000000000000000000");
+
+  // Ensure collator account has enough balance to bond and add candidate
+  runtimeConfig.balances.balances.push([
+    eth_account.address,
+    stakingBond + reservedBalance,
+  ]);
 
   runtimeConfig.parachainStaking.candidates.push([
     eth_account.address,
-    paraStakingBond || 1000000000000,
+    stakingBond,
   ]);
 
   writeChainSpec(specPath, chainSpec);
+}
+
+function getProcessStartTimeKey() {
+  return "moonbeam_substrate_process_start_time_seconds";
 }
 
 export default {
@@ -136,4 +159,5 @@ export default {
   addParaCustom,
   getAuthorityKeys,
   getNodeKey,
+  getProcessStartTimeKey,
 };

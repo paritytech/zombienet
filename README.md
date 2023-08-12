@@ -21,11 +21,11 @@ Zombienet aims to be a testing framework for Substrate based blockchains, provid
 tool that allows users to spawn and test ephemeral networks. The assertions used in the tests can
 include on-chain storage, metrics, logs and custom javascript scripts that interact with the chain.
 To make it easy to define those, zombienet has a `natural language` built-in allowing developers to
-write tests as smooth as posible.
+write tests as smooth as possible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
-supported. 
+supported.
 
 **Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
 Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
@@ -387,6 +387,35 @@ Commands:
   setup                                    Runs the setup of local environment
   help [command]                           display help for command
 ```
+
+With [nix](https://zero-to-nix.com/) run `nix run github:paritytech/zombienet` or add `inputs.zombienet.url = "github:paritytech/zombienet";` to flake.
+
+
+## Projects using Zombienet
+
+Below can be found some of the projects that are currently using Zombienet as integration or as a testing framework:
+
+**In Parity:**
+
+- [Cumulus](https://github.com/paritytech/cumulus/tree/master/zombienet/tests)
+- [Polkadot](https://polkadot.network/) in the [testing pipeline](https://github.com/paritytech/polkadot/blob/eafdfc36492384e16e1c253be9d5097fb3f33c60/scripts/ci/gitlab/pipeline/zombienet.yml);
+- [Substrate](https://github.com/paritytech/substrate/tree/master/zombienet)
+- [Substrate Connect](https://github.com/paritytech/substrate-connect/tree/main/.zombienet-tests)
+
+**In the Polkadot ecosystem:**
+
+- [Acurast](https://github.com/Acurast/acurast-substrate/blob/10c3160a297ae6c3092ee692e6d3b632896fca65/Makefile)
+- [Astar](https://github.com/AstarNetwork/Astar/blob/master/.github/workflows/zombienetRpcTest.yml#L44)
+- [Gossamer](https://github.com/ChainSafe/gossamer/issues/2843)
+- [Oak/Turing/Neumann](https://github.com/OAK-Foundation/OAK-blockchain/tree/master/zombienets)
+- [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/rococo-local)
+- [InvArch](https://github.com/InvArch/InvArch-Node/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
+- [Mangata](https://github.com/mangata-finance/mangata-node/tree/develop/devops/zombienet)
+- [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
+- [Moonbeam](https://github.com/moonbeam-foundation/moonbeam/tree/master/tests)
+- [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
+- [ParaSpell✨](https://github.com/paraspell/ui-v2)
+
 
 ## Acknowledgement
 

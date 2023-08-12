@@ -1,9 +1,12 @@
-import { ApiPromise, Keyring } from "@polkadot/api";
+import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
 import { decorators, isValidHttpUrl } from "@zombienet/utils";
 import { assert, expect } from "chai";
+import execa from "execa";
+import fs from "fs/promises";
 import { JSDOM } from "jsdom";
-import minimatch from "minimatch";
+import { makeRe } from "minimatch";
 import path from "path";
+import ts from "typescript";
 import { BackchannelMap } from ".";
 import {
   chainCustomSectionUpgrade,
@@ -15,6 +18,7 @@ import {
   validateRuntimeCode,
 } from "../jsapi-helpers";
 import { Network } from "../network";
+import { NetworkNode } from "../networkNode";
 import { FnArgs } from "../types";
 const utilCrypto = require("@polkadot/util-crypto");
 
@@ -56,7 +60,7 @@ const Report = ({
   timeout,
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
-  return async (network: Network, backchannelMap: BackchannelMap) => {
+  return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
       nodes.map((node: any) =>
@@ -75,6 +79,37 @@ const Report = ({
   };
 };
 
+const CalcMetrics = ({
+  node_name,
+  metric_name_a,
+  math_ops,
+  metric_name_b,
+  target_value,
+  op,
+  timeout,
+}: FnArgs) => {
+  const comparatorFn = comparators[op!];
+
+  return async (network: Network) => {
+    const nodes = network.getNodes(node_name!);
+    const results: number[] = await Promise.all(
+      nodes.map((node: any) =>
+        node.getCalcMetric(
+          metric_name_a,
+          metric_name_b,
+          math_ops,
+          toChaiComparator(op!),
+          target_value!,
+          timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+        ),
+      ),
+    );
+    for (const value of results) {
+      comparatorFn(value, target_value);
+    }
+  };
+};
+
 const Histogram = ({
   node_name,
   metric_name,
@@ -84,7 +119,7 @@ const Histogram = ({
   timeout,
 }: FnArgs) => {
   const comparatorFn = comparators[op!];
-  return async (network: Network, backchannelMap: BackchannelMap) => {
+  return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
       nodes.map((node: any) =>
@@ -107,7 +142,7 @@ const Trace = ({ node_name, span_id, pattern }: FnArgs) => {
   const spanNames = pattern!
     .split(",")
     .map((x) => x.replaceAll('"', "").trim());
-  return async (network: Network, backchannelMap: BackchannelMap) => {
+  return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
       nodes.map((node: any) =>
@@ -127,7 +162,9 @@ const LogMatch = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   return async (network: Network) => {
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
-      nodes.map((node: any) => node.findPattern(pattern!, isGlob, timeout)),
+      nodes.map((node: NetworkNode) =>
+        node.findPattern(pattern!, isGlob, timeout),
+      ),
     );
 
     const found = results.every(Boolean);
@@ -166,7 +203,7 @@ const SystemEvent = ({ node_name, pattern, match_type, timeout }: FnArgs) => {
   return async (network: Network) => {
     const node = network.node(node_name!);
     const api: ApiPromise = await connect(node.wsUri);
-    const re = isGlob ? minimatch.makeRe(pattern!) : new RegExp(pattern!, "ig");
+    const re = isGlob ? makeRe(pattern!) : new RegExp(pattern!, "ig");
     const found = await findPatternInSystemEventSubscription(
       api,
       re as RegExp,
@@ -186,13 +223,14 @@ const CustomJs = ({
   op,
   target_value,
   timeout,
+  is_ts,
 }: FnArgs) => {
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   const comparatorFn = comparators[op!];
 
   return async (
     network: Network,
-    backchannelMap: BackchannelMap,
+    _backchannelMap: BackchannelMap,
     configBasePath: string,
   ) => {
     const networkInfo = {
@@ -229,7 +267,20 @@ const CustomJs = ({
         : custom_args.split(",")
       : [];
 
-    const resolvedJsFilePath = path.resolve(configBasePath, file_path!);
+    let resolvedJsFilePath = path.resolve(configBasePath, file_path!);
+
+    if (is_ts) {
+      const source = (await fs.readFile(resolvedJsFilePath)).toString();
+      const result = ts.transpileModule(source, {
+        compilerOptions: { module: ts.ModuleKind.CommonJS },
+      });
+
+      resolvedJsFilePath = path.resolve(
+        configBasePath,
+        path.parse(file_path!).name + ".js",
+      );
+      await fs.writeFile(resolvedJsFilePath, result.outputText);
+    }
 
     // shim with jsdom
     const dom = new JSDOM(
@@ -240,6 +291,7 @@ const CustomJs = ({
     (global as any).zombie = {
       ApiPromise,
       Keyring,
+      WsProvider,
       util: utilCrypto,
       connect,
       registerParachain,
@@ -275,6 +327,9 @@ const CustomJs = ({
     }
 
     // remove shim
+    if (is_ts) {
+      await execa.command(`rm -rf  ${resolvedJsFilePath}`);
+    }
     (global as any).window = undefined;
     (global as any).document = undefined;
     (global as any).zombie = undefined;
@@ -303,7 +358,7 @@ const CustomSh = ({
 
   return async (
     network: Network,
-    backchannelMap: BackchannelMap,
+    _backchannelMap: BackchannelMap,
     configBasePath: string,
   ) => {
     try {
@@ -386,10 +441,10 @@ const ParaRuntimeUpgrade = ({
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
   return async (
     network: Network,
-    backchannelMap: BackchannelMap,
+    _backchannelMap: BackchannelMap,
     configBasePath: string,
   ) => {
-    let node = network.node(node_name!);
+    const node = network.node(node_name!);
     let api: ApiPromise = await connect(node.wsUri);
     let hash;
 
@@ -413,11 +468,7 @@ const ParaRuntimeUpgrade = ({
 
 const ParaRuntimeDummyUpgrade = ({ node_name, para_id, timeout }: FnArgs) => {
   timeout = timeout || DEFAULT_INDIVIDUAL_TEST_TIMEOUT;
-  return async (
-    network: Network,
-    backchannelMap: BackchannelMap,
-    configBasePath: string,
-  ) => {
+  return async (network: Network) => {
     const collator = network.paras[para_id!].nodes[0];
     let node = network.node(collator.name);
     let api: ApiPromise = await connect(node.wsUri);
@@ -443,6 +494,7 @@ export default {
   SystemEvent,
   CustomJs,
   CustomSh,
+  CalcMetrics,
   ParaBlockHeight,
   ParaIsRegistered,
   ParaRuntimeUpgrade,

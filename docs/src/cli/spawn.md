@@ -1,6 +1,6 @@
 # Spawning
 
-One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but poweful _cli_ that allow you to declare the desired network in `toml` or `json` format. You can check the [definition spec](../network-definition-spec.md) to view the available options.
+One of the goal of ZombieNet is easily spawn ephemeral networks, providing a simple but powerful _cli_ that allows you to declare the desired network in `toml` or `json` format. You can check the [definition spec](../network-definition-spec.md) to view the available options.
 
 A **minimal** configuration example with two validators and one parachain:
 
@@ -27,7 +27,7 @@ id = 100
   command = "adder-collator"
 ```
 
-Then you can spwan the network by running the following command:
+Then you can spawn the network by running the following command:
 
 ```bash
 ./zombienet-macos spawn examples/0001-small-network.toml
@@ -74,4 +74,4 @@ You can follow the output of the `steps` to spawn the network and once the netwo
 
 ```
 
-Both the `prometheus` and the `node` links are accesibles in your local machine to get the `metrics` or connect to the node.
+Both the `prometheus` and the `node` links are accessible in your local machine to get the `metrics` or connect to the node.

@@ -15,26 +15,31 @@ import {
   DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
+  DEFAULT_CUMULUS_COLLATOR_BIN,
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
+  DEFAULT_PROMETHEUS_PREFIX,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
+  UNDYING_COLLATOR_BIN,
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { decorate, PARA, whichPara } from "./paras-decorators";
+import { PARA, decorate, whichPara } from "./paras-decorators";
 import {
   ComputedNetwork,
-  envVars,
   LaunchConfig,
   Node,
   NodeConfig,
   Override,
   Parachain,
+  ParachainConfig,
+  ZombieRole,
+  envVars,
 } from "./types";
 
 const debug = require("debug")("zombie::config-manager");
@@ -58,7 +63,7 @@ const isIterable = (obj: any) => {
 const configurationFileChecks = (config: LaunchConfig): void => {
   if ((config as any).hrmpChannels) {
     throw new Error(
-      "'hrmpChannel' value the given configuration file is deprecated; Please use 'hrmp_channel' instead;",
+      "'hrmpChannels' value the given configuration file is deprecated; Please use 'hrmp_channels' instead;",
     );
   }
 
@@ -73,7 +78,7 @@ const configurationFileChecks = (config: LaunchConfig): void => {
       );
     }
   if (config?.parachains && isIterable(config?.parachains))
-    for (const parachain of config?.parachains) {
+    for (const parachain of config.parachains) {
       if (parachain?.collator_groups && isIterable(parachain?.collator_groups))
         for (const collatorGroup of parachain?.collator_groups || []) {
           validateImageUrl(
@@ -108,7 +113,7 @@ export async function generateNetworkSpec(
     );
   }
 
-  let networkSpec: any = {
+  const networkSpec: any = {
     configBasePath: config.configBasePath,
     relaychain: {
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
@@ -121,12 +126,15 @@ export async function generateNetworkSpec(
       chain: config.relaychain.chain || DEFAULT_CHAIN,
       overrides: globalOverrides,
       defaultResources: config.relaychain.default_resources,
+      defaultPrometheusPrefix:
+        config.relaychain.default_prometheus_prefix ||
+        DEFAULT_PROMETHEUS_PREFIX,
     },
     parachains: [],
   };
 
   // check all imageURLs for validity
-  // TODO: These checks should be agains all config items that needs check
+  // TODO: These checks should be against all config items that needs check
   configurationFileChecks(config);
 
   if (config.relaychain.genesis)
@@ -188,8 +196,8 @@ export async function generateNetworkSpec(
   }
 
   for (const nodeGroup of config.relaychain.node_groups || []) {
-    for (let i = 0; i < nodeGroup.count; i++) {
-      let node: NodeConfig = {
+    for (let i = 0; i < (nodeGroup.count as number); i++) {
+      const node: NodeConfig = {
         name: `${nodeGroup.name}-${i}`,
         image: nodeGroup.image || networkSpec.relaychain.defaultImage,
         command: nodeGroup.command,
@@ -202,7 +210,14 @@ export async function generateNetworkSpec(
         resources:
           nodeGroup.resources || networkSpec.relaychain.defaultResources,
         db_snapshot: nodeGroup.db_snapshot,
+        prometheus_prefix:
+          nodeGroup.prometheus_prefix ||
+          networkSpec.relaychain.defaultPrometheusPrefix,
+        substrate_cli_args_version:
+          nodeGroup.substrate_cli_args_version ||
+          networkSpec.relaychain.default_substrate_cli_args_version,
       };
+
       const nodeSetup = await getNodeFromConfig(
         networkSpec,
         node,
@@ -232,41 +247,42 @@ export async function generateNetworkSpec(
       const paraChainName =
         (parachain.chain ? parachain.chain + "_" : "") + chainName;
 
+      // IF is defined use that value
+      // else check if the command is one off undying/adder otherwise true
+      const isCumulusBased =
+        parachain.cumulus_based !== undefined
+          ? parachain.cumulus_based
+          : ![DEFAULT_ADDER_COLLATOR_BIN, UNDYING_COLLATOR_BIN].includes(
+              getFirstCollatorCommand(parachain),
+            );
+
       // collator could by defined in groups or
-      // just using one collator definiton
-      let collators = [];
-      if (parachain.collator)
-        collators.push(
-          await getCollatorNodeFromConfig(
-            networkSpec,
-            parachain.collator,
-            parachain.id,
-            paraChainName,
-            para,
-            bootnodes,
-            Boolean(parachain.cumulus_based),
-          ),
-        );
-      for (const collatorConfig of parachain.collators || []) {
+      // just using one collator definition
+      const collators = [];
+      const collatorConfigs = parachain.collator ? [parachain.collator] : [];
+      if (parachain.collators) collatorConfigs.push(...parachain.collators);
+
+      for (const collatorConfig of collatorConfigs) {
         collators.push(
           await getCollatorNodeFromConfig(
             networkSpec,
             collatorConfig,
-            parachain.id,
+            parachain,
             paraChainName,
             para,
             bootnodes,
-            Boolean(parachain.cumulus_based),
+            isCumulusBased,
+            collatorConfig.name, // group of 1
           ),
         );
       }
 
       for (const collatorGroup of parachain.collator_groups || []) {
-        for (let i = 0; i < collatorGroup.count; i++) {
-          let node: NodeConfig = {
+        for (let i = 0; i < (collatorGroup.count as number); i++) {
+          const node: NodeConfig = {
             name: `${collatorGroup.name}-${i}`,
-            image: collatorGroup.image || networkSpec.relaychain.defaultImage,
-            command: collatorGroup.command,
+            image: collatorGroup.image || DEFAULT_COLLATOR_IMAGE,
+            command: collatorGroup.command || DEFAULT_CUMULUS_COLLATOR_BIN,
             args: sanitizeArgs(collatorGroup.args || [], { "listen-addr": 2 }),
             validator: true, // groups are always validators
             invulnerable: false,
@@ -277,15 +293,21 @@ export async function generateNetworkSpec(
               collatorGroup.resources ||
               networkSpec.relaychain.defaultResources,
           };
+
+          if (collatorGroup.substrate_cli_args_version)
+            node.substrate_cli_args_version =
+              collatorGroup.substrate_cli_args_version;
+
           collators.push(
             await getCollatorNodeFromConfig(
               networkSpec,
               node,
-              parachain.id,
+              parachain,
               paraChainName,
               para,
               bootnodes,
-              Boolean(parachain.cumulus_based),
+              isCumulusBased,
+              collatorGroup.name,
             ),
           );
         }
@@ -300,9 +322,7 @@ export async function generateNetworkSpec(
 
       const collatorBinary = firstCollator.commandWithArgs
         ? firstCollator.commandWithArgs.split(" ")[0]
-        : firstCollator.command
-        ? firstCollator.command
-        : DEFAULT_ADDER_COLLATOR_BIN;
+        : firstCollator.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
@@ -354,7 +374,7 @@ export async function generateNetworkSpec(
         id: parachain.id,
         name: getUniqueName(parachain.id.toString()),
         para,
-        cumulusBased: parachain.cumulus_based || false,
+        cumulusBased: isCumulusBased,
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
@@ -363,6 +383,10 @@ export async function generateNetworkSpec(
           parachain.register_para === undefined
             ? true
             : parachain.register_para, // register by default
+        onboardAsParachain:
+          parachain.onboard_as_parachain !== undefined
+            ? parachain.onboard_as_parachain
+            : true, // onboard by default
         collators,
       };
 
@@ -411,15 +435,9 @@ export async function generateNetworkSpec(
 export async function generateBootnodeSpec(
   config: ComputedNetwork,
 ): Promise<Node> {
-  const ports =
-    config.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: await getRandomPort(),
-          wsPort: await getRandomPort(),
-          rpcPort: await getRandomPort(),
-          prometheusPort: await getRandomPort(),
-        };
+  const provider = config.settings.provider;
+  const ports = await getPorts(provider, {});
+  const externalPorts = await getExternalPorts(provider, ports, {});
 
   const nodeSetup: Node = {
     name: "bootnode",
@@ -429,19 +447,16 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: [
-      "--ws-external",
-      "--rpc-external",
-      "--listen-addr",
-      "/ip4/0.0.0.0/tcp/30333/ws",
-    ],
+    args: ["--rpc-external", "--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
+    prometheus: true, // --prometheus-external
     overrides: [],
-    zombieRole: "bootnode",
+    zombieRole: ZombieRole.BootNode,
     imagePullPolicy: config.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts,
   };
 
   return nodeSetup;
@@ -451,7 +466,7 @@ interface UsedNames {
   [properyName: string]: number;
 }
 
-let mUsedNames: UsedNames = {};
+const mUsedNames: UsedNames = {};
 
 export function getUniqueName(name: string): string {
   let uniqueName;
@@ -487,42 +502,32 @@ async function getLocalOverridePath(
 async function getCollatorNodeFromConfig(
   networkSpec: any,
   collatorConfig: NodeConfig,
-  para_id: number,
+  parachain: ParachainConfig,
   chain: string, // relay-chain
   para: PARA,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
+  group?: string,
 ): Promise<Node> {
   let args: string[] = [];
   if (collatorConfig.args)
     args = args.concat(sanitizeArgs(collatorConfig.args, { "listen-addr": 2 }));
 
-  const env = [
-    { name: "COLORBT_SHOW_HIDDEN", value: "1" },
-    { name: "RUST_BACKTRACE", value: "FULL" },
-  ];
-  if (collatorConfig.env) env.push(...collatorConfig.env);
+  const env = collatorConfig.env
+    ? DEFAULT_ENV.concat(collatorConfig.env)
+    : DEFAULT_ENV;
 
   const collatorBinary = collatorConfig.command_with_args
     ? collatorConfig.command_with_args.split(" ")[0]
-    : collatorConfig.command
-    ? collatorConfig.command
-    : DEFAULT_ADDER_COLLATOR_BIN;
+    : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
   const accountsForNode = await decoratedKeysGenerator(collatorName);
 
-  const ports =
-    networkSpec.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: collatorConfig.p2p_port || (await getRandomPort()),
-          wsPort: collatorConfig.ws_port || (await getRandomPort()),
-          rpcPort: collatorConfig.rpc_port || (await getRandomPort()),
-          prometheusPort:
-            collatorConfig.prometheus_port || (await getRandomPort()),
-        };
+  const provider = networkSpec.settings.provider;
+  const ports = await getPorts(provider, collatorConfig);
+  const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
   const node: Node = {
     name: collatorName,
@@ -534,18 +539,26 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
-    args: collatorConfig.args || [],
+    args: args || [],
     chain,
     bootnodes,
     env,
     telemetryUrl: "",
+    prometheus: prometheusExternal(networkSpec),
     overrides: [],
-    zombieRole: cumulusBased ? "cumulus-collator" : "collator",
-    parachainId: para_id,
+    zombieRole: cumulusBased ? ZombieRole.CumulusCollator : ZombieRole.Collator,
+    parachainId: parachain.id,
+    dbSnapshot: collatorConfig.db_snapshot,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts,
+    p2pCertHash: collatorConfig.p2p_cert_hash,
+    prometheusPrefix:
+      parachain.prometheus_prefix ||
+      networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
+  if (group) node.group = group;
   return node;
 }
 
@@ -586,23 +599,12 @@ async function getNodeFromConfig(
   // set explicit to not be validators.
   const isValidator = node.validator !== false;
 
-  // enable --prometheus-external by default
-  const prometheusExternal =
-    networkSpec.settings?.prometheus !== undefined
-      ? networkSpec.settings.prometheus
-      : true;
-
   const nodeName = getUniqueName(node.name);
   const accountsForNode = await generateKeyForNode(nodeName);
-  const ports =
-    networkSpec.settings.provider !== "native"
-      ? DEFAULT_PORTS
-      : {
-          p2pPort: node.p2p_port || (await getRandomPort()),
-          wsPort: node.ws_port || (await getRandomPort()),
-          rpcPort: node.rpc_port || (await getRandomPort()),
-          prometheusPort: node.prometheus_port || (await getRandomPort()),
-        };
+
+  const provider = networkSpec.settings.provider;
+  const ports = await getPorts(provider, node);
+  const externalPorts = await getExternalPorts(provider, ports, node);
 
   // build node Setup
   const nodeSetup: Node = {
@@ -615,7 +617,7 @@ async function getNodeFromConfig(
     chain: networkSpec.relaychain.chain,
     validator: isValidator,
     invulnerable: node.invulnerable,
-    balance: node.balance,
+    balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
     env,
     bootnodes: relayChainBootnodes,
@@ -623,24 +625,33 @@ async function getNodeFromConfig(
       ? "ws://telemetry:8000/submit 0"
       : "",
     telemetry: networkSpec.settings?.telemetry ? true : false,
-    prometheus: prometheusExternal,
+    prometheus: prometheusExternal(networkSpec),
     overrides: [...globalOverrides, ...nodeOverrides],
     addToBootnodes: node.add_to_bootnodes ? true : false,
     resources: node.resources || networkSpec.relaychain.defaultResources,
-    zombieRole: "node",
+    zombieRole: ZombieRole.Node,
     imagePullPolicy: networkSpec.settings.image_pull_policy || "Always",
     ...ports,
+    externalPorts,
+    p2pCertHash: node.p2p_cert_hash,
+    prometheusPrefix:
+      node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
   };
 
   if (group) nodeSetup.group = group;
 
   const dbSnapshot = node.db_snapshot
     ? node.db_snapshot
-    : networkSpec.relaychain.defaultDbSnapshot
-    ? networkSpec.relaychain.defaultDbSnapshot
-    : null;
+    : networkSpec.relaychain.defaultDbSnapshot || null;
 
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
+  if (
+    node.substrate_cli_args_version ||
+    networkSpec.default_substrate_cli_args_version
+  )
+    nodeSetup.substrateCliArgsVersion =
+      node.substrate_cli_args_version ||
+      networkSpec.default_substrate_cli_args_version;
   return nodeSetup;
 }
 
@@ -670,4 +681,62 @@ function sanitizeArgs(
     });
 
   return filteredArgs;
+}
+
+async function getPorts(provider: string, nodeSetup: any): Promise<any> {
+  let ports = DEFAULT_PORTS;
+
+  if (provider === "native") {
+    ports = {
+      p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
+      wsPort: nodeSetup.ws_port || (await getRandomPort()),
+      rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
+      prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
+    };
+  }
+
+  return ports;
+}
+
+async function getExternalPorts(
+  provider: string,
+  processPorts: any,
+  nodeSetup: any,
+): Promise<any> {
+  if (provider === "native") return processPorts;
+
+  const ports = {
+    p2pPort: nodeSetup.p2p_port || (await getRandomPort()),
+    wsPort: nodeSetup.ws_port || (await getRandomPort()),
+    rpcPort: nodeSetup.rpc_port || (await getRandomPort()),
+    prometheusPort: nodeSetup.prometheus_port || (await getRandomPort()),
+  };
+
+  return ports;
+}
+
+// enable --prometheus-external by default
+// TODO: fix the `any` to an actual interface
+const prometheusExternal = (networkSpec: ComputedNetwork): boolean => {
+  return networkSpec.settings?.prometheus !== undefined
+    ? networkSpec.settings.prometheus
+    : true;
+};
+
+export function getFirstCollatorCommand(parachain: ParachainConfig): string {
+  let cmd;
+  if (parachain.collator) {
+    cmd = parachain.collator.command_with_args || parachain.collator.command;
+  } else if (parachain.collators?.length) {
+    cmd =
+      parachain.collators[0].command_with_args ||
+      parachain.collators[0].command;
+  } else if (parachain.collator_groups?.length) {
+    cmd = parachain.collator_groups[0].command;
+  }
+
+  cmd = cmd || DEFAULT_CUMULUS_COLLATOR_BIN; // no command defined we use the default polkadot-parachain.
+  debug(`cmd is ${cmd}`);
+  cmd = cmd.split(" ")[0];
+  return cmd.split("/").pop()!;
 }

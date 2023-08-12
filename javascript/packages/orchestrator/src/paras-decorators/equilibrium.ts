@@ -3,7 +3,7 @@ import {
   getRuntimeConfig,
   readAndParseChainSpec,
   writeChainSpec,
-} from "../chain-spec";
+} from "../chainSpec";
 import { Node } from "../types";
 
 // Acala genesis node key type
@@ -18,16 +18,16 @@ export async function addAuthority(
 
   const { sr_stash } = node.accounts;
 
-  let config = getRuntimeConfig(chainSpec);
+  const config = getRuntimeConfig(chainSpec);
 
-  let keys = config.session?.keys;
+  const keys = config.session?.keys;
   if (!keys) {
     config.session = { keys: [] };
   } else {
     keys.push(key);
   }
 
-  let eqKeys = config.eqSessionManager?.validators;
+  const eqKeys = config.eqSessionManager?.validators;
   if (!eqKeys) {
     config.eqSessionManager = { validators: [key[0]] };
   } else {
@@ -47,10 +47,7 @@ export async function addAuthority(
   writeChainSpec(specPath, chainSpec);
 }
 
-export function getNodeKey(
-  node: Node,
-  useStash: boolean = true,
-): GenesisNodeKey {
+export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
   const { sr_stash, sr_account, ed_account } = node.accounts;
 
   const address = useStash ? sr_stash.address : sr_account.address;
@@ -86,7 +83,7 @@ export function clearAuthorities(specPath: string) {
     runtimeConfig.eqSessionManager = { validators: [] };
 
   writeChainSpec(specPath, chainSpec);
-  let logTable = new CreateLogTable({
+  const logTable = new CreateLogTable({
     colWidths: [120],
   });
   logTable.pushToPrint([

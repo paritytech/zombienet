@@ -1,7 +1,7 @@
 // new BaseError( internalErrorString, message );
 // new BaseError( err, internalErrorString, message );
 export default class BaseError extends Error {
-  causedByMessage: string = "";
+  causedByMessage = "";
   cause?: Error | undefined;
 
   constructor(...args: any) {

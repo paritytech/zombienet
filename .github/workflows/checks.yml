@@ -1,0 +1,19 @@
+name: Checks
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  spellcheck:
+    name: Check Spelling
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+      - run: npm install -g cspell
+      - run: cd javascript && cspell .

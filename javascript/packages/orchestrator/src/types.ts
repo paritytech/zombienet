@@ -44,6 +44,8 @@ export interface RelayChainConfig {
   default_image?: string;
   default_resources?: Resources;
   default_db_snapshot?: string;
+  default_prometheus_prefix?: string;
+  default_substrate_cli_args_version?: SubstrateCliArgsVersion;
   chain: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
@@ -74,8 +76,11 @@ export interface NodeConfig {
   ws_port?: number;
   rpc_port?: number;
   prometheus_port?: number;
+  prometheus_prefix?: string;
   p2p_port?: number;
   db_snapshot?: string;
+  p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface NodeGroupConfig {
@@ -88,6 +93,8 @@ export interface NodeGroupConfig {
   count: string | number;
   resources?: Resources;
   db_snapshot?: string;
+  prometheus_prefix?: string;
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface ParachainConfig {
@@ -95,6 +102,7 @@ export interface ParachainConfig {
   chain?: string;
   add_to_genesis?: boolean;
   register_para?: boolean;
+  onboard_as_parachain?: boolean;
   balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
@@ -103,6 +111,7 @@ export interface ParachainConfig {
   chain_spec_path?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
+  prometheus_prefix?: string;
   // backward compatibility
   collator?: NodeConfig;
   collators?: NodeConfig[];
@@ -125,6 +134,7 @@ export interface ComputedNetwork {
     defaultCommand: string;
     defaultArgs: string[];
     defaultDbSnapshot?: string;
+    defaultPrometheusPrefix: string;
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
@@ -146,7 +156,7 @@ export interface Node {
   name: string;
   key?: string;
   accounts?: any;
-  balance?: number;
+  balance?: bigint;
   command?: string;
   commandWithArgs?: string;
   fullCommand?: string;
@@ -158,11 +168,12 @@ export interface Node {
   args: string[];
   env: envVars[];
   bootnodes: string[];
-  zombieRole: "temp" | "node" | "bootnode" | "collator" | "cumulus-collator";
+  zombieRole: ZombieRole;
   group?: string;
   telemetry?: boolean;
   telemetryUrl: string;
   prometheus?: boolean;
+  prometheusPrefix?: string;
   overrides: Override[];
   addToBootnodes?: boolean;
   resources?: Resources;
@@ -172,8 +183,16 @@ export interface Node {
   rpcPort: number;
   prometheusPort: number;
   p2pPort: number;
+  p2pCertHash?: string;
   imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
   dbSnapshot?: string;
+  externalPorts?: {
+    wsPort: number;
+    rpcPort: number;
+    prometheusPort: number;
+    p2pPort: number;
+  };
+  substrateCliArgsVersion?: SubstrateCliArgsVersion;
 }
 
 export interface Collator {
@@ -195,6 +214,7 @@ export interface Parachain {
   para: PARA;
   addToGenesis: boolean;
   registerPara: boolean;
+  onboardAsParachain: boolean;
   cumulusBased: boolean;
   genesisWasmPath?: string;
   genesisWasmGenerator?: string;
@@ -236,6 +256,8 @@ export interface ChainSpec {
   };
 }
 
+export type NodeMultiAddress = string;
+
 // Utils
 export interface GlobalVolume {
   name: string;
@@ -254,7 +276,7 @@ export interface Override {
   remote_name: string;
 }
 
-interface ObjectJSON {
+export interface ObjectJSON {
   [key: string]: ObjectJSON | number | string;
 }
 
@@ -296,6 +318,9 @@ export interface FnArgs {
   timeout?: number;
   target_value?: number;
   metric_name?: string;
+  metric_name_a?: string;
+  metric_name_b?: string;
+  math_ops?: string;
   buckets?: string[];
   span_id?: string;
   op?: string;
@@ -306,36 +331,30 @@ export interface FnArgs {
   file_or_uri?: string;
   after?: number;
   seconds?: number;
+  is_ts?: boolean;
 }
 
-// Config interfaces
-interface PL_NodesConfig {
-  name: string;
-  wsPort: number;
-  port: number;
-  flags?: [string];
-}
-
-interface PL_RelayChainConfig {
-  bin?: string;
-  chain: string;
-  nodes: [NodeConfig];
-  genesis?: JSON | ObjectJSON;
-}
-
-interface PL_ParaChainConfig {
-  bin?: string;
+export interface RegisterParachainOptions {
   id: number;
-  port?: string;
-  balance?: string;
-  nodes: [PL_NodesConfig];
+  wasmPath: string;
+  statePath: string;
+  apiUrl: string;
+  onboardAsParachain: boolean;
+  seed?: string;
+  finalization?: boolean;
 }
 
-export interface PL_ConfigType {
-  relaychain?: PL_RelayChainConfig;
-  parachains?: [PL_ParaChainConfig];
-  simpleParachains?: [PL_NodesConfig & { id: number }];
-  hrmpChannels?: HrmpChannelsConfig[];
-  types?: any;
-  finalization?: boolean;
+export enum ZombieRole {
+  Temp = "temp",
+  Node = "node",
+  BootNode = "bootnode",
+  Collator = "collator",
+  CumulusCollator = "cumulus-collator",
+}
+
+export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";
+
+export enum SubstrateCliArgsVersion {
+  V0 = 0,
+  V1 = 1,
 }

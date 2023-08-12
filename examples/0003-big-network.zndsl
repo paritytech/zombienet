@@ -1,0 +1,11 @@
+Description: Big Network test
+Network: ./0003-big-network.toml
+Creds: config
+
+# metrics
+a: reports node_roles is 4
+b: reports sub_libp2p_is_major_syncing is 0
+
+## test the block height - (or minus) finalised block
+a: reports block height minus finalised block is lower than 10 within 20 seconds
+b: reports block height - finalised block is lower than 10 within 20 seconds

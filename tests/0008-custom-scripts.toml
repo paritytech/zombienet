@@ -10,11 +10,4 @@ chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "bob"
-
-[[parachains]]
-id = 100
-add_to_genesis = true
-
-  [parachains.collator]
-  name = "collator01"
-  image = "{{COL_IMAGE}}"
+  
