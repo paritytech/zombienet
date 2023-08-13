@@ -74,7 +74,7 @@ export async function generateKeystoreFiles(
   interface DefaultKeystoreKeyTypes {
     [key: string]: string;
   }
-  let keysHash: DefaultKeystoreKeyTypes = {};
+  let keystore_key_types: DefaultKeystoreKeyTypes = {};
 
   const default_keystore_key_types: DefaultKeystoreKeyTypes = {
     aura: isAssetHubPolkadot
@@ -93,23 +93,14 @@ export async function generateKeystoreFiles(
   };
 
   node.keystore_key_types?.forEach((key_type: string) => {
-    console.log(
-      "!!!! node.keystore_key_types",
-      key_type,
-      node.keystore_key_types,
-    );
-    console.log(
-      "!!!! node.keystore_key_types",
-      DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type),
-    );
     if (DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type))
-      keysHash[key_type] = default_keystore_key_types[key_type];
+      keystore_key_types[key_type] = default_keystore_key_types[key_type];
   });
 
-  if (!keysHash || Object.keys(keysHash).length === 0)
-    keysHash = default_keystore_key_types;
+  if (Object.keys(keystore_key_types).length === 0)
+    keystore_key_types = default_keystore_key_types;
 
-  for (const [k, v] of Object.entries(keysHash)) {
+  for (const [k, v] of Object.entries(keystore_key_types)) {
     const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");
     const keystoreFilePath = `${keystoreDir}/${filename}`;
     paths.push(keystoreFilePath);

@@ -24,5 +24,5 @@ then
     exit 0
 fi
 
-exit 1
 echo "ERRORED"
+exit 1
