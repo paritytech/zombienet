@@ -1,5 +1,4 @@
 [settings]
-global_delay = "yes"
 timeout = 666
 
 [relaychain]

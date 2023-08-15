@@ -1,5 +1,5 @@
 Description: Big Network test
-Network: ./0004-big-network-w-delay.toml
+Network: ./0005-big-network-w-delay.toml
 Creds: config
 
 # metrics
