@@ -133,6 +133,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
             throw new Error("Binary is not defined");
           }
           const { url, name } = result;
+          const filepath = path.resolve(name);
 
           if (!url) throw new Error("No url for downloading, was provided");
 
@@ -148,7 +149,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
 
           const progressBar = multibar.create(parseInt(contentLength, 10), 0);
           const reader = response.body?.getReader();
-          const writer = fs.createWriteStream(path.resolve(name));
+          const writer = fs.createWriteStream(filepath);
 
           let i = true;
           while (i) {
@@ -167,6 +168,8 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
               writer.write(read.value);
             }
           }
+          // make the file exec
+          await fs.promises.chmod(filepath, 755);
         }),
       );
     }
