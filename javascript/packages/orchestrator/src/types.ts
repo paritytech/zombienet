@@ -37,7 +37,7 @@ export interface Settings {
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
   local_ip?: string; // ip used for expose local services (rpc/metrics/monitors)
-  bad_network_global_settings?: DelayNetworkSettings;
+  global_delay_network_global_settings?: DelayNetworkSettings;
 }
 
 export interface RelayChainConfig {
@@ -58,7 +58,7 @@ export interface RelayChainConfig {
   node_groups?: NodeGroupConfig[];
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
-  bad_network_settings?: DelayNetworkSettings;
+  default_delay_network_settings?: DelayNetworkSettings;
 }
 
 export interface NodeConfig {
@@ -83,6 +83,7 @@ export interface NodeConfig {
   db_snapshot?: string;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
   substrate_cli_args_version?: SubstrateCliArgsVersion;
+  delay_network_settings?: DelayNetworkSettings;
 }
 
 export interface NodeGroupConfig {
@@ -97,6 +98,7 @@ export interface NodeGroupConfig {
   db_snapshot?: string;
   prometheus_prefix?: string;
   substrate_cli_args_version?: SubstrateCliArgsVersion;
+  delay_network_settings?: DelayNetworkSettings;
 }
 
 export interface ParachainConfig {
@@ -119,7 +121,7 @@ export interface ParachainConfig {
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
   genesis?: JSON | ObjectJSON;
-  bad_network_settings?: DelayNetworkSettings;
+  default_delay_network_settings?: DelayNetworkSettings;
 }
 
 export interface HrmpChannelsConfig {
@@ -147,6 +149,7 @@ export interface ComputedNetwork {
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
     defaultResources?: Resources;
+    delayNetworkSettings?: DelayNetworkSettings;
   };
   parachains: Parachain[];
   types: any;
@@ -196,6 +199,7 @@ export interface Node {
     p2pPort: number;
   };
   substrateCliArgsVersion?: SubstrateCliArgsVersion;
+  delayNetworkSettings?: DelayNetworkSettings;
 }
 
 export interface Collator {
@@ -230,6 +234,7 @@ export interface Parachain {
   balance?: number;
   collators: Node[];
   genesis?: JSON | ObjectJSON;
+  delayNetworkSettings?: DelayNetworkSettings;
 }
 
 export interface envVars {
