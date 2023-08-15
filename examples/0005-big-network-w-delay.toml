@@ -5,6 +5,8 @@ timeout = 666
 default_image = "docker.io/parity/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
+[default_delay_network_settings]
+  latency =  "10ms"
 
 chain = "rococo-local"
 
