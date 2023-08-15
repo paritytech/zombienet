@@ -412,7 +412,7 @@ Below can be found some of the projects that are currently using Zombienet as in
 - [InvArch](https://github.com/InvArch/InvArch-Node/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
 - [Mangata](https://github.com/mangata-finance/mangata-node/tree/develop/devops/zombienet)
 - [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
-- [Moonbeam](https://github.com/PureStake/moonbeam/tree/master/tests/zombienet)
+- [Moonbeam](https://github.com/moonbeam-foundation/moonbeam/tree/master/tests)
 - [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
 - [ParaSpell✨](https://github.com/paraspell/ui-v2)
 
