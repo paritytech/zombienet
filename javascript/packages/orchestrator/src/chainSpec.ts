@@ -96,6 +96,15 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   try {
     const chainSpec = readAndParseChainSpec(specPath);
     const runtimeConfig = getRuntimeConfig(chainSpec);
+    if (!runtimeConfig.balances) {
+      console.error(
+        `\n 🚧 ${decorators.yellow(
+          "NO 'balances' key in runtimeConfig, skipping...",
+        )} 🚧 \n`,
+      );
+      return;
+    }
+
     // Create a balance map
     const balanceMap = runtimeConfig.balances.balances.reduce(
       (
@@ -161,6 +170,7 @@ export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
         beefy: encodeAddress(ec_account.publicKey),
         aura: sr_account.address,
         nimbus: sr_account.address,
+        vrf: sr_account.address,
       },
     ];
 
