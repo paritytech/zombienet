@@ -37,7 +37,7 @@ export interface Settings {
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
   local_ip?: string; // ip used for expose local services (rpc/metrics/monitors)
-  bad_network_global_settings?: BadNetworkSettings;
+  bad_network_global_settings?: DelayNetworkSettings;
 }
 
 export interface RelayChainConfig {
@@ -58,7 +58,7 @@ export interface RelayChainConfig {
   node_groups?: NodeGroupConfig[];
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
-  bad_network_settings?: BadNetworkSettings;
+  bad_network_settings?: DelayNetworkSettings;
 }
 
 export interface NodeConfig {
@@ -119,7 +119,7 @@ export interface ParachainConfig {
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
   genesis?: JSON | ObjectJSON;
-  bad_network_settings?: BadNetworkSettings;
+  bad_network_settings?: DelayNetworkSettings;
 }
 
 export interface HrmpChannelsConfig {
@@ -362,7 +362,7 @@ export enum SubstrateCliArgsVersion {
   V1 = 1,
 }
 
-export interface BadNetworkSettings {
+export interface DelayNetworkSettings {
   latency: string;
   correlation: string;
   jitter: string;

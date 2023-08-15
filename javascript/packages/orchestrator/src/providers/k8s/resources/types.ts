@@ -1,5 +1,5 @@
 import {
-  BadNetworkSettings,
+  DelayNetworkSettings,
   envVars,
   Resources,
   ZombieRoleLabel,
@@ -58,7 +58,7 @@ export interface InnerPodSpec {
     runAsUser: number;
     runAsGroup: number;
   };
-  delay?: BadNetworkSettings;
+  delay?: DelayNetworkSettings;
 }
 
 export interface PodSpec {
@@ -95,7 +95,7 @@ export interface ChaosSpec {
   metadata: { name: string };
   spec: {
     selector: SelectorTypeNS | SelectorTypePods;
-    delay: BadNetworkSettings;
+    delay: DelayNetworkSettings;
   };
 }
 
