@@ -531,9 +531,12 @@ async function getCollatorNodeFromConfig(
 
   // By default cumulus collators are `validators`, this implies that we will
   // run those with this flag `--collator`.
-  const isValidator = collatorConfig.validator !== undefined ? collatorConfig.validator :
-    cumulusBased ? true :
-    false;
+  const isValidator =
+    collatorConfig.validator !== undefined
+      ? collatorConfig.validator
+      : cumulusBased
+      ? true
+      : false;
 
   const node: Node = {
     name: collatorName,
