@@ -2,3 +2,6 @@
 /.github/ @paritytech/ci @pepoviola
 /.gitlab-ci.yml @paritytech/ci @pepoviola
 /scripts/ci/ @paritytech/ci @pepoviola
+
+# add automatic reviewers in PRs
+* @pepoviola @wirednkod @l0ris
