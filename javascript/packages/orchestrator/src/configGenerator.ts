@@ -529,7 +529,8 @@ async function getCollatorNodeFromConfig(
   const ports = await getPorts(provider, collatorConfig);
   const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
-  // By default cumulus collators are `validators`, this implies that we will
+  // IFF the collator have explicit set the validator field we use that value,
+  // if not we set by default cumulus collators as `validators`, this implies that we will
   // run those with this flag `--collator`.
   const isValidator =
     collatorConfig.validator !== undefined
