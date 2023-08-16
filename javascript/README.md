@@ -1,4 +1,4 @@
-![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg) [![License](https://img.shields.io/badge/License-GPL_3.0_only-blue.svg)](https://opensource.org/license/gpl-3-0/) [![GitLab Status](https://gitlab.parity.io/parity/zombienet/pipelines/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)  [![GitLab Status](https://gitlab.parity.io/parity/zombienet/pipelines/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
 
 # Zombienet
 
