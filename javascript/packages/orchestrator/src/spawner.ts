@@ -82,7 +82,7 @@ export const spawnNode = async (
   if (node.accounts) {
     // check if the node directory exists if not create (e.g for k8s provider)
     let nodeFilesPath = client.tmpDir;
-    // if (parachain && parachain.name) nodeFilesPath += `/${parachain.name}`;
+    if (parachain && parachain.name) nodeFilesPath += `/${parachain.name}`;
     nodeFilesPath += `/${node.name}`;
 
     await makeDir(nodeFilesPath, true);
