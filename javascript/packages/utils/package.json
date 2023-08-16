@@ -30,7 +30,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "cli-table3": "^0.6.2",
+    "cli-table3": "^0.6.3",
     "debug": "^4.3.4",
     "mocha": "^10.2.0",
     "nunjucks": "^3.2.4",
@@ -42,7 +42,7 @@
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/mocha": "^10.0.1",
     "@types/nunjucks": "^3.2.3",
-    "@types/sinon": "^10.0.15",
+    "@types/sinon": "^10.0.16",
     "chai": "^4.3.7",
     "deep-equal-in-any-order": "^2.0.6",
     "sinon": "^15.2.0",
