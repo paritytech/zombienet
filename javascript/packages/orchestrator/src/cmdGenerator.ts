@@ -270,7 +270,7 @@ export async function genCmd(
     const parachainIdArgIndex = args.findIndex((arg) =>
       arg.includes("--parachain-id"),
     );
-    args.splice(parachainIdArgIndex, 1);
+    if (parachainIdArgIndex >= 0) args.splice(parachainIdArgIndex, 1);
     args.push(`--parachain-id ${parachainId}`);
   }
 
