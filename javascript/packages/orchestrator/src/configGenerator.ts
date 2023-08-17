@@ -120,7 +120,7 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
-      defaultkeystoreKeyTypes:
+      defaultKeystoreKeyTypes:
         config.relaychain.default_keystore_key_types ||
         DEFAULT_KEYSTORE_KEY_TYPES,
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
@@ -637,7 +637,7 @@ async function getNodeFromConfig(
     args: uniqueArgs,
     keystoreKeyTypes:
       node.keystore_key_types ||
-      networkSpec.relaychain.defaultkeystoreKeyTypes ||
+      networkSpec.relaychain.defaultKeystoreKeyTypes ||
       DEFAULT_KEYSTORE_KEY_TYPES,
     env,
     bootnodes: relayChainBootnodes,

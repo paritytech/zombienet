@@ -146,7 +146,7 @@ export interface ComputedNetwork {
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
     defaultResources?: Resources;
-    defaultkeystoreKeyTypes?: string[];
+    defaultKeystoreKeyTypes?: string[];
   };
   parachains: Parachain[];
   types: any;
