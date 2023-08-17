@@ -11,9 +11,10 @@ import path from "path";
 import { Network, rebuildNetwork } from "../network";
 import { start } from "../orchestrator";
 import { Providers } from "../providers";
-import { LaunchConfig, TestDefinition } from "../types";
+import { TestDefinition } from "../types";
 import assertions from "./assertions";
 import commands from "./commands";
+import { LaunchConfig } from "../configTypes";
 
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 

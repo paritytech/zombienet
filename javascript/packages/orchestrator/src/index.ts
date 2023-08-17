@@ -2,12 +2,10 @@ export { Network } from "./network";
 export { start, test } from "./orchestrator";
 export { Providers } from "./providers";
 export { run } from "./test-runner";
+export { TestDefinition } from "./types";
 export {
-  HrmpChannelsConfig,
-  LaunchConfig,
-  NodeConfig,
-  ObjectJSON,
-  ParachainConfig,
   PolkadotLaunchConfig,
-  TestDefinition,
-} from "./types";
+  LaunchConfig,
+  ParachainConfig,
+} from "./configTypes";
+export { HrmpChannelsConfig, ObjectJSON, NodeConfig } from "./sharedTypes";

@@ -1,7 +1,7 @@
 import { series } from "@zombienet/utils";
 import { getProvider } from "./providers";
 import { Client } from "./providers/client";
-import { ComputedNetwork } from "./types";
+import { ComputedNetwork } from "./configTypes";
 
 export const setSubstrateCliArgsVersion = async (
   network: ComputedNetwork,

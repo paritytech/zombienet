@@ -9,7 +9,9 @@ import {
 import crypto from "crypto";
 import fs from "fs";
 import { generateKeyFromSeed } from "./keys";
-import { ChainSpec, ComputedNetwork, HrmpChannelsConfig, Node } from "./types";
+import { ChainSpec } from "./types";
+import { HrmpChannelsConfig, Node } from "./sharedTypes";
+import { ComputedNetwork } from "./configTypes";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
