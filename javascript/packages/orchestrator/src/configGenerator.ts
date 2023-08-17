@@ -120,7 +120,7 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
-      default_keystore_key_types:
+      defaultkeystoreKeyTypes:
         config.relaychain.default_keystore_key_types ||
         DEFAULT_KEYSTORE_KEY_TYPES,
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
@@ -553,7 +553,7 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
-    keystore_key_types:
+    keystoreKeyTypes:
       collatorConfig.keystore_key_types || DEFAULT_KEYSTORE_KEY_TYPES,
     args: args || [],
     chain,
@@ -635,9 +635,9 @@ async function getNodeFromConfig(
     invulnerable: node.invulnerable,
     balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
-    keystore_key_types:
+    keystoreKeyTypes:
       node.keystore_key_types ||
-      networkSpec.relaychain.default_keystore_key_types ||
+      networkSpec.relaychain.defaultkeystoreKeyTypes ||
       DEFAULT_KEYSTORE_KEY_TYPES,
     env,
     bootnodes: relayChainBootnodes,

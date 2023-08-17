@@ -92,7 +92,7 @@ export async function generateKeystoreFiles(
     rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
   };
 
-  node.keystore_key_types?.forEach((key_type: string) => {
+  node.keystoreKeyTypes?.forEach((key_type: string) => {
     if (DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type))
       keystore_key_types[key_type] = default_keystore_key_types[key_type];
   });

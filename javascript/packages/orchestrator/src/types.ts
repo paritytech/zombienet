@@ -146,6 +146,7 @@ export interface ComputedNetwork {
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
     defaultResources?: Resources;
+    defaultkeystoreKeyTypes?: string[];
   };
   parachains: Parachain[];
   types: any;
@@ -178,7 +179,7 @@ export interface Node {
   prometheusPrefix?: string;
   overrides: Override[];
   addToBootnodes?: boolean;
-  keystore_key_types?: string[];
+  keystoreKeyTypes?: string[];
   resources?: Resources;
   parachainId?: number;
   jaegerUrl?: string;
