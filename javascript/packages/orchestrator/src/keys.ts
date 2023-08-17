@@ -8,7 +8,7 @@ import {
 import { makeDir } from "@zombienet/utils";
 import fs from "fs";
 import { DEFAULT_KEYSTORE_KEY_TYPES } from "./constants";
-import { Node } from "./types";
+import { Node } from "./sharedTypes";
 
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

@@ -4,7 +4,7 @@ import {
   readAndParseChainSpec,
   writeChainSpec,
 } from "../chainSpec";
-import { Node } from "../types";
+import { Node } from "../sharedTypes";
 
 // Track 1st staking bond as default
 let paraStakingBond: number | undefined;

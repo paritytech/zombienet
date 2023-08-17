@@ -31,17 +31,15 @@ import {
 } from "./constants";
 import { generateKeyForNode } from "./keys";
 import { PARA, decorate, whichPara } from "./paras-decorators";
+import { ComputedNetwork, LaunchConfig, ParachainConfig } from "./configTypes";
 import {
-  ComputedNetwork,
-  LaunchConfig,
-  Node,
   NodeConfig,
   Override,
   Parachain,
-  ParachainConfig,
-  ZombieRole,
   envVars,
-} from "./types";
+  Node,
+  ZombieRole,
+} from "./sharedTypes";
 
 const debug = require("debug")("zombie::config-manager");
 
