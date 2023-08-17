@@ -81,6 +81,7 @@ export interface Node extends NodeCommonTypes, Ports {
   dbSnapshot?: string;
   externalPorts?: Ports;
   substrateCliArgsVersion?: SubstrateCliArgsVersion;
+  keystoreKeyTypes?: string[];
 }
 
 export interface Ports {
@@ -116,6 +117,7 @@ export interface NodeCommonTypes {
   db_snapshot?: string;
   substrate_cli_args_version?: SubstrateCliArgsVersion;
   resources?: Resources;
+  keystore_key_types?: string[];
 }
 
 export interface envVars {
