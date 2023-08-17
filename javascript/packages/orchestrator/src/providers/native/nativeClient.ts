@@ -17,7 +17,8 @@ import {
   LOCALHOST,
   P2P_PORT,
 } from "../../constants";
-import { ZombieRole, fileMap } from "../../types";
+import { fileMap } from "../../types";
+import { ZombieRole } from "../../sharedTypes";
 import {
   Client,
   RunCommandOptions,

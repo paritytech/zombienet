@@ -1,4 +1,4 @@
-import { envVars, Resources, ZombieRoleLabel } from "../../../types";
+import { envVars, Resources, ZombieRoleLabel } from "../../../sharedTypes";
 
 type ContainerResource = Resources["resources"];
 

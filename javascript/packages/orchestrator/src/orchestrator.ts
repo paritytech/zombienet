@@ -37,13 +37,7 @@ import { registerParachain } from "./jsapi-helpers";
 import { Network, Scope } from "./network";
 import { generateParachainFiles } from "./paras";
 import { getProvider } from "./providers/";
-import {
-  ComputedNetwork,
-  LaunchConfig,
-  Node,
-  Parachain,
-  fileMap,
-} from "./types";
+import { fileMap } from "./types";
 
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
@@ -52,6 +46,8 @@ import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
 import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
+import { ComputedNetwork, LaunchConfig } from "./configTypes";
+import { Node, Parachain } from "./sharedTypes";
 
 const debug = require("debug")("zombie");
 
