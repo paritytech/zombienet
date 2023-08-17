@@ -7,8 +7,8 @@ import {
 } from "@polkadot/util-crypto";
 import { makeDir } from "@zombienet/utils";
 import fs from "fs";
-import { Node } from "./types";
 import { DEFAULT_KEYSTORE_KEY_TYPES } from "./constants";
+import { Node } from "./types";
 
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

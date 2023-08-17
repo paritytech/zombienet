@@ -88,8 +88,9 @@ export async function start(
 
   try {
     // Parse and build Network definition
-    const networkSpec: ComputedNetwork =
-      await generateNetworkSpec(launchConfig);
+    const networkSpec: ComputedNetwork = await generateNetworkSpec(
+      launchConfig,
+    );
 
     // IFF there are network references in cmds we need to switch to concurrency 1
     if (TOKEN_PLACEHOLDER.test(JSON.stringify(networkSpec))) {
