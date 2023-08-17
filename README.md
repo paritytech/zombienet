@@ -1,4 +1,5 @@
-[![GitLab Status](https://gitlab.parity.io/parity/zombienet/badges/main/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+
+![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)  [![GitLab Status](https://gitlab.parity.io/parity/zombienet/pipelines/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
 
 # Zombienet
 

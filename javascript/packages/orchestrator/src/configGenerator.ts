@@ -531,11 +531,21 @@ async function getCollatorNodeFromConfig(
   const ports = await getPorts(provider, collatorConfig);
   const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
+  // IFF the collator have explicit set the validator field we use that value,
+  // if not we set by default cumulus collators as `validators`, this implies that we will
+  // run those with this flag `--collator`.
+  const isValidator =
+    collatorConfig.validator !== undefined
+      ? collatorConfig.validator
+      : cumulusBased
+      ? true
+      : false;
+
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
     accounts: accountsForNode,
-    validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
+    validator: isValidator,
     invulnerable: collatorConfig.invulnerable,
     balance: collatorConfig.balance,
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
