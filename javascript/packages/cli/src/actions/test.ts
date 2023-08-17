@@ -37,7 +37,7 @@ export async function test(
   }
 
   process.env.DEBUG = "zombie";
-  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  const inCI = process.env.RUN_IN_CONTAINER === "1" || process.env.ZOMBIENET_IMAGE !== undefined;
   // use `k8s` as default
   const providerToUse =
     opts.provider && AVAILABLE_PROVIDERS.includes(opts.provider)

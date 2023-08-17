@@ -86,7 +86,7 @@ export async function spawn(
     }
   }
 
-  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  const inCI = process.env.RUN_IN_CONTAINER === "1" || process.env.ZOMBIENET_IMAGE !== undefined;
   const options = {
     monitor,
     spawnConcurrency,
