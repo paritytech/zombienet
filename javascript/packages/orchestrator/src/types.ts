@@ -3,6 +3,24 @@
 
 import { PARA } from "./paras-decorators";
 
+// Types
+export type NodeMultiAddress = string;
+export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";
+
+// enums
+export enum ZombieRole {
+  Temp = "temp",
+  Node = "node",
+  BootNode = "bootnode",
+  Collator = "collator",
+  CumulusCollator = "cumulus-collator",
+}
+
+export enum SubstrateCliArgsVersion {
+  V0 = 0,
+  V1 = 1,
+}
+
 // network config to spawn.
 export interface LaunchConfig extends PolkadotLaunchConfig {
   config: { provider: string };
@@ -59,51 +77,50 @@ export interface RelayChainConfig {
   genesis?: JSON | ObjectJSON;
 }
 
-export interface NodeConfig {
+export interface NodeCommonTypes {
+  name: string;
+  command?: string;
+  args?: string[];
+  env?: envVars[];
+  overrides?: Override[];
+  prometheus_prefix?: string;
+  db_snapshot?: string;
+  substrate_cli_args_version?: SubstrateCliArgsVersion;
+  resources?: Resources;
+}
+
+export interface NodeConfig extends NodeCommonTypes {
   name: string;
   image?: string;
-  command?: string;
   command_with_args?: string;
-  args?: string[];
   validator: boolean;
   invulnerable: boolean;
   balance: number;
-  env?: envVars[];
   bootnodes?: string[];
-  overrides?: Override[];
   add_to_bootnodes?: boolean;
-  resources?: Resources;
   ws_port?: number;
   rpc_port?: number;
-  prometheus_port?: number;
-  prometheus_prefix?: string;
   p2p_port?: number;
-  db_snapshot?: string;
+  prometheus_port?: number;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
-  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
-export interface NodeGroupConfig {
-  name: string;
+export interface NodeGroupConfig extends NodeCommonTypes {
   image?: string;
-  command?: string;
-  args?: string[];
-  env?: envVars[];
-  overrides?: Override[];
   count: string | number;
-  resources?: Resources;
-  db_snapshot?: string;
-  prometheus_prefix?: string;
-  substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
-export interface ParachainConfig {
+export interface CommonParachainConfig {
   id: number;
   chain?: string;
+  genesis?: JSON | ObjectJSON;
+  balance?: number;
+}
+
+export interface ParachainConfig extends CommonParachainConfig {
   add_to_genesis?: boolean;
   register_para?: boolean;
   onboard_as_parachain?: boolean;
-  balance?: number;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
   genesis_state_path?: string;
@@ -116,7 +133,6 @@ export interface ParachainConfig {
   collator?: NodeConfig;
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
-  genesis?: JSON | ObjectJSON;
 }
 
 export interface HrmpChannelsConfig {
@@ -152,15 +168,21 @@ export interface ComputedNetwork {
   seed: string;
 }
 
-export interface Node {
-  name: string;
+export interface Ports {
+  wsPort: number;
+  rpcPort: number;
+  prometheusPort: number;
+  p2pPort: number;
+}
+
+export interface Node extends NodeCommonTypes, Ports {
+  image: string;
   key?: string;
   accounts?: any;
   balance?: bigint;
   command?: string;
   commandWithArgs?: string;
   fullCommand?: string;
-  image: string;
   chain: string;
   chainSpec?: string;
   validator: boolean;
@@ -179,27 +201,17 @@ export interface Node {
   resources?: Resources;
   parachainId?: number;
   jaegerUrl?: string;
-  wsPort: number;
-  rpcPort: number;
-  prometheusPort: number;
-  p2pPort: number;
   p2pCertHash?: string;
   imagePullPolicy?: "IfNotPresent" | "Never" | "Always";
   dbSnapshot?: string;
-  externalPorts?: {
-    wsPort: number;
-    rpcPort: number;
-    prometheusPort: number;
-    p2pPort: number;
-  };
+  externalPorts?: Ports;
   substrateCliArgsVersion?: SubstrateCliArgsVersion;
 }
 
-export interface Collator {
-  name: string;
+export interface Collator extends NodeCommonTypes {
+  image: string;
   command: string;
   commandWithArgs?: string;
-  image: string;
   chain?: string;
   args: string[];
   env: envVars[];
@@ -207,10 +219,8 @@ export interface Collator {
   count?: number;
 }
 
-export interface Parachain {
-  id: number;
+export interface Parachain extends CommonParachainConfig {
   name: string;
-  chain?: string;
   para: PARA;
   addToGenesis: boolean;
   registerPara: boolean;
@@ -224,9 +234,7 @@ export interface Parachain {
   specPath?: string;
   wasmPath?: string;
   statePath?: string;
-  balance?: number;
   collators: Node[];
-  genesis?: JSON | ObjectJSON;
 }
 
 export interface envVars {
@@ -255,8 +263,6 @@ export interface ChainSpec {
     };
   };
 }
-
-export type NodeMultiAddress = string;
 
 // Utils
 export interface GlobalVolume {
@@ -291,10 +297,6 @@ export interface Resources {
       cpu?: string;
     };
   };
-}
-
-export interface MultiAddressByNode {
-  [key: string]: string;
 }
 
 export interface TestDefinition {
@@ -342,19 +344,4 @@ export interface RegisterParachainOptions {
   onboardAsParachain: boolean;
   seed?: string;
   finalization?: boolean;
-}
-
-export enum ZombieRole {
-  Temp = "temp",
-  Node = "node",
-  BootNode = "bootnode",
-  Collator = "collator",
-  CumulusCollator = "cumulus-collator",
-}
-
-export type ZombieRoleLabel = ZombieRole | "authority" | "full-node";
-
-export enum SubstrateCliArgsVersion {
-  V0 = 0,
-  V1 = 1,
 }
