@@ -33,6 +33,7 @@ export interface RelayChainConfig {
   default_db_snapshot?: string;
   default_prometheus_prefix?: string;
   default_substrate_cli_args_version?: SubstrateCliArgsVersion;
+  default_keystore_key_types?: string[];
   chain: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
