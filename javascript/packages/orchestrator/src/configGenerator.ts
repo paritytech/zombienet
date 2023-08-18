@@ -30,17 +30,15 @@ import {
 } from "./constants";
 import { generateKeyForNode } from "./keys";
 import { PARA, decorate, whichPara } from "./paras-decorators";
+import { ComputedNetwork, LaunchConfig, ParachainConfig } from "./configTypes";
 import {
-  ComputedNetwork,
-  LaunchConfig,
-  Node,
   NodeConfig,
   Override,
   Parachain,
-  ParachainConfig,
-  ZombieRole,
   envVars,
-} from "./types";
+  Node,
+  ZombieRole,
+} from "./sharedTypes";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -129,7 +127,9 @@ export async function generateNetworkSpec(
       defaultPrometheusPrefix:
         config.relaychain.default_prometheus_prefix ||
         DEFAULT_PROMETHEUS_PREFIX,
-      delayNetworkSettings: config.relaychain.default_delay_network_settings || config.settings?.global_delay_network_global_settings
+      delayNetworkSettings:
+        config.relaychain.default_delay_network_settings ||
+        config.settings?.global_delay_network_global_settings,
     },
     parachains: [],
   };
@@ -531,11 +531,21 @@ async function getCollatorNodeFromConfig(
   const ports = await getPorts(provider, collatorConfig);
   const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
+  // IFF the collator have explicit set the validator field we use that value,
+  // if not we set by default cumulus collators as `validators`, this implies that we will
+  // run those with this flag `--collator`.
+  const isValidator =
+    collatorConfig.validator !== undefined
+      ? collatorConfig.validator
+      : cumulusBased
+      ? true
+      : false;
+
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
     accounts: accountsForNode,
-    validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
+    validator: isValidator,
     invulnerable: collatorConfig.invulnerable,
     balance: collatorConfig.balance,
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
@@ -558,7 +568,10 @@ async function getCollatorNodeFromConfig(
     prometheusPrefix:
       parachain.prometheus_prefix ||
       networkSpec.relaychain.defaultPrometheusPrefix,
-    delayNetworkSettings: collatorConfig.delay_network_settings || parachain.default_delay_network_settings || networkSpec.settings.delayNetworkSettings,
+    delayNetworkSettings:
+      collatorConfig.delay_network_settings ||
+      parachain.delayNetworkSettings ||
+      networkSpec.settings.delayNetworkSettings,
   };
 
   if (group) node.group = group;
@@ -639,7 +652,9 @@ async function getNodeFromConfig(
     p2pCertHash: node.p2p_cert_hash,
     prometheusPrefix:
       node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
-    delayNetworkSettings: node.delay_network_settings || networkSpec.relaychain.delayNetworkSettings
+    delayNetworkSettings:
+      node.delay_network_settings ||
+      networkSpec.relaychain.delayNetworkSettings,
   };
 
   if (group) nodeSetup.group = group;

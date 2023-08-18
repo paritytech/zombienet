@@ -3,7 +3,7 @@ import {
   envVars,
   Resources,
   ZombieRoleLabel,
-} from "../../../types";
+} from "../../../sharedTypes";
 
 type ContainerResource = Resources["resources"];
 

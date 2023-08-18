@@ -1,6 +1,6 @@
 import { ChaosSpec, PodSpec } from "./types";
 
-import { DelayNetworkSettings } from "../../../types";
+import { DelayNetworkSettings } from "../../../sharedTypes";
 
 export class ChaosResource {
   name: string | undefined;

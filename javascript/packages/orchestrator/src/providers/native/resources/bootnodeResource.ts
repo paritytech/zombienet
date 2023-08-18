@@ -1,6 +1,6 @@
 import { makeDir } from "@zombienet/utils";
 import { genCmd } from "../../../cmdGenerator";
-import { ZombieRole, ZombieRoleLabel } from "../../../types";
+import { ZombieRole, ZombieRoleLabel } from "../../../sharedTypes";
 import { NodeResource } from "./nodeResource";
 import { NodeSpec, Port, ProcessEnvironment } from "./types";
 

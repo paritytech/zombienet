@@ -18,7 +18,8 @@ import {
   TRANSFER_CONTAINER_NAME,
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
-import { fileMap, ZombieRole } from "../../types";
+import { fileMap } from "../../types";
+import { ZombieRole } from "../../sharedTypes";
 import {
   Client,
   RunCommandOptions,

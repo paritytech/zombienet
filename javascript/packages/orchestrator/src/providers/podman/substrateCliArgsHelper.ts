@@ -1,4 +1,4 @@
-import { SubstrateCliArgsVersion } from "../../types";
+import { SubstrateCliArgsVersion } from "../../sharedTypes";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 

@@ -1,5 +1,5 @@
 import { Network, start } from "@zombienet/orchestrator";
-import { LaunchConfig } from "@zombienet/orchestrator/dist/types";
+import { LaunchConfig } from "@zombienet/orchestrator/dist/configTypes";
 import {
   decorators,
   getCredsFilePath,

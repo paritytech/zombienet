@@ -7,7 +7,7 @@ import {
 } from "@polkadot/util-crypto";
 import { makeDir } from "@zombienet/utils";
 import fs from "fs";
-import { Node } from "./types";
+import { Node } from "./sharedTypes";
 
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

@@ -12,7 +12,8 @@ import {
 import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
-import { Node, Parachain, ZombieRole, fileMap } from "./types";
+import { fileMap } from "./types";
+import { Node, ZombieRole, Parachain } from "./sharedTypes";
 
 const debug = require("debug")("zombie::paras");
 

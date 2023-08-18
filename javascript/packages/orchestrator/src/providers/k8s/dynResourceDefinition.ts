@@ -2,7 +2,7 @@ import { getRandomPort, getSha256 } from "@zombienet/utils";
 import { getUniqueName } from "../../configGenerator";
 import { TMP_DONE, WAIT_UNTIL_SCRIPT_SUFIX } from "../../constants";
 import { Network } from "../../network";
-import { Node, ZombieRole } from "../../types";
+import { Node, ZombieRole } from "../../sharedTypes";
 import {
   BootNodeResource,
   ChaosResource,
