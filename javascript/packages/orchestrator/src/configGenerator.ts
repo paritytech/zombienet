@@ -19,6 +19,7 @@ import {
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
+  DEFAULT_KEYSTORE_KEY_TYPES,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
   DEFAULT_PROMETHEUS_PREFIX,
@@ -117,6 +118,9 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      defaultKeystoreKeyTypes:
+        config.relaychain.default_keystore_key_types ||
+        DEFAULT_KEYSTORE_KEY_TYPES,
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       maxNominations:
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
@@ -547,6 +551,8 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
+    keystoreKeyTypes:
+      collatorConfig.keystore_key_types || DEFAULT_KEYSTORE_KEY_TYPES,
     args: args || [],
     chain,
     bootnodes,
@@ -627,6 +633,10 @@ async function getNodeFromConfig(
     invulnerable: node.invulnerable,
     balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
+    keystoreKeyTypes:
+      node.keystore_key_types ||
+      networkSpec.relaychain.defaultKeystoreKeyTypes ||
+      DEFAULT_KEYSTORE_KEY_TYPES,
     env,
     bootnodes: relayChainBootnodes,
     telemetryUrl: networkSpec.settings?.telemetry

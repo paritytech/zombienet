@@ -7,6 +7,7 @@ import {
 } from "@polkadot/util-crypto";
 import { makeDir } from "@zombienet/utils";
 import fs from "fs";
+import { DEFAULT_KEYSTORE_KEY_TYPES } from "./constants";
 import { Node } from "./sharedTypes";
 
 function nameCase(string: string) {
@@ -69,7 +70,13 @@ export async function generateKeystoreFiles(
   await makeDir(keystoreDir);
 
   const paths: string[] = [];
-  const keysHash = {
+
+  interface DefaultKeystoreKeyTypes {
+    [key: string]: string;
+  }
+  let keystore_key_types: DefaultKeystoreKeyTypes = {};
+
+  const default_keystore_key_types: DefaultKeystoreKeyTypes = {
     aura: isAssetHubPolkadot
       ? node.accounts.ed_account.publicKey
       : node.accounts.sr_account.publicKey,
@@ -85,7 +92,15 @@ export async function generateKeystoreFiles(
     rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
   };
 
-  for (const [k, v] of Object.entries(keysHash)) {
+  node.keystoreKeyTypes?.forEach((key_type: string) => {
+    if (DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type))
+      keystore_key_types[key_type] = default_keystore_key_types[key_type];
+  });
+
+  if (Object.keys(keystore_key_types).length === 0)
+    keystore_key_types = default_keystore_key_types;
+
+  for (const [k, v] of Object.entries(keystore_key_types)) {
     const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");
     const keystoreFilePath = `${keystoreDir}/${filename}`;
     paths.push(keystoreFilePath);
