@@ -43,7 +43,7 @@
     "@zombienet/utils": "^0.0.21",
     "chai": "^4.3.7",
     "debug": "^4.3.4",
-    "execa": "^5.1.1",
+    "execa": "^8.0.1",
     "fs-extra": "^11.1.1",
     "jsdom": "^22.1.0",
     "json-bigint": "^1.0.0",
