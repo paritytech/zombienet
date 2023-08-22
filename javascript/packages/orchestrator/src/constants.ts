@@ -113,6 +113,20 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
 
 const TOKEN_PLACEHOLDER = /{{ZOMBIE:(.*?):(.*?)}}/gi;
 
+const DEFAULT_KEYSTORE_KEY_TYPES: string[] = [
+  "aura",
+  "babe",
+  "imon",
+  "gran",
+  "audi",
+  "asgn",
+  "para",
+  "beef",
+  "nmbs",
+  "rand",
+  "rate",
+];
+
 export {
   ARGS_TO_REMOVE,
   BACKCHANNEL_POD_NAME,
@@ -135,6 +149,7 @@ export {
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
+  DEFAULT_KEYSTORE_KEY_TYPES,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
   DEFAULT_PROMETHEUS_PREFIX,

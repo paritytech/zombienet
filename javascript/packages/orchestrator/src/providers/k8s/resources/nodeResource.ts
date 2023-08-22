@@ -8,7 +8,7 @@ import {
   TRANSFER_CONTAINER_NAME,
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../../constants";
-import { Node, ZombieRole, ZombieRoleLabel } from "../../../types";
+import { Node, ZombieRole, ZombieRoleLabel } from "../../../sharedTypes";
 import {
   Container,
   ContainerPort,

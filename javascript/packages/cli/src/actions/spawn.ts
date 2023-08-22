@@ -1,5 +1,5 @@
 import { Network, start } from "@zombienet/orchestrator";
-import { LaunchConfig } from "@zombienet/orchestrator/dist/types";
+import { LaunchConfig } from "@zombienet/orchestrator/dist/configTypes";
 import {
   decorators,
   getCredsFilePath,
@@ -86,7 +86,9 @@ export async function spawn(
     }
   }
 
-  const inCI = process.env.RUN_IN_CONTAINER === "1";
+  const inCI =
+    process.env.RUN_IN_CONTAINER === "1" ||
+    process.env.ZOMBIENET_IMAGE !== undefined;
   const options = {
     monitor,
     spawnConcurrency,

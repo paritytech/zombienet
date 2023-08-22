@@ -6,7 +6,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "./constants";
-import { Node, SubstrateCliArgsVersion, ZombieRole } from "./types";
+import { Node, ZombieRole, SubstrateCliArgsVersion } from "./sharedTypes";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
