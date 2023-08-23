@@ -17,8 +17,8 @@ import {
   LOCALHOST,
   P2P_PORT,
 } from "../../constants";
-import { fileMap } from "../../types";
 import { DelayNetworkSettings, ZombieRole } from "../../sharedTypes";
+import { fileMap } from "../../types";
 import {
   Client,
   RunCommandOptions,

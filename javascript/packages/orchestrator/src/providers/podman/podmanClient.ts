@@ -17,6 +17,7 @@ import {
   P2P_PORT,
   PROMETHEUS_PORT,
 } from "../../constants";
+import { DelayNetworkSettings } from "../../sharedTypes";
 import { fileMap } from "../../types";
 import {
   Client,
@@ -30,7 +31,6 @@ import {
   genTempoDef,
   getIntrospectorDef,
 } from "./dynResourceDefinition";
-import { DelayNetworkSettings } from "../../sharedTypes";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::podman::client");
