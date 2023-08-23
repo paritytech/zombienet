@@ -2,7 +2,7 @@ import { getRandomPort, getSha256 } from "@zombienet/utils";
 import { getUniqueName } from "../../configGenerator";
 import { TMP_DONE, WAIT_UNTIL_SCRIPT_SUFIX } from "../../constants";
 import { Network } from "../../network";
-import { Node, ZombieRole } from "../../sharedTypes";
+import { DelayNetworkSettings, Node, ZombieRole } from "../../sharedTypes";
 import {
   BootNodeResource,
   ChaosResource,
@@ -27,8 +27,8 @@ export async function genNodeDef(
   return nodeResource.generateSpec();
 }
 
-export function genChaosDef(podSpec: PodSpec): ChaosSpec {
-  const resource = new ChaosResource(podSpec);
+export function genChaosDef(name: string, namespace: string, delay: DelayNetworkSettings): ChaosSpec {
+  const resource = new ChaosResource(name, namespace, delay);
   return resource.generateSpec();
 }
 

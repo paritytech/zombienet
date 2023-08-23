@@ -18,7 +18,7 @@ import {
   P2P_PORT,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { ZombieRole } from "../../sharedTypes";
+import { DelayNetworkSettings, ZombieRole } from "../../sharedTypes";
 import {
   Client,
   RunCommandOptions,
@@ -260,6 +260,7 @@ export class NativeClient extends Client {
     keystore: string,
     chainSpecId: string,
     dbSnapshot?: string,
+    delay?: DelayNetworkSettings,
   ): Promise<void> {
     const name = podDef.metadata.name;
     debug(JSON.stringify(podDef, null, 4));

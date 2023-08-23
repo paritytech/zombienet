@@ -30,6 +30,7 @@ import {
   genTempoDef,
   getIntrospectorDef,
 } from "./dynResourceDefinition";
+import { DelayNetworkSettings } from "../../sharedTypes";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::podman::client");
@@ -356,6 +357,7 @@ export class PodmanClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
+    delay?: DelayNetworkSettings,
   ): Promise<void> {
     const name = podDef.metadata.name;
 

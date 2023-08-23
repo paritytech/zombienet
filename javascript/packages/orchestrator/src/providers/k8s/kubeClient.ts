@@ -27,6 +27,7 @@ import {
   setClient,
 } from "../client";
 import { genChaosDef, genServiceDef } from "./dynResourceDefinition";
+import { DelayNetworkSettings } from "../../sharedTypes";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -113,6 +114,7 @@ export class KubeClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
+    delay?: DelayNetworkSettings
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -143,10 +145,8 @@ export class KubeClient extends Client {
     await this.createResource(podDef, true);
     if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
       const serviceDef = genServiceDef(podDef);
+      writeLocalJsonFile(this.tmpDir, `${name}-service.json`, serviceDef);
       await this.createResource(serviceDef, true);
-      if (podDef.spec.delay) {
-        await this.createResource(genChaosDef(podDef), true);
-      }
     }
 
     await this.waitTransferContainerReady(name);
@@ -222,6 +222,14 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.waitPodReady(name);
+
+    if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp && delay) {
+      const chaosDef = genChaosDef(name, this.namespace, delay);
+      writeLocalJsonFile(this.tmpDir, `${name}-chaos.json`, chaosDef);
+      await this.createResource(chaosDef, true);
+    }
+
+
     logTable = new CreateLogTable({
       colWidths: [20, 100],
     });

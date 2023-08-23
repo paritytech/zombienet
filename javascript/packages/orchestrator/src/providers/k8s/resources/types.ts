@@ -94,15 +94,19 @@ export interface ChaosSpec {
   kind: "NetworkChaos";
   metadata: { name: string };
   spec: {
+    mode: "all",
+    action: "delay"
     selector: SelectorTypeNS | SelectorTypePods;
     delay: DelayNetworkSettings;
   };
 }
 
 interface SelectorTypeNS {
-  namespaces: string;
+  namespaces: string[];
 }
 
 interface SelectorTypePods {
-  pods: string;
+  pods: {
+    [namespace: string]: string[]
+  };
 }
