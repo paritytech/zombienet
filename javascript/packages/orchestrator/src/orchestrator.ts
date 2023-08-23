@@ -11,7 +11,7 @@ import {
   loadTypeDef,
   makeDir,
   series,
-  setSilent,
+  setLogType,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -78,7 +78,7 @@ export async function start(
     ...options,
   };
 
-  setSilent(opts.silent);
+  opts.silent && setLogType("silent");
   let network: Network | undefined;
   let cronInterval = undefined;
 

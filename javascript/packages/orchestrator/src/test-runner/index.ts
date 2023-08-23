@@ -2,7 +2,7 @@ import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
-  setSilent,
+  setLogType,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -38,7 +38,7 @@ export async function run(
   runningNetworkSpecPath: string | undefined,
   dir: string | undefined,
 ) {
-  setSilent(silent);
+  silent && setLogType("silent");
   let network: Network;
   const backchannelMap: BackchannelMap = {};
 

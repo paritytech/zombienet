@@ -54,11 +54,15 @@ interface TableCreationProps {
   wordWrap?: boolean;
 }
 
+type LogType = "json" | "text" | "table" | "silent";
+
 // Module level config.
-let silent = true;
-export function setSilent(value: boolean) {
-  silent = value;
+let logType: LogType = "table";
+
+export function setLogType(value: LogType) {
+  logType = value;
 }
+
 export class CreateLogTable {
   table: CreatedTable | undefined;
   colWidths: number[];
@@ -101,7 +105,8 @@ export class CreateLogTable {
   };
 
   print = () => {
-    if (!silent) console.log(this.table!.toString());
+    if (logType === "silent") return;
+    if (logType === "table") console.log(this.table!.toString());
   };
 
   // This function makes the process of creating a table, pushing data and printing it faster
