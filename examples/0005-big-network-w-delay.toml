@@ -5,33 +5,28 @@ timeout = 666
 default_image = "docker.io/parity/polkadot:latest"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
-[default_delay_network_settings]
-  latency =  "200ms"
-  
 chain = "rococo-local"
+[relaychain.default_delay_network_settings]
+  latency =  "200ms"
 
   [[relaychain.nodes]]
   name = "alice"
-  validator = true
-  [[delay_network_settings]]
-    latency =  "200ms"
-  
+  [relaychain.nodes.delay_network_settings]
+    latency =  "1000ms"
+
 
   [[relaychain.nodes]]
   name = "bob"
-  validator = true
-    
+
 
 [[parachains]]
 id = 100
 
-  [[parachains.collator_groups]]
-    count = 2
-    [parachains.collator_groups.collator]
-    name = "collator"
-    command = "polkadot-parachain"
-    image = "docker.io/parity/polkadot-parachain:latest"
-    [[delay_network_settings]]
+  [parachains.collator]
+  name = "collator01"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+    [parachains.collator.delay_network_settings]
       latency =  "4000ms"
       jitter = "4000ms"
-      correlation = "4000ms"
+      correlation = "100"
