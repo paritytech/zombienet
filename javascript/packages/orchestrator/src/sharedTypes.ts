@@ -149,6 +149,6 @@ export interface CommonParachainConfig {
 
 export interface DelayNetworkSettings {
   latency: string;
-  correlation?: string; // should be parseable as float by k8s
+  correlation?: string; // should be parsable as float by k8s
   jitter?: string;
 }
