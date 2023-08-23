@@ -357,6 +357,7 @@ export class PodmanClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     delay?: DelayNetworkSettings,
   ): Promise<void> {
     const name = podDef.metadata.name;

@@ -19,7 +19,7 @@ import {
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { ZombieRole } from "../../sharedTypes";
+import { ZombieRole, DelayNetworkSettings } from "../../sharedTypes";
 import {
   Client,
   RunCommandOptions,
@@ -27,7 +27,6 @@ import {
   setClient,
 } from "../client";
 import { genChaosDef, genServiceDef } from "./dynResourceDefinition";
-import { DelayNetworkSettings } from "../../sharedTypes";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -114,7 +113,7 @@ export class KubeClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
-    delay?: DelayNetworkSettings
+    delay?: DelayNetworkSettings,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -228,7 +227,6 @@ export class KubeClient extends Client {
       writeLocalJsonFile(this.tmpDir, `${name}-chaos.json`, chaosDef);
       await this.createResource(chaosDef, true);
     }
-
 
     logTable = new CreateLogTable({
       colWidths: [20, 100],

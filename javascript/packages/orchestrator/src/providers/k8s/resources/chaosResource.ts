@@ -6,8 +6,8 @@ export class ChaosResource {
   constructor(
     protected readonly name: string,
     protected readonly namespace: string,
-    protected readonly delay: DelayNetworkSettings
-  ){}
+    protected readonly delay: DelayNetworkSettings,
+  ) {}
 
   public generateSpec() {
     if (this.delay.latency.slice(-2) !== "ms") {
@@ -24,7 +24,7 @@ export class ChaosResource {
 
     if (this.delay.correlation) {
       const correlation = parseFloat(this.delay.correlation);
-      if(Number.isNaN(correlation)) {
+      if (Number.isNaN(correlation)) {
         throw Error(
           "Correlation value should parseable as Float by k8s api (e.g. '100')",
         );
@@ -45,8 +45,8 @@ export class ChaosResource {
         action: "delay",
         selector: {
           pods: {
-            [this.namespace]: [ this.name ]
-          }
+            [this.namespace]: [this.name],
+          },
         },
         delay: this.delay,
       },

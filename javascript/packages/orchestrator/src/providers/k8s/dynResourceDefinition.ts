@@ -27,7 +27,11 @@ export async function genNodeDef(
   return nodeResource.generateSpec();
 }
 
-export function genChaosDef(name: string, namespace: string, delay: DelayNetworkSettings): ChaosSpec {
+export function genChaosDef(
+  name: string,
+  namespace: string,
+  delay: DelayNetworkSettings,
+): ChaosSpec {
   const resource = new ChaosResource(name, namespace, delay);
   return resource.generateSpec();
 }
