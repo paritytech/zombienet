@@ -31,6 +31,9 @@ export class ChaosResource {
       } else {
         this.delay.correlation = correlation.toString();
       }
+    } else {
+      // set default correlation (100)
+      this.delay.correlation = "100";
     }
     return this.generateChaosSpec();
   }
