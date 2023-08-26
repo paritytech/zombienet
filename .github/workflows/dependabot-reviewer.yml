@@ -15,15 +15,15 @@ jobs:
         id: dependabot-metadata
         uses: dependabot/fetch-metadata@v1
         with:
-          github-token: "${{secrets.ZOMBIENET_GITHUB_TOKEN}}"
+          github-token: "${{secrets.DEPENDABOT_TOKEN}}"
       - name: Enable auto-merge for Dependabot PRs
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.ZOMBIENET_GITHUB_TOKEN}}
+          github-token: ${{secrets.DEPENDABOT_TOKEN}}
       - name: Approve patch updates
         if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch'}}
         run: gh pr review $PR_URL --approve -b "I'm **approving** this pull request because **it includes a patch update**"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.ZOMBIENET_GITHUB_TOKEN}}
+          github-token: ${{secrets.DEPENDABOT_TOKEN}}
