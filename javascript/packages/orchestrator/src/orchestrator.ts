@@ -1,3 +1,4 @@
+import type { LogType } from "@zombienet/utils";
 import {
   CreateLogTable,
   PARACHAIN_NOT_FOUND,
@@ -64,7 +65,7 @@ export interface OrcOptionsInterface {
   inCI?: boolean;
   dir?: string;
   force?: boolean;
-  silent?: boolean; // Mute logging output
+  logType?: LogType; // Mute logging output
   setGlobalNetwork?: (network: Network) => void;
 }
 
@@ -74,11 +75,16 @@ export async function start(
   options?: OrcOptionsInterface,
 ) {
   const opts = {
-    ...{ monitor: false, spawnConcurrency: 1, inCI: false, silent: true },
+    ...{
+      monitor: false,
+      spawnConcurrency: 1,
+      inCI: false,
+      logType: "silent" as LogType,
+    },
     ...options,
   };
 
-  opts.silent && setLogType("silent");
+  setLogType(opts.logType as LogType);
   let network: Network | undefined;
   let cronInterval = undefined;
 
@@ -362,7 +368,7 @@ export async function start(
     }
 
     const spawnOpts = {
-      silent: opts.silent,
+      logType: opts.logType as LogType,
       inCI: opts.inCI,
       monitorIsAvailable,
       userDefinedTypes,

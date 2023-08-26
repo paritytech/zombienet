@@ -6,6 +6,7 @@ import fs from "fs";
 import { Environment } from "nunjucks";
 import path from "path";
 import { AVAILABLE_PROVIDERS } from "../constants";
+import { getLogType } from "@zombienet/utils";
 
 /**
  * Test - performs test/assertions against the spawned network, using a set of natural
@@ -68,7 +69,7 @@ export async function test(
     providerToUse,
     inCI,
     opts.spawnConcurrency,
-    false,
+    getLogType(opts.logType),
     runningNetworkSpec,
     dir,
   );

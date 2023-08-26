@@ -12,6 +12,7 @@ import {
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_PROVIDER,
 } from "../constants";
+import { getLogType } from "@zombienet/utils";
 
 /**
  * Spawn - spawns ephemeral networks, providing a simple but powerful cli that allow you to declare
@@ -95,7 +96,7 @@ export async function spawn(
     dir,
     force,
     inCI,
-    silent: false,
+    logType: getLogType(opts.logType),
     setGlobalNetwork,
   };
   const network = await start(creds, config, options);
