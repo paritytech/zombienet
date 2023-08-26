@@ -43,7 +43,7 @@
     "@types/mocha": "^10.0.1",
     "@types/nunjucks": "^3.2.3",
     "@types/sinon": "^10.0.16",
-    "chai": "^4.3.7",
+    "chai": "^4.3.8",
     "deep-equal-in-any-order": "^2.0.6",
     "sinon": "^15.2.0",
     "yaml": "^2.3.1"
