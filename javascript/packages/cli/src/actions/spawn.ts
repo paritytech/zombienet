@@ -4,6 +4,7 @@ import {
   decorators,
   getCredsFilePath,
   readNetworkConfig,
+  getLogType,
 } from "@zombienet/utils";
 import fs from "fs";
 import { resolve } from "path";
@@ -12,7 +13,6 @@ import {
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_PROVIDER,
 } from "../constants";
-import { getLogType } from "@zombienet/utils";
 
 /**
  * Spawn - spawns ephemeral networks, providing a simple but powerful cli that allow you to declare

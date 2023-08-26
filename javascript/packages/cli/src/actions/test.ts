@@ -1,12 +1,11 @@
 import parser from "@zombienet/dsl-parser-wrapper";
 import type { TestDefinition } from "@zombienet/orchestrator";
 import { run } from "@zombienet/orchestrator";
-import { decorators, RelativeLoader } from "@zombienet/utils";
+import { decorators, RelativeLoader, getLogType } from "@zombienet/utils";
 import fs from "fs";
 import { Environment } from "nunjucks";
 import path from "path";
 import { AVAILABLE_PROVIDERS } from "../constants";
-import { getLogType } from "@zombienet/utils";
 
 /**
  * Test - performs test/assertions against the spawned network, using a set of natural
