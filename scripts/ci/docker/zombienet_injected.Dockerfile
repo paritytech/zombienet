@@ -38,11 +38,11 @@ RUN groupadd --gid 10001 nonroot && \
     --uid 10000 nonroot
 
 WORKDIR /home/nonroot/zombie-net
-COPY ./artifacts/packages ./packages
+COPY javascript/packages ./packages
 COPY scripts ./scripts
 COPY tests ./tests
-COPY artifacts/package.json ./
-COPY artifacts/package-lock.json ./
+COPY javascript/package.json ./
+COPY javascript/package-lock.json ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
