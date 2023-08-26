@@ -81,50 +81,6 @@ export const setLogType = (value: LogType) => {
   logType = value;
 };
 
-const isArray = (a: { [x: string]: any; constructor?: any }) => {
-  const g = a.constructor.toString();
-  if (g.match(/function Array()/)) {
-    return true;
-  } else {
-    return false;
-  }
-};
-const objtostring = (o: { [x: string]: any }) => {
-  let a;
-  let k;
-  let f;
-  let freg = [];
-  let txt;
-  if (typeof o != "object") {
-    return false;
-  }
-  if (isArray(o)) {
-    a = { t1: "[", t2: "]", isarray: true };
-  } else {
-    a = { t1: "{", t2: "}", isarray: false };
-  }
-  txt = a.t1;
-  for (k in o) {
-    if (!a.isarray) txt += "'" + k + "':";
-    if (typeof o[k] == "string") {
-      txt += "'" + o[k] + "',";
-    } else if (typeof o[k] == "number" || typeof o[k] == "boolean") {
-      txt += o[k] + ",";
-    } else if (typeof o[k] == "function") {
-      f = o[k].toString();
-      freg = f.match(/^function\s+(\w+)\s*\(/);
-      if (freg) {
-        txt += freg[1] + ",";
-      } else {
-        txt += f + ",";
-      }
-    } else if (typeof o[k] == "object") {
-      txt += objtostring(o[k]) + ",";
-    }
-  }
-  return txt.slice(0, txt.length - 1) + a.t2;
-};
-
 export class CreateLogTable {
   table: CreatedTable | undefined;
   colWidths: number[];
