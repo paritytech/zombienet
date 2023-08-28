@@ -26,7 +26,7 @@ export class ChaosResource {
       const correlation = parseFloat(this.delay.correlation);
       if (Number.isNaN(correlation)) {
         throw Error(
-          "Correlation value should parsable as Float by k8s api (e.g. '100')",
+          "Correlation value should be parsable as Float by k8s api (e.g. '100')",
         );
       } else {
         this.delay.correlation = correlation.toString();
