@@ -36,9 +36,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let list = nss.iter().filter_map(|ns| {
         if let Some(name) = ns.metadata.name.as_ref() {
             if !name.contains("zombie-") {
-                return None;
+                None
             } else {
-                let (job_id, repo) = match get_info_from_annotations(&ns) {
+                let (job_id, repo) = match get_info_from_annotations(ns) {
                     Ok((job_id, repo)) => (job_id,repo),
                     Err(_) => { return None }
                 };
@@ -48,10 +48,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     job_id,
                     repo
                 );
-                return Some(ns);
+                Some(ns)
             }
         } else {
-            return None;
+            None
         }
     });
 
@@ -78,18 +78,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //delete
     let delete_task: Vec<_> = result
         .into_iter()
-        .map(|r| {
+        .filter_map(|r| {
             if let Ok(val) = r {
-                if let Some(name) = val {
-                    Some(name)
-                } else {
-                    None
-                }
+                val
             } else {
                 None
             }
         })
-        .flatten()
         .collect();
 
     let t = delete_task
