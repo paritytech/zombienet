@@ -10,18 +10,21 @@ use futures::stream::FuturesUnordered;
 pub struct NamespaceCI {
     ns_name: String,
     job_id: String,
+    repo: String,
 }
 
 impl NamespaceCI {
-    pub fn new(ns_name: impl Into<String>, job_id: impl Into<String>) -> Self {
+    pub fn new(ns_name: impl Into<String>, job_id: impl Into<String>, repo: impl Into<String>) -> Self {
         Self {
             ns_name: ns_name.into(),
             job_id: job_id.into(),
+            repo: repo.into()
         }
     }
 }
 
-const CI_URL: &str = "https://gitlab.parity.io/parity/mirrors/polkadot-sdk/-/jobs";
+const CI_URL: &str = "https://gitlab.parity.io/parity/mirrors";
+//polkadot-sdk/-/jobs";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -35,14 +38,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             if !name.contains("zombie-") {
                 return None;
             } else {
-                let job_id = match get_job_id_from_annotations(&ns) {
-                    Ok(job_id) => job_id,
+                let (job_id, repo) = match get_info_from_annotations(&ns) {
+                    Ok((job_id, repo)) => (job_id,repo),
                     Err(_) => { return None }
                 };
 
                 let ns = NamespaceCI::new(
                     name.as_str(),
-                    job_id
+                    job_id,
+                    repo
                 );
                 return Some(ns);
             }
@@ -56,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|ns| {
             let r = req.clone();
             tokio::spawn(async move {
-                if let Ok(needs) = needs_to_delete(r, ns.job_id.as_str()).await {
+                if let Ok(needs) = needs_to_delete(r, &ns.job_id, &ns.repo).await {
                     if needs {
                         Some(ns.ns_name.to_owned())
                     } else {
@@ -106,7 +110,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 
-fn get_job_id_from_annotations(ns: &Namespace) -> Result<String, Box<dyn std::error::Error>> {
+fn get_info_from_annotations(ns: &Namespace) -> Result<(String,String), Box<dyn std::error::Error>> {
     let annotation: serde_json::Value = serde_json::from_str(
         ns.metadata
             .annotations
@@ -118,14 +122,18 @@ fn get_job_id_from_annotations(ns: &Namespace) -> Result<String, Box<dyn std::er
 
     let job_id = annotation["metadata"]["labels"]["jobId"]
                         .as_str().ok_or("can't find jobId")?;
-    Ok(job_id.into())
+    let repo = annotation["metadata"]["labels"]["projectName"]
+                        .as_str().ok_or("can't find projectName")?;
+    Ok((job_id.into(), repo.into()))
 }
 async fn needs_to_delete(
     req: reqwest::Client,
     job_id: &str,
+    repo: &str,
 ) -> Result<bool, Box<dyn std::error::Error>> {
+    let url = format!("{}/{}/-/jobs/{}", CI_URL, repo,  job_id);
     let res = req
-        .get(format!("{}/{}", CI_URL, job_id))
+        .get(url)
         .header("Accept", "application/json")
         .send()
         .await?
