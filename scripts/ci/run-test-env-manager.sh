@@ -131,10 +131,10 @@ function download_from_remote {
     while read -r _path _type _download_url _url ; do
       if [[ "${_type}" == "file" ]] ; then
         echo curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}"
-        curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}" --logtype silent
+        curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}" --silent
       elif [[ "${_type}" == "symlink" ]] ; then
         echo curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}"
-        curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}" --logtype silent
+        curl "${_download_url}" --output "${OUTPUT_DIR}/${_path}" --silent
 
         # replace _path with what you find in file download_url after removing
         # the dots and slashes
@@ -165,7 +165,7 @@ function download_from_remote {
       elif [[ "${_type}" == "dir" ]] ; then
         gh_download_content "${_url}" "${_path}"
       fi
-    done< <(jq '.[] | "\(.path) \(.type) \(.download_url) \(.url)"' --raw-output < <(curl --logtype silent "${url}"))
+    done< <(jq '.[] | "\(.path) \(.type) \(.download_url) \(.url)"' --raw-output < <(curl --silent "${url}"))
   }
 
   local url

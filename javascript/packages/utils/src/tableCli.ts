@@ -55,11 +55,11 @@ interface TableCreationProps {
   wordWrap?: boolean;
 }
 
-export type LogType = "json" | "text" | "table" | "silent";
+export type LogType = "text" | "table" | "silent";
 
 // Module level config.
 let logType: LogType = "table";
-const logTypeValues = ["json", "text", "table", "silent"];
+const logTypeValues = ["text", "table", "silent"];
 
 export const getLogType = (logType: LogType): LogType => {
   if (logTypeValues.includes(logType)) {
@@ -138,7 +138,6 @@ export class CreateLogTable {
   };
 
   print = () => {
-    if (logType === "silent" || logType === "text") return;
     if (logType === "table") console.log(this.table!.toString());
   };
 

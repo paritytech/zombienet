@@ -89,7 +89,7 @@ program
     new Option(
       "-l, --logType <logType>",
       "Type of logging - defaults to 'table'",
-    ),
+    ).choices(["table", "text", "silent"]),
   )
   .addOption(
     new Option(

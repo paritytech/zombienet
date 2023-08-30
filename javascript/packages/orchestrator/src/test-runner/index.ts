@@ -39,7 +39,7 @@ export async function run(
   runningNetworkSpecPath: string | undefined,
   dir: string | undefined,
 ) {
-  logType && setLogType("silent");
+  logType && setLogType(logType);
   let network: Network;
   const backchannelMap: BackchannelMap = {};
 

@@ -65,7 +65,7 @@ export interface OrcOptionsInterface {
   inCI?: boolean;
   dir?: string;
   force?: boolean;
-  logType?: LogType; // Mute logging output
+  logType?: LogType; // Set the logging output
   setGlobalNetwork?: (network: Network) => void;
 }
 
