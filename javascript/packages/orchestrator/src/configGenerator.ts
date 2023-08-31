@@ -166,7 +166,7 @@ export async function generateNetworkSpec(
     if (!fs.existsSync(chainSpecPath)) {
       console.error(
         decorators.red(
-          `Genesis state file path provided does not exist: ${chainSpecPath}`,
+          `Genesis spec provided does not exist: ${chainSpecPath}`,
         ),
       );
       process.exit(1);
