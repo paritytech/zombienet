@@ -48,7 +48,7 @@ export async function spawn(
         decorators.red(`  ⚠ Config file does not exist: ${configPath}`),
       )}`,
     );
-    process.exit();
+    process.exit(1);
   }
 
   const filePath = resolve(configFile);
@@ -83,7 +83,7 @@ export async function spawn(
           decorators.red(`  ⚠ I can't find the Creds file: ${credsFile}`),
         )}`,
       );
-      process.exit();
+      process.exit(1);
     }
   }
 

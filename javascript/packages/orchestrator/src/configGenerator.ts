@@ -169,7 +169,7 @@ export async function generateNetworkSpec(
           `Genesis spec provided does not exist: ${chainSpecPath}`,
         ),
       );
-      process.exit();
+      process.exit(1);
     } else {
       networkSpec.relaychain.chainSpecPath = chainSpecPath;
     }
@@ -334,10 +334,10 @@ export async function generateNetworkSpec(
         if (!fs.existsSync(genesisStatePath)) {
           console.error(
             decorators.red(
-              `Genesis spec provided does not exist: ${genesisStatePath}`,
+              `Genesis state file path provided does not exist: ${genesisStatePath}`,
             ),
           );
-          process.exit();
+          process.exit(1);
         } else {
           computedStatePath = genesisStatePath;
         }
@@ -357,10 +357,10 @@ export async function generateNetworkSpec(
         if (!fs.existsSync(genesisWasmPath)) {
           console.error(
             decorators.red(
-              `Genesis spec provided does not exist: ${genesisWasmPath}`,
+              `Genesis state file path provided does not exist: ${genesisWasmPath}`,
             ),
           );
-          process.exit();
+          process.exit(1);
         } else {
           computedWasmPath = genesisWasmPath;
         }
@@ -403,7 +403,7 @@ export async function generateNetworkSpec(
               `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
             ),
           );
-          process.exit();
+          process.exit(1);
         } else {
           parachainSetup.chainSpecPath = chainSpecPath;
         }
