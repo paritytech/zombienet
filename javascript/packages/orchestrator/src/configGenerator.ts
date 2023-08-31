@@ -166,7 +166,7 @@ export async function generateNetworkSpec(
     if (!fs.existsSync(chainSpecPath)) {
       console.error(
         decorators.red(
-          `Genesis spec provided does not exist: ${chainSpecPath}`,
+          `Genesis state file path provided does not exist: ${chainSpecPath}`,
         ),
       );
       process.exit(1);
@@ -334,7 +334,7 @@ export async function generateNetworkSpec(
         if (!fs.existsSync(genesisStatePath)) {
           console.error(
             decorators.red(
-              `Genesis spec provided does not exist: ${genesisStatePath}`,
+              `Genesis state file path provided does not exist: ${genesisStatePath}`,
             ),
           );
           process.exit(1);
@@ -357,7 +357,7 @@ export async function generateNetworkSpec(
         if (!fs.existsSync(genesisWasmPath)) {
           console.error(
             decorators.red(
-              `Genesis spec provided does not exist: ${genesisWasmPath}`,
+              `Genesis state file path provided does not exist: ${genesisWasmPath}`,
             ),
           );
           process.exit(1);
