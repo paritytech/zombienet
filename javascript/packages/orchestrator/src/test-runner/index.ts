@@ -2,8 +2,9 @@ import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
-  setSilent,
+  setLogType,
   sleep,
+  LogType,
 } from "@zombienet/utils";
 import fs from "fs";
 import Mocha from "mocha";
@@ -34,11 +35,11 @@ export async function run(
   provider: string,
   inCI = false,
   concurrency = 1,
-  silent = false,
+  logType: LogType = "table",
   runningNetworkSpecPath: string | undefined,
   dir: string | undefined,
 ) {
-  setSilent(silent);
+  logType && setLogType(logType);
   let network: Network;
   const backchannelMap: BackchannelMap = {};
 
@@ -92,7 +93,7 @@ export async function run(
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
-          silent,
+          logType,
           dir,
         });
       } else {

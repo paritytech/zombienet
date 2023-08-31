@@ -4,6 +4,7 @@ import {
   decorators,
   getCredsFilePath,
   readNetworkConfig,
+  getLogType,
 } from "@zombienet/utils";
 import fs from "fs";
 import { resolve } from "path";
@@ -95,7 +96,7 @@ export async function spawn(
     dir,
     force,
     inCI,
-    silent: false,
+    logType: getLogType(opts.logType),
     setGlobalNetwork,
   };
   const network = await start(creds, config, options);
