@@ -435,7 +435,7 @@ export async function addParachainToGenesis(
     // The config may not contain paras. Since chainspec allows to contain the RuntimeGenesisConfig patch we can inject it.
     else {
       runtimeConfig.paras = { paras: [] };
-      paras = [];
+      paras = runtimeConfig.paras.paras;
     }
     if (paras) {
       const new_para = [
