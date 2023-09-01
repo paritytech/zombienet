@@ -26,7 +26,7 @@ import {
   RunCommandResponse,
   setClient,
 } from "../client";
-import { genChaosDef, genServiceDef } from "./dynResourceDefinition";
+import { genServiceDef } from "./dynResourceDefinition";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
@@ -113,7 +113,6 @@ export class KubeClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
-    delay?: DelayNetworkSettings,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -222,11 +221,11 @@ export class KubeClient extends Client {
     await this.putLocalMagicFile(name);
     await this.waitPodReady(name);
 
-    if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp && delay) {
-      const chaosDef = genChaosDef(name, this.namespace, delay);
-      writeLocalJsonFile(this.tmpDir, `${name}-chaos.json`, chaosDef);
-      await this.createResource(chaosDef, true);
-    }
+    // if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp && delay) {
+    //   const chaosDef = genChaosDef(name, this.namespace, delay);
+    //   writeLocalJsonFile(this.tmpDir, `${name}-chaos.json`, chaosDef);
+    //   await this.createResource(chaosDef, true);
+    // }
 
     logTable = new CreateLogTable({
       colWidths: [20, 100],
@@ -887,5 +886,16 @@ export class KubeClient extends Client {
   }
   getLogsCommand(name: string): string {
     return `kubectl logs -f ${name} -c ${name} -n ${this.namespace}`;
+  }
+
+  async injectChaos(chaosSpecs: any[]) {
+    let merged = {
+      "apiVersion": "v1",
+      "kind": "List",
+      "items": chaosSpecs
+    };
+
+    writeLocalJsonFile(this.tmpDir, `merged-chaos.json`, merged);
+    await this.createResource(merged, true);
   }
 }

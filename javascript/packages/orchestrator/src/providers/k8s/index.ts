@@ -3,6 +3,7 @@ import {
   genBootnodeDef,
   genNodeDef,
   replaceNetworkRef,
+  genChaosDef,
 } from "./dynResourceDefinition";
 import { KubeClient, initClient } from "./kubeClient";
 import { getCliArgsVersion } from "./substrateCliArgsHelper";
@@ -16,4 +17,5 @@ export const provider = {
   getChainSpecRaw,
   replaceNetworkRef,
   getCliArgsVersion,
+  genChaosDef
 };
