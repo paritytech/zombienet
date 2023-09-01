@@ -1,3 +1,4 @@
+import type { LogType } from "@zombienet/utils";
 import {
   CreateLogTable,
   decorators,
@@ -30,7 +31,7 @@ export const spawnNode = async (
   bootnodes: string[],
   filesToCopy: fileMap[],
   opts: {
-    silent: boolean;
+    logType: LogType;
     inCI: boolean;
     monitorIsAvailable: boolean;
     userDefinedTypes?: any;
@@ -231,7 +232,7 @@ export const spawnNode = async (
     ]);
     logTable.print();
 
-    if (!opts.silent)
+    if (opts.logType !== "silent")
       console.log(client.getLogsCommand(podDef.metadata.name) + "\n\n");
   }
 
