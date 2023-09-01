@@ -221,12 +221,6 @@ export class KubeClient extends Client {
     await this.putLocalMagicFile(name);
     await this.waitPodReady(name);
 
-    // if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp && delay) {
-    //   const chaosDef = genChaosDef(name, this.namespace, delay);
-    //   writeLocalJsonFile(this.tmpDir, `${name}-chaos.json`, chaosDef);
-    //   await this.createResource(chaosDef, true);
-    // }
-
     logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
