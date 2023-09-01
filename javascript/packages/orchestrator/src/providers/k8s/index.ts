@@ -17,5 +17,5 @@ export const provider = {
   getChainSpecRaw,
   replaceNetworkRef,
   getCliArgsVersion,
-  genChaosDef
+  genChaosDef,
 };

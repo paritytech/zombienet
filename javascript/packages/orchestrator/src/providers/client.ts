@@ -1,4 +1,3 @@
-import { DelayNetworkSettings } from "../sharedTypes";
 import { fileMap } from "../types";
 
 export interface RunCommandResponse {
@@ -73,8 +72,7 @@ export abstract class Client {
     filesToCopy?: fileMap[],
     keystore?: string,
     chainSpecId?: string,
-    dbSnapshot?: string,
-    //delay?: DelayNetworkSettings,
+    dbSnapshot?: string, //delay?: DelayNetworkSettings,
   ): Promise<void>;
   abstract copyFileFromPod(
     identifier: string,

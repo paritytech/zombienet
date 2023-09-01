@@ -19,7 +19,7 @@ import {
   TRANSFER_CONTAINER_WAIT_LOG,
 } from "../../constants";
 import { fileMap } from "../../types";
-import { ZombieRole, DelayNetworkSettings } from "../../sharedTypes";
+import { ZombieRole } from "../../sharedTypes";
 import {
   Client,
   RunCommandOptions,
@@ -889,10 +889,10 @@ export class KubeClient extends Client {
   }
 
   async injectChaos(chaosSpecs: any[]) {
-    let merged = {
-      "apiVersion": "v1",
-      "kind": "List",
-      "items": chaosSpecs
+    const merged = {
+      apiVersion: "v1",
+      kind: "List",
+      items: chaosSpecs,
     };
 
     writeLocalJsonFile(this.tmpDir, `merged-chaos.json`, merged);

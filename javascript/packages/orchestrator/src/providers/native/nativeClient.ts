@@ -17,7 +17,7 @@ import {
   LOCALHOST,
   P2P_PORT,
 } from "../../constants";
-import { DelayNetworkSettings, ZombieRole } from "../../sharedTypes";
+import { ZombieRole } from "../../sharedTypes";
 import { fileMap } from "../../types";
 import {
   Client,
@@ -485,5 +485,6 @@ export class NativeClient extends Client {
   }
 
   // NOOP
-  async injectChaos(chaosSpecs: any[]) {};
+  // eslint-disable-next-line
+  async injectChaos(_chaosSpecs: any[]) {}
 }

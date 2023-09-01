@@ -17,7 +17,6 @@ import {
   P2P_PORT,
   PROMETHEUS_PORT,
 } from "../../constants";
-import { DelayNetworkSettings } from "../../sharedTypes";
 import { fileMap } from "../../types";
 import {
   Client,
@@ -542,5 +541,6 @@ export class PodmanClient extends Client {
   }
 
   // NOOP
-  async injectChaos(chaosSpecs: any[]) {};
+  // eslint-disable-next-line
+  async injectChaos(_chaosSpecs: any[]) {}
 }
