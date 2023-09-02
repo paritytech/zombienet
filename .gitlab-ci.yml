@@ -88,6 +88,7 @@ build:
   <<: *common-refs
   script:
     - cd javascript
+    - echo $(cat packages/cli/src/test.txt)
     - npm install
     - npm run clean
     - npm run build
