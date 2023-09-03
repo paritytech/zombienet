@@ -131,6 +131,9 @@ export async function generateNetworkSpec(
       defaultPrometheusPrefix:
         config.relaychain.default_prometheus_prefix ||
         DEFAULT_PROMETHEUS_PREFIX,
+      delayNetworkSettings:
+        config.relaychain.default_delay_network_settings ||
+        config.settings?.global_delay_network_global_settings,
     },
     parachains: [],
   };
@@ -185,6 +188,7 @@ export async function generateNetworkSpec(
   }
 
   const relayChainBootnodes: string[] = [];
+
   for (const node of config.relaychain.nodes || []) {
     const nodeSetup = await getNodeFromConfig(
       networkSpec,
@@ -570,6 +574,10 @@ async function getCollatorNodeFromConfig(
     prometheusPrefix:
       parachain.prometheus_prefix ||
       networkSpec.relaychain.defaultPrometheusPrefix,
+    delayNetworkSettings:
+      collatorConfig.delay_network_settings ||
+      parachain.delayNetworkSettings ||
+      networkSpec.settings.delayNetworkSettings,
   };
 
   if (group) node.group = group;
@@ -654,6 +662,9 @@ async function getNodeFromConfig(
     p2pCertHash: node.p2p_cert_hash,
     prometheusPrefix:
       node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
+    delayNetworkSettings:
+      node.delay_network_settings ||
+      networkSpec.relaychain.delayNetworkSettings,
   };
 
   if (group) nodeSetup.group = group;

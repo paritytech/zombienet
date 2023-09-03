@@ -9,6 +9,7 @@ import {
   Resources,
   SubstrateCliArgsVersion,
   Node,
+  DelayNetworkSettings,
 } from "./sharedTypes";
 
 // network config to spawn.
@@ -44,6 +45,7 @@ export interface RelayChainConfig {
   node_groups?: NodeGroupConfig[];
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
+  default_delay_network_settings?: DelayNetworkSettings;
 }
 
 export interface ComputedNetwork {
@@ -63,6 +65,7 @@ export interface ComputedNetwork {
     overrides: Override[];
     genesis?: JSON | ObjectJSON;
     defaultResources?: Resources;
+    delayNetworkSettings?: DelayNetworkSettings;
   };
   parachains: Parachain[];
   types: any;
@@ -91,6 +94,7 @@ export interface Settings {
   backchannel?: boolean; // only used in k8s at the moment, spawn a backchannel instance
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
   local_ip?: string; // ip used for expose local services (rpc/metrics/monitors)
+  global_delay_network_global_settings?: DelayNetworkSettings;
 }
 
 export interface GlobalVolume {
@@ -120,4 +124,5 @@ export interface ParachainConfig extends CommonParachainConfig {
 export interface NodeGroupConfig extends NodeCommonTypes {
   image?: string;
   count: string | number;
+  delay_network_settings?: DelayNetworkSettings;
 }

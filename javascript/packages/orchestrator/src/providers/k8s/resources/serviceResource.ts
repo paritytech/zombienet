@@ -16,7 +16,6 @@ export class ServiceResource {
   public generateSpec() {
     const ports = this.generatePorts();
     const name = this.podSpec.metadata.name;
-
     return this.generateServiceSpec(name, ports);
   }
 

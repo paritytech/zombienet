@@ -103,9 +103,8 @@ export async function start(
 
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw } = getProvider(
-      networkSpec.settings.provider,
-    );
+    const { initClient, setupChainSpec, getChainSpecRaw, genChaosDef } =
+      getProvider(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
@@ -376,6 +375,22 @@ export async function start(
       local_ip: networkSpec.settings.local_ip,
     };
 
+    // Calculate chaos before start spawning the nodes
+    const chaosSpecs: any[] = [];
+    // network chaos is ONLY available in k8s for now
+    if (client.providerName === "kubernetes") {
+      const nodes = networkSpec.relaychain.nodes.concat(
+        networkSpec.parachains.map((para) => para.collators).flat(),
+      );
+      nodes.reduce((memo, node) => {
+        if (node.delayNetworkSettings)
+          memo.push(
+            genChaosDef(node.name, namespace, node.delayNetworkSettings),
+          );
+        return memo;
+      }, chaosSpecs);
+    }
+
     const firstNode = networkSpec.relaychain.nodes.shift();
     if (firstNode) {
       const nodeMultiAddress = await spawnNode(
@@ -507,6 +522,9 @@ export async function start(
     await sleep(2 * 1000);
 
     await verifyNodes(network);
+
+    // inject chaos to the running network
+    if (chaosSpecs.length > 0) await client.injectChaos(chaosSpecs);
 
     // cleanup global timeout
     network.launched = true;

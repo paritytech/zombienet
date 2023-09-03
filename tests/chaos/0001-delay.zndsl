@@ -1,0 +1,9 @@
+Description: Chaos-Network test (k8s only)
+Network: ./0001-delay.toml
+Creds: config
+
+# metrics
+# alice to bob take at least 2s
+alice: run ./delay_check.sh with "bob,9615,2" within 30 seconds
+# bob to alice take at least 1s
+bob: run ./delay_check.sh within 30 seconds

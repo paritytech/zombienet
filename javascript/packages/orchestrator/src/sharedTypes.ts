@@ -81,6 +81,7 @@ export interface Node extends NodeCommonTypes, Ports {
   dbSnapshot?: string;
   externalPorts?: Ports;
   substrateCliArgsVersion?: SubstrateCliArgsVersion;
+  delayNetworkSettings?: DelayNetworkSettings;
   keystoreKeyTypes?: string[];
 }
 
@@ -105,6 +106,7 @@ export interface NodeConfig extends NodeCommonTypes {
   p2p_port?: number;
   prometheus_port?: number;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
+  delay_network_settings?: DelayNetworkSettings;
 }
 
 export interface NodeCommonTypes {
@@ -142,4 +144,11 @@ export interface CommonParachainConfig {
   chain?: string;
   genesis?: JSON | ObjectJSON;
   balance?: number;
+  delayNetworkSettings?: DelayNetworkSettings;
+}
+
+export interface DelayNetworkSettings {
+  latency: string;
+  correlation?: string; // should be parsable as float by k8s
+  jitter?: string;
 }

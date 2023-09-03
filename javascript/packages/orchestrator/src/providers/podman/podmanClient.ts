@@ -539,4 +539,8 @@ export class PodmanClient extends Client {
   getLogsCommand(name: string): string {
     return `podman logs -f ${name}_pod-${name}`;
   }
+
+  // NOOP
+  // eslint-disable-next-line
+  async injectChaos(_chaosSpecs: any[]) {}
 }

@@ -17,8 +17,8 @@ import {
   LOCALHOST,
   P2P_PORT,
 } from "../../constants";
-import { fileMap } from "../../types";
 import { ZombieRole } from "../../sharedTypes";
+import { fileMap } from "../../types";
 import {
   Client,
   RunCommandOptions,
@@ -483,4 +483,8 @@ export class NativeClient extends Client {
   getLogsCommand(name: string): string {
     return `tail -f  ${this.tmpDir}/${name}.log`;
   }
+
+  // NOOP
+  // eslint-disable-next-line
+  async injectChaos(_chaosSpecs: any[]) {}
 }

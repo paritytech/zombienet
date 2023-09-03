@@ -143,6 +143,7 @@ export class KubeClient extends Client {
     await this.createResource(podDef, true);
     if (podDef.metadata.labels["zombie-role"] !== ZombieRole.Temp) {
       const serviceDef = genServiceDef(podDef);
+      writeLocalJsonFile(this.tmpDir, `${name}-service.json`, serviceDef);
       await this.createResource(serviceDef, true);
     }
 
@@ -219,6 +220,7 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.waitPodReady(name);
+
     logTable = new CreateLogTable({
       colWidths: [20, 100],
     });
@@ -878,5 +880,16 @@ export class KubeClient extends Client {
   }
   getLogsCommand(name: string): string {
     return `kubectl logs -f ${name} -c ${name} -n ${this.namespace}`;
+  }
+
+  async injectChaos(chaosSpecs: any[]) {
+    const merged = {
+      apiVersion: "v1",
+      kind: "List",
+      items: chaosSpecs,
+    };
+
+    writeLocalJsonFile(this.tmpDir, `merged-chaos.json`, merged);
+    await this.createResource(merged, true);
   }
 }
