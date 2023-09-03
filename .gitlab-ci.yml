@@ -33,7 +33,9 @@ cache:
       files:
       - javascript/package-lock.json
   - paths:
-    - javascript/packages/
+    - javascript/packages/cli/dist
+    - javascript/packages/orchestrator/dist
+    - javascript/packages/utils/dist
     - javascript/package.json
     - javascript/package-lock.json
 
