@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "files": [
-    "node_modules/@zombienet/**/*",
-    "packages/**/*"
+    "*"
   ],
   "types": "dist/index.d.ts",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
