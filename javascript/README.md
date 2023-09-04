@@ -127,7 +127,7 @@ Options:
   -p, --provider <provider>              Override provider to use (choices: "podman", "kubernetes", "native")
                                          default: kubernetes
   -d, --dir <path>                       Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)
-  -l, --logType <logType>"               Type of logging on the console - defaults to 'table'" (choices: "table", "text", "silent")
+  -l, --logType <logType>                Type of logging on the console - defaults to 'table' (choices: "table", "text", "silent")
   -f, --force                            Force override all prompt commands
   -m, --monitor                          Start as monitor, do not auto cleanup network
   -h, --help                             display help for command
