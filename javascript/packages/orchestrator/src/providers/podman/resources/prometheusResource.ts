@@ -53,7 +53,7 @@ export class PrometheusResource {
         templateConfigPath,
         `${this.configPath}/prometheus.yml`,
       );
-    } catch(e) {
+    } catch (e) {
       debug(e);
       throw new Error("Error generating config for prometheus resource");
     }
