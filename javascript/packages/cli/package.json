@@ -22,6 +22,7 @@
       "../../node_modules/@polkadot/**/*",
       "../../node_modules/@babel/**/*",
       "../orchestrator/static-configs/*",
+      "../orchestrator/dist/providers/podman/resources/configs/*",
       "../orchestrator/dist/test-runner/testReporter*",
       "../orchestrator/zombie-wrapper.sh",
       "../../../scripts/*"
