@@ -1,4 +1,4 @@
-import { Node, ZombieRoleLabel } from "../../../types";
+import { Node, ZombieRoleLabel } from "../../../sharedTypes";
 
 export interface ProcessEnvironment {
   [key: string]: string;

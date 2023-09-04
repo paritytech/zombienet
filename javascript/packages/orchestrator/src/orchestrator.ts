@@ -1,3 +1,4 @@
+import type { LogType } from "@zombienet/utils";
 import {
   CreateLogTable,
   PARACHAIN_NOT_FOUND,
@@ -11,7 +12,7 @@ import {
   loadTypeDef,
   makeDir,
   series,
-  setSilent,
+  setLogType,
   sleep,
 } from "@zombienet/utils";
 import fs from "fs";
@@ -37,13 +38,7 @@ import { registerParachain } from "./jsapi-helpers";
 import { Network, Scope } from "./network";
 import { generateParachainFiles } from "./paras";
 import { getProvider } from "./providers/";
-import {
-  ComputedNetwork,
-  LaunchConfig,
-  Node,
-  Parachain,
-  fileMap,
-} from "./types";
+import { fileMap } from "./types";
 
 import { spawnIntrospector } from "./network-helpers/instrospector";
 import { setTracingCollatorConfig } from "./network-helpers/tracing-collator";
@@ -52,6 +47,8 @@ import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
 import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
+import { ComputedNetwork, LaunchConfig } from "./configTypes";
+import { Node, Parachain } from "./sharedTypes";
 
 const debug = require("debug")("zombie");
 
@@ -68,7 +65,7 @@ export interface OrcOptionsInterface {
   inCI?: boolean;
   dir?: string;
   force?: boolean;
-  silent?: boolean; // Mute logging output
+  logType?: LogType; // Set the logging output
   setGlobalNetwork?: (network: Network) => void;
 }
 
@@ -78,19 +75,23 @@ export async function start(
   options?: OrcOptionsInterface,
 ) {
   const opts = {
-    ...{ monitor: false, spawnConcurrency: 1, inCI: false, silent: true },
+    ...{
+      monitor: false,
+      spawnConcurrency: 1,
+      inCI: false,
+      logType: "silent" as LogType,
+    },
     ...options,
   };
 
-  setSilent(opts.silent);
+  setLogType(opts.logType as LogType);
   let network: Network | undefined;
   let cronInterval = undefined;
 
   try {
     // Parse and build Network definition
-    const networkSpec: ComputedNetwork = await generateNetworkSpec(
-      launchConfig,
-    );
+    const networkSpec: ComputedNetwork =
+      await generateNetworkSpec(launchConfig);
 
     // IFF there are network references in cmds we need to switch to concurrency 1
     if (TOKEN_PLACEHOLDER.test(JSON.stringify(networkSpec))) {
@@ -102,9 +103,8 @@ export async function start(
 
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw } = getProvider(
-      networkSpec.settings.provider,
-    );
+    const { initClient, setupChainSpec, getChainSpecRaw, genChaosDef } =
+      getProvider(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
@@ -367,13 +367,29 @@ export async function start(
     }
 
     const spawnOpts = {
-      silent: opts.silent,
+      logType: opts.logType as LogType,
       inCI: opts.inCI,
       monitorIsAvailable,
       userDefinedTypes,
       jaegerUrl,
       local_ip: networkSpec.settings.local_ip,
     };
+
+    // Calculate chaos before start spawning the nodes
+    const chaosSpecs: any[] = [];
+    // network chaos is ONLY available in k8s for now
+    if (client.providerName === "kubernetes") {
+      const nodes = networkSpec.relaychain.nodes.concat(
+        networkSpec.parachains.map((para) => para.collators).flat(),
+      );
+      nodes.reduce((memo, node) => {
+        if (node.delayNetworkSettings)
+          memo.push(
+            genChaosDef(node.name, namespace, node.delayNetworkSettings),
+          );
+        return memo;
+      }, chaosSpecs);
+    }
 
     const firstNode = networkSpec.relaychain.nodes.shift();
     if (firstNode) {
@@ -506,6 +522,9 @@ export async function start(
     await sleep(2 * 1000);
 
     await verifyNodes(network);
+
+    // inject chaos to the running network
+    if (chaosSpecs.length > 0) await client.injectChaos(chaosSpecs);
 
     // cleanup global timeout
     network.launched = true;

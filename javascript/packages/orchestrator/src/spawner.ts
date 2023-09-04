@@ -1,3 +1,4 @@
+import type { LogType } from "@zombienet/utils";
 import {
   CreateLogTable,
   decorators,
@@ -19,13 +20,8 @@ import { Network, Scope } from "./network";
 import { NetworkNode } from "./networkNode";
 import { getProvider } from "./providers";
 import { Client } from "./providers/client";
-import {
-  Node,
-  NodeMultiAddress,
-  Parachain,
-  ZombieRole,
-  fileMap,
-} from "./types";
+import { NodeMultiAddress, fileMap } from "./types";
+import { Node, ZombieRole, Parachain } from "./sharedTypes";
 const debug = require("debug")("zombie::spawner");
 
 export const spawnNode = async (
@@ -35,7 +31,7 @@ export const spawnNode = async (
   bootnodes: string[],
   filesToCopy: fileMap[],
   opts: {
-    silent: boolean;
+    logType: LogType;
     inCI: boolean;
     monitorIsAvailable: boolean;
     userDefinedTypes?: any;
@@ -236,7 +232,7 @@ export const spawnNode = async (
     ]);
     logTable.print();
 
-    if (!opts.silent)
+    if (opts.logType !== "silent")
       console.log(client.getLogsCommand(podDef.metadata.name) + "\n\n");
   }
 

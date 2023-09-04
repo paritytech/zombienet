@@ -38,11 +38,11 @@ RUN groupadd --gid 10001 nonroot && \
     --uid 10000 nonroot
 
 WORKDIR /home/nonroot/zombie-net
-COPY ./artifacts/packages ./packages
+COPY javascript/packages ./packages
 COPY scripts ./scripts
 COPY tests ./tests
-COPY artifacts/package.json ./
-COPY artifacts/package-lock.json ./
+COPY javascript/package.json ./
+COPY javascript/package-lock.json ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
@@ -57,8 +57,6 @@ RUN mkdir -p /etc/zombie-net
 RUN chown -R nonroot. /etc/zombie-net
 
 # Use the non-root user to run our application
-# Tell run test script that it runs in container
-ENV RUN_IN_CONTAINER 1
 USER nonroot
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
 ENTRYPOINT ["tini", "--", "bash"]

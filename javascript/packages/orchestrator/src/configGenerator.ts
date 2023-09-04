@@ -19,6 +19,7 @@ import {
   DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
+  DEFAULT_KEYSTORE_KEY_TYPES,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
   DEFAULT_PROMETHEUS_PREFIX,
@@ -30,17 +31,15 @@ import {
 } from "./constants";
 import { generateKeyForNode } from "./keys";
 import { PARA, decorate, whichPara } from "./paras-decorators";
+import { ComputedNetwork, LaunchConfig, ParachainConfig } from "./configTypes";
 import {
-  ComputedNetwork,
-  LaunchConfig,
-  Node,
   NodeConfig,
   Override,
   Parachain,
-  ParachainConfig,
-  ZombieRole,
   envVars,
-} from "./types";
+  Node,
+  ZombieRole,
+} from "./sharedTypes";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -119,6 +118,9 @@ export async function generateNetworkSpec(
       defaultImage: config.relaychain.default_image || DEFAULT_IMAGE,
       defaultCommand: config.relaychain.default_command || DEFAULT_COMMAND,
       defaultArgs: config.relaychain.default_args || [],
+      defaultKeystoreKeyTypes:
+        config.relaychain.default_keystore_key_types ||
+        DEFAULT_KEYSTORE_KEY_TYPES,
       randomNominatorsCount: config.relaychain?.random_nominators_count || 0,
       maxNominations:
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
@@ -129,6 +131,9 @@ export async function generateNetworkSpec(
       defaultPrometheusPrefix:
         config.relaychain.default_prometheus_prefix ||
         DEFAULT_PROMETHEUS_PREFIX,
+      delayNetworkSettings:
+        config.relaychain.default_delay_network_settings ||
+        config.settings?.global_delay_network_global_settings,
     },
     parachains: [],
   };
@@ -167,7 +172,7 @@ export async function generateNetworkSpec(
           `Genesis spec provided does not exist: ${chainSpecPath}`,
         ),
       );
-      process.exit();
+      process.exit(1);
     } else {
       networkSpec.relaychain.chainSpecPath = chainSpecPath;
     }
@@ -183,6 +188,7 @@ export async function generateNetworkSpec(
   }
 
   const relayChainBootnodes: string[] = [];
+
   for (const node of config.relaychain.nodes || []) {
     const nodeSetup = await getNodeFromConfig(
       networkSpec,
@@ -332,10 +338,10 @@ export async function generateNetworkSpec(
         if (!fs.existsSync(genesisStatePath)) {
           console.error(
             decorators.red(
-              `Genesis spec provided does not exist: ${genesisStatePath}`,
+              `Genesis state file path provided does not exist: ${genesisStatePath}`,
             ),
           );
-          process.exit();
+          process.exit(1);
         } else {
           computedStatePath = genesisStatePath;
         }
@@ -355,10 +361,10 @@ export async function generateNetworkSpec(
         if (!fs.existsSync(genesisWasmPath)) {
           console.error(
             decorators.red(
-              `Genesis spec provided does not exist: ${genesisWasmPath}`,
+              `Genesis state file path provided does not exist: ${genesisWasmPath}`,
             ),
           );
-          process.exit();
+          process.exit(1);
         } else {
           computedWasmPath = genesisWasmPath;
         }
@@ -401,7 +407,7 @@ export async function generateNetworkSpec(
               `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
             ),
           );
-          process.exit();
+          process.exit(1);
         } else {
           parachainSetup.chainSpecPath = chainSpecPath;
         }
@@ -529,16 +535,28 @@ async function getCollatorNodeFromConfig(
   const ports = await getPorts(provider, collatorConfig);
   const externalPorts = await getExternalPorts(provider, ports, collatorConfig);
 
+  // IFF the collator have explicit set the validator field we use that value,
+  // if not we set by default cumulus collators as `validators`, this implies that we will
+  // run those with this flag `--collator`.
+  const isValidator =
+    collatorConfig.validator !== undefined
+      ? collatorConfig.validator
+      : cumulusBased
+      ? true
+      : false;
+
   const node: Node = {
     name: collatorName,
     key: getSha256(collatorName),
     accounts: accountsForNode,
-    validator: collatorConfig.validator !== false ? true : false, // --collator and --force-authoring by default
+    validator: isValidator,
     invulnerable: collatorConfig.invulnerable,
     balance: collatorConfig.balance,
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
+    keystoreKeyTypes:
+      collatorConfig.keystore_key_types || DEFAULT_KEYSTORE_KEY_TYPES,
     args: args || [],
     chain,
     bootnodes,
@@ -556,6 +574,10 @@ async function getCollatorNodeFromConfig(
     prometheusPrefix:
       parachain.prometheus_prefix ||
       networkSpec.relaychain.defaultPrometheusPrefix,
+    delayNetworkSettings:
+      collatorConfig.delay_network_settings ||
+      parachain.delayNetworkSettings ||
+      networkSpec.settings.delayNetworkSettings,
   };
 
   if (group) node.group = group;
@@ -619,6 +641,10 @@ async function getNodeFromConfig(
     invulnerable: node.invulnerable,
     balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
+    keystoreKeyTypes:
+      node.keystore_key_types ||
+      networkSpec.relaychain.defaultKeystoreKeyTypes ||
+      DEFAULT_KEYSTORE_KEY_TYPES,
     env,
     bootnodes: relayChainBootnodes,
     telemetryUrl: networkSpec.settings?.telemetry
@@ -636,6 +662,9 @@ async function getNodeFromConfig(
     p2pCertHash: node.p2p_cert_hash,
     prometheusPrefix:
       node.prometheus_prefix || networkSpec.relaychain.defaultPrometheusPrefix,
+    delayNetworkSettings:
+      node.delay_network_settings ||
+      networkSpec.relaychain.delayNetworkSettings,
   };
 
   if (group) nodeSetup.group = group;

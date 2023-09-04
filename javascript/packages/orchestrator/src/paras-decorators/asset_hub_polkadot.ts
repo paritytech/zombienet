@@ -1,5 +1,5 @@
 import { GenesisNodeKey, getNodeKey as _getNodeKey } from "../chainSpec";
-import { Node } from "../types";
+import { Node } from "../sharedTypes";
 
 export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
   const { ed_account } = node.accounts;

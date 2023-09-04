@@ -6,7 +6,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { Node, ZombieRole } from "../../../types";
+import { Node, ZombieRole } from "../../../sharedTypes";
 import { Client } from "../../client";
 import {
   Container,
