@@ -6,7 +6,12 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "../../../constants";
-import { Node, ZombieRole, ZombieRoleLabel, envVars } from "../../../types";
+import {
+  Node,
+  ZombieRole,
+  ZombieRoleLabel,
+  envVars,
+} from "../../../sharedTypes";
 import { Client } from "../../client";
 import { NodeSpec, Port, PortProperty, ProcessEnvironment } from "./types";
 

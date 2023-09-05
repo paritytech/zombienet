@@ -1,4 +1,4 @@
-import { Node } from "../types";
+import { Node } from "../sharedTypes";
 
 // Efinity genesis node key type
 export type GenesisNodeKey = [string, string, { [key: string]: string }];

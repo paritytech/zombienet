@@ -1,4 +1,4 @@
-import { envVars } from "../../../types";
+import { envVars } from "../../../sharedTypes";
 
 export interface VolumeMount {
   name: string;

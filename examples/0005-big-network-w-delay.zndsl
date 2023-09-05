@@ -1,0 +1,7 @@
+Description: Big Network test
+Network: ./0005-big-network-w-delay.toml
+Creds: config
+
+# metrics
+alice: run ./delay_check.sh within 30 seconds
+bob: run ./delay_check.sh within 30 seconds

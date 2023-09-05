@@ -72,7 +72,7 @@ export abstract class Client {
     filesToCopy?: fileMap[],
     keystore?: string,
     chainSpecId?: string,
-    dbSnapshot?: string,
+    dbSnapshot?: string, //delay?: DelayNetworkSettings,
   ): Promise<void>;
   abstract copyFileFromPod(
     identifier: string,
@@ -101,6 +101,7 @@ export abstract class Client {
   abstract spawnIntrospector(wsUri: string): Promise<void>;
   abstract validateAccess(): Promise<boolean>;
   abstract getLogsCommand(name: string): string;
+  abstract injectChaos(chaosSpecs: any[]): Promise<void>;
 }
 
 let client: Client;

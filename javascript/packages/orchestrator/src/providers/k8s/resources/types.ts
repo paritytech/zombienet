@@ -1,4 +1,9 @@
-import { envVars, Resources, ZombieRoleLabel } from "../../../types";
+import {
+  DelayNetworkSettings,
+  envVars,
+  Resources,
+  ZombieRoleLabel,
+} from "../../../sharedTypes";
 
 type ContainerResource = Resources["resources"];
 
@@ -53,6 +58,7 @@ export interface InnerPodSpec {
     runAsUser: number;
     runAsGroup: number;
   };
+  delay?: DelayNetworkSettings;
 }
 
 export interface PodSpec {
@@ -80,5 +86,27 @@ export interface ServiceSpec {
       port: number;
       targetPort: number;
     }[];
+  };
+}
+
+export interface ChaosSpec {
+  apiVersion: "chaos-mesh.org/v1alpha1";
+  kind: "NetworkChaos";
+  metadata: { name: string };
+  spec: {
+    mode: "all";
+    action: "delay";
+    selector: SelectorTypeNS | SelectorTypePods;
+    delay: DelayNetworkSettings;
+  };
+}
+
+interface SelectorTypeNS {
+  namespaces: string[];
+}
+
+interface SelectorTypePods {
+  pods: {
+    [namespace: string]: string[];
   };
 }

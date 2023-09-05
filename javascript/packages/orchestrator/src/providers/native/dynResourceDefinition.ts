@@ -1,7 +1,7 @@
 import { getRandomPort } from "@zombienet/utils";
 import { getUniqueName } from "../../configGenerator";
 import { Network } from "../../network";
-import { Node, ZombieRole } from "../../types";
+import { Node, ZombieRole } from "../../sharedTypes";
 import { getClient } from "../client";
 import { BootNodeResource, NodeResource } from "./resources";
 

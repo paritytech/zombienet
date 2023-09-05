@@ -10,7 +10,8 @@ import {
   writeChainSpec,
 } from "../chainSpec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
-import { ChainSpec, Node } from "../types";
+import { ChainSpec } from "../types";
+import { Node } from "../sharedTypes";
 
 // track 1st staking as default;
 let paraStakingBond: bigint | undefined;

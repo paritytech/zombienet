@@ -9,7 +9,7 @@ import {
   writeChainSpec,
 } from "../chainSpec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
-import { Node } from "../types";
+import { Node } from "../sharedTypes";
 
 async function generateKeyForNode(nodeName?: string): Promise<any> {
   const keys = await _generateKeyForNode(nodeName);

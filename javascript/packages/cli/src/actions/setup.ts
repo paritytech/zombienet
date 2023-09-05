@@ -25,10 +25,26 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
-  console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
-  if (!["linux", "darwin"].includes(process.platform)) {
+  // If the platform is MacOS then the repos needs to be cloned and run locally by the user
+  // as polkadot and/or polkadot-parachain do not release a valid binaries for MacOS
+  if (process.platform === "darwin") {
     console.log(
-      "Zombienet currently supports linux and MacOS. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
+      `${decorators.red(
+        "\n\n------------------------------------------------------------------------\n\nNote: ",
+      )} You are using MacOS. Please, clone Polkadot SDK from ` +
+        decorators.cyan("https://github.com/paritytech/polkadot-sdk") +
+        ` \n in order to build the polkadot and/or polkadot-parachain locally.\n At the moment there is no binaries for MacOs as releases.` +
+        decorators.red(
+          `\n\n------------------------------------------------------------------------`,
+        ),
+    );
+    return;
+  }
+
+  console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
+  if (!["linux"].includes(process.platform)) {
+    console.log(
+      "Zombienet setup currently supports only linux. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
     );
     return;
   }
@@ -91,17 +107,7 @@ export async function setup(params: any, opts?: any) {
   if (params[0] === "all") {
     params = [POLKADOT, POLKADOT_PARACHAIN];
   }
-  if (process.platform === "darwin" && params.includes(POLKADOT)) {
-    console.log(
-      `${decorators.yellow(
-        "Note: ",
-      )} You are using MacOS. Please, clone the polkadot repo ` +
-        decorators.cyan("(https://github.com/paritytech/polkadot)") +
-        ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
-    );
-    params = params.filter((param: string) => param !== POLKADOT);
-  }
-
+  
   if (params.length === 0) {
     console.log(decorators.green("No binaries to download. Exiting..."));
     return;

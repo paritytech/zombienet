@@ -6,7 +6,7 @@ import {
   RPC_HTTP_PORT,
   RPC_WS_PORT,
 } from "./constants";
-import { Node, SubstrateCliArgsVersion, ZombieRole } from "./types";
+import { Node, ZombieRole, SubstrateCliArgsVersion } from "./sharedTypes";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
@@ -270,7 +270,7 @@ export async function genCmd(
     const parachainIdArgIndex = args.findIndex((arg) =>
       arg.includes("--parachain-id"),
     );
-    args.splice(parachainIdArgIndex, 1);
+    if (parachainIdArgIndex >= 0) args.splice(parachainIdArgIndex, 1);
     args.push(`--parachain-id ${parachainId}`);
   }
 
