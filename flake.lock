@@ -52,36 +52,10 @@
         "type": "github"
       }
     },
-    "polkadot": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-kQ1KDGwMxhGoYPGuGvRhCBhnl4h42Q1YuViN01MGS6I=",
-        "type": "file",
-        "url": "https://github.com/paritytech/polkadot/releases/download/v1.0.0/polkadot"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://github.com/paritytech/polkadot/releases/download/v1.0.0/polkadot"
-      }
-    },
-    "polkadot-parachain": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-n150vDsr6TwVs7A0582WXo/x2h4iuEVGTkF3fJdbkqQ=",
-        "type": "file",
-        "url": "https://github.com/paritytech/cumulus/releases/download/v1.0.0/polkadot-parachain"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://github.com/paritytech/cumulus/releases/download/v1.0.0/polkadot-parachain"
-      }
-    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs",
-        "polkadot": "polkadot",
-        "polkadot-parachain": "polkadot-parachain"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
