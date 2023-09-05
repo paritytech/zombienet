@@ -13,7 +13,7 @@
       [bash coreutils procps findutils podman kubectl gcc-unwrapped]
       ++ lib.optional stdenv.isLinux glibc.bin;
     # this change on each change of dependencies, unfortunately this hash not yet automatically updated from SRI of package.lock
-    npmDepsHash = "sha256-D9CFiPB2T+jEe2s3jFlLFXOz6tQw8ZLxBtfQayFmoCk=";
+    npmDepsHash = "sha256-Asc9yyOORJxgySz+ZhKgWzGQfZd7GpjBhhjN4wQztek=";
     name = (builtins.fromJSON (builtins.readFile ./javascript/package.json)).name;
     # reuse existing ignores to avoid rebuild on accidental changes
     cleaned-javascript-src = pkgs.lib.cleanSourceWith {
@@ -66,6 +66,74 @@
         npmFlags = ["--logs-dir=$HOME" "--verbose" "--legacy-peer-deps"];
         makeCacheWritable = true;
       };
+
+      update = pkgs.writeShellApplication {
+        name = "update";
+        runtimeInputs = [pkgs.prefetch-npm-deps];
+        text = ''
+          prefetch-npm-deps ./javascript/package-lock.json
+        '';
+      };
+      polkadot = pkgs.stdenv.mkDerivation rec {
+        name = "polkadot";
+        pname = name;
+        src = self.inputs.polkadot;
+        phases = ["installPhase"];
+        installPhase = ''
+          mkdir -p $out/bin
+          cp $src $out/bin/${name}
+          chmod +x $out/bin/${name}
+        '';
+      };
+      polkadot-parachain = pkgs.stdenv.mkDerivation rec {
+        name = "polkadot-parachain";
+        pname = name;
+        src = self.inputs.polkadot-parachain;
+        phases = ["installPhase"];
+        installPhase = ''
+          mkdir -p $out/bin
+          cp $src $out/bin/${name}
+          chmod +x $out/bin/${name}
+        '';
+      };
+      example = let
+        config = {
+          settings = {
+            timeout = 2000;
+          };
+          relaychain = {
+            command = "polkadot";
+            chain = "rococo-local";
+            nodes = [
+              {name = "alice";}
+              {name = "bob";}
+            ];
+            ws_port = 9944;
+          };
+          parachains = [
+            {
+              id = 1002;
+              chain = "contracts-rococo-dev";
+              collator = {
+                name = "contracts";
+                command = "polkadot-parachain";
+                ws_port = 9988;
+                args = ["-lparachain=debug"];
+              };
+            }
+          ];
+        };
+      in
+        pkgs.writeShellApplication rec {
+          name = "example";
+          runtimeInputs = [default polkadot polkadot-parachain];
+          text = ''
+            printf '${
+              builtins.toJSON config
+            }' > /tmp/zombie-${name}.json
+            zombienet spawn /tmp/zombie-${name}.json --provider native
+          '';
+        };
     };
   };
 }

@@ -6,6 +6,13 @@
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
     };
+
+    # just used as example of native runner
+    polkadot-parachain.url = https://github.com/paritytech/cumulus/releases/download/v1.0.0/polkadot-parachain;
+    polkadot-parachain.flake = false;
+
+    polkadot.url = https://github.com/paritytech/polkadot/releases/download/v1.0.0/polkadot;
+    polkadot.flake = false;
   };
   outputs = inputs @ {
     self,
