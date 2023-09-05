@@ -32,7 +32,7 @@
     "@polkadot/keyring": "^12.4.2",
     "@polkadot/util": "^12.4.2",
     "@polkadot/util-crypto": "^12.4.2",
-    "@types/chai": "^4.3.5",
+    "@types/chai": "^4.3.6",
     "chai": "^4.3.8"
   },
   "devDependencies": {
