@@ -282,7 +282,11 @@ export async function generateParachainFiles(
 
     if (client.providerName === "kubernetes") {
       debug("waiting for artifacts been created in pod");
-      await (client as KubeClient).waitLog(podName, podName, NODE_CONTAINER_WAIT_LOG);
+      await (client as KubeClient).waitLog(
+        podName,
+        podName,
+        NODE_CONTAINER_WAIT_LOG,
+      );
     }
 
     if (parachain.genesisStateGenerator) {
