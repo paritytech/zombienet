@@ -35,7 +35,7 @@
   in {
     formatter = pkgs.alejandra;
     devShells.default = pkgs.mkShell {
-      packages = runtimeDeps;
+      packages = runtimeDeps ++ [self'.packages.default];
     };
 
     packages = rec {
