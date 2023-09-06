@@ -7,6 +7,10 @@
     system,
     ...
   }: let
+    # this change on each change of dependencies, unfortunately this hash not yet automatically updated from SRI of package.lock
+    npmDepsHash = "sha256-Asc9yyOORJxgySz+ZhKgWzGQfZd7GpjBhhjN4wQztek=";
+    ####
+
     # there is officia polkadot on nixpkgs, but it has no local rococo wasm to run
     polkadot = pkgs.stdenv.mkDerivation rec {
       name = "polkadot";
@@ -36,7 +40,7 @@
         chmod +x $out/bin/${name}
       '';
     };
-    example = let
+    example-a = let
       config = {
         settings = {
           timeout = 2000;
@@ -45,10 +49,19 @@
           command = "polkadot";
           chain = "rococo-local";
           nodes = [
-            {name = "alice";}
+            {
+              name = "alice";
+              ws_port = 9944;
+            }
             {name = "bob";}
           ];
-          ws_port = 9944;
+          default_args = [
+            "--blocks-pruning=archive"
+            "--state-pruning=archive"
+            "--offchain-worker=always"
+            "--enable-offchain-indexing=true"
+            "--discover-local"
+          ];
         };
         parachains = [
           {
@@ -58,20 +71,73 @@
               name = "contracts";
               command = "polkadot-parachain";
               ws_port = 9988;
-              args = ["-lparachain=debug"];
+              args = [
+                "-lparachain=debug"
+                "--discover-local"
+              ];
             };
           }
         ];
       };
     in
       pkgs.writeShellApplication rec {
-        name = "example";
+        name = "example-a";
         runtimeInputs = [self'.packages.default polkadot polkadot-parachain];
         text = ''
           printf '${
             builtins.toJSON config
           }' > /tmp/zombie-${name}.json
-          zombienet spawn /tmp/zombie-${name}.json --provider native
+          zombienet spawn /tmp/zombie-${name}.json --provider native --dir /tmp/zombie-${name}
+        '';
+      };
+    example-b = let
+      config = {
+        settings = {
+          timeout = 2000;
+        };
+        relaychain = {
+          command = "polkadot";
+          chain = "westend-local";
+          nodes = [
+            {
+              name = "alice";
+              ws_port = 9954;
+            }
+            {name = "bob";}
+          ];
+          default_args = [
+            "--blocks-pruning=archive"
+            "--state-pruning=archive"
+            "--offchain-worker=always"
+            "--enable-offchain-indexing=true"
+            "--discover-local"
+          ];
+        };
+        parachains = [
+          {
+            id = 1002;
+            chain = "asset-hub-westend-dev";
+            collator = {
+              name = "asset-hub";
+              command = "polkadot-parachain";
+              ws_port = 9998;
+              args = [
+                "-lparachain=debug"
+                "--discover-local"
+              ];
+            };
+          }
+        ];
+      };
+    in
+      pkgs.writeShellApplication rec {
+        name = "example-b";
+        runtimeInputs = [self'.packages.default polkadot polkadot-parachain];
+        text = ''
+          printf '${
+            builtins.toJSON config
+          }' > /tmp/zombie-${name}.json
+          zombienet spawn /tmp/zombie-${name}.json --provider native --dir /tmp/zombie-${name}
         '';
       };
 
@@ -80,8 +146,6 @@
     # can provide nix `devenv` with running podman based kubernetes as process/service
       [bash coreutils procps findutils podman kubectl gcc-unwrapped]
       ++ lib.optional stdenv.isLinux glibc.bin;
-    # this change on each change of dependencies, unfortunately this hash not yet automatically updated from SRI of package.lock
-    npmDepsHash = "sha256-Asc9yyOORJxgySz+ZhKgWzGQfZd7GpjBhhjN4wQztek=";
     name = (builtins.fromJSON (builtins.readFile ./javascript/package.json)).name;
     # reuse existing ignores to avoid rebuild on accidental changes
     cleaned-javascript-src = pkgs.lib.cleanSourceWith {
@@ -103,7 +167,28 @@
   in {
     formatter = pkgs.alejandra;
     devShells.default = pkgs.mkShell {
-      packages = runtimeDeps ++ [self'.packages.default];
+      packages =
+        runtimeDeps
+        ++ [self'.packages.default]
+        # nix-tree is used to see raw bash/yaml/json files form nix
+        + pkgs.nix-tree;
+    };
+
+    # example of running several relays and parachains in one command to allow bridge deb/debug
+    # https://github.com/paritytech/zombienet/discussions/645
+    process-compose.example-bridge = {
+      settings = {
+        processes = {
+          kusama = {
+            command = example-a;
+            log_location = "/tmp/zombie-example-a.log";
+          };
+          polkadot = {
+            command = example-b;
+            log_location = "/tmp/zombie-example-b.log";
+          };
+        };
+      };
     };
 
     packages =
@@ -144,6 +229,6 @@
           '';
         };
       }
-      // pkgs.lib.optionalAttrs (system == "x86_64-linux") {inherit example;};
+      // pkgs.lib.optionalAttrs (system == "x86_64-linux") {example = example-a;};
   };
 }

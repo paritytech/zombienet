@@ -6,6 +6,9 @@
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
     };
+    process-compose = {
+      url = "github:Platonic-Systems/process-compose-flake";
+    };
   };
   outputs = inputs @ {
     self,
@@ -15,7 +18,10 @@
   # we used flake-parts to iterate over system and also to ensure nix dev scales
   let
     outputs = flake-parts.lib.mkFlake {inherit inputs;} {
-      imports = [./flake-module.nix];
+      imports = [
+        inputs.process-compose.flakeModule
+        ./flake-module.nix
+      ];
       systems = ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
     };
   in

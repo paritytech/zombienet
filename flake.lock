@@ -34,22 +34,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-latest": {
-      "locked": {
-        "lastModified": 1693663421,
-        "narHash": "sha256-ImMIlWE/idjcZAfxKK8sQA7A1Gi/O58u5/CJA+mxvl8=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "e56990880811a451abd32515698c712788be5720",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-lib": {
       "locked": {
         "dir": "lib",
@@ -68,11 +52,26 @@
         "type": "github"
       }
     },
+    "process-compose": {
+      "locked": {
+        "lastModified": 1693927910,
+        "narHash": "sha256-qPKHnWWzHS2bAi/SsFePQkGFeC2E1jklUjEidfQwYLc=",
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "rev": "5494afa0b6a7bc4ccf82ef1c36fe1fcdb4217255",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Platonic-Systems",
+        "repo": "process-compose-flake",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-latest": "nixpkgs-latest"
+        "process-compose": "process-compose"
       }
     }
   },
