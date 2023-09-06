@@ -52,6 +52,7 @@
             {
               name = "alice";
               ws_port = 9944;
+              prometheus_port = 39944;
             }
             {name = "bob";}
           ];
@@ -102,6 +103,7 @@
             {
               name = "alice";
               ws_port = 9954;
+              prometheus_port = 39954;
             }
             {name = "bob";}
           ];
@@ -171,21 +173,44 @@
         runtimeDeps
         ++ [self'.packages.default]
         # nix-tree is used to see raw bash/yaml/json files form nix
-        + pkgs.nix-tree;
+        # for example `nix-tree .#example-bridge --derivation`
+        ++ [pkgs.nix-tree];
     };
 
     # example of running several relays and parachains in one command to allow bridge deb/debug
     # https://github.com/paritytech/zombienet/discussions/645
     process-compose.example-bridge = {
       settings = {
+        log_location = "/tmp/zombie-example-bridge.log";
+        log_level = "debug";
         processes = {
           kusama = {
             command = example-a;
             log_location = "/tmp/zombie-example-a.log";
+            readiness_probe = {
+              initial_delay_seconds = 16;
+              period_seconds = 8;
+              failure_threshold = 32;
+              timeout_seconds = 2;
+              exec.command = ''
+                curl http://127.0.0.1:39944/metrics | grep polkadot_parachain_chain_api_block_headers_count | tr -s " " | cut --delimiter " " --fields=2 | tee /tmp/zombie-example-a/polkadot_parachain_chain_api_block_headers_count
+                exit $(( $(cat /tmp/zombie-example-a/polkadot_parachain_chain_api_block_headers_count) > 4 ? 0 : 1 ))
+              '';
+            };
           };
           polkadot = {
             command = example-b;
             log_location = "/tmp/zombie-example-b.log";
+            readiness_probe = {
+              initial_delay_seconds = 16;
+              period_seconds = 8;
+              failure_threshold = 32;
+              timeout_seconds = 2;
+              exec.command = ''
+                curl http://127.0.0.1:39954/metrics | grep polkadot_parachain_chain_api_block_headers_count | tr -s " " | cut --delimiter " " --fields=2 | tee /tmp/zombie-example-b/polkadot_parachain_chain_api_block_headers_count
+                exit $(( $(cat /tmp/zombie-example-b/polkadot_parachain_chain_api_block_headers_count) > 4 ? 0 : 1 ))
+              '';
+            };
           };
           # https://github.com/paritytech/parity-bridges-common/issues/2539
         };
