@@ -53,14 +53,3 @@ jobs:
           .
         docker push $GCR_REGISTRY/$PROJECT_ID/$GCR_REPOSITORY/$IMAGE
         echo "::set-output name=image::$GCR_REGISTRY/$PROJECT_ID/$GCR_REPOSITORY/$IMAGE"
-        
-    # - name: Install kubectl via gcloud
-    #   run: gcloud components install kubectl
-
-    # - name: Get GKE credentials
-    #   run: gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $PROJECT_ID
-
-    # - name: Set image in cronjob
-    #   env:
-    #     IMAGE: ${{ steps.build-image.outputs.image }}
-    #   run: kubectl set image cronjob/$GKE_CRONJOB $GKE_CONTAINER=$IMAGE -n $GKE_NAMESPACE
