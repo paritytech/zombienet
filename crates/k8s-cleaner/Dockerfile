@@ -1,4 +1,4 @@
-FROM rust:1.55 as builder
+FROM rust:1.72 as builder
 WORKDIR /usr/src/k8s-cleaner
 COPY . .
 RUN cargo build --release
