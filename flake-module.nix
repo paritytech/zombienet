@@ -7,7 +7,21 @@
     system,
     ...
   }: let
-    polkadot = inputs'.nixpkgs-latest.legacyPackages.polkadot;
+    # there is officia polkadot on nixpkgs, but it has no local rococo wasm to run
+    polkadot = pkgs.stdenv.mkDerivation rec {
+      name = "polkadot";
+      pname = name;
+      src = builtins.fetchurl {
+        url = "https://github.com/paritytech/polkadot/releases/download/v1.0.0/polkadot";
+        sha256 = "sha256:0pl4c93xyf35hwr03c810ig1dbbyhg7jfzl3mb9j6r273siszh5s";
+      };
+      phases = ["installPhase"];
+      installPhase = ''
+        mkdir -p $out/bin
+        cp $src $out/bin/${name}
+        chmod +x $out/bin/${name}
+      '';
+    };
     polkadot-parachain = pkgs.stdenv.mkDerivation rec {
       name = "polkadot-parachain";
       pname = name;
@@ -94,7 +108,6 @@
 
     packages =
       rec {
-        inherit polkadot;
         # output is something like what npm 'pkg` does, but more sandboxed
         default = pkgs.buildNpmPackage rec {
           # generally Node should be same as in CI build config
