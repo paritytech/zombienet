@@ -187,6 +187,7 @@
             command = example-b;
             log_location = "/tmp/zombie-example-b.log";
           };
+          # https://github.com/paritytech/parity-bridges-common/issues/2539
         };
       };
     };
