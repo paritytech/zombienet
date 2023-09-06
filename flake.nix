@@ -3,6 +3,7 @@
   inputs = {
     # follow official nixpkgs release so that likely one already have the required dependencies in store
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs-latest.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
     };
