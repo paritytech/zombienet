@@ -3,9 +3,9 @@ WORKDIR /usr/src/k8s-cleaner
 COPY . .
 RUN cargo build --release
 
-FROM debian:buster-slim
+FROM rust:1.72
 WORKDIR /usr/local/bin
-RUN apt update && \
-    apt install libssl1.1 -y
+# RUN apt update && \
+#     apt install libssl1.1 -y
 COPY --from=builder /usr/src/k8s-cleaner/target/release/k8s-cleaner k8s-cleaner
 CMD ["./k8s-cleaner"]
