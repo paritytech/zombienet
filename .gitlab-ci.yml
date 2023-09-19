@@ -17,11 +17,10 @@ stages:
 
 variables:
   CI_IMAGE: "node:18"
-  BUILDAH_IMAGE: "quay.io/buildah/stable:v1.27"
   DOCKERFILE: scripts/ci/docker/zombienet_injected.Dockerfile
   DOCKERHUB_REPO: paritytech
   IMAGE_NAME: $DOCKERHUB_REPO/zombienet
-  BUILDAH_IMAGE: "quay.io/buildah/stable:v1.29"
+  # BUILDAH_IMAGE is defined in group variables
   BUILDAH_COMMAND: "buildah --storage-driver overlay2"
   RUN_IN_CONTAINER: "1"
   # Improve gitlab cache performance
