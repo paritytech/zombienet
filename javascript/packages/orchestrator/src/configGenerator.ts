@@ -710,7 +710,7 @@ function sanitizeArgs(
     });
 
   // put the internal full-node args again
-  if(separatorIndex >= 0) {
+  if (separatorIndex >= 0) {
     filteredArgs.push(...args.slice(separatorIndex));
   }
   return filteredArgs;
