@@ -26,6 +26,11 @@ export async function test(
   const opts = { ...program.parent.opts(), ...cmdOpts };
   const dir = opts.dir || "";
 
+  // By default spawn pods/process in batches of 4,
+  // since this shouldn't be a bottleneck in most of the cases,
+  // but also can be set with the `-c` flag or with the ZOMBIE_CONCURRENCY env var.
+  const spawnConcurrency = opts.spawnConcurrency || process.env.ZOMBIE_CONCURRENCY || 4;
+
   const extension = testFile.slice(testFile.lastIndexOf(".") + 1);
 
   if (extension !== "zndsl") {
@@ -67,7 +72,7 @@ export async function test(
     testDef,
     providerToUse,
     inCI,
-    opts.spawnConcurrency,
+    spawnConcurrency,
     getLogType(opts.logType),
     runningNetworkSpec,
     dir,
