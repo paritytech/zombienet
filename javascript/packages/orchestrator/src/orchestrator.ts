@@ -101,7 +101,7 @@ export async function start(
       opts.spawnConcurrency = 1;
     }
 
-    debug("Concurrecy:", opts.spawnConcurrency);
+    debug("Concurrency:", opts.spawnConcurrency);
     debug(JSON.stringify(networkSpec, null, 4));
 
     const { initClient, setupChainSpec, getChainSpecRaw, genChaosDef } =
