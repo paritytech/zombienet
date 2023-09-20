@@ -39,8 +39,9 @@ export async function spawn(
   const monitor = opts.monitor || false;
   // By default spawn pods/process in batches of 4,
   // since this shouldn't be a bottleneck in most of the cases,
-  // but also can be set with the `-c` flag.
-  const spawnConcurrency = opts.spawnConcurrency || 4;
+  // but also can be set with the `-c` flag or with the ZOMBIE_CONCURRENCY env var.
+  const spawnConcurrency =
+    opts.spawnConcurrency || process.env.ZOMBIE_CONCURRENCY || 4;
   const configPath = resolve(process.cwd(), configFile);
   if (!fs.existsSync(configPath)) {
     console.error(
