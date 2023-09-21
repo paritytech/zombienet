@@ -25,8 +25,6 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
-  const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
-
   // If the platform is MacOS then the repos needs to be cloned and run locally by the user
   // as polkadot and/or polkadot-parachain do not release a valid binaries for MacOS
   if (process.platform === "darwin") {
@@ -104,13 +102,13 @@ export async function setup(params: any, opts?: any) {
     );
   });
 
-<<<<<<< HEAD
   // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
   // as polkadot do not release a binary for MacOS
   if (params[0] === "all") {
     params = [POLKADOT, POLKADOT_PARACHAIN];
   }
-  if (process.platform === "darwin" && params.includes(POLKADOT)) {
+
+  if (params.includes(POLKADOT)) {
     console.log(
       `${decorators.yellow(
         "Note: ",
@@ -121,8 +119,6 @@ export async function setup(params: any, opts?: any) {
     params = params.filter((param: string) => param !== POLKADOT);
   }
 
-=======
->>>>>>> 8ab2a1dd3058f3052f4e740284c7f86fb00a27c7
   if (params.length === 0) {
     console.log(decorators.green("No binaries to download. Exiting..."));
     return;
