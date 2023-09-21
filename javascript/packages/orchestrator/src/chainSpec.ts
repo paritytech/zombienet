@@ -9,7 +9,9 @@ import {
 import crypto from "crypto";
 import fs from "fs";
 import { generateKeyFromSeed } from "./keys";
-import { ChainSpec, ComputedNetwork, HrmpChannelsConfig, Node } from "./types";
+import { ChainSpec } from "./types";
+import { HrmpChannelsConfig, Node } from "./sharedTypes";
+import { ComputedNetwork } from "./configTypes";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -96,6 +98,15 @@ export async function addBalances(specPath: string, nodes: Node[]) {
   try {
     const chainSpec = readAndParseChainSpec(specPath);
     const runtimeConfig = getRuntimeConfig(chainSpec);
+    if (!runtimeConfig.balances) {
+      console.error(
+        `\n 🚧 ${decorators.yellow(
+          "NO 'balances' key in runtimeConfig, skipping...",
+        )} 🚧 \n`,
+      );
+      return;
+    }
+
     // Create a balance map
     const balanceMap = runtimeConfig.balances.balances.reduce(
       (
@@ -421,6 +432,11 @@ export async function addParachainToGenesis(
     else if (runtimeConfig.parachainsParas) {
       paras = runtimeConfig.parachainsParas.paras;
     }
+    // The config may not contain paras. Since chainspec allows to contain the RuntimeGenesisConfig patch we can inject it.
+    else {
+      runtimeConfig.paras = { paras: [] };
+      paras = runtimeConfig.paras.paras;
+    }
     if (paras) {
       const new_para = [
         parseInt(para_id),
@@ -611,11 +627,13 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
 }
 
 export function getRuntimeConfig(chainSpec: any) {
-  const runtimeConfig =
+  // runtime_genesis_config is no longer in ChainSpec after rococo runtime rework (refer to: https://github.com/paritytech/polkadot-sdk/pull/1256)
+  // ChainSpec may contain a RuntimeGenesisConfigPatch
+  return (
+    chainSpec.genesis.runtimeGenesisConfigPatch ||
     chainSpec.genesis.runtime?.runtime_genesis_config ||
-    chainSpec.genesis.runtime;
-
-  return runtimeConfig;
+    chainSpec.genesis.runtime
+  );
 }
 
 export function readAndParseChainSpec(specPath: string) {

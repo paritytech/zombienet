@@ -7,12 +7,15 @@ import {
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
+  NODE_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
 import { decorate } from "./paras-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
-import { Node, Parachain, ZombieRole, fileMap } from "./types";
+import { fileMap } from "./types";
+import { Node, ZombieRole, Parachain } from "./sharedTypes";
+import { KubeClient } from "./providers/k8s/kubeClient";
 
 const debug = require("debug")("zombie::paras");
 
@@ -276,6 +279,15 @@ export async function generateParachainFiles(
     const podName = podDef.metadata.name;
 
     await client.spawnFromDef(podDef, filesToCopyToNodes);
+
+    if (client.providerName === "kubernetes") {
+      debug("waiting for artifacts been created in pod");
+      await (client as KubeClient).waitLog(
+        podName,
+        podName,
+        NODE_CONTAINER_WAIT_LOG,
+      );
+    }
 
     if (parachain.genesisStateGenerator) {
       await client.copyFileFromPod(

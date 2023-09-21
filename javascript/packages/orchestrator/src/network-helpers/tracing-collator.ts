@@ -8,7 +8,7 @@ import {
 import { Network } from "../network";
 import { Client } from "../providers/client";
 import { PodmanClient } from "../providers/podman/podmanClient";
-import { ComputedNetwork } from "../types";
+import { ComputedNetwork } from "../configTypes";
 
 export async function setTracingCollatorConfig(
   networkSpec: ComputedNetwork,

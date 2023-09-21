@@ -85,7 +85,12 @@ program
       ["podman", "kubernetes", "native"],
     ),
   )
-
+  .addOption(
+    new Option(
+      "-l, --logType <logType>",
+      "Type of logging - defaults to 'table'",
+    ).choices(["table", "text", "silent"]),
+  )
   .addOption(
     new Option(
       "-d, --dir <path>",

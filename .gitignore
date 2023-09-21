@@ -10,3 +10,4 @@ bins
 
 # nix
 result
+*.log

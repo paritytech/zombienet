@@ -10,7 +10,8 @@ import {
   writeChainSpec,
 } from "../chainSpec";
 import { generateKeyForNode as _generateKeyForNode } from "../keys";
-import { ChainSpec, Node } from "../types";
+import { ChainSpec } from "../types";
+import { Node } from "../sharedTypes";
 
 // track 1st staking as default;
 let paraStakingBond: bigint | undefined;
@@ -134,10 +135,27 @@ async function addParaCustom(specPath: string, node: Node) {
   const reservedBalance = BigInt("100000000000000000000");
 
   // Ensure collator account has enough balance to bond and add candidate
+  const node_index = runtimeConfig.balances.balances.findIndex(
+    (item: [string, BigInt]) => {
+      return item[0] === eth_account.address.toLowerCase();
+    },
+  );
+
+  if (node_index > -1) runtimeConfig.balances.balances.splice(node_index, 1);
+
   runtimeConfig.balances.balances.push([
     eth_account.address,
     stakingBond + reservedBalance,
   ]);
+
+  const candidate_index = runtimeConfig.balances.balances.findIndex(
+    (item: [string, BigInt]) => {
+      return item[0] === eth_account.address.toLowerCase();
+    },
+  );
+
+  if (candidate_index > -1)
+    runtimeConfig.balances.balances.splice(candidate_index, 1);
 
   runtimeConfig.parachainStaking.candidates.push([
     eth_account.address,

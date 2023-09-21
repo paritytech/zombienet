@@ -10,6 +10,8 @@ import {
   VolumeMount,
 } from "./types";
 
+const debug = require("debug")("zombie::podman::resources::prometheus");
+
 export class PrometheusResource {
   private readonly configPath: string;
   private readonly dataPath: string;
@@ -51,7 +53,8 @@ export class PrometheusResource {
         templateConfigPath,
         `${this.configPath}/prometheus.yml`,
       );
-    } catch {
+    } catch (e) {
+      debug(e);
       throw new Error("Error generating config for prometheus resource");
     }
   }

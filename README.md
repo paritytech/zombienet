@@ -1,4 +1,5 @@
-[![GitLab Status](https://gitlab.parity.io/parity/zombienet/badges/main/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+
+![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)  [![GitLab Status](https://gitlab.parity.io/parity/zombienet/pipelines/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
 
 # Zombienet
 
@@ -126,6 +127,7 @@ Options:
   -c, --spawn-concurrency <concurrency>  Number of concurrent spawning process to launch, default is 1
   -p, --provider <provider>              Override provider to use (choices: "podman", "kubernetes", "native")
                                          default: kubernetes
+  -l, --logType <logType>                Type of logging on the console - defaults to 'table' (choices: "table", "text", "silent")
   -d, --dir <path>                       Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)
   -f, --force                            Force override all prompt commands
   -m, --monitor                          Start as monitor, do not auto cleanup network
@@ -405,13 +407,14 @@ Below can be found some of the projects that are currently using Zombienet as in
 
 - [Acurast](https://github.com/Acurast/acurast-substrate/blob/10c3160a297ae6c3092ee692e6d3b632896fca65/Makefile)
 - [Astar](https://github.com/AstarNetwork/Astar/blob/master/.github/workflows/zombienetRpcTest.yml#L44)
+- [Composable](https://github.com/ComposableFi/composable) via `nix run "composable#devnet-picasso"`
 - [Gossamer](https://github.com/ChainSafe/gossamer/issues/2843)
 - [Oak/Turing/Neumann](https://github.com/OAK-Foundation/OAK-blockchain/tree/master/zombienets)
 - [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/rococo-local)
 - [InvArch](https://github.com/InvArch/InvArch-Node/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
 - [Mangata](https://github.com/mangata-finance/mangata-node/tree/develop/devops/zombienet)
 - [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
-- [Moonbeam](https://github.com/PureStake/moonbeam/tree/master/tests/zombienet)
+- [Moonbeam](https://github.com/moonbeam-foundation/moonbeam/tree/master/test)
 - [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
 - [ParaSpell✨](https://github.com/paraspell/ui-v2)
 

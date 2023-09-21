@@ -2,6 +2,9 @@
   "name": "zombienet",
   "version": "0.1.0",
   "main": "dist/index.js",
+  "files": [
+    "*"
+  ],
   "types": "dist/index.d.ts",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "author": "Parity Technologies <admin@parity.io>",
@@ -29,24 +32,24 @@
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
-    "@polkadot/keyring": "^12.3.2",
-    "@polkadot/util": "^12.3.2",
-    "@polkadot/util-crypto": "^12.3.2",
-    "@types/chai": "^4.3.5",
-    "chai": "^4.3.7"
+    "@polkadot/keyring": "^12.5.1",
+    "@polkadot/util": "^12.5.1",
+    "@polkadot/util-crypto": "^12.5.1",
+    "@types/chai": "^4.3.6",
+    "chai": "^4.3.8"
   },
   "devDependencies": {
-    "@types/node": "^20.4.8",
-    "@types/tmp": "^0.2.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "eslint": "^8.45.0",
+    "@types/node": "^20.6.3",
+    "@types/tmp": "^0.2.4",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "eslint": "^8.49.0",
     "eslint-config-prettier": "^9.0.0",
-    "eslint-import-resolver-typescript": "^3.5.5",
-    "eslint-plugin-import": "^2.28.0",
+    "eslint-import-resolver-typescript": "^3.6.0",
+    "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-prettier": "^5.0.0",
     "husky": "^8.0.3",
-    "prettier": "^3.0.1",
+    "prettier": "^3.0.3",
     "prettier-plugin-organize-imports": "^3.2.3"
   },
   "workspaces": [

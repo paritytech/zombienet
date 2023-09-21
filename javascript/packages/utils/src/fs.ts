@@ -11,7 +11,7 @@ import { LaunchConfig } from "./types";
 export interface LocalJsonFileContentIF {
   apiVersion: string;
   kind: string;
-  metadata: {
+  metadata?: {
     name: string;
   };
 }

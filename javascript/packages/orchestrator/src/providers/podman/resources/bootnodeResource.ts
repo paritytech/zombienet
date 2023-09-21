@@ -1,4 +1,4 @@
-import { Node, ZombieRole } from "../../../types";
+import { Node, ZombieRole } from "../../../sharedTypes";
 import { Client } from "../../client";
 import { NodeResource } from "./nodeResource";
 import { Container, PodSpec, Volume } from "./types";

@@ -2,8 +2,9 @@ import {
   decorators,
   getLokiUrl,
   readNetworkConfig,
-  setSilent,
+  setLogType,
   sleep,
+  LogType,
 } from "@zombienet/utils";
 import fs from "fs";
 import Mocha from "mocha";
@@ -11,9 +12,10 @@ import path from "path";
 import { Network, rebuildNetwork } from "../network";
 import { start } from "../orchestrator";
 import { Providers } from "../providers";
-import { LaunchConfig, TestDefinition } from "../types";
+import { TestDefinition } from "../types";
 import assertions from "./assertions";
 import commands from "./commands";
+import { LaunchConfig } from "../configTypes";
 
 const DEFAULT_GLOBAL_TIMEOUT = 1200; // 20 mins
 
@@ -33,11 +35,11 @@ export async function run(
   provider: string,
   inCI = false,
   concurrency = 1,
-  silent = false,
+  logType: LogType = "table",
   runningNetworkSpecPath: string | undefined,
   dir: string | undefined,
 ) {
-  setSilent(silent);
+  logType && setLogType(logType);
   let network: Network;
   const backchannelMap: BackchannelMap = {};
 
@@ -91,7 +93,7 @@ export async function run(
         network = await start(creds!, config, {
           spawnConcurrency: concurrency,
           inCI,
-          silent,
+          logType,
           dir,
         });
       } else {
