@@ -7,6 +7,15 @@ interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
 
+const POLKADOT_SDK = "polkadot-sdk";
+const POLKADOT = "polkadot";
+const POLKADOT_PREPARE_WORKER = "polkadot-prepare-worker";
+const POLKADOT_EXECUTE_WORKER = "polkadot-execute-worker";
+const POLKADOT_PARACHAIN = "polkadot-parachain";
+
+const POSSIBLE_BINARIES = [POLKADOT, POLKADOT_PARACHAIN];
+const POLKADOT_WORKERS = [POLKADOT_PREPARE_WORKER, POLKADOT_EXECUTE_WORKER];
+
 const options: OptIf = {};
 /**
  * Setup - easily download latest artifacts and make them executable in order to use them with zombienet
@@ -16,8 +25,7 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
-  const POSSIBLE_BINARIES = ["polkadot", "polkadot-parachain"];
-
+  console.log("process.platform", process.platform);
   // If the platform is MacOS then the repos needs to be cloned and run locally by the user
   // as polkadot and/or polkadot-parachain do not release a valid binaries for MacOS
   if (process.platform === "darwin") {
@@ -44,10 +52,10 @@ export async function setup(params: any, opts?: any) {
 
   console.log(decorators.green("Gathering latest releases' versions...\n"));
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL("polkadot", "polkadot").then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT).then(
       (res: [string, string]) => {
-        options.polkadot = {
-          name: "polkadot",
+        options[POLKADOT] = {
+          name: POLKADOT,
           url: res[0],
           size: res[1],
         };
@@ -57,10 +65,10 @@ export async function setup(params: any, opts?: any) {
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL("cumulus", "polkadot-parachain").then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_PREPARE_WORKER).then(
       (res: [string, string]) => {
-        options["polkadot-parachain"] = {
-          name: "polkadot-parachain",
+        options[POLKADOT_PREPARE_WORKER] = {
+          name: POLKADOT_PREPARE_WORKER,
           url: res[0],
           size: res[1],
         };
@@ -69,12 +77,46 @@ export async function setup(params: any, opts?: any) {
     );
   });
 
+  await new Promise<void>((resolve) => {
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_EXECUTE_WORKER).then(
+      (res: [string, string]) => {
+        options[POLKADOT_EXECUTE_WORKER] = {
+          name: POLKADOT_EXECUTE_WORKER,
+          url: res[0],
+          size: res[1],
+        };
+        resolve();
+      },
+    );
+  });
+
+  await new Promise<void>((resolve) => {
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_PARACHAIN).then(
+      (res: [string, string]) => {
+        options[POLKADOT_PARACHAIN] = {
+          name: POLKADOT_PARACHAIN,
+          url: res[0],
+          size: res[1],
+        };
+        resolve();
+      },
+    );
+  });
+
+  // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
+  // as polkadot do not release a binary for MacOS
+  if (params[0] === "all") {
+    params = [POLKADOT, POLKADOT_PARACHAIN];
+  }
+
   if (params.length === 0) {
     console.log(decorators.green("No binaries to download. Exiting..."));
     return;
   }
   let count = 0;
+
   console.log("Setup will start to download binaries:");
+
   params.forEach((a: any) => {
     if (!POSSIBLE_BINARIES.includes(a)) {
       params = params.filter((param: any) => param !== a);
@@ -82,15 +124,31 @@ export async function setup(params: any, opts?: any) {
         decorators.red(
           `"${a}" is not one of the possible options for this setup and will be skipped;`,
         ),
-        decorators.green(` Valid options: polkadot polkadot-parachain`),
+        decorators.green(
+          ` Valid options: 'polkadot', 'polkadot-parachain', 'all'`,
+        ),
       );
       return;
     }
-    const size = parseInt(options[a]?.size || "0", 10);
-    count += size;
-    console.log("-", a, "\t Approx. size ", size, " MB");
+    let size = 0;
+    if (a === POLKADOT) {
+      size = parseInt(options[a]?.size || "0", 10);
+      count += size;
+      console.log("-", a, "\t\t\t Approx. size ", size, " MB");
+
+      POLKADOT_WORKERS.forEach((b) => {
+        params.push(b);
+        size = parseInt(options[b]?.size || "0", 10);
+        count += size;
+        console.log("-", b, "\t Approx. size ", size, " MB");
+      });
+    } else {
+      size = parseInt(options[a]?.size || "0", 10);
+      count += size;
+      console.log("-", a, "\t\t Approx. size ", size, " MB");
+    }
   });
-  console.log("Total approx. size: ", count, "MB");
+  console.log("Total approx. size:\t\t\t ", count, "MB");
   if (!opts?.yes) {
     const response = await askQuestion(
       decorators.yellow("\nDo you want to continue? (y/n)"),
@@ -211,6 +269,12 @@ const latestPolkadotReleaseURL = async (
       obj = r?.assets?.find((a: any) => a.name === name);
       return Boolean(obj);
     });
+
+    if (!release) {
+      throw Error(
+        `In repo '${repo}', there is no release for: '${name}'! Exiting...`,
+      );
+    }
 
     const { tag_name } = release;
 

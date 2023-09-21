@@ -131,7 +131,7 @@ program
     "<binaries...>",
     `the binaries that you want to be downloaded, provided in a row without any separators;\nThey are downloaded in current directory and appropriate executable permissions are assigned.\nPossible options: 'polkadot', 'polkadot-parachain'\n${decorators.blue(
       "zombienet setup polkadot polkadot-parachain",
-    )}`,
+    )}\nNote: Downloading 'polkadot' downloads also 'polkadot-prepare-worker' and 'polkadot-execute-worker'`,
   )
   .addOption(new Option("-y, --yes", "Bypass confirmation"))
   .action(asyncAction(setup));
