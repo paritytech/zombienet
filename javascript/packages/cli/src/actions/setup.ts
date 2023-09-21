@@ -7,10 +7,10 @@ interface OptIf {
   [key: string]: { name: string; url?: string; size?: string };
 }
 
+const POLKADOT_SDK = "polkadot-sdk";
 const POLKADOT = "polkadot";
 const POLKADOT_PREPARE_WORKER = "polkadot-prepare-worker";
 const POLKADOT_EXECUTE_WORKER = "polkadot-execute-worker";
-const CUMULUS = "cumulus";
 const POLKADOT_PARACHAIN = "polkadot-parachain";
 
 const POSSIBLE_BINARIES = [POLKADOT, POLKADOT_PARACHAIN];
@@ -25,6 +25,7 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
+  console.log("process.platform", process.platform);
   // If the platform is MacOS then the repos needs to be cloned and run locally by the user
   // as polkadot and/or polkadot-parachain do not release a valid binaries for MacOS
   if (process.platform === "darwin") {
@@ -51,7 +52,7 @@ export async function setup(params: any, opts?: any) {
 
   console.log(decorators.green("Gathering latest releases' versions...\n"));
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT, POLKADOT).then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT).then(
       (res: [string, string]) => {
         options[POLKADOT] = {
           name: POLKADOT,
@@ -64,7 +65,7 @@ export async function setup(params: any, opts?: any) {
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT, POLKADOT_PREPARE_WORKER).then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_PREPARE_WORKER).then(
       (res: [string, string]) => {
         options[POLKADOT_PREPARE_WORKER] = {
           name: POLKADOT_PREPARE_WORKER,
@@ -77,7 +78,7 @@ export async function setup(params: any, opts?: any) {
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT, POLKADOT_EXECUTE_WORKER).then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_EXECUTE_WORKER).then(
       (res: [string, string]) => {
         options[POLKADOT_EXECUTE_WORKER] = {
           name: POLKADOT_EXECUTE_WORKER,
@@ -90,7 +91,7 @@ export async function setup(params: any, opts?: any) {
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(CUMULUS, POLKADOT_PARACHAIN).then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_PARACHAIN).then(
       (res: [string, string]) => {
         options[POLKADOT_PARACHAIN] = {
           name: POLKADOT_PARACHAIN,
@@ -106,17 +107,6 @@ export async function setup(params: any, opts?: any) {
   // as polkadot do not release a binary for MacOS
   if (params[0] === "all") {
     params = [POLKADOT, POLKADOT_PARACHAIN];
-  }
-
-  if (params.includes(POLKADOT)) {
-    console.log(
-      `${decorators.yellow(
-        "Note: ",
-      )} You are using MacOS. Please, clone the polkadot repo ` +
-        decorators.cyan("(https://github.com/paritytech/polkadot)") +
-        ` and run it locally.\n At the moment there is no polkadot binary for MacOs.\n\n`,
-    );
-    params = params.filter((param: string) => param !== POLKADOT);
   }
 
   if (params.length === 0) {
@@ -144,13 +134,13 @@ export async function setup(params: any, opts?: any) {
     if (a === POLKADOT) {
       size = parseInt(options[a]?.size || "0", 10);
       count += size;
-      console.log("-", a, "\t\t Approx. size ", size, " MB");
+      console.log("-", a, "\t\t\t Approx. size ", size, " MB");
 
       POLKADOT_WORKERS.forEach((b) => {
         params.push(b);
         size = parseInt(options[b]?.size || "0", 10);
         count += size;
-        console.log("-", b, "\t\t Approx. size ", size, " MB");
+        console.log("-", b, "\t Approx. size ", size, " MB");
       });
     } else {
       size = parseInt(options[a]?.size || "0", 10);
@@ -158,7 +148,7 @@ export async function setup(params: any, opts?: any) {
       console.log("-", a, "\t\t Approx. size ", size, " MB");
     }
   });
-  console.log("Total approx. size:\t\t ", count, "MB");
+  console.log("Total approx. size:\t\t\t ", count, "MB");
   if (!opts?.yes) {
     const response = await askQuestion(
       decorators.yellow("\nDo you want to continue? (y/n)"),
