@@ -107,7 +107,6 @@ export async function setup(params: any, opts?: any) {
   if (params[0] === "all") {
     params = [POLKADOT, POLKADOT_PARACHAIN];
   }
-  
   if (params.length === 0) {
     console.log(decorators.green("No binaries to download. Exiting..."));
     return;
