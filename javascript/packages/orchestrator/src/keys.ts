@@ -7,7 +7,6 @@ import {
 } from "@polkadot/util-crypto";
 import { makeDir } from "@zombienet/utils";
 import fs from "fs";
-import { DEFAULT_KEYSTORE_KEY_TYPES } from "./constants";
 import { Node } from "./sharedTypes";
 
 function nameCase(string: string) {
@@ -92,9 +91,27 @@ export async function generateKeystoreFiles(
     rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
   };
 
-  node.keystoreKeyTypes?.forEach((key_type: string) => {
-    if (DEFAULT_KEYSTORE_KEY_TYPES.includes(key_type))
-      keystore_key_types[key_type] = default_keystore_key_types[key_type];
+  // 2 ways keys can be defined:
+  node.keystoreKeyTypes?.forEach((key_spec) => {
+    // short: by only 4 letter key type with defaulted scheme e.g. "audi", if default scheme doesn't exist it is "ed"
+    if (key_spec.length === 4) {
+      keystore_key_types[key_spec] =
+        default_keystore_key_types[key_spec] ||
+        node.accounts.ed_account.publicKey;
+    }
+
+    // long: 4 letter key type with scheme separated by underscore e.g. "audi_sr"
+    const [key_type, key_scheme] = key_spec.split("_");
+    if (key_type.length === 4) {
+      if (key_scheme === "ed") {
+        keystore_key_types[key_type] = node.accounts.ed_account.publicKey;
+      } else if (key_scheme === "ec") {
+        keystore_key_types[key_type] = node.accounts.ec_account.publicKey;
+      }
+      if (key_scheme === "sr") {
+        keystore_key_types[key_type] = node.accounts.sr_account.publicKey;
+      }
+    }
   });
 
   if (Object.keys(keystore_key_types).length === 0)
