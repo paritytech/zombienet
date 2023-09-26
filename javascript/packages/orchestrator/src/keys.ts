@@ -97,7 +97,7 @@ export async function generateKeystoreFiles(
     if (key_spec.length === 4) {
       keystore_key_types[key_spec] =
         default_keystore_key_types[key_spec] ||
-        node.accounts.ed_account.publicKey;
+        node.accounts.sr_account.publicKey;
     }
 
     // long: 4 letter key type with scheme separated by underscore e.g. "audi_sr"
