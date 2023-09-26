@@ -229,6 +229,7 @@
 <li><code>rpc_port</code>: (number) RPC port to use;</li>
 <li><code>prometheus_port</code>: (number) Prometheus port to use;</li>
 <li><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.</li>
+<li><code>keystore_key_types</code>: Defines which keystore keys should be created, for more details checkout details below.</li>
 </ul>
 </li>
 <li><code>node_groups</code>:
@@ -295,6 +296,7 @@
 <li>value: (String| number) Value of the env var.</li>
 </ul>
 </li>
+<li><code>keystore_key_types</code>: Defines which keystore keys should be created, for more details checkout details below.</li>
 </ul>
 </li>
 <li>
@@ -334,6 +336,36 @@
 <h2 id="types"><a class="header" href="#types"><code>types</code></a></h2>
 <ul>
 <li>Object to use as <code>user defined types</code> with the js api.</li>
+</ul>
+<h2 id="keystore_key_types"><a class="header" href="#keystore_key_types"><code>keystore_key_types</code></a></h2>
+<ul>
+<li>
+<p>There are 2 ways to specify key, values that don't respect below format will be ignored:</p>
+<ul>
+<li>short: <code>audi</code> - creates <code>audi</code> key type that defaults to predefined schema, it predefined schema for given key type doesn't exist it is ignored</li>
+<li>long: <code>audi_sr</code> - creates <code>audi</code> key type with <code>sr</code> schema</li>
+</ul>
+</li>
+<li>
+<p>Schemas: <code>ed</code>, <code>ec</code>, <code>sr</code></p>
+</li>
+<li>
+<p>Predefined key type schemas:</p>
+<ul>
+<li><code>aura</code> - <code>sr</code> if statemint or asset hub polkadot parachain, otherwise <code>ed</code></li>
+<li><code>babe</code> - <code>sr</code></li>
+<li><code>imon</code> - <code>sr</code></li>
+<li><code>gran</code> - <code>ed</code></li>
+<li><code>audi</code> - <code>sr</code></li>
+<li><code>asgn</code> - <code>sr</code></li>
+<li><code>para</code> - <code>sr</code></li>
+<li><code>beef</code> - <code>ec</code></li>
+<li><code>nmbs</code> - <code>sr</code></li>
+<li><code>rand</code> - <code>sr</code></li>
+<li><code>rate</code> - <code>ed</code></li>
+<li><code>acco</code> - <code>sr</code></li>
+</ul>
+</li>
 </ul>
 
                     </main>
