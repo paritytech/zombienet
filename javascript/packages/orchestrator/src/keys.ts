@@ -107,8 +107,7 @@ export async function generateKeystoreFiles(
         keystore_key_types[key_type] = node.accounts.ed_account.publicKey;
       } else if (key_scheme === "ec") {
         keystore_key_types[key_type] = node.accounts.ec_account.publicKey;
-      }
-      if (key_scheme === "sr") {
+      } else if (key_scheme === "sr") {
         keystore_key_types[key_type] = node.accounts.sr_account.publicKey;
       }
     }
