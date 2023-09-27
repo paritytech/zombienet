@@ -30,7 +30,7 @@ import {
   ZOMBIE_WRAPPER,
 } from "./constants";
 import { generateKeyForNode } from "./keys";
-import { PARA, decorate, whichPara } from "./paras-decorators";
+import { CHAIN, decorate, whichChain } from "./chain-decorators";
 import { ComputedNetwork, LaunchConfig, ParachainConfig } from "./configTypes";
 import {
   NodeConfig,
@@ -241,7 +241,7 @@ export async function generateNetworkSpec(
 
   if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
-      const para: PARA = whichPara(parachain.chain || "");
+      const para: CHAIN = whichChain(parachain.chain || "");
 
       let computedStatePath,
         computedStateCommand,
@@ -510,7 +510,7 @@ async function getCollatorNodeFromConfig(
   collatorConfig: NodeConfig,
   parachain: ParachainConfig,
   chain: string, // relay-chain
-  para: PARA,
+  para: CHAIN,
   bootnodes: string[], // parachain bootnodes
   cumulusBased: boolean,
   group?: string,

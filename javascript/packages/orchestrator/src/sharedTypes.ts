@@ -1,4 +1,4 @@
-import { PARA } from "./paras-decorators";
+import { CHAIN } from "./chain-decorators";
 
 export enum SubstrateCliArgsVersion {
   V0 = 0,
@@ -34,7 +34,7 @@ export interface ObjectJSON {
 
 export interface Parachain extends CommonParachainConfig {
   name: string;
-  para: PARA;
+  para: CHAIN;
   addToGenesis: boolean;
   registerPara: boolean;
   onboardAsParachain: boolean;
