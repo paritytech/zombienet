@@ -57,6 +57,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `rpc_port`: (number) RPC port to use;
   - `prometheus_port`: (number) Prometheus port to use;
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
+  - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
 - `node_groups`:
   - `*name`: (String) Group name, used for naming the nodes (e.g name-1)
   - `*count` (Number), Number of `nodes` to launch for this group.
@@ -94,6 +95,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
+    - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
 
   - `collator_groups`:
 
@@ -121,3 +123,25 @@ The network config can be provided both in `json` or `toml` format and each sect
 ## `types`
 
 - Object to use as `user defined types` with the js api.
+
+## `keystore_key_types`
+
+- There are 2 ways to specify key, values that don't respect below format will be ignored:
+  - short: `audi` - creates `audi` key type that defaults to predefined schema, it predefined schema for given key type doesn't exist it is ignored
+  - long: `audi_sr` - creates `audi` key type with `sr` schema
+
+- Schemas: `ed`, `ec`, `sr`
+
+- Predefined key type schemas:
+  - `aura` - `sr` if statemint or asset hub polkadot parachain, otherwise `ed`
+  - `babe` - `sr`
+  - `imon` - `sr`
+  - `gran` - `ed`
+  - `audi` - `sr`
+  - `asgn` - `sr`
+  - `para` - `sr`
+  - `beef` - `ec`
+  - `nmbs` - `sr`
+  - `rand` - `sr`
+  - `rate` - `ed`
+  - `acco` - `sr`
