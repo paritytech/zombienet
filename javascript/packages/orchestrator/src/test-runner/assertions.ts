@@ -282,12 +282,12 @@ const CustomJs = ({
       await fs.writeFile(resolvedJsFilePath, result.outputText);
     }
 
-    // shim with jsdom
-    const dom = new JSDOM(
-      "<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>",
-    );
-    (global as any).window = dom.window;
-    (global as any).document = dom.window.document;
+    // // shim with jsdom
+    // const dom = new JSDOM(
+    //   "<!doctype html><html><head><meta charset='utf-8'></head><body></body></html>",
+    // );
+    // (global as any).window = dom.window;
+    // (global as any).document = dom.window.document;
     (global as any).zombie = {
       ApiPromise,
       Keyring,
@@ -330,9 +330,9 @@ const CustomJs = ({
     if (is_ts) {
       await execa.command(`rm -rf  ${resolvedJsFilePath}`);
     }
-    (global as any).window = undefined;
-    (global as any).document = undefined;
-    (global as any).zombie = undefined;
+    // (global as any).window = undefined;
+    // (global as any).document = undefined;
+    // (global as any).zombie = undefined;
 
     if (target_value) {
       for (const value of values) {
