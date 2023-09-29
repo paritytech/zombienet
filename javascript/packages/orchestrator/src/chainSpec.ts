@@ -12,7 +12,7 @@ import { generateKeyFromSeed } from "./keys";
 import { ChainSpec } from "./types";
 import { HrmpChannelsConfig, Node } from "./sharedTypes";
 import { ComputedNetwork } from "./configTypes";
-import { CHAIN, decorate, whichChain } from "./chain-decorators";
+import { decorate, whichChain } from "./chain-decorators";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
 const debug = require("debug")("zombie::chain-spec");
 
@@ -727,7 +727,7 @@ export async function customizePlainRelayChain(
 
         if (keyType === "session") {
           const chain = whichChain(networkSpec.relaychain.chain);
-          const [decoratedGetNodeKey] = decorate(chain,[getNodeKey]);
+          const [decoratedGetNodeKey] = decorate(chain, [getNodeKey]);
           const key = decoratedGetNodeKey(node);
           await addAuthority(specPath, node, key);
         } else {

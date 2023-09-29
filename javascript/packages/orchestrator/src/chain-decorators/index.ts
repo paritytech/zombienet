@@ -59,13 +59,10 @@ const assetHubPolkadotDecorators: Decorator = Object.keys(
   return memo;
 }, Object.create({}));
 
-const efinityDecorators: Decorator = Object.keys(efinity).reduce(
-  (memo, fn) => {
-    memo[fn] = (efinity as Decorator)[fn];
-    return memo;
-  },
-  Object.create({}),
-);
+const efinityDecorators: Decorator = Object.keys(efinity).reduce((memo, fn) => {
+  memo[fn] = (efinity as Decorator)[fn];
+  return memo;
+}, Object.create({}));
 
 const acalaDecorators: Decorator = Object.keys(acala).reduce((memo, fn) => {
   memo[fn] = (acala as Decorator)[fn];
@@ -77,42 +74,30 @@ const astarDecorators: Decorator = Object.keys(astar).reduce((memo, fn) => {
   return memo;
 }, Object.create({}));
 
-const bifrostDecorators: Decorator = Object.keys(bifrost).reduce(
-  (memo, fn) => {
-    memo[fn] = (bifrost as Decorator)[fn];
-    return memo;
-  },
-  Object.create({}),
-);
+const bifrostDecorators: Decorator = Object.keys(bifrost).reduce((memo, fn) => {
+  memo[fn] = (bifrost as Decorator)[fn];
+  return memo;
+}, Object.create({}));
 
-const eqDecorators: Decorator = Object.keys(equilibrium).reduce(
-  (memo, fn) => {
-    memo[fn] = (equilibrium as Decorator)[fn];
-    return memo;
-  },
-  Object.create({}),
-);
+const eqDecorators: Decorator = Object.keys(equilibrium).reduce((memo, fn) => {
+  memo[fn] = (equilibrium as Decorator)[fn];
+  return memo;
+}, Object.create({}));
 
 const oakDecorators: Decorator = Object.keys(oak).reduce((memo, fn) => {
   memo[fn] = (oak as Decorator)[fn];
   return memo;
 }, Object.create({}));
 
-const mangataDecorators: Decorator = Object.keys(mangata).reduce(
-  (memo, fn) => {
-    memo[fn] = (mangata as Decorator)[fn];
-    return memo;
-  },
-  Object.create({}),
-);
+const mangataDecorators: Decorator = Object.keys(mangata).reduce((memo, fn) => {
+  memo[fn] = (mangata as Decorator)[fn];
+  return memo;
+}, Object.create({}));
 
-const localVDecorators: Decorator = Object.keys(local_v).reduce(
-  (memo, fn) => {
-    memo[fn] = (local_v as Decorator)[fn];
-    return memo;
-  },
-  Object.create({}),
-);
+const localVDecorators: Decorator = Object.keys(local_v).reduce((memo, fn) => {
+  memo[fn] = (local_v as Decorator)[fn];
+  return memo;
+}, Object.create({}));
 
 const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
