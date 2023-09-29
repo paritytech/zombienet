@@ -18,7 +18,7 @@ import { getClient } from "./providers/client";
 
 import { TimeoutAbortController, decorators } from "@zombienet/utils";
 import { paraGetBlockHeight, paraIsRegistered } from "./jsapi-helpers";
-import { PARA } from "./paras-decorators";
+import { CHAIN } from "./chain-decorators";
 
 const debug = require("debug")("zombie::network-node");
 
@@ -39,7 +39,7 @@ export class NetworkNode implements NetworkNodeInterface {
   spec?: object | undefined;
   cachedMetrics?: Metrics;
   userDefinedTypes: any;
-  para?: PARA;
+  para?: CHAIN;
   parachainId?: number;
   group?: string;
 

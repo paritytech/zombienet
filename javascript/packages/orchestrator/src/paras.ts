@@ -10,7 +10,7 @@ import {
   NODE_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
-import { decorate } from "./paras-decorators";
+import { decorate } from "./chain-decorators";
 import { Providers } from "./providers";
 import { getClient } from "./providers/client";
 import { fileMap } from "./types";

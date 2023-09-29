@@ -2,7 +2,7 @@ import { series } from "@zombienet/utils";
 import { getProcessStartTimeKey } from "../metrics";
 import { Network } from "../network";
 import { NetworkNode } from "../networkNode";
-import { decorate } from "../paras-decorators";
+import { decorate } from "../chain-decorators";
 
 const debug = require("debug")("zombie::helper::verifier");
 
