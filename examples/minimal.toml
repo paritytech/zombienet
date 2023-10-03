@@ -1,0 +1,14 @@
+# examples/minimal.toml
+[relaychain]
+
+  [[relaychain.nodes]]
+  name = "alice"
+
+  [[relaychain.nodes]]
+  name = "bob"
+
+[[parachains]]
+id = 100
+
+  [parachains.collator]
+  name = "collator01"
