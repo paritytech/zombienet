@@ -174,6 +174,7 @@ export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
         aura: sr_account.address,
         nimbus: sr_account.address,
         vrf: sr_account.address,
+        mixnet: sr_account.address,
       },
     ];
 
