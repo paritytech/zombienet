@@ -35,13 +35,13 @@
     "@polkadot/keyring": "^12.5.1",
     "@polkadot/util": "^12.5.1",
     "@polkadot/util-crypto": "^12.5.1",
-    "@types/chai": "^4.3.6",
+    "@types/chai": "^4.3.7",
     "chai": "^4.3.10"
   },
   "devDependencies": {
     "@types/node": "^20.8.4",
     "@types/tmp": "^0.2.4",
-    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.4",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
