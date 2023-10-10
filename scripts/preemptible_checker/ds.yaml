@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: preemptible-checker
+  namespace: preemptible-checker
+spec:
+  selector:
+    matchLabels:
+      name: preemptible-checker
+  template:
+    metadata:
+      labels:
+        name: preemptible-checker
+    spec:
+      containers:
+      - name: checker
+        image: IMAGE
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      tolerations:
+      - operator: "Exists"
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      serviceAccountName: admin
