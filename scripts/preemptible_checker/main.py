@@ -41,5 +41,7 @@ while True:
            headers = {
                "PRIVATE-TOKEN": gitlab_token
            }
-           job_url = f"https://gitlab.parity.io/api/v4/projects/{project_id}/jobs/{job_id}/retry" 
-           response = requests.post(job_url, headers=headers)
+           job_cancel_url = f"https://gitlab.parity.io/api/v4/projects/{project_id}/jobs/{job_id}/cancel" 
+           job_retry_url = f"https://gitlab.parity.io/api/v4/projects/{project_id}/jobs/{job_id}/retry" 
+           cancel_response = requests.post(job_cancel_url, headers=headers)
+           retry_response = requests.post(job_retry_url, headers=headers)
