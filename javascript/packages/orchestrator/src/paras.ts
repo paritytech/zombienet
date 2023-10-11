@@ -108,6 +108,11 @@ export async function generateParachainFiles(
       if (plainData.relay_chain) plainData.relay_chain = relayChainSpec.id;
       if (plainData.genesis.runtime?.parachainInfo?.parachainId)
         plainData.genesis.runtime.parachainInfo.parachainId = parachain.id;
+      else if (
+        plainData.genesis.runtimeGenesisConfigPatch?.parachainInfo?.parachainId
+      )
+        plainData.genesis.runtimeGenesisConfigPatch.parachainInfo.parachainId =
+          parachain.id;
 
       writeChainSpec(chainSpecFullPathPlain, plainData);
 
