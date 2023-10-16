@@ -117,7 +117,11 @@ function copy_to_isolated {
 }
 
 function set_instance_env {
-  if [[ ${CI_PIPELINE_ID:=""} &&  ${CI_PROJECT_ID:=""} ]]; then
+  if [[ ${CI_PIPELINE_ID:=""} && ${CI_PROJECT_ID:=""} ]]; then
+    echo project_id: $CI_PROJECT_ID
+    echo pipeline_id: $CI_PIPELINE_ID
+    echo job_name: $CI_JOB_NAME
+
     JOBS_CANCELED_BY_US= $(curl -s -H "Accept: application/json" "https://gitlab.parity.io/api/v4/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs?include_retried=true" |jq -c ".[] | select((.name | contains(\"${CI_JOB_NAME}\")) and .status == \"canceled\" and (.duration >= 0))") | wc -l
     if [[ $JOBS_CANCELED_BY_US -eq 0 ]]; then
       export X_INFRA_INSTANCE=spot
