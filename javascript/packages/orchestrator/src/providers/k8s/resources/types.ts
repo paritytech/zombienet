@@ -40,6 +40,7 @@ export interface Labels {
   app: string;
   "app.kubernetes.io/name": string;
   "app.kubernetes.io/instance": string;
+  "x-infra-instance": string;
 }
 
 export interface Annotations {
