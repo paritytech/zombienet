@@ -22,7 +22,7 @@ export class BootNodeResource extends NodeResource {
           "app.kubernetes.io/instance": "bootnode",
           "zombie-role": ZombieRole.BootNode,
           app: "zombienet",
-          "x-infra-instance": process.env.X_INFRA_INSTANCE || "ondemand"
+          "x-infra-instance": process.env.X_INFRA_INSTANCE || "ondemand",
         },
       },
       spec: {
