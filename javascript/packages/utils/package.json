@@ -46,7 +46,7 @@
     "chai": "^4.3.10",
     "deep-equal-in-any-order": "^2.0.6",
     "sinon": "^16.1.0",
-    "yaml": "^2.3.2"
+    "yaml": "^2.3.3"
   },
   "publishConfig": {
     "access": "public",
