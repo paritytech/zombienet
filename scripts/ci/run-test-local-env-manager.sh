@@ -122,11 +122,15 @@ function set_instance_env {
     echo pipeline_id: $CI_PIPELINE_ID
     echo job_name: $CI_JOB_NAME
 
-    JOBS_CANCELED_BY_US= $(curl -s -H "Accept: application/json" "https://gitlab.parity.io/api/v4/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs?include_retried=true" |jq -c ".[] | select((.name | contains(\"${CI_JOB_NAME}\")) and .status == \"canceled\" and (.duration >= 0))") | wc -l
-    if [[ $JOBS_CANCELED_BY_US -eq 0 ]]; then
-      export X_INFRA_INSTANCE=spot
-    else
-      export X_INFRA_INSTANCE=ondemand
+    # export default
+    export X_INFRA_INSTANCE=ondemand
+
+    STATUS=$(curl -s -o response.txt -w "%{http_code}" -H "Accept: application/json" "https://gitlab.parity.io/api/v4/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs?include_retried=true")
+    if [ $http_response == "200" ]; then
+      JOBS_CANCELED_BY_US=$(cat response.txt |jq -c ".[] | select((.name | contains(\"${CI_JOB_NAME}\")) and .status == \"canceled\" and (.duration >= 0))") | wc -l)
+      if [[ $JOBS_CANCELED_BY_US -eq 0 ]]; then
+        export X_INFRA_INSTANCE=spot
+      fi;
     fi;
   fi;
 }
