@@ -25,6 +25,7 @@ export async function test(
 ) {
   const opts = { ...program.parent.opts(), ...cmdOpts };
   const dir = opts.dir || "";
+  const force = opts.force || false;
 
   // By default spawn pods/process in batches of 4,
   // since this shouldn't be a bottleneck in most of the cases,
@@ -77,6 +78,7 @@ export async function test(
     getLogType(opts.logType),
     runningNetworkSpec,
     dir,
+    force,
   );
 }
 
