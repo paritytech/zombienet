@@ -131,7 +131,7 @@ function set_instance_env {
       if [[ $JOBS_CANCELED_BY_US -eq 0 ]]; then
         # only mod 10 for PoC
         R=$(( $CI_PIPELINE_ID % 10));
-        if [[ $R -eq 0]];then
+        if [[ $R -eq 0 ]];then
           export X_INFRA_INSTANCE=spot
         fi;
       fi;
