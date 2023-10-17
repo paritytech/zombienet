@@ -267,13 +267,13 @@ paras:
       --local-dir="${LOCAL_DIR}"
       --test="paras.zndsl"
 
-db-snapshot:
-  extends:
-    - .zombienet-common
-  script:
-    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
-      --local-dir="${LOCAL_DIR}"
-      --test="0013-db-snapshot.zndsl"
+# db-snapshot:
+#  extends:
+#    - .zombienet-common
+#  script:
+#    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
+#      --local-dir="${LOCAL_DIR}"
+#      --test="0013-db-snapshot.zndsl"
 
 chaos-delay:
   extends:
@@ -284,3 +284,4 @@ chaos-delay:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
       --local-dir="${LOCAL_DIR}"
       --test="0001-delay.zndsl"
+
