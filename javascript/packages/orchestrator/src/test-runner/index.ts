@@ -38,6 +38,7 @@ export async function run(
   logType: LogType = "table",
   runningNetworkSpecPath: string | undefined,
   dir: string | undefined,
+  force: boolean = false,
 ) {
   logType && setLogType(logType);
   let network: Network;
@@ -95,6 +96,7 @@ export async function run(
           inCI,
           logType,
           dir,
+          force,
         });
       } else {
         const runningNetworkSpec: any = require(runningNetworkSpecPath);
