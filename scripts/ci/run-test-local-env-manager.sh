@@ -41,6 +41,7 @@ function main {
   parse_args "$@"
   create_isolated_dir
   copy_to_isolated
+  set_instance_env
   run_test
   log INFO "Exit status is ${EXIT_STATUS}"
   exit "${EXIT_STATUS}"
@@ -114,6 +115,30 @@ function copy_to_isolated {
   echo $(pwd)
   cp -r "${LOCAL_DIR}"/* "${OUTPUT_DIR}"
 }
+
+function set_instance_env {
+  if [[ ${CI_PIPELINE_ID:=""} && ${CI_PROJECT_ID:=""} ]]; then
+    echo project_id: $CI_PROJECT_ID
+    echo pipeline_id: $CI_PIPELINE_ID
+    echo job_name: $CI_JOB_NAME
+
+    # export default
+    export X_INFRA_INSTANCE=ondemand
+
+    STATUS=$(curl -s -o response.txt -w "%{http_code}" -H "Accept: application/json" "https://gitlab.parity.io/api/v4/projects/${CI_PROJECT_ID}/pipelines/${CI_PIPELINE_ID}/jobs?include_retried=true")
+    if [ $STATUS == "200" ]; then
+      JOBS_CANCELED_BY_US=$(cat response.txt |jq -c ".[] | select((.name | contains(\"${CI_JOB_NAME}\")) and .status == \"canceled\" and (.duration >= 0))") | wc -l
+      if [[ $JOBS_CANCELED_BY_US -eq 0 ]]; then
+        # only mod 10 for PoC
+        R=$(( $CI_PIPELINE_ID % 10));
+        if [[ $R -eq 0 ]];then
+          export X_INFRA_INSTANCE=spot
+        fi;
+      fi;
+    fi;
+  fi;
+}
+
 function run_test {
   # RUN_IN_CONTAINER is env var that is set in the dockerfile
   if  [[ -v RUN_IN_CONTAINER  ]]; then

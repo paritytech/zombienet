@@ -111,6 +111,7 @@ noninteractive
 noode
 offchain
 omain
+ondemand
 onfinality
 opencensus
 otlp
