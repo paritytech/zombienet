@@ -47,3 +47,7 @@ while True:
            cancel_response = requests.post(job_cancel_url, headers=headers)
            retry_response = requests.post(job_retry_url, headers=headers)
            print(f"job id {job_id} in project id {project_id} belongs to namespace {evicted_namespace} retried")
+
+   print("waiting that node kills")
+   while True:
+      time.sleep(1)
