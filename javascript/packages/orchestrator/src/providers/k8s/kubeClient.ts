@@ -92,6 +92,7 @@ export class KubeClient extends Client {
         labels: {
           jobId: process.env.CI_JOB_ID || "",
           projectName: process.env.CI_PROJECT_NAME || "",
+          projectId: process.env.CI_PROJECT_ID || "",
         },
       },
     };
