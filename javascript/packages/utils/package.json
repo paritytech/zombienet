@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@types/chai": "^4.3.9",
-    "@types/deep-equal-in-any-order": "^1.0.1",
+    "@types/deep-equal-in-any-order": "^1.0.2",
     "@types/mocha": "^10.0.2",
     "@types/nunjucks": "^3.2.4",
     "@types/sinon": "^10.0.19",
