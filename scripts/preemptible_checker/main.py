@@ -36,7 +36,7 @@ while True:
    for evicted_namespace in evicted_namespaces:
        namespace = v1.read_namespace(name=evicted_namespace)
        job_id = namespace.metadata.labels.get('jobId', None)
-       project_id = namespace.metadata.labels.get('projectName', None)
+       project_id = namespace.metadata.labels.get('projectId', None)
        if job_id:
            headers = {
                "PRIVATE-TOKEN": gitlab_token
