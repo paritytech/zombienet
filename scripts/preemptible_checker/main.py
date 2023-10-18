@@ -33,11 +33,12 @@ while True:
        if not ns in evicted_namespaces:
            evicted_namespaces+=[ns]
 
+   print(f"found {len(evicted_namespaces)} namespace that needed to be evicted")
    for evicted_namespace in evicted_namespaces:
        namespace = v1.read_namespace(name=evicted_namespace)
        job_id = namespace.metadata.labels.get('jobId', None)
        project_id = namespace.metadata.labels.get('projectId', None)
-       if job_id:
+       if job_id and project_id:
            headers = {
                "PRIVATE-TOKEN": gitlab_token
            }
@@ -45,3 +46,4 @@ while True:
            job_retry_url = f"https://gitlab.parity.io/api/v4/projects/{project_id}/jobs/{job_id}/retry" 
            cancel_response = requests.post(job_cancel_url, headers=headers)
            retry_response = requests.post(job_retry_url, headers=headers)
+           print(f"job id {job_id} in project id {project_id} belongs to namespace {evicted_namespace} retried")
