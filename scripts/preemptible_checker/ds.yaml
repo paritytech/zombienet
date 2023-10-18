@@ -14,8 +14,13 @@ spec:
     spec:
       containers:
       - name: checker
-        image: IMAGE
+        image: emamihe/preemptible_checker:1.0  
         env:
+        - name: GITLAB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-token
+              key: token
         - name: NODE_NAME
           valueFrom:
             fieldRef:
