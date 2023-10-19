@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: preemptible-checker
+  namespace: preemptible-checker
+spec:
+  selector:
+    matchLabels:
+      name: preemptible-checker
+  template:
+    metadata:
+      labels:
+        name: preemptible-checker
+    spec:
+      containers:
+      - name: checker
+        image: emamihe/preemptible_checker:1.0  
+        env:
+        - name: GITLAB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-token
+              key: token
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      tolerations:
+      - operator: "Exists"
+      nodeSelector:
+        cloud.google.com/gke-spot: "true"
+      serviceAccountName: admin
