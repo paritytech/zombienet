@@ -346,7 +346,8 @@ npm run build
 For an easier and faster setup of your local environment, run:
 
 ```bash
-node dist/cli.js setup <binaries>
+❯ cd <zombinet project dir>/javascript/packages
+❯ node ./cli/dist/cli.js setup <binaries>
 ```
 
 This allows to use the `setup` script, making everything ready for a ZombieNet dev environment.
@@ -359,7 +360,8 @@ You can use the following arguments:
 For example:
 
 ```bash
-node dist/cli.js setup polkadot polkadot-parachain
+❯ cd <zombinet project dir>/javascript/packages
+❯ node ./cli/dist/cli.js setup polkadot polkadot-parachain
 ```
 
 > Note: If you are using macOS please clone the [Polkadot repo](https://github.com/paritytech/polkadot) and run it locally. At the moment there is no `polkadot` binary for MacOs.
@@ -388,7 +390,8 @@ export PATH=$(pwd)/target/testnet:$PATH
 With the above steps completed, the `zombienet` CLI is ready to run:
 
 ```bash
-❯ node dist/cli.js
+❯ cd <zombinet project dir>/javascript/packages
+❯ node ./cli/dist/cli.js
 
 Usage: zombienet [options] [command]
 
