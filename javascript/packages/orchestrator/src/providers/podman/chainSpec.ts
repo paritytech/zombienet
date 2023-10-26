@@ -1,9 +1,5 @@
 import { sleep } from "@zombienet/utils";
-import {
-  DEFAULT_CHAIN_SPEC,
-  DEFAULT_CHAIN_SPEC_COMMAND,
-  DEFAULT_CHAIN_SPEC_RAW,
-} from "../../constants";
+import { DEFAULT_CHAIN_SPEC, DEFAULT_CHAIN_SPEC_RAW } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 const debug = require("debug")("zombie::podman::chain-spec");
@@ -70,9 +66,9 @@ export async function getChainSpecRaw(
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
   const chainSpecCommandRaw = chainSpecCommand.replace(
-      /{{chainName}}/gi,
-      remoteChainSpecFullPath,
-    );
+    /{{chainName}}/gi,
+    remoteChainSpecFullPath,
+  );
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);

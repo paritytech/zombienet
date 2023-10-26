@@ -1,11 +1,7 @@
 import { sleep } from "@zombienet/utils";
 import { promises as fsPromises } from "fs";
 import { readAndParseChainSpec } from "../../chainSpec";
-import {
-  DEFAULT_CHAIN_SPEC,
-  DEFAULT_CHAIN_SPEC_COMMAND,
-  DEFAULT_CHAIN_SPEC_RAW,
-} from "../../constants";
+import { DEFAULT_CHAIN_SPEC, DEFAULT_CHAIN_SPEC_RAW } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 
@@ -33,7 +29,10 @@ export async function setupChainSpec(
         "/" +
         DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
       // set output of command
-      const fullCommand = `${chainSpecCommand.replace(/{{chainName}}/gi, chainName)} > ${plainChainSpecOutputFilePath}`;
+      const fullCommand = `${chainSpecCommand.replace(
+        /{{chainName}}/gi,
+        chainName,
+      )} > ${plainChainSpecOutputFilePath}`;
       const node = await createTempNodeDef(
         "temp",
         defaultImage,

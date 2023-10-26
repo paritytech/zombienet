@@ -1,7 +1,6 @@
 import { promises as fsPromises, writeFileSync } from "fs";
 import {
   DEFAULT_CHAIN_SPEC,
-  DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
   NODE_CONTAINER_WAIT_LOG,
 } from "../../constants";
@@ -77,10 +76,10 @@ export async function getChainSpecRaw(
     client.remoteDir +
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
-    const chainSpecCommandRaw = chainSpecCommand.replace(
-      /{{chainName}}/gi,
-      remoteChainSpecFullPath,
-    );
+  const chainSpecCommandRaw = chainSpecCommand.replace(
+    /{{chainName}}/gi,
+    remoteChainSpecFullPath,
+  );
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);
