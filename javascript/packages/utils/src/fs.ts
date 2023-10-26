@@ -89,7 +89,7 @@ function getReplacementInText(content: string): string[] {
   for (const match of content.matchAll(replacementRegex)) {
     // chainName is allowed since we want to use it
     // to replace it in runtime for custom chain spec generator cmd
-    if( match[1] !== "chainName" ) replacements.push(match[1]);
+    if (match[1] !== "chainName") replacements.push(match[1]);
   }
 
   return replacements;
