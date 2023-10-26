@@ -33,7 +33,7 @@ export async function setupChainSpec(
         "/" +
         DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
       // set output of command
-      const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
+      const fullCommand = `${chainSpecCommand.replace(/{{chainName}}/gi, chainName)} > ${plainChainSpecOutputFilePath}`;
       const node = await createTempNodeDef(
         "temp",
         defaultImage,
@@ -52,7 +52,7 @@ export async function getChainSpecRaw(
   namespace: string,
   image: string,
   chainName: string,
-  chainCommand: string,
+  chainSpecCommand: string,
   chainFullPath: string,
 ): Promise<any> {
   const client = getClient();
@@ -65,10 +65,10 @@ export async function getChainSpecRaw(
     client.tmpDir +
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
-  const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
+  const chainSpecCommandRaw = chainSpecCommand.replace(
     /{{chainName}}/gi,
     remoteChainSpecFullPath,
-  ).replace("{{DEFAULT_COMMAND}}", chainCommand);
+  );
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);

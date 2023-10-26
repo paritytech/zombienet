@@ -63,7 +63,7 @@ export async function getChainSpecRaw(
   namespace: string,
   image: string,
   chainName: string,
-  chainCommand: string,
+  chainSpecCommand: string,
   chainFullPath: string,
 ): Promise<any> {
   const client = getClient() as KubeClient;
@@ -77,10 +77,10 @@ export async function getChainSpecRaw(
     client.remoteDir +
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
-  const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
-    /{{chainName}}/gi,
-    remoteChainSpecFullPath,
-  ).replace("{{DEFAULT_COMMAND}}", chainCommand);
+    const chainSpecCommandRaw = chainSpecCommand.replace(
+      /{{chainName}}/gi,
+      remoteChainSpecFullPath,
+    );
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);
