@@ -42,10 +42,10 @@
     "@types/deep-equal-in-any-order": "^1.0.2",
     "@types/mocha": "^10.0.3",
     "@types/nunjucks": "^3.2.5",
-    "@types/sinon": "^10.0.19",
+    "@types/sinon": "^10.0.20",
     "chai": "^4.3.10",
     "deep-equal-in-any-order": "^2.0.6",
-    "sinon": "^16.1.0",
+    "sinon": "^17.0.0",
     "yaml": "^2.3.3"
   },
   "publishConfig": {

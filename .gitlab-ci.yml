@@ -38,10 +38,10 @@ cache:
     - javascript/package.json
     - javascript/package-lock.json
 
-.kubernetes-env: &kubernetes-env
+.docker-env: &docker-env
   image: $CI_IMAGE
   tags:
-    - kubernetes-parity-build
+    - linux-docker
 
 # run jobs only on PRs with changes in code.
 .test-refs: &test-refs
@@ -190,7 +190,7 @@ publish-docker-image-description:
   needs:
     - job: publish-docker-pr
   extends:
-    - .kubernetes-env
+    - .docker-env
     - .test-refs
   variables:
     LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"

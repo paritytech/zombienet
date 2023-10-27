@@ -1,9 +1,5 @@
 import { sleep } from "@zombienet/utils";
-import {
-  DEFAULT_CHAIN_SPEC,
-  DEFAULT_CHAIN_SPEC_COMMAND,
-  DEFAULT_CHAIN_SPEC_RAW,
-} from "../../constants";
+import { DEFAULT_CHAIN_SPEC, DEFAULT_CHAIN_SPEC_RAW } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 const debug = require("debug")("zombie::podman::chain-spec");
@@ -31,7 +27,10 @@ export async function setupChainSpec(
         "/" +
         DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
       // set output of command
-      const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
+      const fullCommand = `${chainSpecCommand.replace(
+        /{{chainName}}/gi,
+        chainName,
+      )} > ${plainChainSpecOutputFilePath}`;
       const node = await createTempNodeDef(
         "temp",
         defaultImage,
@@ -55,7 +54,7 @@ export async function getChainSpecRaw(
   namespace: string,
   image: string,
   chainName: string,
-  chainCommand: string,
+  chainSpecCommand: string,
   chainFullPath: string,
 ): Promise<any> {
   const plainPath = chainFullPath.replace(".json", "-plain.json");
@@ -69,10 +68,10 @@ export async function getChainSpecRaw(
     client.remoteDir +
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
-  const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
+  const chainSpecCommandRaw = chainSpecCommand.replace(
     /{{chainName}}/gi,
     remoteChainSpecFullPath,
-  ).replace("{{DEFAULT_COMMAND}}", chainCommand);
+  );
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);

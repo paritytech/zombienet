@@ -24,6 +24,7 @@ import {
   DEFAULT_PORTS,
   DEFAULT_PROMETHEUS_PREFIX,
   DEFAULT_WASM_GENERATE_SUBCOMMAND,
+  DEV_ACCOUNTS,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   UNDYING_COLLATOR_BIN,
@@ -182,9 +183,9 @@ export async function generateNetworkSpec(
       .chain_spec_command
       ? config.relaychain.chain_spec_command
       : DEFAULT_CHAIN_SPEC_COMMAND.replace(
-          "{{chainName}}",
-          networkSpec.relaychain.chain,
-        ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
+          "{{DEFAULT_COMMAND}}",
+          networkSpec.relaychain.defaultCommand,
+        );
   }
 
   const relayChainBootnodes: string[] = [];
@@ -516,8 +517,6 @@ async function getCollatorNodeFromConfig(
   group?: string,
 ): Promise<Node> {
   let args: string[] = [];
-  if (collatorConfig.args)
-    args = args.concat(sanitizeArgs(collatorConfig.args, { "listen-addr": 2 }));
 
   const env = collatorConfig.env
     ? DEFAULT_ENV.concat(collatorConfig.env)
@@ -544,6 +543,15 @@ async function getCollatorNodeFromConfig(
       : cumulusBased
       ? true
       : false;
+
+  if (collatorConfig.args)
+    args = args.concat(
+      sanitizeArgs(
+        collatorConfig.args,
+        { "listen-addr": 2 },
+        { nodeName: collatorName, isValidator },
+      ),
+    );
 
   const node: Node = {
     name: collatorName,
@@ -596,9 +604,7 @@ async function getNodeFromConfig(
     : networkSpec.relaychain.defaultCommand;
   const image = node.image || networkSpec.relaychain.defaultImage;
   let args: string[] = sanitizeArgs(networkSpec.relaychain.defaultArgs || []);
-  if (node.args) args = args.concat(sanitizeArgs(node.args));
 
-  const uniqueArgs = [...new Set(args)];
   const env = node.env ? DEFAULT_ENV.concat(node.env) : DEFAULT_ENV;
 
   let nodeOverrides: Override[] = [];
@@ -628,6 +634,9 @@ async function getNodeFromConfig(
   const ports = await getPorts(provider, node);
   const externalPorts = await getExternalPorts(provider, ports, node);
 
+  if (node.args)
+    args = args.concat(sanitizeArgs(node.args, {}, { nodeName, isValidator }));
+  const uniqueArgs = [...new Set(args)];
   // build node Setup
   const nodeSetup: Node = {
     name: nodeName,
@@ -687,6 +696,10 @@ async function getNodeFromConfig(
 function sanitizeArgs(
   args: string[],
   extraArgsToRemove: { [key: string]: number } = {},
+  context?: {
+    nodeName: string;
+    isValidator: boolean;
+  },
 ): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
   const augmentedArgsToRemove = { ...ARGS_TO_REMOVE, ...extraArgsToRemove };
@@ -702,6 +715,17 @@ function sanitizeArgs(
 
       const argParsed = arg === "-d" ? "d" : arg.replace(/--/g, "");
       if (augmentedArgsToRemove[argParsed]) {
+        // Don't sanitize `--<dev_account>` flags
+        // IFF the node name is one of the dev accounts and is set to be a validator
+        // see: https://github.com/paritytech/zombienet/issues/1448
+        if (
+          context &&
+          argParsed === context.nodeName &&
+          context.isValidator &&
+          DEV_ACCOUNTS.includes(argParsed)
+        )
+          return true;
+
         if (augmentedArgsToRemove[argParsed] === 2) removeNext = true;
         return false;
       } else {
@@ -713,6 +737,7 @@ function sanitizeArgs(
   if (separatorIndex >= 0) {
     filteredArgs.push(...args.slice(separatorIndex));
   }
+
   return filteredArgs;
 }
 
