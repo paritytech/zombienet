@@ -182,9 +182,9 @@ export async function generateNetworkSpec(
       .chain_spec_command
       ? config.relaychain.chain_spec_command
       : DEFAULT_CHAIN_SPEC_COMMAND.replace(
-          "{{chainName}}",
-          networkSpec.relaychain.chain,
-        ).replace("{{DEFAULT_COMMAND}}", networkSpec.relaychain.defaultCommand);
+          "{{DEFAULT_COMMAND}}",
+          networkSpec.relaychain.defaultCommand,
+        );
   }
 
   const relayChainBootnodes: string[] = [];

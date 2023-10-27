@@ -30,7 +30,10 @@ export async function setupChainSpec(
         "/" +
         DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
 
-      const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
+      const fullCommand = `${chainSpecCommand.replace(
+        /{{chainName}}/gi,
+        chainName,
+      )} > ${plainChainSpecOutputFilePath}`;
       const node = await createTempNodeDef(
         "temp",
         defaultImage,
