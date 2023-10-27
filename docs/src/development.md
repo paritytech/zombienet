@@ -22,7 +22,7 @@ npm run build
 For an easier and faster setup of your local environment, run:
 
 ```bash
-❯ cd ./<zombinet project dir>/javascript/packages
+❯ cd <zombinet project dir>/javascript/packages
 ❯ node ./cli/dist/cli.js <binaries>
 ```
 
@@ -36,7 +36,7 @@ You can use the following arguments:
 For example:
 
 ```bash
-❯ cd ./<zombinet project dir>/javascript/packages
+❯ cd <zombinet project dir>/javascript/packages
 ❯ node ./cli/dist/cli.js setup polkadot polkadot-parachain
 ```
 
@@ -64,7 +64,7 @@ nix run nixpkgs#prefetch-npm-deps -- javascript/package-lock.json 2>/dev/null
 With the above steps completed, the `zombienet` CLI is ready to run:
 
 ```bash
-❯ cd ./<zombinet project dir>/javascript/packages
+❯ cd <zombinet project dir>/javascript/packages
 ❯ node ./cli/dist/cli.js
 
 Usage: zombienet [options] [command]

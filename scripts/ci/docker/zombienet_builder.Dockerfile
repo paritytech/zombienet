@@ -62,8 +62,6 @@ RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
 # Change `cli` permissions and link to easy call
-# TODO(neyromancer): validate location
-# This part is differ from zombinet_injected.Dockerfile
 RUN chmod +x ./dist/cli.js
 RUN ln -s /home/nonroot/zombie-net/dist/cli.js /usr/local/bin/zombie
 
