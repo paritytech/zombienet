@@ -87,7 +87,9 @@ function getReplacementInText(content: string): string[] {
   // eslint-disable-next-line no-useless-escape
   const replacementRegex = /{{([A-Za-z-_\.]+)}}/gim;
   for (const match of content.matchAll(replacementRegex)) {
-    replacements.push(match[1]);
+    // chainName is allowed since we want to use it
+    // to replace it in runtime for custom chain spec generator cmd
+    if (match[1] !== "chainName") replacements.push(match[1]);
   }
 
   return replacements;

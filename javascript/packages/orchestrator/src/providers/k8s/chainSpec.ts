@@ -1,7 +1,6 @@
 import { promises as fsPromises, writeFileSync } from "fs";
 import {
   DEFAULT_CHAIN_SPEC,
-  DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
   NODE_CONTAINER_WAIT_LOG,
 } from "../../constants";
@@ -31,7 +30,10 @@ export async function setupChainSpec(
         "/" +
         DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
 
-      const fullCommand = `${chainSpecCommand} > ${plainChainSpecOutputFilePath}`;
+      const fullCommand = `${chainSpecCommand.replace(
+        /{{chainName}}/gi,
+        chainName,
+      )} > ${plainChainSpecOutputFilePath}`;
       const node = await createTempNodeDef(
         "temp",
         defaultImage,
@@ -63,7 +65,7 @@ export async function getChainSpecRaw(
   namespace: string,
   image: string,
   chainName: string,
-  chainCommand: string,
+  chainSpecCommand: string,
   chainFullPath: string,
 ): Promise<any> {
   const client = getClient() as KubeClient;
@@ -77,10 +79,10 @@ export async function getChainSpecRaw(
     client.remoteDir +
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
-  const chainSpecCommandRaw = DEFAULT_CHAIN_SPEC_COMMAND.replace(
+  const chainSpecCommandRaw = chainSpecCommand.replace(
     /{{chainName}}/gi,
     remoteChainSpecFullPath,
-  ).replace("{{DEFAULT_COMMAND}}", chainCommand);
+  );
 
   const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);
