@@ -545,8 +545,13 @@ async function getCollatorNodeFromConfig(
       : false;
 
   if (collatorConfig.args)
-    args = args.concat(sanitizeArgs(collatorConfig.args, { "listen-addr": 2 }, { nodeName: collatorName, isValidator }));
-
+    args = args.concat(
+      sanitizeArgs(
+        collatorConfig.args,
+        { "listen-addr": 2 },
+        { nodeName: collatorName, isValidator },
+      ),
+    );
 
   const node: Node = {
     name: collatorName,
@@ -629,7 +634,8 @@ async function getNodeFromConfig(
   const ports = await getPorts(provider, node);
   const externalPorts = await getExternalPorts(provider, ports, node);
 
-  if (node.args) args = args.concat(sanitizeArgs(node.args, {}, {nodeName, isValidator}));
+  if (node.args)
+    args = args.concat(sanitizeArgs(node.args, {}, { nodeName, isValidator }));
   const uniqueArgs = [...new Set(args)];
   // build node Setup
   const nodeSetup: Node = {
@@ -691,9 +697,9 @@ function sanitizeArgs(
   args: string[],
   extraArgsToRemove: { [key: string]: number } = {},
   context?: {
-    nodeName: string,
-    isValidator: boolean
-  }
+    nodeName: string;
+    isValidator: boolean;
+  },
 ): string[] {
   // Do NOT filter any argument to the internal full-node of the collator
   const augmentedArgsToRemove = { ...ARGS_TO_REMOVE, ...extraArgsToRemove };
@@ -712,7 +718,13 @@ function sanitizeArgs(
         // Don't sanitize `--<dev_account>` flags
         // IFF the node name is one of the dev accounts and is set to be a validator
         // see: https://github.com/paritytech/zombienet/issues/1448
-        if (context && argParsed === context.nodeName && context.isValidator && DEV_ACCOUNTS.includes(argParsed)) return true;
+        if (
+          context &&
+          argParsed === context.nodeName &&
+          context.isValidator &&
+          DEV_ACCOUNTS.includes(argParsed)
+        )
+          return true;
 
         if (augmentedArgsToRemove[argParsed] === 2) removeNext = true;
         return false;
