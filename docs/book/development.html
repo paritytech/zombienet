@@ -155,23 +155,23 @@
 </ul>
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
 <p>You need to first <em>clone</em> this repository and run:</p>
-<pre><code class="language-bash">cd zombienet
-npm install
-npm run build
+<pre><code class="language-bash">❯ cd zombienet
+❯ npm install
+❯ npm run build
 </code></pre>
 <h3 id="download-and-install-needed-artifacts-optional"><a class="header" href="#download-and-install-needed-artifacts-optional">Download and install needed artifacts (optional)</a></h3>
 <p>For an easier and faster setup of your local environment, run:</p>
-<pre><code class="language-bash">cd <zombinet project dir>/javascript/packages && node ./cli/dist/cli.js setup &lt;binaries&gt;
+<pre><code class="language-bash">❯ cd zombinet/javascript/packages && node ./cli/dist/cli.js setup &lt;binaries&gt;
 </code></pre>
 <p>This allows to use the <code>setup</code> script, making everything ready for a ZombieNet dev environment.</p>
 <p>You can use the following arguments:</p>
 <p><code>--help</code> shows the different options and commands for using the Zombienet CLI.
 <code>--binaries</code> or <code>-b</code>: enables providing the binaries that you want to be downloaded and installed during the setup. Possible options: <code>polkadot</code>, <code>polkadot-parachain</code>.</p>
 <p>For example:</p>
-<pre><code class="language-bash">cd <zombinet project dir>/javascript/packages && node ./cli/dist/cli.js setup polkadot polkadot-parachain
+<pre><code class="language-bash">❯ cd zombinet/javascript/packages && node ./cli/dist/cli.js setup polkadot polkadot-parachain
 </code></pre>
 <blockquote>
-<p>Note: If you are using macOS please clone the <a href="https://github.com/paritytech/polkadot">Polkadot repo</a> and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
+<p>Note: If you are using macOS please clone the <a href="https://github.com/paritytech/polkadot-sdk">polkadot-sdk repo</a> and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
 </blockquote>
 <p>The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
 At the end of the download, the <code>setup</code> script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:</p>
@@ -179,7 +179,7 @@ At the end of the download, the <code>setup</code> script will provide a command
 </code></pre>
 <h3 id="using-zombienet"><a class="header" href="#using-zombienet">Using Zombienet</a></h3>
 <p>With the above steps completed, the <code>zombienet</code> CLI is ready to run:</p>
-<pre><code class="language-bash">❯ cd <zombinet project dir>/javascript/packages && node ./cli/dist/cli.js
+<pre><code class="language-bash">❯ cd zombinet/javascript/packages && node ./cli/dist/cli.js
 
 Usage: zombienet [options] [command]
 
