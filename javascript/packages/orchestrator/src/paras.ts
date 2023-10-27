@@ -3,6 +3,7 @@ import fs from "fs";
 import chainSpecFns, { isRawSpec } from "./chainSpec";
 import { getUniqueName } from "./configGenerator";
 import {
+  DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -163,7 +164,11 @@ export async function generateParachainFiles(
         `${parachain.chain ? parachain.chain + "-" : ""}${
           parachain.name
         }-${relayChainName}`,
-        parachain.collators[0].command!,
+        // TODO: does paras need to support external chain generation cmd?
+        DEFAULT_CHAIN_SPEC_COMMAND.replace(
+          "{{DEFAULT_COMMAND}}",
+          parachain.collators[0].command!,
+        ),
         chainSpecFullPath,
       );
     } else {
