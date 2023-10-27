@@ -13,7 +13,15 @@ spec:
       matchNames:
       - "{{namespace}}"
   selector:
-      matchLabels:
-        zombie-role: authority
+    matchExpressions:
+      - key: "zombie-role"
+        operator: In
+        values:
+          - "authority"
+          - "full-node"
+          - "node"
+          - "collator"
+          - "cumulus-collator"
+          - "bootnode"
   podTargetLabels:
     - instance
