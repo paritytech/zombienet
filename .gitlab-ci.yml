@@ -73,7 +73,7 @@ cache:
 
 test:
   stage: test
-  <<: *kubernetes-env
+  <<: *docker-env
   <<: *common-refs
   script:
     - cd javascript
@@ -83,7 +83,7 @@ test:
 
 build:
   stage: build
-  <<: *kubernetes-env
+  <<: *docker-env
   <<: *common-refs
   script:
     - cd javascript
@@ -117,7 +117,7 @@ build:
 publish-test:
   stage: check
   <<: *test-refs
-  <<: *kubernetes-env
+  <<: *docker-env
   variables:
     CI_IMAGE: $BUILDAH_IMAGE
   script:
@@ -138,7 +138,7 @@ publish-docker-pr:
     - export VERSION=${CI_COMMIT_SHORT_SHA}
     - export Docker_Hub_User_Parity=$PARITYPR_USER
     - export Docker_Hub_Pass_Parity=$PARITYPR_PASS
-  <<: *kubernetes-env
+  <<: *docker-env
   <<: *common-refs
   <<: *build-push-docker-image
 
@@ -152,13 +152,13 @@ publish-docker:
       elif [[ "${CI_COMMIT_SHORT_SHA}" ]]; then
       VERSION=${CI_COMMIT_SHORT_SHA};
       fi
-  <<: *kubernetes-env
+  <<: *docker-env
   <<: *publish-refs
   <<: *build-push-docker-image
 
 publish-docker-image-description:
   stage: publish
-  <<: *kubernetes-env
+  <<: *docker-env
   image: paritytech/dockerhub-description
   variables:
     DOCKER_USERNAME: $Docker_Hub_User_Parity
