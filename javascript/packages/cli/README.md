@@ -358,7 +358,7 @@ You can build it from source like this
 
 ```bash
 ❯ git clone git@github.com:paritytech/polkadot-sdk.git
-❯ cd polkadot-sdk/polkadot
+❯ cd polkadot-sdk
 cargo build --profile testnet -p test-parachain-adder-collator
 export PATH=$(pwd)/target/testnet:$PATH
 ```
