@@ -324,8 +324,8 @@ You need first to *clone* this repository and run:
 For an easier and faster setup of your local environment, run:
 
 ```bash
-❯ cd zombinet/javascript/packages
-❯ node ./cli/dist/cli.js setup <binaries>
+❯ cd zombinet/javascript
+❯ npm run zombie -- setup <binaries>
 ```
 
 This allows to use the `setup` script, making everything ready for a ZombieNet dev environment.
@@ -338,8 +338,8 @@ You can use the following arguments:
 For example:
 
 ```bash
-❯ cd zombinet/javascript/packages
-❯ node ./cli/dist/cli.js setup polkadot polkadot-parachain
+❯ cd zombinet/javascript
+❯ npm run zombie -- setup polkadot polkadot-parachain
 ```
 
 > Note: If you are using macOS please clone the [polkadot-sdk repo](https://github.com/paritytech/polkadot-sdk) and run it locally. At the moment there is no `polkadot` binary for MacOs.
@@ -357,7 +357,7 @@ You can build it from source like this
 
 ```bash
 ❯ git clone git@github.com:paritytech/polkadot-sdk.git
-❯ cd polkadot-sdk/polkadot
+❯ cd polkadot-sdk
 cargo build --profile testnet -p test-parachain-adder-collator
 export PATH=$(pwd)/target/testnet:$PATH
 ```
@@ -368,21 +368,26 @@ export PATH=$(pwd)/target/testnet:$PATH
 With the above steps completed, the `zombienet` CLI is ready to run:
 
 ```bash
-❯ cd zombinet/javascript/packages
-❯ node ./cli/dist/cli.js
+❯ cd zombinet/javascript
+❯ npm run zombie
 
 Usage: zombienet [options] [command]
 
 Options:
-  -p, --provider <provider>                Override provider to use (choices: "podman",
-                                           "kubernetes", default: kubernetes)
+  -c, --spawn-concurrency <concurrency>    Number of concurrent spawning process to launch, default is 1
+  -p, --provider <provider>                Override provider to use (choices: "podman", "kubernetes", "native")
+  -l, --logType <logType>                  Type of logging - defaults to 'table' (choices: "table", "text", "silent")
+  -d, --dir <path>                         Directory path for placing the network files instead of random temp one 
+                                           (e.g. -d /home/user/my-zombienet)
+  -f, --force                              Force override all prompt commands
   -h, --help                               display help for command
 
 Commands:
-  spawn <networkConfig> [creds] [monitor]  Spawn the network defined in the config
-  test <testFile>                          Run tests on the network defined
+  spawn [options] <networkConfig> [creds]  Spawn the network defined in the config
+  test <testFile> [runningNetworkSpec]     Run tests on the network defined
+  setup [options] <binaries...>            Setup is meant for downloading and making dev environment of ZombieNet ready
+  convert <filePath>                       Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration
   version                                  Prints zombienet version
-  setup                                    Runs the setup of local environment
   help [command]                           display help for command
 ```
 
