@@ -319,8 +319,7 @@ You need first to *clone* this repository and run:
 
 ```bash
 ❯ cd zombienet/javascript
-❯ npm install
-❯ npm run build
+❯ npm i && npm run build
 ```
 
 ### Download and install needed artifacts (optional)
@@ -329,7 +328,7 @@ For an easier and faster setup of your local environment, run:
 
 ```bash
 ❯ cd zombinet/javascript
-❯ npm run zombie -- setup <binaries>
+❯ npm i && npm run zombie -- setup <binaries>
 ```
 
 This allows to use the `setup` script, making everything ready for a ZombieNet dev environment.
@@ -342,7 +341,7 @@ For example:
 
 ```bash
 ❯ cd zombinet/javascript
-❯ npm run zombie -- setup polkadot polkadot-parachain
+❯ npm i && npm run zombie -- setup polkadot polkadot-parachain
 ```
 
 > Note: If you are using macOS please clone the [polkadot-sdk repo](https://github.com/paritytech/polkadot-sdk) and run it locally. At the moment there is no `polkadot` binary for MacOs.
@@ -351,7 +350,7 @@ The command above will retrieve the binaries provided and try to download and pr
 At the end of the download, the `setup` script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:
 
 ```bash
-Please add the dir to your $PATH by running the command: export PATH=/<full path to the project>/zombienet/dist:$PATH
+Please add the dir to your $PATH by running the command: export PATH=/home/<user>/zombienet/dist:$PATH
 ```
 
 ### Build adder-collator (needed for running examples with native provider)

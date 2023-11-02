@@ -315,8 +315,7 @@ You need first to *clone* this repository and run:
 
 ```bash
 ❯ cd zombienet/javascript
-❯ npm install
-❯ npm run build
+❯ npm i && npm run build
 ```
 
 ### Download and install needed artifacts (optional)
@@ -325,7 +324,7 @@ For an easier and faster setup of your local environment, run:
 
 ```bash
 ❯ cd zombinet/javascript
-❯ npm run zombie -- setup <binaries>
+❯ npm i && npm run zombie -- setup <binaries>
 ```
 
 This allows to use the `setup` script, making everything ready for a ZombieNet dev environment.
@@ -339,7 +338,7 @@ For example:
 
 ```bash
 ❯ cd zombinet/javascript
-❯ npm run zombie -- setup polkadot polkadot-parachain
+❯ npm i && npm run zombie -- setup polkadot polkadot-parachain
 ```
 
 > Note: If you are using macOS please clone the [polkadot-sdk repo](https://github.com/paritytech/polkadot-sdk) and run it locally. At the moment there is no `polkadot` binary for MacOs.
