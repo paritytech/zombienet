@@ -256,7 +256,7 @@ paras:
     - echo "Zombienet Paras smoke test"
     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
     - echo "${GH_DIR}"
-    - export DEBUG=zombie*
+    - export DEBUG=zombie
     - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
     - export BIFROST_COL_IMAGE=docker.io/bifrostnetwork/bifrost:latest
     - export MOONBEAM_COL_IMAGE=docker.io/purestake/moonbeam:v0.26
