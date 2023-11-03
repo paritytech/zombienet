@@ -44,6 +44,7 @@ export interface Parachain extends CommonParachainConfig {
   genesisStatePath?: string;
   genesisStateGenerator?: string;
   chainSpecPath?: string;
+  chainSpecCommand?: string;
   specPath?: string;
   wasmPath?: string;
   statePath?: string;

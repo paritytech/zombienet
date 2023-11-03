@@ -88,12 +88,10 @@ export async function generateParachainFiles(
         namespace,
         {
           chainSpecPath: parachain.chainSpecPath,
-          chainSpecCommand: `${parachain.collators[0].command} build-spec ${
-            parachain.chain ? "--chain " + parachain.chain : ""
-          } --disable-default-bootnode`,
+          chainSpecCommand: parachain.chainSpecCommand!,
           defaultImage: parachain.collators[0].image,
         },
-        chainName,
+        parachain.chain,
         chainSpecFullPathPlain,
       );
     }
@@ -156,14 +154,20 @@ export async function generateParachainFiles(
           chainSpecFullPathPlain,
           `${tmpDir}/${parachain.chain}-${parachain.name}-plain.json`,
         );
-      // generate the raw chain spec
+      // Generate the raw chain-spec logic
+
+      // Make sure we include the plain chain-spec
+      const chainSpecRawCommand = getChainSpecCmdRaw(
+        parachain.chainSpecCommand!,
+      );
+
       await getChainSpecRaw(
         namespace,
         parachain.collators[0].image,
         `${parachain.chain ? parachain.chain + "-" : ""}${
           parachain.name
         }-${relayChainName}`,
-        parachain.collators[0].command!,
+        chainSpecRawCommand,
         chainSpecFullPath,
       );
     } else {
@@ -326,4 +330,17 @@ export async function generateParachainFiles(
   parachain.statePath = stateLocalFilePath;
 
   return;
+}
+
+function getChainSpecCmdRaw(chainSpecCommand: string) {
+  // Default to the provided cmd, will work for custom generator.
+  let returnCmd = chainSpecCommand;
+  const parts = chainSpecCommand!
+    .split(" ")
+    .filter((part: string) => part.length);
+  if (parts.includes("build-spec") && !parts.includes("--chain")) {
+    returnCmd = `${chainSpecCommand} --chain {{chainName}}`;
+  }
+
+  return returnCmd;
 }
