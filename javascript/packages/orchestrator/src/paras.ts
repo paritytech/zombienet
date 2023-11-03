@@ -157,7 +157,9 @@ export async function generateParachainFiles(
       // Generate the raw chain-spec logic
 
       // Make sure we include the plain chain-spec
-      const chainSpecRawCommand = getChainSpecCmdRaw(parachain.chainSpecCommand!);
+      const chainSpecRawCommand = getChainSpecCmdRaw(
+        parachain.chainSpecCommand!,
+      );
 
       await getChainSpecRaw(
         namespace,
@@ -333,8 +335,10 @@ export async function generateParachainFiles(
 function getChainSpecCmdRaw(chainSpecCommand: string) {
   // Default to the provided cmd, will work for custom generator.
   let returnCmd = chainSpecCommand;
-  const parts = chainSpecCommand!.split(" ").filter((part: string) => part.length);
-  if(parts.includes("build-spec") && !parts.includes("--chain")) {
+  const parts = chainSpecCommand!
+    .split(" ")
+    .filter((part: string) => part.length);
+  if (parts.includes("build-spec") && !parts.includes("--chain")) {
     returnCmd = `${chainSpecCommand} --chain {{chainName}}`;
   }
 
