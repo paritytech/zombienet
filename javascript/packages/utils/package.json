@@ -45,8 +45,8 @@
     "@types/sinon": "^10.0.20",
     "chai": "^4.3.10",
     "deep-equal-in-any-order": "^2.0.6",
-    "sinon": "^17.0.0",
-    "yaml": "^2.3.3"
+    "sinon": "^17.0.1",
+    "yaml": "^2.3.4"
   },
   "publishConfig": {
     "access": "public",

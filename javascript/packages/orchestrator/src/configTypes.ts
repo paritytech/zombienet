@@ -112,6 +112,7 @@ export interface ParachainConfig extends CommonParachainConfig {
   genesis_state_path?: string;
   genesis_state_generator?: string;
   chain_spec_path?: string;
+  chain_spec_command?: string;
   cumulus_based?: boolean;
   bootnodes?: string[];
   prometheus_prefix?: string;

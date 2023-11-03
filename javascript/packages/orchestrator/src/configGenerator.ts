@@ -412,6 +412,12 @@ export async function generateNetworkSpec(
         } else {
           parachainSetup.chainSpecPath = chainSpecPath;
         }
+      } else {
+        parachainSetup.chainSpecCommand = parachain.chain_spec_command
+          ? parachain.chain_spec_command
+          : `${collatorBinary} build-spec ${
+              parachain.chain ? "--chain {{chainName}}" : ""
+            } --disable-default-bootnode`;
       }
 
       parachainSetup = {

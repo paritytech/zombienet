@@ -38,10 +38,10 @@ cache:
     - javascript/package.json
     - javascript/package-lock.json
 
-.docker-env: &docker-env
+.kubernetes-env: &kubernetes-env
   image: $CI_IMAGE
   tags:
-    - linux-docker
+    - kubernetes-parity-build
 
 # run jobs only on PRs with changes in code.
 .test-refs: &test-refs
@@ -73,7 +73,7 @@ cache:
 
 test:
   stage: test
-  <<: *docker-env
+  <<: *kubernetes-env
   <<: *common-refs
   script:
     - cd javascript
@@ -83,7 +83,7 @@ test:
 
 build:
   stage: build
-  <<: *docker-env
+  <<: *kubernetes-env
   <<: *common-refs
   script:
     - cd javascript
@@ -117,7 +117,7 @@ build:
 publish-test:
   stage: check
   <<: *test-refs
-  <<: *docker-env
+  <<: *kubernetes-env
   variables:
     CI_IMAGE: $BUILDAH_IMAGE
   script:
@@ -138,7 +138,7 @@ publish-docker-pr:
     - export VERSION=${CI_COMMIT_SHORT_SHA}
     - export Docker_Hub_User_Parity=$PARITYPR_USER
     - export Docker_Hub_Pass_Parity=$PARITYPR_PASS
-  <<: *docker-env
+  <<: *kubernetes-env
   <<: *common-refs
   <<: *build-push-docker-image
 
@@ -152,13 +152,13 @@ publish-docker:
       elif [[ "${CI_COMMIT_SHORT_SHA}" ]]; then
       VERSION=${CI_COMMIT_SHORT_SHA};
       fi
-  <<: *docker-env
+  <<: *kubernetes-env
   <<: *publish-refs
   <<: *build-push-docker-image
 
 publish-docker-image-description:
   stage: publish
-  <<: *docker-env
+  <<: *kubernetes-env
   image: paritytech/dockerhub-description
   variables:
     DOCKER_USERNAME: $Docker_Hub_User_Parity
@@ -190,7 +190,7 @@ publish-docker-image-description:
   needs:
     - job: publish-docker-pr
   extends:
-    - .docker-env
+    - .kubernetes-env
     - .test-refs
   variables:
     LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
@@ -256,7 +256,7 @@ paras:
     - echo "Zombienet Paras smoke test"
     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
     - echo "${GH_DIR}"
-    - export DEBUG=zombie*
+    - export DEBUG=zombie
     - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
     - export BIFROST_COL_IMAGE=docker.io/bifrostnetwork/bifrost:latest
     - export MOONBEAM_COL_IMAGE=docker.io/purestake/moonbeam:v0.26
