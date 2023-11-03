@@ -91,7 +91,7 @@ export async function generateParachainFiles(
           chainSpecCommand: parachain.chainSpecCommand!,
           defaultImage: parachain.collators[0].image,
         },
-        chainName,
+        parachain.chain,
         chainSpecFullPathPlain,
       );
     }
@@ -157,11 +157,9 @@ export async function generateParachainFiles(
       // Generate the raw chain-spec logic
 
       // Make sure we include the plain chain-spec
-      const chainSpecRawCommand = parachain
-        .chainSpecCommand!.split(" ")
-        .includes("--chain")
-        ? parachain.chainSpecCommand
-        : `${parachain.chainSpecCommand} --chain {{chainName}}`;
+      const chainSpecRawCommand = getChainSpecCmdRaw(
+        parachain.chainSpecCommand!,
+      );
 
       await getChainSpecRaw(
         namespace,
@@ -332,4 +330,17 @@ export async function generateParachainFiles(
   parachain.statePath = stateLocalFilePath;
 
   return;
+}
+
+function getChainSpecCmdRaw(chainSpecCommand: string) {
+  // Default to the provided cmd, will work for custom generator.
+  let returnCmd = chainSpecCommand;
+  const parts = chainSpecCommand!
+    .split(" ")
+    .filter((part: string) => part.length);
+  if (parts.includes("build-spec") && !parts.includes("--chain")) {
+    returnCmd = `${chainSpecCommand} --chain {{chainName}}`;
+  }
+
+  return returnCmd;
 }
