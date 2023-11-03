@@ -3,7 +3,6 @@ import fs from "fs";
 import chainSpecFns, { isRawSpec } from "./chainSpec";
 import { getUniqueName } from "./configGenerator";
 import {
-  DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
@@ -89,9 +88,7 @@ export async function generateParachainFiles(
         namespace,
         {
           chainSpecPath: parachain.chainSpecPath,
-          chainSpecCommand: `${parachain.collators[0].command} build-spec ${
-            parachain.chain ? "--chain " + parachain.chain : ""
-          } --disable-default-bootnode`,
+          chainSpecCommand: parachain.chainSpecCommand!,
           defaultImage: parachain.collators[0].image,
         },
         chainName,
@@ -157,18 +154,22 @@ export async function generateParachainFiles(
           chainSpecFullPathPlain,
           `${tmpDir}/${parachain.chain}-${parachain.name}-plain.json`,
         );
-      // generate the raw chain spec
+      // Generate the raw chain-spec logic
+
+      // Make sure we include the plain chain-spec
+      const chainSpecRawCommand = parachain
+        .chainSpecCommand!.split(" ")
+        .includes("--chain")
+        ? parachain.chainSpecCommand
+        : `${parachain.chainSpecCommand} --chain {{chainName}}`;
+
       await getChainSpecRaw(
         namespace,
         parachain.collators[0].image,
         `${parachain.chain ? parachain.chain + "-" : ""}${
           parachain.name
         }-${relayChainName}`,
-        // TODO: does paras need to support external chain generation cmd?
-        DEFAULT_CHAIN_SPEC_COMMAND.replace(
-          "{{DEFAULT_COMMAND}}",
-          parachain.collators[0].command!,
-        ),
+        chainSpecRawCommand,
         chainSpecFullPath,
       );
     } else {
