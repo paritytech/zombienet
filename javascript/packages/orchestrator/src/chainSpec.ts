@@ -632,7 +632,8 @@ export function getRuntimeConfig(chainSpec: any) {
   // runtime_genesis_config is no longer in ChainSpec after rococo runtime rework (refer to: https://github.com/paritytech/polkadot-sdk/pull/1256)
   // ChainSpec may contain a RuntimeGenesisConfigPatch
   return (
-    chainSpec.genesis.runtimeGenesisConfigPatch ||
+    chainSpec.genesis.runtimeGenesis?.config ||
+    chainSpec.genesis.runtimeGenesis?.patch ||
     chainSpec.genesis.runtime?.runtime_genesis_config ||
     chainSpec.genesis.runtime
   );
