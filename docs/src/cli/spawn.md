@@ -33,6 +33,20 @@ Then you can spawn the network by running the following command:
 ./zombienet-macos spawn examples/0001-small-network.toml
 ```
 
+**Note:** before spawning varify that `kubectl`'s namespace is set to `default`
+```bash
+❯ kubectl config get-contexts
+
+CURRENT   NAME                                      CLUSTER          AUTHINFO         NAMESPACE
+*         docker-desktop                            docker-desktop   docker-desktop   default
+```
+
+if not set it to `default` value
+
+```bash
+❯ kubectl config set-context --current --namespace='default'
+```
+
 You can follow the output of the `steps` to spawn the network and once the network is launched a message with the `node`s information like this one is show
 
 ```bash
