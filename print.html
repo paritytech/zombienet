@@ -1022,23 +1022,24 @@ Will sleep the test-runner for <code>x</code> amount of seconds.</li>
 </ul>
 <h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
 <p>You need to first <em>clone</em> this repository and run:</p>
-<pre><code class="language-bash">cd zombienet/javascript
-npm install
-npm run build
+<pre><code class="language-bash">❯ cd zombienet/javascript
+❯ npm i &amp;&amp; npm run build
 </code></pre>
 <h3 id="download-and-install-needed-artifacts-optional"><a class="header" href="#download-and-install-needed-artifacts-optional">Download and install needed artifacts (optional)</a></h3>
 <p>For an easier and faster setup of your local environment, run:</p>
-<pre><code class="language-bash">node dist/cli.js setup &lt;binaries&gt;
+<pre><code class="language-bash">❯ cd zombinet/javascript
+❯ npm i &amp;&amp; npm run zombie -- setup &lt;binaries&gt;
 </code></pre>
 <p>This allows to use the <code>setup</code> script, making everything ready for a ZombieNet dev environment.</p>
 <p>You can use the following arguments:</p>
 <p><code>--help</code> shows the different options and commands for using the Zombienet CLI.
 <code>--binaries</code> or <code>-b</code>: enables providing the binaries that you want to be downloaded and installed during the setup. Possible options: <code>polkadot</code>, <code>polkadot-parachain</code>.</p>
 <p>For example:</p>
-<pre><code class="language-bash">node dist/cli.js setup polkadot polkadot-parachain
+<pre><code class="language-bash">❯ cd zombinet/javascript
+❯ npm i &amp;&amp; npm run zombie -- setup polkadot polkadot-parachain
 </code></pre>
 <blockquote>
-<p>Note: If you are using macOS please clone the <a href="https://github.com/paritytech/polkadot">Polkadot repo</a> and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
+<p>Note: If you are using macOS please clone the <a href="https://github.com/paritytech/polkadot-sdk">polkadot-sdk repo</a> and run it locally. At the moment there is no <code>polkadot</code> binary for MacOs.</p>
 </blockquote>
 <p>The command above will retrieve the binaries provided and try to download and prepare those binaries for usage.
 At the end of the download, the <code>setup</code> script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:</p>
@@ -1051,20 +1052,26 @@ At the end of the download, the <code>setup</code> script will provide a command
 </code></pre>
 <h3 id="using-zombienet"><a class="header" href="#using-zombienet">Using Zombienet</a></h3>
 <p>With the above steps completed, the <code>zombienet</code> CLI is ready to run:</p>
-<pre><code class="language-bash">❯ node dist/cli.js
+<pre><code class="language-bash">❯ cd zombinet/javascript
+❯ npm run zombie
 
 Usage: zombienet [options] [command]
 
 Options:
-  -p, --provider &lt;provider&gt;                Override provider to use (choices: &quot;podman&quot;,
-                                           &quot;kubernetes&quot;, default: kubernetes)
+  -c, --spawn-concurrency &lt;concurrency&gt;    Number of concurrent spawning process to launch, default is 1
+  -p, --provider &lt;provider&gt;                Override provider to use (choices: &quot;podman&quot;, &quot;kubernetes&quot;, &quot;native&quot;)
+  -l, --logType &lt;logType&gt;                  Type of logging - defaults to 'table' (choices: &quot;table&quot;, &quot;text&quot;, &quot;silent&quot;)
+  -d, --dir &lt;path&gt;                         Directory path for placing the network files instead of random temp one 
+                                           (e.g. -d /home/user/my-zombienet)
+  -f, --force                              Force override all prompt commands
   -h, --help                               display help for command
 
 Commands:
-  spawn &lt;networkConfig&gt; [creds] [monitor]  Spawn the network defined in the config
-  test &lt;testFile&gt;                          Run tests on the network defined
+  spawn [options] &lt;networkConfig&gt; [creds]  Spawn the network defined in the config
+  test &lt;testFile&gt; [runningNetworkSpec]     Run tests on the network defined
+  setup [options] &lt;binaries...&gt;            Setup is meant for downloading and making dev environment of ZombieNet ready
+  convert &lt;filePath&gt;                       Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration
   version                                  Prints zombienet version
-  setup                                    Runs the setup of local environment
   help [command]                           display help for command
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="projects-using-zombienet"><a class="header" href="#projects-using-zombienet">Projects using Zombienet</a></h1>
