@@ -1690,7 +1690,7 @@ npm run build
             <p>
               For an easier and faster setup of your local environment, run:
             </p>
-            <pre><code class="language-bash">node dist/cli.js setup &lt;binaries&gt;
+            <pre><code class="language-bash">❯ cd zombinet/javascript && npm i && npm run zombie -- setup &lt;binaries&gt;
 </code></pre>
             <p>
               This allows to use the <code>setup</code> script, making
@@ -1705,13 +1705,13 @@ npm run build
               <code>polkadot</code>, <code>polkadot-parachain</code>.
             </p>
             <p>For example:</p>
-            <pre><code class="language-bash">node dist/cli.js setup polkadot polkadot-parachain
+            <pre><code class="language-bash">❯ cd zombinet/javascript && npm i && npm run zombie -- setup polkadot polkadot-parachain
 </code></pre>
             <blockquote>
               <p>
                 Note: If you are using macOS please clone the
-                <a href="https://github.com/paritytech/polkadot"
-                  >Polkadot repo</a
+                <a href="https://github.com/paritytech/polkadot-sdk"
+                  >polkadot-sdk repo</a
                 >
                 and run it locally. At the moment there is no
                 <code>polkadot</code> binary for MacOs.
@@ -1733,18 +1733,30 @@ npm run build
               With the above steps completed, the <code>zombienet</code> CLI is
               ready to run:
             </p>
-            <pre><code class="language-bash">❯ node dist/cli.js
+            <pre><code class="language-bash">❯ cd zombinet/javascript && npm run zombie
 
 Usage: zombienet [options] [command]
 
 Options:
+  -c, --spawn-concurrency &lt;concurrency&gt;    Number of concurrent spawning process to launch,
+                                                default is 1
   -p, --provider &lt;provider&gt;                Override provider to use (choices: &quot;podman&quot;,
-                                           &quot;kubernetes&quot;, default: kubernetes)
-  -h, --help                               display help for command
+                                            &quot;kubernetes&quot;, &quot;native&quot;)
+  -l, --logType &lt;logType&gt;                  Type of logging - defaults to &quot;table&quot;
+                                                  (choices: &quot;table&quot;, &quot;text&quot;, &quot;silent&quot;)
+  -d, --dir &lt;path&gt;                         Directory path for placing the network files instead of random temp one
+                                                  (e.g. -d /home/user/my-zombienet)
+  -f, --force                                    Force override all prompt commands
+  -h, --help                                     Display help for command
 
 Commands:
-  spawn &lt;networkConfig&gt; [creds] [monitor]  Spawn the network defined in the config
-  test &lt;testFile&gt;                          Run tests on the network defined
+  spawn [options] &lt;networkConfig&gt; [creds]  Spawn the network defined in the config
+  test &lt;testFile&gt; [runningNetworkSpec]     Run tests on the network defined
+  setup [options] &lt;binaries...&gt;            Setup is meant for downloading and making
+                                                  dev environment of ZombieNet ready
+  convert &lt;filePath&gt;                       Convert is meant for transforming a
+                                                  (now deprecated) polkadot-launch configuration
+                                                  to zombienet configuration
   version                                  Prints zombienet version
   help [command]                           display help for command
 </code></pre>
