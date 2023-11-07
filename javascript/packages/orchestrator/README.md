@@ -389,7 +389,7 @@ With the above steps completed, the `zombienet` CLI is ready to run:
 ❯ cd zombinet/javascript
 ❯ npm run zombie
 
-Usage: zombienet [options] [command]
+Usage: npm run zombie -- [options] [command]
 
 Options:
   -c, --spawn-concurrency <concurrency>    Number of concurrent spawning process to launch, default is 1
