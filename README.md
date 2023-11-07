@@ -186,7 +186,7 @@ CURRENT   NAME                                      CLUSTER          AUTHINFO   
 *         docker-desktop                            docker-desktop   docker-desktop   default
 ```
 
-if not set it to `default` value
+if not then set it to `default` value
 
 ```bash
 ❯ kubectl config set-context --current --namespace='default'
