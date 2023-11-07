@@ -117,7 +117,7 @@ Native provider doesn't run any extra layer/process at the moment.
 
 ```bash
 ❯ ./zombienet-macos
-Usage: zombienet [options] [command]
+Usage: zombienet-macos [options] [command]
 
 Options:
   -c, --spawn-concurrency <concurrency>  Number of concurrent spawning process to launch, default is 1
