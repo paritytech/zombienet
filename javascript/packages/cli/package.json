@@ -63,7 +63,7 @@
     "typescript": "^5.2.2"
   },
   "devDependencies": {
-    "@types/cli-progress": "^3.11.4",
+    "@types/cli-progress": "^3.11.5",
     "@types/nunjucks": "^3.2.5",
     "pkg": "~5.8.1"
   },

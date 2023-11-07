@@ -25,10 +25,7 @@ write tests as smooth as possible.
 
 Internally zombienet is a `javascript` library, designed to run on `Node.js` and support different
 backend `providers` to run the *nodes*, at this moment `kubernetes`, `podman` and `native` are
-supported. 
-
-**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
-Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
+supported.
 
 ## Usage
 
@@ -119,8 +116,8 @@ Native provider doesn't run any extra layer/process at the moment.
 *For this example we will use the `macos` version of the executable*
 
 ```bash
-./zombienet-macos
-Usage: zombienet [options] [command]
+❯ ./zombienet-macos
+Usage: zombienet-macos [options] [command]
 
 Options:
   -c, --spawn-concurrency <concurrency>  Number of concurrent spawning process to launch, default is 1
@@ -177,7 +174,7 @@ id = 100
 Then you can spawn the network by running the following command:
 
 ```bash
-./zombienet-macos spawn --provider native examples/0001-small-network.toml
+❯ ./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
 
 **Note:** before spawning varify that `kubectl`'s namespace is set to `default`
@@ -278,10 +275,10 @@ add_to_genesis = false
 Then you can `export` the needed values before you run the command to spawn the network again:
 
 ```bash
-export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
-export COL_IMAGE=docker.io/paritypr/colander:master
+❯ export ZOMBIENET_INTEGRATION_TEST_IMAGE=docker.io/paritypr/polkadot-debug:master
+❯ export COL_IMAGE=docker.io/paritypr/colander:master
 
-./zombienet-macos spawn examples/0001-small-network.toml
+❯ ./zombienet-macos spawn examples/0001-small-network.toml
 ```
 
 ##### Teardown
@@ -331,9 +328,8 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 You need first to *clone* this repository and run:
 
 ```bash
-cd zombienet/javascript
-npm install
-npm run build
+❯ cd zombienet/javascript
+❯ npm i && npm run build
 ```
 
 ### Download and install needed artifacts (optional)
@@ -341,7 +337,8 @@ npm run build
 For an easier and faster setup of your local environment, run:
 
 ```bash
-node dist/cli.js setup <binaries>
+❯ cd zombinet/javascript
+❯ npm i && npm run zombie -- setup <binaries>
 ```
 
 This allows to use the `setup` script, making everything ready for a ZombieNet dev environment.
@@ -354,10 +351,11 @@ You can use the following arguments:
 For example:
 
 ```bash
-node dist/cli.js setup polkadot polkadot-parachain
+❯ cd zombinet/javascript
+❯ npm i && npm run zombie -- setup polkadot polkadot-parachain
 ```
 
-> Note: If you are using macOS please clone the [Polkadot repo](https://github.com/paritytech/polkadot) and run it locally. At the moment there is no `polkadot` binary for MacOs.
+> Note: If you are using macOS please clone the [polkadot-sdk repo](https://github.com/paritytech/polkadot-sdk) and run it locally. At the moment there is no `polkadot` binary for MacOs.
 
 The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
 At the end of the download, the `setup` script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:
@@ -371,8 +369,8 @@ Please add the dir to your $PATH by running the command: export PATH=/home/<user
 You can build it from source like this
 
 ```bash
-git clone git@github.com:paritytech/polkadot
-cd polkadot
+❯ git clone git@github.com:paritytech/polkadot-sdk.git
+❯ cd polkadot-sdk
 cargo build --profile testnet -p test-parachain-adder-collator
 export PATH=$(pwd)/target/testnet:$PATH
 ```
@@ -383,20 +381,26 @@ export PATH=$(pwd)/target/testnet:$PATH
 With the above steps completed, the `zombienet` CLI is ready to run:
 
 ```bash
-❯ node dist/cli.js
+❯ cd zombinet/javascript
+❯ npm run zombie
 
 Usage: zombienet [options] [command]
 
 Options:
-  -p, --provider <provider>                Override provider to use (choices: "podman",
-                                           "kubernetes", default: kubernetes)
+  -c, --spawn-concurrency <concurrency>    Number of concurrent spawning process to launch, default is 1
+  -p, --provider <provider>                Override provider to use (choices: "podman", "kubernetes", "native")
+  -l, --logType <logType>                  Type of logging - defaults to 'table' (choices: "table", "text", "silent")
+  -d, --dir <path>                         Directory path for placing the network files instead of random temp one 
+                                           (e.g. -d /home/user/my-zombienet)
+  -f, --force                              Force override all prompt commands
   -h, --help                               display help for command
 
 Commands:
-  spawn <networkConfig> [creds] [monitor]  Spawn the network defined in the config
-  test <testFile>                          Run tests on the network defined
+  spawn [options] <networkConfig> [creds]  Spawn the network defined in the config
+  test <testFile> [runningNetworkSpec]     Run tests on the network defined
+  setup [options] <binaries...>            Setup is meant for downloading and making dev environment of ZombieNet ready
+  convert <filePath>                       Convert is meant for transforming a (now deprecated) polkadot-launch configuration to zombienet configuration
   version                                  Prints zombienet version
-  setup                                    Runs the setup of local environment
   help [command]                           display help for command
 ```
 
