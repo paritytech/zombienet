@@ -181,13 +181,11 @@ Then you can spawn the network by running the following command:
 ```bash
 ❯ kubectl config get-contexts
 
-CURRENT   NAME                                      CLUSTER          AUTHINFO         NAMESPACE
-*         docker-desktop                            docker-desktop   docker-desktop   default
-```
+CURRENT   NAME                   CLUSTER          AUTHINFO         NAMESPACE
+*         docker-desktop         docker-desktop   docker-desktop   default
 
-if not set it to `default` value
+# if not then set it to default value
 
-```bash
 ❯ kubectl config set-context --current --namespace='default'
 ```
 

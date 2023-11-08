@@ -9,13 +9,11 @@ The following is a small example to spawn a network (using the previous `simple 
 ```bash
 ❯ kubectl config get-contexts
 
-CURRENT   NAME                                      CLUSTER          AUTHINFO         NAMESPACE
-*         docker-desktop                            docker-desktop   docker-desktop   default
-```
+CURRENT   NAME                   CLUSTER          AUTHINFO         NAMESPACE
+*         docker-desktop         docker-desktop   docker-desktop   default
 
-if not set it to `default` value
+# if not then set it to default value
 
-```bash
 ❯ kubectl config set-context --current --namespace='default'
 ```
 
