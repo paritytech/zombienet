@@ -17,12 +17,12 @@ def send_alert(alertname, severity, message):
             "labels": {
                 "domain": "parity-zombienet",
                 "alertname": alertname,
-                "severity": severity
+                "severity": severity,
+                "matrix_room": "QMnmZxkvuvLckXBUtz"
             },
             "annotations": {
                 "message": f"{message}"
-            },
-            "generatorURL": "https://grafana.parity-mgmt.parity.io/"
+            }
         }
     ]
     response = requests.post(url, headers=headers, json=payload)
