@@ -9,6 +9,24 @@ v1 = client.CoreV1Api()
 node_name = os.getenv("NODE_NAME")
 gitlab_token=os.getenv("GITLAB_TOKEN")
 
+def send_alert(alertname, severity, message):
+    url = 'https://alertmanager.parity-mgmt.parity.io/api/v1/alerts'
+    headers = {'Content-Type': 'application/json'}
+    payload = [
+        {
+            "labels": {
+                "domain": "parity-zombienet",
+                "alertname": alertname,
+                "severity": severity,
+                "matrix_room": "QMnmZxkvuvLckXBUtz"
+            },
+            "annotations": {
+                "message": f"{message}"
+            }
+        }
+    ]
+    response = requests.post(url, headers=headers, json=payload)
+
 def is_node_being_preempted():
     try:
         response = requests.get(f"http://metadata.google.internal/computeMetadata/v1/instance/maintenance-event", headers={"Metadata-Flavor":"Google"})
@@ -23,6 +41,7 @@ while True:
    if not is_node_being_preempted():
        continue
    
+   send_alert(f"node-eviction-{node_name}", "warning", f"node {node_name} received claim request from GCP")
    pods = v1.list_pod_for_all_namespaces(field_selector=f"spec.nodeName={node_name}").items
    
    zombie_pods = [pod for pod in pods if pod.metadata.namespace.startswith('zombie-')]
@@ -35,6 +54,7 @@ while True:
 
    print(f"found {len(evicted_namespaces)} namespace that needed to be evicted")
    for evicted_namespace in evicted_namespaces:
+       send_alert(f"ns-{evicted_namespace}", "warning", f"graceful shutdown sent to namespace {evicted_namespace} by node {node_name}")
        namespace = v1.read_namespace(name=evicted_namespace)
        job_id = namespace.metadata.labels.get('jobId', None)
        project_id = namespace.metadata.labels.get('projectId', None)
