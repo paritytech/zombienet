@@ -133,11 +133,12 @@ function set_instance_env {
       if [ $STATUS == "200" ]; then
         JOBS_CANCELED_BY_US=$(cat response.txt |jq -c ".[] | select((.name | contains(\"${CI_JOB_NAME}\")) and .status == \"canceled\" and (.duration >= 0))" | wc -l)
         if [[ $JOBS_CANCELED_BY_US -eq 0 ]]; then
-          # only mod 2 for PoC
-          R=$(( $CI_PIPELINE_ID % 2));
-          if [[ $R -eq 0 ]];then
-            export X_INFRA_INSTANCE=spot
-          fi;
+          export X_INFRA_INSTANCE=spot
+          # only mod 2 for PoC (uncomment for rollback)
+          # R=$(( $CI_PIPELINE_ID % 2));
+          # if [[ $R -eq 0 ]];then
+          #   export X_INFRA_INSTANCE=spot
+          # fi;
         fi;
       fi;
     fi;
