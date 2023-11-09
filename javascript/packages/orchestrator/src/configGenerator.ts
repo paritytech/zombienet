@@ -242,7 +242,7 @@ export async function generateNetworkSpec(
 
   if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
-      const para: CHAIN = whichChain(parachain.chain || "");
+      const para: CHAIN = whichChain(parachain.chain || parachain.chain_spec_path || "");
 
       let computedStatePath,
         computedStateCommand,
