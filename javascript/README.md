@@ -177,7 +177,7 @@ Then you can spawn the network by running the following command:
 ❯ ./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
 
-**Note:** before spawning varify that `kubectl`'s namespace is set to `default`
+**Note:** before spawning network one needs to varify that `kubectl`'s namespace is set to `default`
 ```bash
 ❯ kubectl config get-contexts
 

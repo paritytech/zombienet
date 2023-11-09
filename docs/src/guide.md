@@ -6,7 +6,7 @@ Zombienet was designed to be a flexible and easy to use tool, allowing users to 
 
 In this guide we will go through simple use cases as well as more complex ones, describing the trade-offs made and the _current_ constraints for both network configurations and test specifications.
 
-**Note:** before spawning varify that `kubectl`'s namespace is set to `default`
+**Note:** before spawning network one needs to varify that `kubectl`'s namespace is set to `default`
 ```bash
 ❯ kubectl config get-contexts
 
