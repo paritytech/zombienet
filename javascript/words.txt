@@ -6,6 +6,7 @@ anguage
 asgn
 astar
 auths
+AUTHINFO
 autoremove
 availables
 aventus
@@ -170,6 +171,7 @@ unfollow
 unhandle
 unsub
 uutils
+varify
 webrtc
 westend
 westmint
