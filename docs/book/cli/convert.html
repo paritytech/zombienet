@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Setup - 🧟🧟🧟 ZombieNet 🧟🧟🧟</title>
+        <title>Convert - 🧟🧟🧟 ZombieNet 🧟🧟🧟</title>
 
 
         <!-- Custom HTML head -->
@@ -88,7 +88,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../requirements/kubernetes.html"><strong aria-hidden="true">2.1.</strong> Kubernetes requirements</a></li><li class="chapter-item expanded "><a href="../requirements/podman.html"><strong aria-hidden="true">2.2.</strong> Podman requirements</a></li><li class="chapter-item expanded "><a href="../requirements/native.html"><strong aria-hidden="true">2.3.</strong> Native requirements</a></li></ol></li><li class="chapter-item expanded "><a href="../features/index.html"><strong aria-hidden="true">3.</strong> Features by providers</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../features/kubernetes.html"><strong aria-hidden="true">3.1.</strong> Kubernetes</a></li><li class="chapter-item expanded "><a href="../features/podman.html"><strong aria-hidden="true">3.2.</strong> Podman</a></li><li class="chapter-item expanded "><a href="../features/native.html"><strong aria-hidden="true">3.3.</strong> Native</a></li></ol></li><li class="chapter-item expanded "><a href="../cli/index.html"><strong aria-hidden="true">4.</strong> Cli usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../cli/convert.html"><strong aria-hidden="true">4.1.</strong> Convert</a></li><li class="chapter-item expanded "><a href="../cli/setup.html" class="active"><strong aria-hidden="true">4.2.</strong> Setup</a></li><li class="chapter-item expanded "><a href="../cli/spawn.html"><strong aria-hidden="true">4.3.</strong> Spawning</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../cli/env_vars.html"><strong aria-hidden="true">4.3.1.</strong> Using env vars</a></li><li class="chapter-item expanded "><a href="../cli/teardown.html"><strong aria-hidden="true">4.3.2.</strong> Teardown</a></li></ol></li><li class="chapter-item expanded "><a href="../cli/testing.html"><strong aria-hidden="true">4.4.</strong> Testing</a></li></ol></li><li class="chapter-item expanded "><a href="../guide.html"><strong aria-hidden="true">5.</strong> Guide (examples)</a></li><li class="chapter-item expanded "><a href="../network-definition-spec.html"><strong aria-hidden="true">6.</strong> Network definition spec</a></li><li class="chapter-item expanded "><a href="../cli/test-dsl-definition-spec.html"><strong aria-hidden="true">7.</strong> Testing DSL spec</a></li><li class="chapter-item expanded "><a href="../development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li class="chapter-item expanded "><a href="../projects.html"><strong aria-hidden="true">9.</strong> Projects</a></li><li class="chapter-item expanded "><a href="../acknowledgement.html"><strong aria-hidden="true">10.</strong> Acknowledgement</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../install.html"><strong aria-hidden="true">2.</strong> Installation</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../requirements/kubernetes.html"><strong aria-hidden="true">2.1.</strong> Kubernetes requirements</a></li><li class="chapter-item expanded "><a href="../requirements/podman.html"><strong aria-hidden="true">2.2.</strong> Podman requirements</a></li><li class="chapter-item expanded "><a href="../requirements/native.html"><strong aria-hidden="true">2.3.</strong> Native requirements</a></li></ol></li><li class="chapter-item expanded "><a href="../features/index.html"><strong aria-hidden="true">3.</strong> Features by providers</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../features/kubernetes.html"><strong aria-hidden="true">3.1.</strong> Kubernetes</a></li><li class="chapter-item expanded "><a href="../features/podman.html"><strong aria-hidden="true">3.2.</strong> Podman</a></li><li class="chapter-item expanded "><a href="../features/native.html"><strong aria-hidden="true">3.3.</strong> Native</a></li></ol></li><li class="chapter-item expanded "><a href="../cli/index.html"><strong aria-hidden="true">4.</strong> Cli usage</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../cli/convert.html" class="active"><strong aria-hidden="true">4.1.</strong> Convert</a></li><li class="chapter-item expanded "><a href="../cli/setup.html"><strong aria-hidden="true">4.2.</strong> Setup</a></li><li class="chapter-item expanded "><a href="../cli/spawn.html"><strong aria-hidden="true">4.3.</strong> Spawning</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../cli/env_vars.html"><strong aria-hidden="true">4.3.1.</strong> Using env vars</a></li><li class="chapter-item expanded "><a href="../cli/teardown.html"><strong aria-hidden="true">4.3.2.</strong> Teardown</a></li></ol></li><li class="chapter-item expanded "><a href="../cli/testing.html"><strong aria-hidden="true">4.4.</strong> Testing</a></li></ol></li><li class="chapter-item expanded "><a href="../guide.html"><strong aria-hidden="true">5.</strong> Guide (examples)</a></li><li class="chapter-item expanded "><a href="../network-definition-spec.html"><strong aria-hidden="true">6.</strong> Network definition spec</a></li><li class="chapter-item expanded "><a href="../cli/test-dsl-definition-spec.html"><strong aria-hidden="true">7.</strong> Testing DSL spec</a></li><li class="chapter-item expanded "><a href="../development.html"><strong aria-hidden="true">8.</strong> Development</a></li><li class="chapter-item expanded "><a href="../projects.html"><strong aria-hidden="true">9.</strong> Projects</a></li><li class="chapter-item expanded "><a href="../acknowledgement.html"><strong aria-hidden="true">10.</strong> Acknowledgement</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -171,59 +171,31 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="setup"><a class="header" href="#setup">Setup</a></h1>
-<p>This command will help you to easily download latest artifacts and make them executable in order to use them with zombienet</p>
-<h2 id="download-and-install-needed-artifacts"><a class="header" href="#download-and-install-needed-artifacts">Download and install needed artifacts</a></h2>
-<p>For easier and faster setup of local environment, you can run:</p>
-<pre><code class="language-bash">❯ zombienet setup
-
-Setup is meant for downloading and making everything ready for dev environment of ZombieNet;
-
-You can use the following arguments:
-  binaries    the binaries that you want to be downloaded, provided in a row without any separators;
-              They are downloaded in current directory and appropriate executable permissions are assigned.
-              Possible options: 'polkadot', 'polkadot-parachain'
-              &gt; zombienet setup polkadot polkadot-parachain
-
+                        <h1 id="convert"><a class="header" href="#convert">Convert</a></h1>
+<p>The <code>convert</code> command is a CLI command designed to help users convert their a <code>Polkadot Launch</code> configuration to the <code> Zombienet</code> configuration format. This tool is especially helpful for developers to migrate their projects to to Zombienet, without the need to manually rewrite their configurations.</p>
+<h3 id="usage"><a class="header" href="#usage">Usage</a></h3>
+<pre><code class="language-bash">zombienet convert &lt;INPUT_FILE&gt;
 </code></pre>
-<p>Script above will retrieve the binaries provided and try to download and prepare those binaries for usage. At the end of the download, script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var:</p>
-<p>e.g.</p>
-<pre><code class="language-bash">Please add the dir to your $PATH by running the command: export PATH=/home/&lt;user&gt;/&lt;current_directory&gt;/dist:$PATH
+<p><strong>Note</strong>: Where <code>&lt;INPUT_FILE&gt;</code> is a Polkadot Launch configuration with a .js or .json extension defined by <a href="https://github.com/paritytech/polkadot-launch/blob/295a6870dd363b0b0108e745887f51e7141d7b5f/src/types.d.ts#L10">this type</a></p>
+<h3 id="example"><a class="header" href="#example">Example</a></h3>
+<p>Suppose you have a Polkadot Launch configuration file named <code>my-project-config.json</code>. To convert it to a Zombienet configuration file named <code>my-project-config-zombienet.json</code>, run:</p>
+<pre><code class="language-bash">zombienet convert my-project-config.json
 </code></pre>
-<p>Command example (Linux):</p>
-<pre><code class="language-bash">➜ zombienet setup polkadot polkadot-parachain
-</code></pre>
-<p>Output example (Linux):</p>
-<pre><code class="language-bash">Setup will start to download binaries:
-- polkadot 	 Approx. size  113  MB
-- polkadot-parachain 	 Approx. size  120  MB
-Total approx. size:  233 MB
-Do you want to continue? (y/n)y
-
-Start download...
-
--&gt; downloading [========================================] 100% 0.0s
-Binary &quot;polkadot-parachain&quot; downloaded
-Giving permissions to &quot;polkadot-parachain&quot;
--&gt; downloading [========================================] 100% 0.0s
-Binary &quot;polkadot&quot; downloaded
-Giving permissions to &quot;polkadot&quot;
-Please add the dir to your $PATH by running the command:
- export PATH=/home/&lt;username&gt;/zombienet/dist:$PATH
-</code></pre>
-<blockquote>
-<p>Note for MacOs users: As of the time of this writing, polkadot binary is not currently supported for MacOs. As a result users of MacOS need to clone the <a href="https://github.com/paritytech/polkadot">Polkadot repo</a>,create a release and add it in your PATH manually (setup will advice you so as well).</p>
-</blockquote>
+<h3 id="notes"><a class="header" href="#notes">Notes</a></h3>
+<ul>
+<li>The <code>convert</code> command will attempt to preserve as much information as possible from the original Polkadot Launch configuration file. However, due to the differences in the configuration structure and options between the two systems, some manual adjustments may be necessary after the conversion.</li>
+<li>It is recommended to thoroughly review the generated Zombienet configuration file to ensure that all the settings are correct and to make any necessary adjustments before using it to deploy your project.</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../cli/convert.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../cli/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../cli/spawn.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../cli/setup.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -233,11 +205,11 @@ Please add the dir to your $PATH by running the command:
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../cli/convert.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../cli/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../cli/spawn.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../cli/setup.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
