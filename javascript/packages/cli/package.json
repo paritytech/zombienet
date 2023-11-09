@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.5",
-    "@types/nunjucks": "^3.2.5",
+    "@types/nunjucks": "^3.2.6",
     "pkg": "~5.8.1"
   },
   "homepage": "https://github.com/paritytech/zombienet#readme",
