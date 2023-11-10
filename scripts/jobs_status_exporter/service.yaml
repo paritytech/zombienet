@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-service
+  labels:
+    app: metrics
+spec:
+  selector:
+    app: metrics
+  ports:
+  - port: 8000
+    targetPort: http-metrics
