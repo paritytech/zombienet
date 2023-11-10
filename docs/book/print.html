@@ -616,17 +616,6 @@ id = 100
             </p>
             <pre><code class="language-bash">./zombienet-macos spawn examples/0001-small-network.toml
 </code></pre>
-<blockquote><p>NOTE: before spawning network one needs to varify that <code>kubectl</code>'s namespace is set to <code>default</code></p></blockquote>
-<pre><code class="language-bash">
-❯ kubectl config get-contexts
-
-CURRENT   NAME                                      CLUSTER          AUTHINFO         NAMESPACE
-*         docker-desktop                            docker-desktop   docker-desktop   default
-
-# if not then set it to default value
-
-❯ kubectl config set-context --current --namespace='default'
-</code></pre>
             <p>
               You can follow the output of the <code>steps</code> to spawn the
               network and once the network is launched a message with the

@@ -171,7 +171,6 @@ unfollow
 unhandle
 unsub
 uutils
-varify
 webrtc
 westend
 westmint

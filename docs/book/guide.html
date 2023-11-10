@@ -350,17 +350,6 @@
               <em>current</em> constraints for both network configurations and
               test specifications.
             </p>
-            <blockquote><p>Note: before spawning network one needs to varify that <code>kubectl</code>'s namespace is set to <code>default</code></p></blockquote>
-<pre><code class="language-bash">
-❯ kubectl config get-contexts
-
-CURRENT   NAME                                      CLUSTER          AUTHINFO         NAMESPACE
-*         docker-desktop                            docker-desktop   docker-desktop   default
-
-# if not then set it to default value
-
-❯ kubectl config set-context --current --namespace='default'
-</code></pre>
             <h3 id="example-1---small-network-2-validators-1-parachain">
               <a
                 class="header"

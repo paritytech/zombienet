@@ -5,7 +5,7 @@ Those assertions should be defined in a _feature test_, and the `dsl` and format
 
 The following is a small example to spawn a network (using the previous `simple network definition`) and assert that:
 
-**Note:** before spawning network one needs to varify that `kubectl`'s namespace is set to `default`
+**Note:** before spawning network one needs to verify that `kubectl`'s namespace is set to `default`
 ```bash
 ❯ kubectl config get-contexts
 
