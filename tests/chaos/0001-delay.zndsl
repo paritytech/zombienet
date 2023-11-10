@@ -7,3 +7,4 @@ Creds: config
 alice: run ./delay_check.sh with "bob,9615,2" within 30 seconds
 # bob to alice take at least 1s
 bob: run ./delay_check.sh within 30 seconds
+bob: remove latency

@@ -666,6 +666,12 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
                 assertions.push(assertion);
             }
             Rule::EOI | Rule::comment => (),
+            Rule::setter => {
+                println!("Setter!!");
+            }
+            Rule::remover => {
+                println!("Remover!!");
+            }
             _ => {
                 return Err(errors::ParserError::InvalidRule(record.as_str().to_owned()));
             }

@@ -27,6 +27,7 @@ span_id = { ASCII_HEX_DIGIT{32} }
 block_height = { "blockheight" | "block height" | "best block" }
 finalized_height = { "finalised height" | "finalised block" }
 peers_count = { "peers count" | "peers" }
+chaos_type = { "latency" | "jitter" | "correlation" }
 
 metric_name = @{ (block_height | finalized_height | peers_count | (ASCII_ALPHANUMERIC | "_" )+) ~ ("{" ~ metric_key_value ~ "}")? }
 square_brackets_strings = {
@@ -51,6 +52,7 @@ math_ops    = { plus | minus }
 // commons
 node_name = { name ~ colon }
 seconds = _{ "seconds"|"secs"|"s" }
+miliseconds = _{ "miliseconds"|"ms"|"msecs" }
 within = { "within" ~ int+ ~ seconds }
 parachain = { "parachain" ~ int+ }
 
@@ -83,6 +85,10 @@ pause = { node_name ~ "pause" }
 resume = { node_name ~ "resume" }
 restart = { node_name ~ "restart" ~ ("after" ~ int+ ~ seconds)? }
 
+// CHAOS COMMANDS
+setter = { node_name ~ "set" ~ chaos_type ~ "by" ~ int+ ~ (seconds | miliseconds)}
+remover = { node_name ~ "remove" ~ chaos_type }
+
 /// COMMENTS
 comment = ${ ("#" | "//") ~ (!NEWLINE ~ ANY)* }
 
@@ -111,5 +117,7 @@ file = { SOI ~ (
     sleep |
     pause |
     resume |
-    restart
+    restart | 
+    setter |
+    remover
     )* ~ NEWLINE* ~ EOI }
