@@ -20,7 +20,7 @@ Or a particular release can be specified. e.g. to run `v1.3.40`, use:
 nix run github:paritytech/zombienet/v1.3.40 -- spawn config.toml
 ```
 
-Another option is to add he `zombienet` binary to the `PATH` for the current shell. This can be done with:
+Another option is to add the `zombienet` binary to the `PATH` for the current shell. This can be done with:
 
 ```
 nix shell github:paritytech/zombienet/v1.3.40
