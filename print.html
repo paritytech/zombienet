@@ -173,7 +173,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="what-is-zombienet"><a class="header" href="#what-is-zombienet">What is ZombieNet?</a></h1>
-<p>ZombieNet aims to be a testing framework for Substrate based blockchains, providing a simple CLI tool that allowS users to spawn and test ephemeral networks. The assertions used in the tests can include on-chain storage, metrics, logs and custom JS scripts that interact with the chain. To make these easy to define, Zombienet uses a built-in natural language tool to write tests as smoothly as possible.</p>
+<p>ZombieNet aims to be a testing framework for Substrate based blockchains, providing a simple CLI tool that allows users to spawn and test ephemeral networks. The assertions used in the tests can include on-chain storage, metrics, logs and custom JS scripts that interact with the chain. To make these easy to define, Zombienet uses a built-in natural language tool to write tests as smoothly as possible.</p>
 <p>Internally, it's a JS library designed to run on NodeJS and support different backend providers to run the various blockchain nodes. Currently, Kubernetes, Podman and native are the supported providers.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>ZombieNet releases are available in <a href="https://github.com/paritytech/zombienet/releases">github</a>. Each release provides executables for both <code>linux</code> and <code>macos</code> created with <a href="https://github.com/vercel/pkg">pkg</a> and allows running <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed. <strong>But</strong> each <code>provider</code> define its own requirements (e.g. k8s, podman).</p>
@@ -186,7 +186,7 @@
 <p>Or a particular release can be specified. e.g. to run <code>v1.3.40</code>, use:</p>
 <pre><code>nix run github:paritytech/zombienet/v1.3.40 -- spawn config.toml
 </code></pre>
-<p>Another option is to add he <code>zombienet</code> binary to the <code>PATH</code> for the current shell. This can be done with:</p>
+<p>Another option is to add the <code>zombienet</code> binary to the <code>PATH</code> for the current shell. This can be done with:</p>
 <pre><code>nix shell github:paritytech/zombienet/v1.3.40
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="kubernetes-requirements"><a class="header" href="#kubernetes-requirements">Kubernetes requirements</a></h1>
@@ -426,7 +426,7 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 <hr />
 <h3 id="example-0---different-configuration-file-types-2-validators"><a class="header" href="#example-0---different-configuration-file-types-2-validators">Example 0 - Different configuration file types (2 validators)</a></h3>
 <hr />
-<p>In this example, is shown the alternateive options of a configuration file. The different extensions supported are: <code>yaml</code>, <code>json</code> and of course <code>.toml</code>.
+<p>In this example, is shown the alternative options of a configuration file. The different extensions supported are: <code>yaml</code>, <code>json</code> and of course <code>.toml</code>.
 This simple config exists only in order to show how the same configuration exists in 3 different formats, and thus uses only 1 relay chain (<code>rococo-local</code>) with 2 nodes (<code>alice</code> and <code>bob</code>);</p>
 <p>The configuration files are:</p>
 <ul>
@@ -434,7 +434,7 @@ This simple config exists only in order to show how the same configuration exist
 <li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml">0000-test-config-small-network.yaml</a>;</li>
 <li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml">0000-test-config-small-network.toml</a>;</li>
 </ul>
-<p>and the test files for running each confgiration are:</p>
+<p>and the test files for running each configuration are:</p>
 <ul>
 <li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl">0000-test-json-config-small-network.zndsl</a>;</li>
 <li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl">0000-test-yaml-config-small-network.zndsl</a>;</li>
@@ -510,7 +510,7 @@ alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in b
 # logs
 bob: log line matches glob &quot;*rted #1*&quot; within 10 seconds
 bob: log line matches &quot;Imported #[0-9]+&quot; within 10 seconds
-bob: count of log lines maching &quot;Error&quot; is 0 within 10 seconds
+bob: count of log lines matching &quot;Error&quot; is 0 within 10 seconds
 
 # system events
 bob: system event contains &quot;A candidate was included&quot; within 20 seconds
@@ -528,7 +528,7 @@ alice: parachain 100 block height is at least 10 within 200 seconds
 <h3 id="example-2---small-network-with-replacements"><a class="header" href="#example-2---small-network-with-replacements">Example 2 - Small network with replacements</a></h3>
 <hr />
 <p>In Example 1, we used some <em>hardcoded</em> default values but sometimes it's more useful to be able to change them dynamically.
-For example, if you are building images in your <code>CI</code> and those images have an unique tag. To address these cases, Zombienet uses a templating language called <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a> that allows defining environment variables which then can get updated at <em>runtime</em>.</p>
+For example, if you are building images in your <code>CI</code> and those images have a unique tag. To address these cases, Zombienet uses a templating language called <a href="https://mozilla.github.io/nunjucks/">Nunjucks</a> that allows defining environment variables which then can get updated at <em>runtime</em>.</p>
 <p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment. An interesting addon test that needs to be noticed here, is that the bob validator, is using a different version of polkadot (v0.9.37) instead of the latest (which at the time of writing this documentation was v0.9.39):</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
@@ -567,7 +567,7 @@ export ZOMBIENET_COL_IMAGE=docker.io/parity/polkadot-parachain:latest
 <p>And again we get the network info with direct links:</p>
 <h2 id=""><a class="header" href="#"><img src="./imgs/small-network-envs-launch.png" alt="network info" /></a></h2>
 <p>This example shows that we can use custom environmental variables in our config file in order to dynamically alter the configuration of the network.</p>
-<p>In addition that the validators support the capability of running different versions of the image.</p>
+<p>In addition the validators support the capability of running different versions of the image.</p>
 <blockquote>
 <p>Note: In general all the config fields that start with <code>default_*</code> can be overridden in the <code>nodes</code> or <code>collators</code> config.</p>
 </blockquote>
@@ -645,7 +645,7 @@ The first is using the command that <code>zombienet</code> suggests in the outpu
                 podman logs -f alice_pod-alice
 </code></pre>
 <h4 id="logs-in-native"><a class="header" href="#logs-in-native">Logs in native</a></h4>
-<p>With the <code>native</code> provider you can follow the logs of the pods with the command suggestion that <code>zombienet</code> gives you when it spawn a new process.
+<p>With the <code>native</code> provider you can follow the logs of the pods with the command suggestion that <code>zombienet</code> gives you when it spawns a new process.
 For example:</p>
 <pre><code>    alice running
 
@@ -689,7 +689,7 @@ For example:</p>
 <li><code>chain_spec_path</code>: (String) Path to the chain spec file, <strong>NOTE</strong> should be the <code>plain</code> version to allow customizations.</li>
 <li><code>chain_spec_command</code>: (String) Command to generate the chain spec, <strong>NOTE</strong> can't be used in combination with <code>chain_spec_path</code>.</li>
 <li><code>default_args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
-<li><code>default_substrate_cli_args_version</code>: (0|1) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.</li>
+<li><code>default_substrate_cli_args_version</code>: (0|1) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>default_overrides</code>: (Array of objects) An array of overrides to upload to the nodes, objects with:
 <ul>
 <li><code>local_path</code>: string;</li>
@@ -707,7 +707,7 @@ For example:</p>
 <li><code>command</code>: (String) Override default command.</li>
 <li><code>command_with_args</code>: (String) Override default command and args.</li>
 <li><code>args</code>: (Array of strings) Arguments to be passed to the <code>command</code>.</li>
-<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.</li>
+<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>validator</code>: (Boolean, default true) Pass the <code>--validator</code> flag to the <code>command</code>.</li>
 <li><code>invulnerable</code>: (Boolean, default false) If true, the node will be added to <code>invulnerables</code> in the chain spec.</li>
 <li><code>balance</code>: (number, default 2000000000000) Balance to set in <code>balances</code> for node's account.</li>
@@ -744,7 +744,7 @@ For example:</p>
 <li><code>overrides</code>: Array of <code>overrides</code> definitions.</li>
 <li><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply to all the nodes of the group; Defaults to 'substrate'.</li>
 <li><code>resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the node.</li>
-<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.</li>
+<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 </ul>
 </li>
 </ul>
@@ -784,7 +784,7 @@ For example:</p>
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
 <li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
-<li><code>packages/orchestrator/src/providers/k8s/index.ts</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.</li>
+<li><code>packages/orchestrator/src/providers/k8s/index.ts</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>command_with_args</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
 <ul>
@@ -808,7 +808,7 @@ For example:</p>
 <ul>
 <li>name: (String) name of the <code>env</code> var.</li>
 <li>value: (String| number) Value of the env var.</li>
-<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produce an small overhead that could be skipped if you set directly with this key.</li>
+<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 </ul>
 </li>
 </ul>
@@ -1098,7 +1098,7 @@ Commands:
 <li><a href="https://github.com/t3rn/t3rn/tree/development/tests/zombienet">T3rn</a></li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="acknowledgement"><a class="header" href="#acknowledgement">Acknowledgement</a></h1>
-<p>This project take inspiration and some patterns from <a href="https://github.com/paritytech/polkadot-launch">polkadot-launch</a> and <a href="https://gitlab.parity.io/parity/simnet/-/tree/master">simnet</a>.</p>
+<p>This project takes inspiration and some patterns from <a href="https://github.com/paritytech/polkadot-launch">polkadot-launch</a> and <a href="https://gitlab.parity.io/parity/simnet/-/tree/master">simnet</a>.</p>
 
                     </main>
 
