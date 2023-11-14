@@ -12,7 +12,7 @@ In this guide we will go through simple use cases as well as more complex ones, 
 
 ---
 
-In this example, is shown the alternateive options of a configuration file. The different extensions supported are: `yaml`, `json` and of course `.toml`.
+In this example, is shown the alternative options of a configuration file. The different extensions supported are: `yaml`, `json` and of course `.toml`.
 This simple config exists only in order to show how the same configuration exists in 3 different formats, and thus uses only 1 relay chain (`rococo-local`) with 2 nodes (`alice` and `bob`);
 
 The configuration files are:
@@ -21,7 +21,7 @@ The configuration files are:
 - [0000-test-config-small-network.yaml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml);
 - [0000-test-config-small-network.toml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml);
 
-and the test files for running each confgiration are:
+and the test files for running each configuration are:
 
 - [0000-test-json-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl);
 - [0000-test-yaml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl);
@@ -126,7 +126,7 @@ alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in b
 # logs
 bob: log line matches glob "*rted #1*" within 10 seconds
 bob: log line matches "Imported #[0-9]+" within 10 seconds
-bob: count of log lines maching "Error" is 0 within 10 seconds
+bob: count of log lines matching "Error" is 0 within 10 seconds
 
 # system events
 bob: system event contains "A candidate was included" within 20 seconds
@@ -152,7 +152,7 @@ Now, run the tests with the following command to get both the _launching_ output
 ---
 
 In Example 1, we used some _hardcoded_ default values but sometimes it's more useful to be able to change them dynamically.
-For example, if you are building images in your `CI` and those images have an unique tag. To address these cases, Zombienet uses a templating language called [Nunjucks](https://mozilla.github.io/nunjucks/) that allows defining environment variables which then can get updated at _runtime_.
+For example, if you are building images in your `CI` and those images have a unique tag. To address these cases, Zombienet uses a templating language called [Nunjucks](https://mozilla.github.io/nunjucks/) that allows defining environment variables which then can get updated at _runtime_.
 
 Following the previous example, we will replace the _images_ with variables that will read the value from the environment. An interesting addon test that needs to be noticed here, is that the bob validator, is using a different version of polkadot (v0.9.37) instead of the latest (which at the time of writing this documentation was v0.9.39):
 
@@ -206,7 +206,7 @@ And again we get the network info with direct links:
 
 This example shows that we can use custom environmental variables in our config file in order to dynamically alter the configuration of the network.
 
-In addition that the validators support the capability of running different versions of the image.
+In addition the validators support the capability of running different versions of the image.
 
 > Note: In general all the config fields that start with `default_*` can be overridden in the `nodes` or `collators` config.
 
@@ -316,7 +316,7 @@ When you use `podman` you can follow the logs of the pods with the command sugge
 
 #### Logs in native
 
-With the `native` provider you can follow the logs of the pods with the command suggestion that `zombienet` gives you when it spawn a new process.
+With the `native` provider you can follow the logs of the pods with the command suggestion that `zombienet` gives you when it spawns a new process.
 For example:
 
 ```
