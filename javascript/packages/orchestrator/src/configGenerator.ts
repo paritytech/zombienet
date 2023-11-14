@@ -353,7 +353,7 @@ export async function generateNetworkSpec(
           ? parachain.genesis_state_generator
           : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
 
-        computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
+        computedStateCommand += ` {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
 
       if (parachain.genesis_wasm_path) {
@@ -376,7 +376,7 @@ export async function generateNetworkSpec(
           ? parachain.genesis_wasm_generator
           : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND}`;
 
-        computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
+        computedWasmCommand += ` {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
       let parachainSetup: Parachain = {
