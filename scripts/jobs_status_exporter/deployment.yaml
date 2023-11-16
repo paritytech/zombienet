@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-deployment
+  labels:
+    app: metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics
+  template:
+    metadata:
+      labels:
+        app: metrics
+    spec:
+      containers:
+      - name: metrics
+        image: emamihe/gitlab-runner-metrics:1.0
+        ports:
+        - containerPort: 8000
+          name: http-metrics
+        env:
+        - name: GITLAB_PRIVATE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-token
+              key: token
+        - name: RUNNER_ID
+          value: "RkrwHxX5"

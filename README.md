@@ -32,7 +32,7 @@ supported.
 
 Zombienet releases are available in `github`. Each one provides an executable for both `linux` and
 `macos` created with [pkg](https://github.com/vercel/pkg) and allows to run `zombienet` cli
-*without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g.
+*without* having `Node.js` installed **but** each `provider` defines its own requirements (e.g.
 `k8s`, `podman`).
 
 **Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
@@ -60,7 +60,7 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 
 ### With Podman
 
-Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have
+Zombienet supports [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
 `--provider` flag in the cli. `Podman` for `zombienet` is currently only supported for Linux machines.
 This is mostly related to paths and directories used by 
@@ -72,7 +72,7 @@ Zombienet `native` provider allows you to run the nodes as a local process in yo
 only need to have the `binaries` used in your `network` (e.g `polkadot` or `polkadot-parachain`).
 To use it either set in the *network* file or with the `--provider` flag in the cli.
 
-**NOTE:** The `native` provider **only** use the `command` config for nodes/collators, both relative
+**NOTE:** The `native` provider **only** uses the `command` config for nodes/collators, both relative
 and absolute paths are supported. You can use `default_command` config to set the binary to spawn
 all the `nodes` in the relay chain.
 
@@ -425,6 +425,6 @@ Below can be found some of the projects that are currently using Zombienet as in
 
 ## Acknowledgement
 
-This project take inspiration and some patterns from
+This project takes inspiration and some patterns from
 [polkadot-launch](https://github.com/paritytech/polkadot-launch) and
 [simnet](https://gitlab.parity.io/parity/simnet/-/tree/master).
