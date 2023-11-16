@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@zombienet/dsl-parser-wrapper": "^0.1.10",
-    "@zombienet/orchestrator": "^0.0.62",
+    "@zombienet/orchestrator": "^0.0.63",
     "@zombienet/utils": "^0.0.24",
     "cli-progress": "^3.12.0",
     "commander": "^11.1.0",
