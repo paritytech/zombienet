@@ -545,7 +545,6 @@ export class KubeClient extends Client {
         type: "deployment",
         files: [
           settings.backchannel ? "backchannel-pod.yaml" : null,
-          "fileserver-pod.yaml",
         ],
       },
     ];
@@ -557,6 +556,8 @@ export class KubeClient extends Client {
     }
 
     // wait until fileserver is ready, fix race condition #700.
+    const xinfra = process.env.X_INFRA_INSTANCE || "ondemand";
+    await this.createStaticResource("fileserver-pod.yaml", this.namespace, { xinfra });
     await this.waitPodReady("fileserver");
     sleep(3 * 1000);
     let fileServerOk = false;

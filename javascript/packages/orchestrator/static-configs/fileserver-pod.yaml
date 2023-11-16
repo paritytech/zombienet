@@ -4,7 +4,8 @@
     "metadata": {
         "name": "fileserver",
         "labels": {
-            "app": "fileserver"
+            "app": "fileserver",
+            "x-infra-instance": "{{xinfra}}"
         }
     },
     "spec": {
