@@ -561,8 +561,8 @@ async function getCollatorNodeFromConfig(
     collatorConfig.validator !== undefined
       ? collatorConfig.validator
       : cumulusBased
-      ? true
-      : false;
+        ? true
+        : false;
 
   if (collatorConfig.args)
     args = args.concat(
