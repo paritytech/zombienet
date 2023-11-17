@@ -33,16 +33,16 @@ chain = "bifrost-kusama-local"
   args = ["-lparachain=debug"]
 
 
-[[parachains]]
-id = 2002
-chain = "turing-dev"
-cumulus_based = true
+# [[parachains]]
+# id = 2002
+# chain = "turing-dev"
+# cumulus_based = true
 
-  [parachains.collator]
-  name = "alister"
-  image = "{{OAK_COL_IMAGE}}"
-  command = "/oak/oak-collator"
-  args = ["-lparachain=debug"]
+#   [parachains.collator]
+#   name = "alister"
+#   image = "{{OAK_COL_IMAGE}}"
+#   command = "/oak/oak-collator"
+#   args = ["-lparachain=debug"]
 
 [types.Header]
 number = "u64"
