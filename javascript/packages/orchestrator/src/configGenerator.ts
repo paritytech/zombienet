@@ -353,7 +353,13 @@ export async function generateNetworkSpec(
           ? parachain.genesis_state_generator
           : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
 
-        computedStateCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
+        // TODO: we should remove this conditional ones
+        // https://github.com/paritytech/polkadot-sdk/pull/2375 and
+        // https://github.com/paritytech/polkadot-sdk/pull/2370
+        // and the jobs tha use a previous version of the collators reach those fixes.
+        computedStateCommand += `${
+          isCumulusBased ? " >" : ""
+        } {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
 
       if (parachain.genesis_wasm_path) {
@@ -376,7 +382,13 @@ export async function generateNetworkSpec(
           ? parachain.genesis_wasm_generator
           : `${collatorBinary} ${DEFAULT_WASM_GENERATE_SUBCOMMAND}`;
 
-        computedWasmCommand += ` > {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
+        // TODO: we should remove this conditional ones
+        // https://github.com/paritytech/polkadot-sdk/pull/2375 and
+        // https://github.com/paritytech/polkadot-sdk/pull/2370
+        // and the jobs tha use a previous version of the collators reach those fixes.
+        computedWasmCommand += `${
+          isCumulusBased ? " >" : ""
+        } {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
       let parachainSetup: Parachain = {
@@ -549,8 +561,8 @@ async function getCollatorNodeFromConfig(
     collatorConfig.validator !== undefined
       ? collatorConfig.validator
       : cumulusBased
-        ? true
-        : false;
+      ? true
+      : false;
 
   if (collatorConfig.args)
     args = args.concat(
