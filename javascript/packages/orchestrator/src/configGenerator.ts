@@ -358,7 +358,7 @@ export async function generateNetworkSpec(
         // https://github.com/paritytech/polkadot-sdk/pull/2370
         // and the jobs tha use a previous version of the collators reach those fixes.
         computedStateCommand += `${
-          isCumulusBased ? " >" : ""
+          isCumulusBased ? "" : " >"
         } {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
 
@@ -387,7 +387,7 @@ export async function generateNetworkSpec(
         // https://github.com/paritytech/polkadot-sdk/pull/2370
         // and the jobs tha use a previous version of the collators reach those fixes.
         computedWasmCommand += `${
-          isCumulusBased ? " >" : ""
+          isCumulusBased ? "" : " >"
         } {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
