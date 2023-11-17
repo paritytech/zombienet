@@ -195,8 +195,8 @@ export class NativeClient extends Client {
         result.stdout !== ""
           ? result.stdout
           : result.stderr !== ""
-          ? result.stderr
-          : "";
+            ? result.stderr
+            : "";
 
       return {
         exitCode: result.exitCode,
