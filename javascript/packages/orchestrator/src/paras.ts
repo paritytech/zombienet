@@ -236,9 +236,9 @@ export async function generateParachainFiles(
             ? chainSpecFullPath
             : `${client.remoteDir}/${chainSpecFileName}`;
 
-        genesisStateGenerator = genesisStateGenerator.replace(
-          " > ",
-          ` --chain ${chainSpecPathInNode} > `,
+        genesisStateGenerator = injectChainInCmd(
+          genesisStateGenerator,
+          chainSpecPathInNode!,
         );
       }
       commands.push(`${genesisStateGenerator}-${parachain.id}`);
@@ -255,9 +255,9 @@ export async function generateParachainFiles(
             ? chainSpecFullPath
             : `${client.remoteDir}/${chainSpecFileName}`;
 
-        genesisWasmGenerator = genesisWasmGenerator.replace(
-          " > ",
-          ` --chain ${chainSpecPathInNode} > `,
+        genesisWasmGenerator = injectChainInCmd(
+          genesisWasmGenerator,
+          chainSpecPathInNode!,
         );
       }
       commands.push(`${genesisWasmGenerator}-${parachain.id}`);
@@ -348,4 +348,12 @@ function getChainSpecCmdRaw(chainSpecCommand: string) {
   }
 
   return returnCmd;
+}
+
+function injectChainInCmd(cmd: string, chain: string): string {
+  const parts = cmd.split(" ");
+  const l = parts.length;
+  const index = parts[l - 1] == ">" ? l - 2 : l - 1;
+  parts.splice(index, 0, `--chain ${chain}`);
+  return parts.join(" ");
 }
