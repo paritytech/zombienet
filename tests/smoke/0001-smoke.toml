@@ -11,12 +11,17 @@ command = "polkadot"
   max_validators_per_core = 2
   needed_approvals = 2
 
-
   [[relaychain.nodes]]
   name = "alice"
 
   [[relaychain.nodes]]
   name = "bob"
+
+  [[relaychain.nodes]]
+  name = "charlie"
+
+  [[relaychain.nodes]]
+  name = "dave"
 
 [[parachains]]
 id = 100
@@ -34,6 +39,7 @@ id = 101
   name = "collator101"
   image = "{{CUMULUS_TEST_IMAGE}}"
   command = "test-parachain"
+  args = ["-lparachain=debug"]
 
 [types.Header]
 number = "u64"
