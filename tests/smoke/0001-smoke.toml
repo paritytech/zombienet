@@ -27,6 +27,14 @@ add_to_genesis = true
   image = "{{COL_IMAGE}}"
   command = "adder-collator"
 
+[[parachains]]
+id = 101
+
+  [parachains.collator]
+  name = "collator101"
+  image = "{{CUMULUS_TEST_IMAGE}}"
+  command = "test-parachain"
+
 [types.Header]
 number = "u64"
 parent_hash = "Hash"
