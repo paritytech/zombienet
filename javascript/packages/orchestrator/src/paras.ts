@@ -353,9 +353,9 @@ function getChainSpecCmdRaw(chainSpecCommand: string) {
 // Inject the chain (e.g. --chain <chain path>) before the output file or the
 // shell redirection `>`.
 function injectChainInCmd(cmd: string, chain: string): string {
-  const parts = cmd.split(" ");
+  const parts = cmd.split(" ").filter(Boolean);
   const l = parts.length;
-  const index = parts[l - 3] == ">" ? l - 3 : l - 2;
+  const index = parts[l - 2] == ">" ? l - 2 : l - 1;
   parts.splice(index, 0, `--chain ${chain}`);
   return parts.join(" ");
 }
