@@ -333,6 +333,10 @@ export async function generateNetworkSpec(
         ? firstCollator.commandWithArgs.split(" ")[0]
         : firstCollator.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
+      // `test-parachain` doesn't support output file yet
+      const exportCmdSupportOutputFile =
+        isCumulusBased && collatorBinary !== "test-parachain";
+
       if (parachain.genesis_state_path) {
         const genesisStatePath = resolve(
           process.cwd(),
@@ -358,7 +362,7 @@ export async function generateNetworkSpec(
         // https://github.com/paritytech/polkadot-sdk/pull/2370
         // and the jobs tha use a previous version of the collators reach those fixes.
         computedStateCommand += `${
-          isCumulusBased ? "" : " >"
+          exportCmdSupportOutputFile ? "" : " >"
         } {{CLIENT_REMOTE_DIR}}/${GENESIS_STATE_FILENAME}`;
       }
 
@@ -387,7 +391,7 @@ export async function generateNetworkSpec(
         // https://github.com/paritytech/polkadot-sdk/pull/2370
         // and the jobs tha use a previous version of the collators reach those fixes.
         computedWasmCommand += `${
-          isCumulusBased ? "" : " >"
+          exportCmdSupportOutputFile ? "" : " >"
         } {{CLIENT_REMOTE_DIR}}/${GENESIS_WASM_FILENAME}`;
       }
 
