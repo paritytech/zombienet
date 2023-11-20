@@ -22,35 +22,36 @@ status_gauges = {
 }
 
 def fetch_jobs_by_runner(runner_id):
-    """Fetch jobs from a specific GitLab Runner and update Prometheus metrics."""
+    status_counts = {status: 0 for status in status_gauges}
+    
     page = 1
     while True:
         headers = {'PRIVATE-TOKEN': GITLAB_PRIVATE_TOKEN}
-        params = {'page': page, 'per_page': 100} 
+        params = {'page': page, 'per_page': 100}
         response = requests.get(GITLAB_API_ENDPOINT.format(runner_id), headers=headers, params=params)
-        response.raise_for_status() 
+        response.raise_for_status()
 
         jobs = response.json()
         if not jobs:
-            break 
+            break
 
         for job in jobs:
             status = job.get('status')
             if status in status_gauges:
-                status_gauges[status].inc()
+                status_counts[status] += 1
 
-        page += 1 
+        page += 1
+
+    for status, count in status_counts.items():
+        status_gauges[status].set(count)
 
 def main():
     start_http_server(8000)
     print("Metrics server running on port 8000")
 
     while True:
-        for gauge in status_gauges.values():
-            gauge.set(0)
-
         fetch_jobs_by_runner(RUNNER_ID)
-        time.sleep(60) 
+        time.sleep(60)
 
 if __name__ == '__main__':
     main()
