@@ -40,7 +40,7 @@
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/deep-equal-in-any-order": "^1.0.3",
-    "@types/mocha": "^10.0.4",
+    "@types/mocha": "^10.0.6",
     "@types/nunjucks": "^3.2.6",
     "@types/sinon": "^17.0.2",
     "chai": "^4.3.10",
