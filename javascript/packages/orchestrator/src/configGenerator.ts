@@ -440,7 +440,6 @@ export async function generateNetworkSpec(
             parachain.chain ? "--chain {{chainName}}" : ""
           } --disable-default-bootnode`;
 
-
       parachainSetup = {
         ...parachainSetup,
         ...(parachain.balance ? { balance: parachain.balance } : {}),
