@@ -128,9 +128,21 @@ async function performChainUpgrade(api: ApiPromise, code: string) {
           unsub();
           return resolve();
         } else if (result.isError) {
-          console.log(`Transaction Error`);
           unsub();
-          return reject();
+          if(result.status.isInvalid) {
+            // Allow `invalid` tx, since we will validate the hash of the `code` later
+            // The problem being that there are forks
+            // Block X is build with the tx included
+            // X gets retracted by Y that doesn't has the tx included
+            // And thus the tx lands in the tx pool again
+            // Then another block on top of x is build that tries to include the tx again and boom
+            // It reports it as invalid, because it was already included
+            console.log(`Transaction invalid:`, JSON.stringify(result));
+            return resolve();
+          } else {
+            console.log(`Transaction Error:`, JSON.stringify(result));
+            return reject();
+          }
         }
       });
   });
