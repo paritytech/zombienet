@@ -129,7 +129,7 @@ async function performChainUpgrade(api: ApiPromise, code: string) {
           return resolve();
         } else if (result.isError) {
           unsub();
-          if(result.status.isInvalid) {
+          if (result.status.isInvalid) {
             // Allow `invalid` tx, since we will validate the hash of the `code` later
             // The problem being that there are forks
             // Block X is build with the tx included
