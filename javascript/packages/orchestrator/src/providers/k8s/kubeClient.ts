@@ -585,7 +585,7 @@ export class KubeClient extends Client {
   async checkFileServer(): Promise<boolean> {
     const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
     debug("checking fileserver", args);
-    const result = await this.runCommand(args, { allowFail: true } );
+    const result = await this.runCommand(args, { allowFail: true });
     debug("result", result);
     return result.stdout.includes("Welcome to nginx");
   }
