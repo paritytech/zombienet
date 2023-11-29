@@ -553,13 +553,14 @@ export class KubeClient extends Client {
       }
     }
 
-    // wait until fileserver is ready, fix race condition #700.
     const xinfra = process.env.X_INFRA_INSTANCE || "ondemand";
+    debug("creating fileserver");
     await this.createStaticResource("fileserver-pod.yaml", this.namespace, {
       xinfra,
     });
+    debug("waiting for pod: fileserver, to be ready");
     await this.waitPodReady("fileserver");
-    sleep(3 * 1000);
+    debug("pod: fileserver, ready");
     let fileServerOk = false;
     let attempts = 0;
     // try 5 times at most
@@ -584,7 +585,7 @@ export class KubeClient extends Client {
   async checkFileServer(): Promise<boolean> {
     const args = ["exec", "Pod/fileserver", "--", "curl", `http://localhost/`];
     debug("checking fileserver", args);
-    const result = await this.runCommand(args);
+    const result = await this.runCommand(args, { allowFail: true } );
     debug("result", result);
     return result.stdout.includes("Welcome to nginx");
   }
@@ -765,9 +766,17 @@ export class KubeClient extends Client {
         exitCode: result.exitCode,
         stdout: result.stdout,
       };
-    } catch (error) {
+    } catch (error: any) {
       debug(error);
-      throw error;
+      if (!opts?.allowFail) throw error;
+
+      const { exitCode, stdout, message: errorMsg } = error;
+
+      return {
+        exitCode,
+        stdout,
+        errorMsg,
+      };
     }
   }
 
