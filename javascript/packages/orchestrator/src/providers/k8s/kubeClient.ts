@@ -731,8 +731,18 @@ export class KubeClient extends Client {
     if (withTimestamp) args.push("--timestamps=true");
     args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
 
-    const result = await this.runCommand(args, { scoped: false });
-    return result.stdout;
+    const result = await this.runCommand(args, { scoped: false, allowFail: true });
+    if( result.exitCode == 0 ) {
+      return result.stdout;
+    } else {
+      const warnMsg = `[WARN] error getting log for pod: ${podName}`;
+      debug(warnMsg);
+      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        [decorators.yellow(warnMsg)],
+      ]);
+      return result.stderr || "";
+    }
+
   }
 
   async dumpLogs(path: string, podName: string) {
