@@ -656,6 +656,7 @@ export class KubeClient extends Client {
     port: number,
     identifier: string,
     namespace?: string,
+    localPort?: number,
   ): Promise<number> {
     let intents = 0;
     const createTunnel = (
@@ -684,6 +685,7 @@ export class KubeClient extends Client {
         port,
         identifier,
         namespace,
+        localPort,
       );
 
       let resolved = false;

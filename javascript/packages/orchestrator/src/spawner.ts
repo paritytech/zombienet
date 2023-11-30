@@ -140,14 +140,24 @@ export const spawnNode = async (
       node.prometheusPrefix,
     );
   } else {
+    const external_port =
+      node.externalPorts![
+        node.substrateCliArgsVersion == 0 ? "wsPort" : "rpcPort"
+      ];
     const nodeIdentifier = `service/${podDef.metadata.name}`;
     const fwdPort = await client.startPortForwarding(
       endpointPort,
       nodeIdentifier,
+      namespace,
+      external_port,
     );
+
+    const external_port_prom = node.externalPorts!["prometheusPort"];
     const nodePrometheusPort = await client.startPortForwarding(
       PROMETHEUS_PORT,
       nodeIdentifier,
+      namespace,
+      external_port_prom,
     );
 
     const listeningIp = opts.local_ip || LOCALHOST;
