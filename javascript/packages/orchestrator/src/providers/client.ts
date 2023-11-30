@@ -57,6 +57,7 @@ export abstract class Client {
     port: number,
     identifier: string,
     namespace?: string,
+    localport?: number,
   ): Promise<number>;
   abstract runCommand(
     args: string[],
