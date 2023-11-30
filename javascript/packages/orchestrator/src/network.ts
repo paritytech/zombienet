@@ -171,7 +171,7 @@ export class Network {
     const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
       this.client.dumpLogs(this.tmpDir, node.name);
     });
-    await Promise.all(dumpsPromises);
+    await Promise.allSettled(dumpsPromises);
 
     if (showLogPath)
       new CreateLogTable({ colWidths: [20, 100] }).pushToPrint([
