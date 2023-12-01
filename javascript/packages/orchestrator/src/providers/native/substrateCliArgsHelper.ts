@@ -10,10 +10,9 @@ export const getCliArgsVersion = async (
   const logs = (await client.runCommand(["-c", fullCmd], { allowFail: true }))
     .stdout;
 
-
-  if logs.includes("--ws-port <PORT>") {
+  if (logs.includes("--ws-port <PORT>")) {
     return SubstrateCliArgsVersion.V0;
-  } else if !logs.includes("--insecure-validator-i-know-what-i-do") {
+  } else if (!logs.includes("--insecure-validator-i-know-what-i-do")) {
     return SubstrateCliArgsVersion.V1;
   } else {
     return SubstrateCliArgsVersion.V2;

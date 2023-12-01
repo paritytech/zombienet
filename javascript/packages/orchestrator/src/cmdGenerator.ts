@@ -266,7 +266,10 @@ export async function genCmd(
 
   if (validator) {
     if (!args.includes("--validator")) args.push("--validator");
-    if (nodeSetup.substrateCliArgsVersion >= SubstrateCliArgsVersion.V2) {
+    if (
+      nodeSetup.substrateCliArgsVersion &&
+      nodeSetup.substrateCliArgsVersion >= SubstrateCliArgsVersion.V2
+    ) {
       args.push("--insecure-validator-i-know-what-i-do");
     }
   }
