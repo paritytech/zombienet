@@ -7,7 +7,7 @@ export const getCliArgsVersion = async (
   command: string,
 ): Promise<SubstrateCliArgsVersion> => {
   const client = getClient();
-  const fullCmd = `${command} --help | grep ws-port`;
+  const fullCmd = `${command} --help`;
   const node = await createTempNodeDef(
     "temp",
     image,
