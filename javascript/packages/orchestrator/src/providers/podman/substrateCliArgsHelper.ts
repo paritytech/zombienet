@@ -22,5 +22,5 @@ export const getCliArgsVersion = async (
 
   return logs.includes("--ws-port <PORT>")
     ? SubstrateCliArgsVersion.V0
-    : SubstrateCliArgsVersion.V1;
+    : SubstrateCliArgsVersion.V2;
 };

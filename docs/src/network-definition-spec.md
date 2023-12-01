@@ -28,7 +28,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `chain_spec_path`: (String) Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
 - `chain_spec_command`: (String) Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
 - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
-- `default_substrate_cli_args_version`: (0|1) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
+- `default_substrate_cli_args_version`: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 - `default_overrides`: (Array of objects) An array of overrides to upload to the nodes, objects with:
   - `local_path`: string;
   - `remote_name`: string;
@@ -42,7 +42,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `command`: (String) Override default command.
   - `command_with_args`: (String) Override default command and args.
   - `args`: (Array of strings) Arguments to be passed to the `command`.
-  - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
+  - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
   - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
   - `invulnerable`: (Boolean, default false) If true, the node will be added to `invulnerables` in the chain spec.
   - `balance`: (number, default 2000000000000) Balance to set in `balances` for node's account.
@@ -70,7 +70,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `overrides`: Array of `overrides` definitions.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply to all the nodes of the group; Defaults to 'substrate'.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
-  - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
+  - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 
 ## `parachains`
 
@@ -108,7 +108,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
-      - `substrate_cli_args_version`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
+      - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 
   - `onboard_as_parachain`: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread
   - `register_para`: (Boolean, default true) flag to specify whether the para should be registered. The `add_to_genesis` flag **must** be set to false for this flag to have any effect.
