@@ -200,7 +200,7 @@
 <li><code>chain_spec_path</code>: (String) Path to the chain spec file, <strong>NOTE</strong> should be the <code>plain</code> version to allow customizations.</li>
 <li><code>chain_spec_command</code>: (String) Command to generate the chain spec, <strong>NOTE</strong> can't be used in combination with <code>chain_spec_path</code>.</li>
 <li><code>default_args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
-<li><code>default_substrate_cli_args_version</code>: (0|1) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
+<li><code>default_substrate_cli_args_version</code>: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>default_overrides</code>: (Array of objects) An array of overrides to upload to the nodes, objects with:
 <ul>
 <li><code>local_path</code>: string;</li>
@@ -218,7 +218,7 @@
 <li><code>command</code>: (String) Override default command.</li>
 <li><code>command_with_args</code>: (String) Override default command and args.</li>
 <li><code>args</code>: (Array of strings) Arguments to be passed to the <code>command</code>.</li>
-<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
+<li><code>substrate_cli_args_version</code>: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>validator</code>: (Boolean, default true) Pass the <code>--validator</code> flag to the <code>command</code>.</li>
 <li><code>invulnerable</code>: (Boolean, default false) If true, the node will be added to <code>invulnerables</code> in the chain spec.</li>
 <li><code>balance</code>: (number, default 2000000000000) Balance to set in <code>balances</code> for node's account.</li>
@@ -255,7 +255,7 @@
 <li><code>overrides</code>: Array of <code>overrides</code> definitions.</li>
 <li><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply to all the nodes of the group; Defaults to 'substrate'.</li>
 <li><code>resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the node.</li>
-<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
+<li><code>substrate_cli_args_version</code>: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 </ul>
 </li>
 </ul>
@@ -319,7 +319,7 @@
 <ul>
 <li>name: (String) name of the <code>env</code> var.</li>
 <li>value: (String| number) Value of the env var.</li>
-<li><code>substrate_cli_args_version</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
+<li><code>substrate_cli_args_version</code>: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 </ul>
 </li>
 </ul>
