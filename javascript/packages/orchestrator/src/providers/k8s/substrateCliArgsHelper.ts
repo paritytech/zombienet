@@ -23,9 +23,9 @@ export const getCliArgsVersion = async (
   await client.spawnFromDef(podDef);
   const logs = await client.getNodeLogs(podName);
 
-  if logs.includes("--ws-port <PORT>") {
+  if (logs.includes("--ws-port <PORT>")) {
     return SubstrateCliArgsVersion.V0;
-  } else if !logs.includes("--insecure-validator-i-know-what-i-do") {
+  } else if (!logs.includes("--insecure-validator-i-know-what-i-do")) {
     return SubstrateCliArgsVersion.V1;
   } else {
     return SubstrateCliArgsVersion.V2;
