@@ -135,6 +135,7 @@ export async function generateNetworkSpec(
       delayNetworkSettings:
         config.relaychain.default_delay_network_settings ||
         config.settings?.global_delay_network_global_settings,
+      defaultSubstrateCliArgsVersion: config.relaychain.default_substrate_cli_args_version,
     },
     parachains: [],
   };
@@ -614,6 +615,15 @@ async function getCollatorNodeFromConfig(
       networkSpec.settings.delayNetworkSettings,
   };
 
+  // use parachain config here.
+  if (
+    collatorConfig.substrate_cli_args_version ||
+    parachain.default_substrate_cli_args_version
+  )
+    node.substrateCliArgsVersion =
+      node.substrate_cli_args_version ||
+      networkSpec.relaychain.default_substrate_cli_args_version;
+
   if (group) node.group = group;
   return node;
 }
@@ -711,11 +721,11 @@ async function getNodeFromConfig(
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
   if (
     node.substrate_cli_args_version ||
-    networkSpec.default_substrate_cli_args_version
+    networkSpec.relaychain.defaultSubstrateCliArgsVersion
   )
     nodeSetup.substrateCliArgsVersion =
       node.substrate_cli_args_version ||
-      networkSpec.default_substrate_cli_args_version;
+      networkSpec.relaychain.defaultSubstrateCliArgsVersion;
   return nodeSetup;
 }
 

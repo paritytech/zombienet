@@ -84,6 +84,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `genesis_state_path`: (String) Path to the state file to use.
   - `genesis_state_generator`: (String) Command to generate the state file.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to all parachain nodes/collators; Defaults to 'substrate'.
+  - `default_substrate_cli_args_version`: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
   - `collator`:
 
     - `*name`: (String) Name of the collator.
@@ -96,6 +97,7 @@ The network config can be provided both in `json` or `toml` format and each sect
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
     - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
+    - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 
   - `collator_groups`:
 

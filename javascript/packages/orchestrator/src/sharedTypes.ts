@@ -1,6 +1,7 @@
 import { CHAIN } from "./chain-decorators";
 
 export enum SubstrateCliArgsVersion {
+  // Includes the --ws-port flag.
   V0 = 0,
   V1 = 1,
   // Includes the --insecure-validator-i-know-what-i-do flag.
@@ -50,6 +51,7 @@ export interface Parachain extends CommonParachainConfig {
   specPath?: string;
   wasmPath?: string;
   statePath?: string;
+  defaultSubstrateCliArgsVersion?: SubstrateCliArgsVersion;
   collators: Node[];
 }
 

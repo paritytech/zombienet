@@ -66,6 +66,7 @@ export interface ComputedNetwork {
     genesis?: JSON | ObjectJSON;
     defaultResources?: Resources;
     delayNetworkSettings?: DelayNetworkSettings;
+    defaultSubstrateCliArgsVersion?: SubstrateCliArgsVersion;
   };
   parachains: Parachain[];
   types: any;
@@ -120,6 +121,7 @@ export interface ParachainConfig extends CommonParachainConfig {
   collator?: NodeConfig;
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
+  default_substrate_cli_args_version?: SubstrateCliArgsVersion;
 }
 
 export interface NodeGroupConfig extends NodeCommonTypes {
