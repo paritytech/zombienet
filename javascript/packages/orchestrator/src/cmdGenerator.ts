@@ -264,7 +264,12 @@ export async function genCmd(
   if (jaegerUrl && zombieRole === ZombieRole.Node)
     args.push(...["--jaeger-agent", jaegerUrl]);
 
-  if (validator && !args.includes("--validator")) args.push("--validator");
+  if (validator) {
+    if (!args.includes("--validator")) args.push("--validator");
+    if (nodeSetup.substrateCliArgsVersion >= SubstrateCliArgsVersion.V2) {
+      args.push("--insecure-validator-i-know-what-i-do");
+    }
+  }
 
   if (zombieRole === ZombieRole.Collator && parachainId) {
     const parachainIdArgIndex = args.findIndex((arg) =>

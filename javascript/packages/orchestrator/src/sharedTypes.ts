@@ -3,6 +3,8 @@ import { CHAIN } from "./chain-decorators";
 export enum SubstrateCliArgsVersion {
   V0 = 0,
   V1 = 1,
+  // Includes the --insecure-validator-i-know-what-i-do flag.
+  V2 = 2,
 }
 
 // enums
