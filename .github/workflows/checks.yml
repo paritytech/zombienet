@@ -17,3 +17,16 @@ jobs:
           node-version: "18"
       - run: npm install -g cspell
       - run: cd javascript && cspell .
+
+  check-nix-hash:
+    name: "Check nix hash is up-to-date"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v24
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+            echo "If the job is failing with: \"hash mismatch in fixed-output derivation\""
+            echo "Copy the hash after `got:` and replace `npmDepsHash` in `flake-module.nix`"
+            nix build
