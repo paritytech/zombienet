@@ -28,5 +28,5 @@ jobs:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: |
             echo "If the job is failing with: \"hash mismatch in fixed-output derivation\""
-            echo "Copy the hash after `got:` and replace `npmDepsHash` in `flake-module.nix`"
+            echo "Copy the hash after \"got:\" and replace \"npmDepsHash\" in \"flake-module.nix\""
             nix build
