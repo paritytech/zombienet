@@ -41,6 +41,7 @@ import {
   Node,
   ZombieRole,
 } from "./sharedTypes";
+import { generateNamespace } from "@zombienet/utils";
 
 const debug = require("debug")("zombie::config-manager");
 
@@ -496,20 +497,19 @@ export async function generateBootnodeSpec(
 }
 
 interface UsedNames {
-  [properyName: string]: number;
+  [properyName: string]: boolean;
 }
 
 const mUsedNames: UsedNames = {};
 
 export function getUniqueName(name: string): string {
-  let uniqueName;
-  if (!mUsedNames[name]) {
-    mUsedNames[name] = 1;
-    uniqueName = name;
-  } else {
-    uniqueName = `${name}-${mUsedNames[name]}`;
-    mUsedNames[name] += 1;
+  let uniqueName = `${name}-${generateNamespace()}`;
+  
+  while (mUsedNames[uniqueName]) {
+    uniqueName = `${name}-${generateNamespace()}`;
   }
+
+  mUsedNames[uniqueName] = true;
 
   return uniqueName;
 }

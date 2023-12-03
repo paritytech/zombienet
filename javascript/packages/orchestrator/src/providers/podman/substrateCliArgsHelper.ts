@@ -17,7 +17,7 @@ export const getCliArgsVersion = async (
 
   const podDef = await genNodeDef(client.namespace, node);
   const podName = podDef.metadata.name;
-  await client.spawnFromDef(podDef);
+  await client.spawnFromDef(podDef, [], true);
   const logs = await client.getNodeLogs(podName);
 
   if (logs.includes("--ws-port <PORT>")) {

@@ -71,6 +71,7 @@ export abstract class Client {
   abstract spawnFromDef(
     podDef: any,
     filesToCopy?: fileMap[],
+    waitExit?: boolean,
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string, //delay?: DelayNetworkSettings,

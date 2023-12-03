@@ -9,6 +9,7 @@ import {
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
   NODE_CONTAINER_WAIT_LOG,
   WAIT_UNTIL_SCRIPT_SUFIX,
+  PODMAN_WAIT_UNTIL_SCRIPT_SUFIX,
 } from "./constants";
 import { decorate } from "./chain-decorators";
 import { Providers } from "./providers";
@@ -267,7 +268,7 @@ export async function generateParachainFiles(
     if (client.providerName == "kubernetes")
       commands.push(K8S_WAIT_UNTIL_SCRIPT_SUFIX);
     else if (client.providerName == "podman")
-      commands.push(WAIT_UNTIL_SCRIPT_SUFIX);
+      commands.push(PODMAN_WAIT_UNTIL_SCRIPT_SUFIX);
 
     const node: Node = {
       name: getUniqueName("temp-collator"),
