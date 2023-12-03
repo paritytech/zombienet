@@ -222,7 +222,7 @@
         # output is something like what npm 'pkg` does, but more sandboxed
         default = pkgs.buildNpmPackage rec {
           # generally Node should be same as in CI build config
-          # root hash (hash of hashes of each dependnecies)
+          # root hash (hash of hashes of each dependencies)
           # this should be updated on each dependency change (use `prefetch-npm-deps` to get new hash)
           inherit name npmDepsHash runtimeDeps;
           pname = name;
