@@ -26,7 +26,8 @@ jobs:
       - uses: cachix/install-nix-action@v24
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: |
+      - name: "Building the nix file"
+        run: |
             echo "If the job is failing with: \"hash mismatch in fixed-output derivation\""
             echo "Copy the hash after \"got:\" and replace \"npmDepsHash\" in \"flake-module.nix\" with the hash"
             ! nix develop --command "exit 1" 2>&1 | grep "hash mismatch" -A2
