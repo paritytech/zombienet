@@ -8,6 +8,8 @@ if [ -f /cfg/coreutils ]; then
     LS="/cfg/coreutils ls"
     KILL="/cfg/coreutils kill"
     SLEEP="/cfg/coreutils sleep"
+    ECHO="/cfg/coreutils echo"
+    CAT="/cfg/coreutils cat"
 else
     RM="rm"
     MKFIFO="mkfifo"
@@ -15,6 +17,7 @@ else
     LS="ls"
     KILL="kill"
     SLEEP="sleep"
+    CAT="cat"
 fi
 
 
@@ -44,6 +47,8 @@ child_pid=""
 # get the command to exec
 CMD=($@)
 
+# File to store CMD (and update from there)
+ZOMBIE_CMD_FILE=/cfg/zombie.cmd
 restart() {
     if [ ! -z "${child_pid}" ]; then
         $KILL -9 "$child_pid"
@@ -71,6 +76,16 @@ resume() {
     fi
 }
 
+# update start cmd by reading /cfg/zombie.cmd
+update_zombie_cmd() {
+    NEW_CMD=$($CAT $ZOMBIE_CMD_FILE)
+    CMD=($NEW_CMD)
+}
+
+# Store the cmd and make it available to later usage
+# NOTE: echo without new line to allow to customize the cmd later
+$ECHO -n "${CMD[@]}" > $ZOMBIE_CMD_FILE
+
 # Exec the command and get the child pid
 "${CMD[@]}" &
 child_pid="$!"
@@ -83,7 +98,7 @@ fi;
 # keep listening from the pipe
 while read line <$pipe
 do
-    if [[ "$line" == 'quit' ]]; then
+    if [[ "$line" == "quit" ]]; then
         break
     elif [[ "$line" =~ "restart" ]]; then
         # check if we have timeout between restart
@@ -96,6 +111,8 @@ do
         pause
     elif [[ "$line" == "resume" ]]; then
         resume
+    elif [[ "$line" == "update-cmd" ]]; then
+        update_zombie_cmd
     fi
 done
 
