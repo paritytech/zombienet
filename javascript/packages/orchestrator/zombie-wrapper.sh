@@ -76,7 +76,7 @@ resume() {
     fi
 }
 
-# update start cmd by readin /cfg/zombie.cmd
+# update start cmd by reading /cfg/zombie.cmd
 update_zombie_cmd() {
     NEW_CMD=$($CAT $ZOMBIE_CMD_FILE)
     CMD=($NEW_CMD)
