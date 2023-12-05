@@ -29,7 +29,7 @@ The first lines are used to define the **header fields**:
 - Network: .......... Path to the network definition file, supported both `json` and `toml` formats.
 - Creds: ............ Credentials file name or `path` to use (**Only** with `kubernetes` provider), we look in the current directory or in `$HOME/.kube/` if a filename is passed.
 
-**Then** each line define a test `assertion` or a `commnad`.
+**Then** each line define a test `assertion` or a `command`.
 
 ### Available Assertions
 
