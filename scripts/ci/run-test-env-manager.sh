@@ -25,7 +25,7 @@ OPTION
                      https://github.com/paritytech/polkadot/tree/master/simnet_tests
   -h, --help         OPTIONAL Print this help message
   -o, --output-dir   OPTIONAL
-                     Path to dir where to save contens of --github-remote-dir
+                     Path to dir where to save contents of --github-remote-dir
                      Defaults to ${SCRIPT_PATH}
                      specified, it will be ifered from there.
 
