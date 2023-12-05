@@ -24,7 +24,7 @@ OPTION
   -c, --concurrency  OPTIONAL concurrency for spawn nodes
   -h, --help         OPTIONAL Print this help message
   -o, --output-dir   OPTIONAL
-                     Path to dir where to save contens of --local-dir
+                     Path to dir where to save contents of --local-dir
                      Defaults to ${SCRIPT_PATH}
                      specified, it will be ifered from there.
 
