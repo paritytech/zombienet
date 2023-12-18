@@ -37,7 +37,6 @@ jobs:
             # Filter the hash and then replace it in `flake-module.nix`
             # This needs to run before the last step that may let's the job fail
             cat shell_output | grep "got:" | sed "s/[ \t]*got:[ \t]*//" > hash
-            sed "s@npmDepsHash = \"[^\"]*\"@npmDepsHash = \"$(cat hash)\"@" -i flake-module.nix
 
             ! cat shell_output | grep "hash mismatch" -A2
 
