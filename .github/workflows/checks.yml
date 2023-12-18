@@ -37,4 +37,4 @@ jobs:
             sed "s@npmDepsHash = \"[^\"]*\"@npmDepsHash = \"$(cat hash)\"@" -i flake-module.nix
        - uses: stefanzweifel/git-auto-commit-action@v5
          with:
-           commit_message: "Fix nix hash"
+           commit_message: Fix nix hash
