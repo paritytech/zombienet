@@ -23,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
 
       - uses: cachix/install-nix-action@v24
         with:
@@ -46,4 +48,3 @@ jobs:
         with:
           add_options: '-u'
           commit_message: Fix nix hash
-          token: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
