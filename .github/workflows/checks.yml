@@ -46,3 +46,4 @@ jobs:
         with:
           add_options: '-u'
           commit_message: Fix nix hash
+          token: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
