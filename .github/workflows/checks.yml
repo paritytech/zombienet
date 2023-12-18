@@ -23,9 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: cachix/install-nix-action@v24
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: "Building the nix file"
         run: |
             echo "If the job is failing with: \"hash mismatch in fixed-output derivation\""
@@ -35,6 +37,7 @@ jobs:
             # Filter the hash and then replace it in `flake-module.nix`
             cat shell_output | grep "got:" | sed "s/[ \t]*got:[ \t]*//" > hash
             sed "s@npmDepsHash = \"[^\"]*\"@npmDepsHash = \"$(cat hash)\"@" -i flake-module.nix
+
        - uses: stefanzweifel/git-auto-commit-action@v5
          with:
            commit_message: Fix nix hash
