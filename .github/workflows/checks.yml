@@ -33,10 +33,12 @@ jobs:
             echo "If the job is failing with: \"hash mismatch in fixed-output derivation\""
             echo "Copy the hash after \"got:\" and replace \"npmDepsHash\" in \"flake-module.nix\" with the hash"
             nix develop --command "exit 1" 2>shell_output
+            cat shell_output
 
             # Filter the hash and then replace it in `flake-module.nix`
             # This needs to run before the last step that may let's the job fail
             cat shell_output | grep "got:" | sed "s/[ \t]*got:[ \t]*//" > hash
+            sed "s@npmDepsHash = \"[^\"]*\"@npmDepsHash = \"$(cat hash)\"@" -i flake-module.nix
 
             ! cat shell_output | grep "hash mismatch" -A2
 
