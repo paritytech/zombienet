@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ZOMBIENET_GITHUB_TOKEN }}
+          token: ${{ secrets.DEPENDABOT_TOKEN }}
 
       - uses: cachix/install-nix-action@v24
         with:
