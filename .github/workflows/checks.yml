@@ -22,9 +22,15 @@ jobs:
     name: "Check nix hash is up-to-date"
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.PUSH_COMMIT_APP_ID }}
+          private-key: ${{ secrets.PUSH_COMMIT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.DEPENDABOT_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: cachix/install-nix-action@v24
         with:
