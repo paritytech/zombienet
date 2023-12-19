@@ -22,12 +22,35 @@ jobs:
     name: "Check nix hash is up-to-date"
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.PUSH_COMMIT_APP_ID }}
+          private-key: ${{ secrets.PUSH_COMMIT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
       - uses: cachix/install-nix-action@v24
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: "Building the nix file"
         run: |
             echo "If the job is failing with: \"hash mismatch in fixed-output derivation\""
             echo "Copy the hash after \"got:\" and replace \"npmDepsHash\" in \"flake-module.nix\" with the hash"
-            ! nix develop --command "exit 1" 2>&1 | grep "hash mismatch" -A2
+            ! nix develop --command "exit 1" 2>shell_output
+
+            # Filter the hash and then replace it in `flake-module.nix`
+            # This needs to run before the last step that may let's the job fail
+            cat shell_output | grep "got:" | sed "s/[ \t]*got:[ \t]*//" > hash
+            sed "s@npmDepsHash = \"[^\"]*\"@npmDepsHash = \"$(cat hash)\"@" -i flake-module.nix
+
+            ! cat shell_output | grep "hash mismatch" -A2
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        if: failure()
+        with:
+          add_options: '-u'
+          commit_message: Fix nix hash
