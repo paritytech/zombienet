@@ -37,8 +37,8 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
-    "@polkadot/api": "^10.11.1",
-    "@polkadot/keyring": "^12.6.1",
+    "@polkadot/api": "^10.11.2",
+    "@polkadot/keyring": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.1",
     "@zombienet/utils": "^0.0.24",
     "chai": "^4.3.10",

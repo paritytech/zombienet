@@ -32,7 +32,7 @@
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
-    "@polkadot/keyring": "^12.5.1",
+    "@polkadot/keyring": "^12.6.2",
     "@polkadot/util": "^12.5.1",
     "@polkadot/util-crypto": "^12.5.1",
     "@types/chai": "^4.3.11",
@@ -41,8 +41,8 @@
   "devDependencies": {
     "@types/node": "^20.10.5",
     "@types/tmp": "^0.2.6",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
