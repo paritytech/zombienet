@@ -50,7 +50,7 @@ jobs:
             ! cat shell_output | grep "hash mismatch" -A2
 
       - uses: stefanzweifel/git-auto-commit-action@v5
-        if: always()
+        if: failure()
         with:
           add_options: '-u'
           commit_message: Fix nix hash
