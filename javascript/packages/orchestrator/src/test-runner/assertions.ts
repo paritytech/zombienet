@@ -324,7 +324,7 @@ const CustomJs = ({
     } catch (err: any) {
       console.log(
         `\n ${decorators.red(
-          `Error importing/running script: ${file_path!}`,
+          `Error running script: ${file_path!}`,
         )} \t ${decorators.bright(err.message)}\n`,
       );
 
