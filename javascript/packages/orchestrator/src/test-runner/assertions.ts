@@ -22,6 +22,8 @@ import { NetworkNode } from "../networkNode";
 import { FnArgs } from "../types";
 const utilCrypto = require("@polkadot/util-crypto");
 
+const debug = require("debug")("zombie::test-runner");
+
 const DEFAULT_INDIVIDUAL_TEST_TIMEOUT = 10; // seconds
 
 // helper
@@ -296,10 +298,12 @@ const CustomJs = ({
       connect,
       registerParachain,
     };
-    const jsScript = await import(resolvedJsFilePath);
 
     let values;
     try {
+      // import user defined code
+      const jsScript = await import(resolvedJsFilePath);
+
       const resp: any = await Promise.race([
         Promise.all(
           nodes.map((node: any) =>
@@ -320,9 +324,11 @@ const CustomJs = ({
     } catch (err: any) {
       console.log(
         `\n ${decorators.red(
-          `Error running script: ${file_path!}`,
+          `Error importing/running script: ${file_path!}`,
         )} \t ${decorators.bright(err.message)}\n`,
       );
+
+      debug(err.stack || "can't print the stack");
       throw new Error(err);
     }
 
