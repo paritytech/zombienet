@@ -559,7 +559,7 @@ export async function addHrmpChannelsToGenesis(
         // No hrmp key in the current chain-spec
         // let's create the struct and assign
         runtimeConfig["hrmp"] = {
-          preopenHrmpChannels: []
+          preopenHrmpChannels: [],
         };
 
         hrmp = runtimeConfig.hrmp;
