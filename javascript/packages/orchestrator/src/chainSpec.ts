@@ -555,6 +555,14 @@ export async function addHrmpChannelsToGenesis(
       // For retro-compatibility with substrate pre Polkadot 0.9.5
       else if (runtimeConfig.parachainsHrmp) {
         hrmp = runtimeConfig.parachainsHrmp;
+      } else {
+        // No hrmp key in the current chain-spec
+        // let's create the struct and assign
+        runtimeConfig["hrmp"] = {
+          preopenHrmpChannels: []
+        };
+
+        hrmp = runtimeConfig.hrmp;
       }
 
       if (hrmp && hrmp.preopenHrmpChannels) {
