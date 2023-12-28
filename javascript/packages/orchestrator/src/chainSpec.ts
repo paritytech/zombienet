@@ -597,9 +597,9 @@ export async function addHrmpChannelsToGenesis(
   }
 }
 
-// Look at the key + values from `obj1` and try to replace them in `obj2`.
+// Look at the key + values from `obj1` (updates) and try to replace them in `obj2` (config)
 function findAndReplaceConfig(obj1: any, obj2: any) {
-  // create new Object without null prototype
+  // create new Object without null prototype, this is a copy from the `config`.
   const tempObj = { ...obj2 };
   // Look at keys of obj1
   Object.keys(obj1).forEach((key) => {
@@ -627,11 +627,26 @@ function findAndReplaceConfig(obj1: any, obj2: any) {
         debug(`[ ${key}: ${JSON.stringify(obj2[key])} ]`);
       }
     } else {
-      console.error(
-        `\n\t\t  ${decorators.reverse(
-          decorators.red("⚠ Bad Genesis Configuration"),
-        )} [ ${key}: ${JSON.stringify(obj1[key])} ]`,
-      );
+      // Allow to add keys, see (https://github.com/paritytech/zombienet/issues/1614)
+      const logLine = ` 🖋  ${decorators.yellow(
+        `Key ${key} not present in the current config, adding...`,
+      )}`;
+      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        [logLine],
+      ]);
+
+      obj2[key] = obj1[key];
+      new CreateLogTable({
+        colWidths: [120],
+        doubleBorder: true,
+      }).pushToPrint([
+        [
+          `${decorators.green(
+            "✓ Updated Genesis Configuration (added key)",
+          )} [ key : ${key} ]`,
+        ],
+      ]);
+      debug(`[ ${key}: ${JSON.stringify(obj2[key])} ]`);
     }
   });
 }
