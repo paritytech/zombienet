@@ -242,13 +242,18 @@ export async function generateParachainFiles(
         );
       }
 
-      if(client.providerName === "native") {
+      if (client.providerName === "native") {
         // inject a tmp base-path to prevent the use of a pre-existing un-purged data directory.
         // see https://github.com/paritytech/zombienet/issues/1519
         // NOTE: this is only needed in native provides since un k8s/podman the fs is always fresh
         const exportGenesisStateCustomPath = `${client.tmpDir}/export-genesis-state/${parachain.id}`;
-        await fs.promises.mkdir(exportGenesisStateCustomPath, { recursive: true });
-        genesisStateGenerator = injectBasePathInCmd(genesisStateGenerator, exportGenesisStateCustomPath);
+        await fs.promises.mkdir(exportGenesisStateCustomPath, {
+          recursive: true,
+        });
+        genesisStateGenerator = injectBasePathInCmd(
+          genesisStateGenerator,
+          exportGenesisStateCustomPath,
+        );
       }
 
       commands.push(`${genesisStateGenerator}-${parachain.id}`);
@@ -375,7 +380,7 @@ function injectChainInCmd(cmd: string, chain: string): string {
 function injectBasePathInCmd(cmd: string, path: string): string {
   const parts = cmd.split(" ").filter(Boolean);
   // IFF is present don't modify the cmd
-  if( parts.includes("-d") || parts.includes("--base-path")) return cmd;
+  if (parts.includes("-d") || parts.includes("--base-path")) return cmd;
 
   // inject just after the subcommand
   parts.splice(2, 0, `-d ${path}`);
