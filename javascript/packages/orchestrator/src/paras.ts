@@ -245,7 +245,7 @@ export async function generateParachainFiles(
       if (client.providerName === "native") {
         // inject a tmp base-path to prevent the use of a pre-existing un-purged data directory.
         // see https://github.com/paritytech/zombienet/issues/1519
-        // NOTE: this is only needed in native provides since un k8s/podman the fs is always fresh
+        // NOTE: this is only needed in native provider since un k8s/podman the fs is always fresh
         const exportGenesisStateCustomPath = `${client.tmpDir}/export-genesis-state/${parachain.id}`;
         await fs.promises.mkdir(exportGenesisStateCustomPath, {
           recursive: true,
