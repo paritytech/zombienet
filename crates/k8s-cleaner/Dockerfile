@@ -3,7 +3,6 @@ WORKDIR /usr/src/k8s-cleaner
 COPY . .
 RUN cargo build --release
 
-#FROM debian:buster-slim
 FROM debian:bookworm-slim
 RUN apt update && apt install -y openssl
 WORKDIR /usr/local/bin
