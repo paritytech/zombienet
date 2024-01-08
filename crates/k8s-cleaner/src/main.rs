@@ -135,7 +135,7 @@ async fn needs_to_delete(
         .text()
         .await?;
     let res_json: serde_json::Value = serde_json::from_str(res.as_str())?;
-    let status = res_json["status"]["text"].as_str().unwrap_or_default();
+    let status = res_json["status"]["text"].as_str().unwrap_or_default().to_lowercase();
     let needs = status.contains("failed") || status.contains("canceled");
     println!("jobid: {job_id} - status: {status} - will delete: {needs}");
     Ok(needs)
