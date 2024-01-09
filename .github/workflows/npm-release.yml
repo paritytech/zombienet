@@ -24,7 +24,7 @@ jobs:
       - name: Upload Utils
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: package_utils_${{ github.run_id }}
           path: "./javascript/packages/utils/*.tgz"
 
       - name: Pack orchestrator
@@ -33,7 +33,7 @@ jobs:
       - name: Upload Orchestrator
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: package_orch_${{ github.run_id }}
           path: "./javascript/packages/orchestrator/*.tgz"
 
       - name: Pack CLI
@@ -42,7 +42,7 @@ jobs:
       - name: Upload CLI
         uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: package_cli_${{ github.run_id }}
           path: "./javascript/packages/cli/*.tgz"
 
       - name: NPM Publish automation
