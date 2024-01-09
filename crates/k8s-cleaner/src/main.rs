@@ -40,7 +40,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 let (job_id, repo) = match get_info_from_annotations(ns) {
                     Ok((job_id, repo)) => (job_id,repo),
-                    Err(_) => { return None }
+                    Err(e) => {
+                        println!("Err: {}", e);
+                        return None
+                    }
                 };
 
                 let ns = NamespaceCI::new(
@@ -60,13 +63,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(|ns| {
             let r = req.clone();
             tokio::spawn(async move {
-                if let Ok(needs) = needs_to_delete(r, &ns.job_id, &ns.repo).await {
+                let res = needs_to_delete(r, &ns.job_id, &ns.repo).await;
+                if let Ok(needs) = res {
                     if needs {
                         Some(ns.ns_name.to_owned())
                     } else {
                         None
                     }
                 } else {
+                    // error
+                    println!("{:?}", res);
                     None
                 }
             })
@@ -134,6 +140,7 @@ async fn needs_to_delete(
         .await?
         .text()
         .await?;
+
     let res_json: serde_json::Value = serde_json::from_str(res.as_str())?;
     let status = res_json["status"]["text"].as_str().unwrap_or_default().to_lowercase();
     let needs = status.contains("failed") || status.contains("canceled");
