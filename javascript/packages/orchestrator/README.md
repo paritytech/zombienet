@@ -34,7 +34,7 @@ Zombienet releases are available in `github`. Each one provides an executable fo
 *without* having `Node.js` installed **but** each `provider` defines it's own requirements (e.g.
 `k8s`, `podman`).
 
-**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines. 
+**Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines.
 Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
 ## Status
@@ -62,7 +62,7 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 Zombienet support [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
 `--provider` flag in the cli. `Podman` for `zombienet` is currently only supported for Linux machines.
-This is mostly related to paths and directories used by 
+This is mostly related to paths and directories used by
 store configuration (chain-spec) and the data directory.
 
 ### With Native
@@ -199,7 +199,7 @@ message with the `node`s information like this one is shown
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Prometheus Link         │ http://127.0.0.1:44107/metrics                                                                     │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/alice.log                │ 
+│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/alice.log                │
 ├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                         Node Information                                                     │
 ├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
@@ -209,7 +209,7 @@ message with the `node`s information like this one is shown
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Prometheus Link         │ http://127.0.0.1:43831/metrics                                                                     │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/bob.log                  │ 
+│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/bob.log                  │
 ├─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                         Node Information                                                     │
 ├─────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┤
@@ -219,7 +219,7 @@ message with the `node`s information like this one is shown
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Prometheus Link         │ http://127.0.0.1:38281/metrics                                                                     │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
-│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/collator01.log           │ 
+│ Log Cmd                 │ tail -f  /tmp/zombie-85391d4649f2829bb26b30d6c0328bcb_-15819-BNFoSs5qusWH/collator01.log           │
 ├─────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
 │ Parachain ID            │ 100                                                                                                │
 └─────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
@@ -362,7 +362,7 @@ For example:
 
 > Note: If you are using macOS please clone the [polkadot-sdk repo](https://github.com/paritytech/polkadot-sdk) and run it locally. At the moment there is no `polkadot` binary for MacOs.
 
-The command above will retrieve the binaries provided and try to download and prepare those binaries for usage. 
+The command above will retrieve the binaries provided and try to download and prepare those binaries for usage.
 At the end of the download, the `setup` script will provide a command to run in your local environment in order to add the directory where the binaries were downloaded in your $PATH var, for example:
 
 ```bash
@@ -395,7 +395,7 @@ Options:
   -c, --spawn-concurrency <concurrency>    Number of concurrent spawning process to launch, default is 1
   -p, --provider <provider>                Override provider to use (choices: "podman", "kubernetes", "native")
   -l, --logType <logType>                  Type of logging - defaults to 'table' (choices: "table", "text", "silent")
-  -d, --dir <path>                         Directory path for placing the network files instead of random temp one 
+  -d, --dir <path>                         Directory path for placing the network files instead of random temp one
                                            (e.g. -d /home/user/my-zombienet)
   -f, --force                              Force override all prompt commands
   -h, --help                               display help for command
