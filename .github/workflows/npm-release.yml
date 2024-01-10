@@ -22,7 +22,7 @@ jobs:
         run: npm pack
         working-directory: "./javascript/packages/utils"
       - name: Upload Utils
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/utils/*.tgz"
@@ -31,7 +31,7 @@ jobs:
         run: npm pack
         working-directory: "./javascript/packages/orchestrator"
       - name: Upload Orchestrator
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/orchestrator/*.tgz"
@@ -40,7 +40,7 @@ jobs:
         run: npm pack
         working-directory: "./javascript/packages/cli"
       - name: Upload CLI
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: package
           path: "./javascript/packages/cli/*.tgz"

@@ -15,6 +15,9 @@ updates:
     - 'automerge'
     schedule:
       interval: daily
+    ignore:
+    - dependency-name: "actions/upload-artifact"
+      update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 4
 
   - package-ecosystem: npm
@@ -28,6 +31,8 @@ updates:
       update-types: ["version-update:semver-major"]
     - dependency-name: "chai"
       update-types: ["version-update:semver-major"]
+    - dependency-name: "actions/upload-artifact"
+      update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 4
 
   - package-ecosystem: npm
@@ -36,6 +41,9 @@ updates:
     - 'automerge'
     schedule:
       interval: daily
+    ignore:
+    - dependency-name: "actions/upload-artifact"
+      update-types: ["version-update:semver-major"]
     open-pull-requests-limit: 4
 
   - package-ecosystem: github-actions
