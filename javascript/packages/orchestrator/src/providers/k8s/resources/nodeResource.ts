@@ -73,7 +73,8 @@ export class NodeResource {
     return [
       {
         name: TRANSFER_CONTAINER_NAME,
-        image: "europe-west3-docker.pkg.dev/parity-zombienet/zombienet-public-images/alpine:latest",
+        image:
+          "europe-west3-docker.pkg.dev/parity-zombienet/zombienet-public-images/alpine:latest",
         imagePullPolicy: "Always",
         volumeMounts: [
           { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
