@@ -22,9 +22,10 @@ export async function genBootnodeDef(
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
+  inCI: boolean = false,
 ): Promise<any> {
   const nodeResource = new NodeResource(namespace, nodeSetup);
-  return nodeResource.generateSpec();
+  return nodeResource.generateSpec(inCI);
 }
 
 export function genChaosDef(

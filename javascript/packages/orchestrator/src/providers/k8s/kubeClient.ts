@@ -61,6 +61,7 @@ export class KubeClient extends Client {
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
+  inCI: boolean;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -72,6 +73,9 @@ export class KubeClient extends Client {
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
     this.dataDir = DEFAULT_DATA_DIR;
+    // Use the same env vars from spawn/run
+    this.inCI = process.env.RUN_IN_CONTAINER === "1" || process.env.ZOMBIENET_IMAGE !== undefined;
+
   }
 
   async validateAccess(): Promise<boolean> {
@@ -728,24 +732,28 @@ export class KubeClient extends Client {
     since: number | undefined = undefined,
     withTimestamp = false,
   ): Promise<string> {
-    const args = ["logs"];
-    if (since && since > 0) args.push(`--since=${since}s`);
-    if (withTimestamp) args.push("--timestamps=true");
-    args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
-
-    const result = await this.runCommand(args, {
-      scoped: false,
-      allowFail: true,
-    });
-    if (result.exitCode == 0) {
-      return result.stdout;
+    if( this.inCI ) {
+      return ""
     } else {
-      const warnMsg = `[WARN] error getting log for pod: ${podName}`;
-      debug(warnMsg);
-      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
-        [decorators.yellow(warnMsg)],
-      ]);
-      return result.stderr || "";
+      const args = ["logs"];
+      if (since && since > 0) args.push(`--since=${since}s`);
+      if (withTimestamp) args.push("--timestamps=true");
+      args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
+
+      const result = await this.runCommand(args, {
+        scoped: false,
+        allowFail: true,
+      });
+      if (result.exitCode == 0) {
+        return result.stdout;
+      } else {
+        const warnMsg = `[WARN] error getting log for pod: ${podName}`;
+        debug(warnMsg);
+        new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+          [decorators.yellow(warnMsg)],
+        ]);
+        return result.stderr || "";
+      }
     }
   }
 
@@ -903,6 +911,7 @@ export class KubeClient extends Client {
     debug(result);
     fileUploadCache[fileHash] = fileName;
   }
+
   getLogsCommand(name: string): string {
     return `kubectl logs -f ${name} -c ${name} -n ${this.namespace}`;
   }
