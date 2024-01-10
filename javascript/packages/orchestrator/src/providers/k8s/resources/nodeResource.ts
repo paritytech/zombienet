@@ -73,7 +73,7 @@ export class NodeResource {
     return [
       {
         name: TRANSFER_CONTAINER_NAME,
-        image: "docker.io/alpine",
+        image: "europe-west3-docker.pkg.dev/parity-zombienet/zombienet-public-images/alpine:latest",
         imagePullPolicy: "Always",
         volumeMounts: [
           { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
@@ -84,17 +84,10 @@ export class NodeResource {
           "ash",
           "-c",
           [
-            "wget github.com/moparisthebest/static-curl/releases/download/v7.83.1/curl-amd64 -O /cfg/curl",
-            "echo downloaded",
+            "cp /tmp/curl /cfg/curl",
             "chmod +x /cfg/curl",
-            "echo chmoded",
-            "wget github.com/uutils/coreutils/releases/download/0.0.17/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz -O /cfg/coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
-            "cd /cfg",
-            "tar -xvzf ./coreutils-0.0.17-x86_64-unknown-linux-musl.tar.gz",
-            "cp ./coreutils-0.0.17-x86_64-unknown-linux-musl/coreutils /cfg/coreutils",
+            "cp /tmp/coreutils /cfg/coreutils",
             "chmod +x /cfg/coreutils",
-            "rm -rf ./coreutils-0.0.17-x86_64-unknown-linux-musl",
-            "echo coreutils downloaded",
             `until [ -f ${FINISH_MAGIC_FILE} ]; do echo ${TRANSFER_CONTAINER_WAIT_LOG}; sleep 1; done; echo copy files has finished`,
           ].join(" && "),
         ],
