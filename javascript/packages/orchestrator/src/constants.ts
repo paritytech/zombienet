@@ -56,6 +56,7 @@ const TMP_DONE = "echo done > /tmp/zombie-tmp-done";
 const TRANSFER_CONTAINER_WAIT_LOG = "waiting for tar to finish";
 const NODE_CONTAINER_WAIT_LOG = "waiting for copy files to finish";
 const WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do echo ${NODE_CONTAINER_WAIT_LOG}; sleep 1; done; echo copy files has finished`;
+const PODMAN_WAIT_UNTIL_SCRIPT_SUFIX = `sleep 5`; // FIXME
 const K8S_WAIT_UNTIL_SCRIPT_SUFIX = `until [ -f ${FINISH_MAGIC_FILE} ]; do /cfg/coreutils echo "${NODE_CONTAINER_WAIT_LOG}"; /cfg/coreutils sleep 1; done; /cfg/coreutils echo "copy files has finished"`;
 const TRANSFER_CONTAINER_NAME = "transfer-files-container";
 const ZOMBIE_BUCKET = "zombienet-logs";
@@ -171,6 +172,7 @@ export {
   METRICS_URI_PATTERN,
   NODE_CONTAINER_WAIT_LOG,
   P2P_PORT,
+  PODMAN_WAIT_UNTIL_SCRIPT_SUFIX,
   PROMETHEUS_PORT,
   REGULAR_BIN_PATH,
   RPC_HTTP_PORT,

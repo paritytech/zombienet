@@ -103,6 +103,7 @@ export const spawnNode = async (
   await client.spawnFromDef(
     podDef,
     finalFilesToCopyToNode,
+    false,
     keystoreLocalDir,
     parachainSpecId || network.chainId,
     node.dbSnapshot,

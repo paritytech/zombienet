@@ -34,7 +34,7 @@ export interface ContainerPort {
 export interface Container {
   image: string;
   name: string;
-  imagePullPolicy: "Always";
+  imagePullPolicy: string;
   volumeMounts: VolumeMount[];
   ports: ContainerPort[];
   command?: string[];

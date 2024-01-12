@@ -56,6 +56,7 @@ export class PodmanClient extends Client {
   remoteDir: string;
   dataDir: string;
   isTearingDown: boolean;
+  podSuffix?: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "podman", "podman");
@@ -215,7 +216,7 @@ export class PodmanClient extends Client {
   ): Promise<string> {
     const args = ["logs"];
     if (since && since > 0) args.push(...["--since", `${since}s`]);
-    args.push(`${podName}_pod-${podName}`);
+    args.push(`${podName}${this.podSuffix}-${podName}`);
 
     const result = await this.runCommand(args, { scoped: false });
     return result.stdout;
@@ -240,7 +241,7 @@ export class PodmanClient extends Client {
   }
 
   async getPortMapping(port: number, podName: string): Promise<number> {
-    const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
+    const args = ["inspect", `${podName}${this.podSuffix}-${podName}`, "--format", "json"];
     const result = await this.runCommand(args, { scoped: false });
     const resultJson = JSON.parse(result.stdout);
     const hostPort =
@@ -249,7 +250,7 @@ export class PodmanClient extends Client {
   }
 
   async getNodeIP(podName: string): Promise<string> {
-    const args = ["inspect", `${podName}_pod-${podName}`, "--format", "json"];
+    const args = ["inspect", `${podName}${this.podSuffix}-${podName}`, "--format", "json"];
     const result = await this.runCommand(args, { scoped: false });
     const resultJson = JSON.parse(result.stdout);
     const podIp =
@@ -353,6 +354,7 @@ export class PodmanClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
+    waitExit: boolean = false,
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
@@ -432,7 +434,7 @@ export class PodmanClient extends Client {
 
     await this.createResource(podDef, false, false);
 
-    await this.wait_pod_ready(name);
+    await this.wait_pod(name, waitExit ? ["Exited"] : ["Running"]);
     await this.addNodeToPrometheus(name);
 
     logTable = new CreateLogTable({
@@ -449,6 +451,15 @@ export class PodmanClient extends Client {
     localFilePath: string,
   ): Promise<void> {
     debug(`cp ${this.tmpDir}/${identifier}${podFilePath}  ${localFilePath}`);
+    while (true) {
+      try {
+        let stat = await fs.stat(`${this.tmpDir}/${identifier}${podFilePath}`);
+        if (typeof stat !== "undefined" && stat.size > 0) {
+          break;
+        }
+      } catch {}
+      await new Promise(r => setTimeout(r, 1000));
+    }
     await fs.copyFile(
       `${this.tmpDir}/${identifier}${podFilePath}`,
       localFilePath,
@@ -476,24 +487,31 @@ export class PodmanClient extends Client {
       { scoped: false },
     );
 
-    if (waitReady) await this.wait_pod_ready(name);
+    if (waitReady) await this.wait_pod(name);
+
+    if (typeof this.podSuffix === "undefined") {
+      const args = ["inspect", `${name}-${name}`, "--format", "json"];
+      const result = await this.runCommand(args, { scoped: false });
+      const resultJson = JSON.parse(result.stdout);
+      this.podSuffix = typeof resultJson[0] === "undefined" ? "_pod" : "";
+      debug(`Determined pod suffix [${this.podSuffix}]`);
+    }
   }
 
-  async wait_pod_ready(podName: string, allowDegraded = true): Promise<void> {
+  async wait_pod(podName: string, status: [string] = ["Running"]): Promise<void> {
     // loop until ready
     let t = this.timeout;
     const args = ["pod", "ps", "-f", `name=${podName}`, "--format", "json"];
     do {
       const result = await this.runCommand(args, { scoped: false });
       const resultJson = JSON.parse(result.stdout);
-      if (resultJson[0].Status === "Running") return;
-      if (allowDegraded && resultJson[0].Status === "Degraded") return;
+      if (status.includes(resultJson[0].Status)) return;
 
       await new Promise((resolve) => setTimeout(resolve, 3000));
       t -= 3;
     } while (t > 0);
 
-    throw new Error(`Timeout(${this.timeout}) for pod : ${podName}`);
+    throw new Error(`Timeout(${this.timeout}) waiting ${status} for pod : ${podName}`);
   }
 
   async isPodMonitorAvailable(): Promise<boolean> {
@@ -504,7 +522,7 @@ export class PodmanClient extends Client {
   getPauseArgs(name: string): string[] {
     return [
       "exec",
-      `${name}_pod-${name}`,
+      `${name}${this.podSuffix}-${name}`,
       "bash",
       "-c",
       "echo pause > /tmp/zombiepipe",
@@ -513,7 +531,7 @@ export class PodmanClient extends Client {
   getResumeArgs(name: string): string[] {
     return [
       "exec",
-      `${name}_pod-${name}`,
+      `${name}${this.podSuffix}-${name}`,
       "bash",
       "-c",
       "echo resume > /tmp/zombiepipe",
@@ -521,7 +539,7 @@ export class PodmanClient extends Client {
   }
 
   async restartNode(name: string, timeout: number | null): Promise<boolean> {
-    const args = ["exec", `${name}_pod-${name}`, "bash", "-c"];
+    const args = ["exec", `${name}${this.podSuffix}-${name}`, "bash", "-c"];
     const cmd = timeout
       ? `echo restart ${timeout} > /tmp/zombiepipe`
       : `echo restart > /tmp/zombiepipe`;
@@ -537,7 +555,7 @@ export class PodmanClient extends Client {
   }
 
   getLogsCommand(name: string): string {
-    return `podman logs -f ${name}_pod-${name}`;
+    return `podman logs -f ${name}${this.podSuffix}-${name}`;
   }
 
   // NOOP

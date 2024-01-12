@@ -40,11 +40,10 @@ export async function setupChainSpec(
 
       const podDef = await genNodeDef(namespace, node);
       const podName = podDef.metadata.name;
-      await client.spawnFromDef(podDef);
-
-      debug("copy file from pod");
+      await client.spawnFromDef(podDef, [], true);
 
       const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
+      debug(`copy file from pod: ${podChainPath} -> ${chainFullPath}`);
       copyFileSync(podChainPath, chainFullPath);
     }
   }

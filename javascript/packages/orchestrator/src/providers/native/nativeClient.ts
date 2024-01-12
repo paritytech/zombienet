@@ -257,6 +257,7 @@ export class NativeClient extends Client {
   async spawnFromDef(
     podDef: any,
     filesToCopy: fileMap[] = [],
+    waitExit: boolean = false,
     keystore: string,
     chainSpecId: string,
     dbSnapshot?: string,
