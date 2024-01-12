@@ -8,7 +8,7 @@
     ...
   }: let
     # this change on each change of dependencies, unfortunately this hash not yet automatically updated from SRI of package.lock
-    npmDepsHash = "sha256-+J8ADyIxSNYQJ7gDgs+E5J5DUg4rQhwALYA59hWH1DU=";
+    npmDepsHash = "sha256-FyZm1oLugeJpUXNvbl/nfuvCRdXWG+SKrHXanm8dcmY=";
     ####
 
     # there is officia polkadot on nixpkgs, but it has no local rococo wasm to run

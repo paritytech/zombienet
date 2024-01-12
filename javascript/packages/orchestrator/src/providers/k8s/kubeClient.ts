@@ -179,6 +179,7 @@ export class KubeClient extends Client {
           "/",
           "&&",
           "tar",
+          "--skip-old-files",
           "-xzvf",
           "/data/db.tgz",
         ].join(" "),
