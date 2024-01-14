@@ -506,7 +506,7 @@ interface UsedNames {
 const mUsedNames: UsedNames = {};
 
 export function getUniqueName(name: string): string {
-  // Transfor whitespaces to dashes in name, since
+  // Transform whitespaces to dashes in name, since
   // whitespaces in names are not supported
   // see https://github.com/paritytech/zombienet/issues/1659
   name = name.replaceAll(" ", "-");
