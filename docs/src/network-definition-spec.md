@@ -37,7 +37,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
 - `nodes`:
-  - `*name`: (String) Name of the node.
+  - `*name`: (String) Name of the node. *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -> 'new-alice').
   - `image`: (String) Override default docker image to use for this node.
   - `command`: (String) Override default command.
   - `command_with_args`: (String) Override default command and args.
@@ -59,7 +59,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
   - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
 - `node_groups`:
-  - `*name`: (String) Group name, used for naming the nodes (e.g name-1)
+  - `*name`: (String) Group name, used for naming the nodes (e.g name-1) *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new group' -> 'new-group').
   - `*count` (Number), Number of `nodes` to launch for this group.
   - `image`: (String) Override default docker image to use for this node.
   - `command`: (String) Override default command.
@@ -86,7 +86,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to all parachain nodes/collators; Defaults to 'substrate'.
   - `collator`:
 
-    - `*name`: (String) Name of the collator.
+    - `*name`: (String) Name of the collator. *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -> 'new-alice').
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
@@ -99,7 +99,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 
   - `collator_groups`:
 
-    - `*name`: (String) Name of the collator.
+    - `*name`: (String) Name of the collator. *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -> 'new-alice').
     - `*count`: (Number) Number of `collators` to launch for this group.
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
