@@ -704,7 +704,7 @@ For example:</p>
 <li><code>max_nominations</code>: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).</li>
 <li><code>nodes</code>:
 <ul>
-<li><code>*name</code>: (String) Name of the node.</li>
+<li><code>*name</code>: (String) Name of the node. <em>Note</em>: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -&gt; 'new-alice').</li>
 <li><code>image</code>: (String) Override default docker image to use for this node.</li>
 <li><code>command</code>: (String) Override default command.</li>
 <li><code>command_with_args</code>: (String) Override default command and args.</li>
@@ -732,7 +732,7 @@ For example:</p>
 </li>
 <li><code>node_groups</code>:
 <ul>
-<li><code>*name</code>: (String) Group name, used for naming the nodes (e.g name-1)</li>
+<li><code>*name</code>: (String) Group name, used for naming the nodes (e.g name-1) <em>Note</em>: Any whitespace in the name will be replaced with a dash (e.g 'new group' -&gt; 'new-group').</li>
 <li><code>*count</code> (Number), Number of <code>nodes</code> to launch for this group.</li>
 <li><code>image</code>: (String) Override default docker image to use for this node.</li>
 <li><code>command</code>: (String) Override default command.</li>
@@ -782,7 +782,7 @@ For example:</p>
 <li>
 <p><code>collator</code>:</p>
 <ul>
-<li><code>*name</code>: (String) Name of the collator.</li>
+<li><code>*name</code>: (String) Name of the collator. <em>Note</em>: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -&gt; 'new-alice').</li>
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
 <li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
@@ -800,7 +800,7 @@ For example:</p>
 <li>
 <p><code>collator_groups</code>:</p>
 <ul>
-<li><code>*name</code>: (String) Name of the collator.</li>
+<li><code>*name</code>: (String) Name of the collator. <em>Note</em>: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -&gt; 'new-alice').</li>
 <li><code>*count</code>: (Number) Number of <code>collators</code> to launch for this group.</li>
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
