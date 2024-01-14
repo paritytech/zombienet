@@ -15,7 +15,7 @@ command = "polkadot"
   name = "alice"
 
   [[relaychain.nodes]]
-  name = "bob"
+  name = "new bob"
 
   [[relaychain.nodes]]
   name = "charlie"

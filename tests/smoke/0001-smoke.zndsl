@@ -3,7 +3,7 @@ Network: ./0001-smoke.toml
 Creds: config
 
 alice: is up
-bob: is up
+new-bob: is up
 
 alice: reports block height is at least 4 within 200 seconds
 
