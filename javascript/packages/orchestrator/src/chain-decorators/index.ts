@@ -102,7 +102,7 @@ const localVDecorators: Decorator = Object.keys(local_v).reduce((memo, fn) => {
   return memo;
 }, Object.create({}));
 
-const MainnetLocalVDecorators: Decorator = Object.keys(local_v).reduce((memo, fn) => {
+const MainnetLocalVDecorators: Decorator = Object.keys(mainnet_local_v).reduce((memo, fn) => {
   memo[fn] = (local_v as Decorator)[fn];
   return memo;
 }, Object.create({}));
