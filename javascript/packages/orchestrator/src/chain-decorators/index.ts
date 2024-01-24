@@ -102,10 +102,13 @@ const localVDecorators: Decorator = Object.keys(local_v).reduce((memo, fn) => {
   return memo;
 }, Object.create({}));
 
-const MainnetLocalVDecorators: Decorator = Object.keys(mainnet_local_v).reduce((memo, fn) => {
-  memo[fn] = (local_v as Decorator)[fn];
-  return memo;
-}, Object.create({}));
+const MainnetLocalVDecorators: Decorator = Object.keys(mainnet_local_v).reduce(
+  (memo, fn) => {
+    memo[fn] = (local_v as Decorator)[fn];
+    return memo;
+  },
+  Object.create({}),
+);
 
 const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
@@ -118,7 +121,7 @@ const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   oak: oakDecorators,
   mangata: mangataDecorators,
   local_v: localVDecorators,
-  mainnet_local_v: localVDecorators,
+  mainnet_local_v: MainnetLocalVDecorators,
   generic: {},
 };
 
