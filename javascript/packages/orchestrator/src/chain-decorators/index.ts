@@ -106,7 +106,6 @@ const MainnetLocalVDecorators: Decorator = Object.keys(mainnet_local_v).reduce((
   memo[fn] = (local_v as Decorator)[fn];
   return memo;
 }, Object.create({}));
-);
 
 const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
