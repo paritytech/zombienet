@@ -10,6 +10,7 @@ enum CHAIN {
   Mangata = "mangata",
   Generic = "generic",
   LocalV = "local_v",
+  MainnetLocalV = "mainnet_local_v",
 }
 
 interface Decorator {
@@ -24,6 +25,7 @@ import bifrost from "./bifrost";
 import efinity from "./efinity";
 import equilibrium from "./equilibrium";
 import local_v from "./local-v";
+import mainnet_local_v from "./mainnet-local-v";
 import mangata from "./mangata";
 import moonbeam from "./moonbeam";
 import oak from "./oak";
@@ -40,6 +42,7 @@ function whichChain(chain: string): CHAIN {
   if (/oak|turing|neumann/.test(chain)) return CHAIN.Oak;
   if (/mangata/.test(chain)) return CHAIN.Mangata;
   if (/local-v/.test(chain)) return CHAIN.LocalV;
+  if (/mainnet-local-v/.test(chain)) return CHAIN.MainnetLocalV;
 
   return CHAIN.Generic;
 }
@@ -99,6 +102,12 @@ const localVDecorators: Decorator = Object.keys(local_v).reduce((memo, fn) => {
   return memo;
 }, Object.create({}));
 
+const MainnetLocalVDecorators: Decorator = Object.keys(local_v).reduce((memo, fn) => {
+  memo[fn] = (local_v as Decorator)[fn];
+  return memo;
+}, Object.create({}));
+);
+
 const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
   asset_hub_polkadot: assetHubPolkadotDecorators,
@@ -110,6 +119,7 @@ const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   oak: oakDecorators,
   mangata: mangataDecorators,
   local_v: localVDecorators,
+  mainnet_local_v: localVDecorators,
   generic: {},
 };
 
