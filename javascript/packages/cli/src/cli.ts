@@ -6,6 +6,7 @@ import { convert } from "./actions/convert";
 import { setup } from "./actions/setup";
 import { spawn } from "./actions/spawn";
 import { test } from "./actions/test";
+import { checkNodeVersion } from "./versionCheck";
 
 const debug = require("debug")("zombie-cli");
 
@@ -17,6 +18,8 @@ let alreadyTryToStop = false;
 const setGlobalNetwork = (globalNetwork: Network) => {
   network = globalNetwork;
 };
+
+checkNodeVersion();
 
 async function handleTermination(userInterrupted = false) {
   process.env.terminating = "1";
