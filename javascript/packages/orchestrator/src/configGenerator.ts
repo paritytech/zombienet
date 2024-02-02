@@ -16,7 +16,6 @@ import {
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
   DEFAULT_CUMULUS_COLLATOR_BIN,
-  DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
   DEFAULT_KEYSTORE_KEY_TYPES,
@@ -357,9 +356,10 @@ export async function generateNetworkSpec(
           computedStatePath = genesisStatePath;
         }
       } else {
+        // NOTE: the subcommand to execute will be set later based on `substrateCliArgsVersion`.
         computedStateCommand = parachain.genesis_state_generator
           ? parachain.genesis_state_generator
-          : `${collatorBinary} ${DEFAULT_GENESIS_GENERATE_SUBCOMMAND}`;
+          : `${collatorBinary} {{GENESIS_GENERATE_SUBCOMMAND}}`;
 
         // TODO: we should remove this conditional ones
         // https://github.com/paritytech/polkadot-sdk/pull/2375 and

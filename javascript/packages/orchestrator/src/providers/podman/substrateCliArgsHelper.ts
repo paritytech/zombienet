@@ -1,11 +1,10 @@
-import { SubstrateCliArgsVersion } from "../../sharedTypes";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 
-export const getCliArgsVersion = async (
+export const getCliArgsHelp = async (
   image: string,
   command: string,
-): Promise<SubstrateCliArgsVersion> => {
+): Promise<string> => {
   const client = getClient();
   const fullCmd = `${command} --help`;
   const node = await createTempNodeDef(
@@ -19,12 +18,5 @@ export const getCliArgsVersion = async (
   const podName = podDef.metadata.name;
   await client.spawnFromDef(podDef);
   const logs = await client.getNodeLogs(podName);
-
-  if (logs.includes("--ws-port <PORT>")) {
-    return SubstrateCliArgsVersion.V0;
-  } else if (!logs.includes("--insecure-validator-i-know-what-i-do")) {
-    return SubstrateCliArgsVersion.V1;
-  } else {
-    return SubstrateCliArgsVersion.V2;
-  }
+  return logs;
 };
