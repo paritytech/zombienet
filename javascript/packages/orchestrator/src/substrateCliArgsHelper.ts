@@ -43,8 +43,8 @@ export const setSubstrateCliArgsVersion = async (
   const promiseGenerators = [];
   for (const [, v] of imgCmdMap) {
     const getVersionPromise = async () => {
-      const helpSdtout = await getCliArgsHelp(v.image, v.command);
-      const version = await getCliArgsVersion(helpSdtout, v.scope);
+      const helpStdout = await getCliArgsHelp(v.image, v.command);
+      const version = await getCliArgsVersion(helpStdout, v.scope);
       v.version = version;
       return version;
     };
