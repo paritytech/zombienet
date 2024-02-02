@@ -6,7 +6,7 @@ import {
   genChaosDef,
 } from "./dynResourceDefinition";
 import { KubeClient, initClient } from "./kubeClient";
-import { getCliArgsVersion } from "./substrateCliArgsHelper";
+import { getCliArgsHelp } from "./substrateCliArgsHelper";
 
 export const provider = {
   KubeClient,
@@ -16,6 +16,6 @@ export const provider = {
   setupChainSpec,
   getChainSpecRaw,
   replaceNetworkRef,
-  getCliArgsVersion,
+  getCliArgsHelp,
   genChaosDef,
 };

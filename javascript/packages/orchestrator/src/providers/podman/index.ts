@@ -5,7 +5,7 @@ import {
   replaceNetworkRef,
 } from "./dynResourceDefinition";
 import { PodmanClient, initClient } from "./podmanClient";
-import { getCliArgsVersion } from "./substrateCliArgsHelper";
+import { getCliArgsHelp } from "./substrateCliArgsHelper";
 
 export const provider = {
   PodmanClient,
@@ -15,5 +15,5 @@ export const provider = {
   setupChainSpec,
   getChainSpecRaw,
   replaceNetworkRef,
-  getCliArgsVersion,
+  getCliArgsHelp,
 };

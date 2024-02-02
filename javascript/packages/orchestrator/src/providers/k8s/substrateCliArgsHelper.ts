@@ -1,19 +1,18 @@
-import { SubstrateCliArgsVersion } from "../../sharedTypes";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
 import { KubeClient } from "./kubeClient";
 
-export const getCliArgsVersion = async (
+export const getCliArgsHelp = async (
   image: string,
   command: string,
-): Promise<SubstrateCliArgsVersion> => {
+): Promise<string> => {
   const client = getClient() as KubeClient;
-  // use echo to not finish the pod with error status.
+  // Use echo to not finish the pod with error status.
   const fullCmd = `${command} --help || echo ""`;
   const node = await createTempNodeDef(
     "temp",
     image,
-    "", // don't used
+    "", // Don't used
     fullCmd,
     false,
   );
@@ -23,11 +22,5 @@ export const getCliArgsVersion = async (
   await client.spawnFromDef(podDef);
   const logs = await client.getNodeLogs(podName);
 
-  if (logs.includes("--ws-port <PORT>")) {
-    return SubstrateCliArgsVersion.V0;
-  } else if (!logs.includes("--insecure-validator-i-know-what-i-do")) {
-    return SubstrateCliArgsVersion.V1;
-  } else {
-    return SubstrateCliArgsVersion.V2;
-  }
+  return logs;
 };
