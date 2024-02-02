@@ -5,6 +5,8 @@ import { ComputedNetwork } from "./configTypes";
 import { SubstrateCliArgsVersion } from "./sharedTypes";
 import { Scope } from "./network";
 
+const debug = require("debug")("zombie::substrateCliArgsVersion");
+
 export const setSubstrateCliArgsVersion = async (
   network: ComputedNetwork,
   client: Client,
@@ -75,8 +77,10 @@ function getCliArgsVersion(
   scope: Scope,
 ): SubstrateCliArgsVersion {
   // IFF stdout includes `ws-port` flag we are always in V0
-  if (helpStdout.includes("--ws-port <PORT>"))
+  if (helpStdout.includes("--ws-port <PORT>")) {
+    debug(`returning cliArgsVersion ${SubstrateCliArgsVersion.V0}`);
     return SubstrateCliArgsVersion.V0;
+  }
 
   // If not, we should check the scope
   if (scope == Scope.RELAY) {
@@ -85,15 +89,18 @@ function getCliArgsVersion(
     )
       ? SubstrateCliArgsVersion.V1
       : SubstrateCliArgsVersion.V2;
-    //debug
+
+    debug(`returning cliArgsVersion ${version}`);
     return version;
   } else if (scope == Scope.PARA) {
     const version = !helpStdout.includes("export-genesis-head")
       ? SubstrateCliArgsVersion.V2
       : SubstrateCliArgsVersion.V3;
-    //debug
+
+    debug(`returning cliArgsVersion ${version}`);
     return version;
   } else {
+    debug(`returning default cliArgsVersion`);
     // For other scopes we just return the latest version.
     return SubstrateCliArgsVersion.V3;
   }
