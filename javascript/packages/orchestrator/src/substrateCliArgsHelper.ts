@@ -2,12 +2,16 @@ import { series } from "@zombienet/utils";
 import { getProvider } from "./providers";
 import { Client } from "./providers/client";
 import { ComputedNetwork } from "./configTypes";
+import { SubstrateCliArgsVersion } from "./sharedTypes";
+import { Scope } from "./network";
+
+const debug = require("debug")("zombie::substrateCliArgsVersion");
 
 export const setSubstrateCliArgsVersion = async (
   network: ComputedNetwork,
   client: Client,
 ) => {
-  const { getCliArgsVersion } = getProvider(client.providerName);
+  const { getCliArgsHelp } = getProvider(client.providerName);
   // Calculate substrate cli version for each node
   // and set in the node to use later when we build the cmd.
   const imgCmdMap = new Map();
@@ -15,7 +19,11 @@ export const setSubstrateCliArgsVersion = async (
     if (node.substrateCliArgsVersion) return memo;
     const uniq_image_cmd = `${node.image}_${node.command}`;
     if (!memo.has(uniq_image_cmd))
-      memo.set(uniq_image_cmd, { image: node.image, command: node.command });
+      memo.set(uniq_image_cmd, {
+        image: node.image,
+        command: node.command,
+        scope: Scope.RELAY,
+      });
     return memo;
   }, imgCmdMap);
 
@@ -27,6 +35,7 @@ export const setSubstrateCliArgsVersion = async (
         memo.set(uniq_image_cmd, {
           image: collator.image,
           command: collator.command,
+          scope: Scope.PARA,
         });
     }
     return memo;
@@ -36,7 +45,8 @@ export const setSubstrateCliArgsVersion = async (
   const promiseGenerators = [];
   for (const [, v] of imgCmdMap) {
     const getVersionPromise = async () => {
-      const version = await getCliArgsVersion(v.image, v.command);
+      const helpStdout = await getCliArgsHelp(v.image, v.command);
+      const version = await getCliArgsVersion(helpStdout, v.scope);
       v.version = version;
       return version;
     };
@@ -61,3 +71,37 @@ export const setSubstrateCliArgsVersion = async (
     }
   }
 };
+
+function getCliArgsVersion(
+  helpStdout: string,
+  scope: Scope,
+): SubstrateCliArgsVersion {
+  // IFF stdout includes `ws-port` flag we are always in V0
+  if (helpStdout.includes("--ws-port <PORT>")) {
+    debug(`returning cliArgsVersion ${SubstrateCliArgsVersion.V0}`);
+    return SubstrateCliArgsVersion.V0;
+  }
+
+  // If not, we should check the scope
+  if (scope == Scope.RELAY) {
+    const version = !helpStdout.includes(
+      "--insecure-validator-i-know-what-i-do",
+    )
+      ? SubstrateCliArgsVersion.V1
+      : SubstrateCliArgsVersion.V2;
+
+    debug(`returning cliArgsVersion ${version}`);
+    return version;
+  } else if (scope == Scope.PARA) {
+    const version = !helpStdout.includes("export-genesis-head")
+      ? SubstrateCliArgsVersion.V2
+      : SubstrateCliArgsVersion.V3;
+
+    debug(`returning cliArgsVersion ${version}`);
+    return version;
+  } else {
+    debug(`returning default cliArgsVersion`);
+    // For other scopes we just return the latest version.
+    return SubstrateCliArgsVersion.V3;
+  }
+}

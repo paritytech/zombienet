@@ -5,6 +5,8 @@ export enum SubstrateCliArgsVersion {
   V1 = 1,
   // Includes the --insecure-validator-i-know-what-i-do flag.
   V2 = 2,
+  // Rename export-genesis-head to export-genesis-head in polkadot-parachain
+  V3 = 3,
 }
 
 // enums

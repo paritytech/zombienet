@@ -4,6 +4,8 @@ import chainSpecFns, { isRawSpec } from "./chainSpec";
 import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
+  DEFAULT_GENESIS_GENERATE_SUBCOMMAND,
+  DEFAULT_GENESIS_HEAD_GENERATE_SUBCOMMAND,
   GENESIS_STATE_FILENAME,
   GENESIS_WASM_FILENAME,
   K8S_WAIT_UNTIL_SCRIPT_SUFIX,
@@ -225,10 +227,14 @@ export async function generateParachainFiles(
 
     const commands = [];
     if (parachain.genesisStateGenerator) {
-      let genesisStateGenerator = parachain.genesisStateGenerator.replace(
-        "{{CLIENT_REMOTE_DIR}}",
-        client.remoteDir as string,
-      );
+      const subcommand =
+        parachain.collators[0].substrateCliArgsVersion! >= 3
+          ? DEFAULT_GENESIS_HEAD_GENERATE_SUBCOMMAND
+          : DEFAULT_GENESIS_GENERATE_SUBCOMMAND;
+      let genesisStateGenerator = parachain.genesisStateGenerator
+        .replace("{{CLIENT_REMOTE_DIR}}", client.remoteDir as string)
+        .replace("{{GENESIS_GENERATE_SUBCOMMAND}}", subcommand);
+
       // cumulus
       if (parachain.cumulusBased) {
         const chainSpecPathInNode =
@@ -242,9 +248,10 @@ export async function generateParachainFiles(
         );
       }
 
-      if (client.providerName === "native") {
-        // inject a tmp base-path to prevent the use of a pre-existing un-purged data directory.
-        // see https://github.com/paritytech/zombienet/issues/1519
+      if (client.providerName === "native" && parachain.cumulusBased) {
+        // Inject a tmp base-path to prevent the use of a pre-existing un-purged data directory. This should only
+        // be injected for `cumulus` base parachains.
+        // See https://github.com/paritytech/zombienet/issues/1519
         // NOTE: this is only needed in native provider since un k8s/podman the fs is always fresh
         const exportGenesisStateCustomPath = `${client.tmpDir}/export-genesis-state/${parachain.id}`;
         await fs.promises.mkdir(exportGenesisStateCustomPath, {
