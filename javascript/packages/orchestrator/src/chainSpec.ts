@@ -76,10 +76,9 @@ export function clearAuthorities(specPath: string) {
 
     // clear staking
     if (runtimeConfig?.staking) {
-      stakingBond = BigInt(0);
-      for (const staker in runtimeConfig.staking.stakers) {
-        stakingBond += BigInt(runtimeConfig.staking.stakers[staker][2]);
-      }
+      // Set `stakingBond` IFF there is at least one
+      if (runtimeConfig.staking.stakers[0])
+        stakingBond = BigInt(runtimeConfig.staking.stakers[0][2]);
 
       runtimeConfig.staking.stakers = [];
       runtimeConfig.staking.invulnerables = [];
