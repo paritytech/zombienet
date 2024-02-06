@@ -14,7 +14,7 @@ import {
 } from "./constants";
 import { decorate } from "./chain-decorators";
 import { Providers } from "./providers";
-import { getClient } from "./providers/client";
+import { Client, getClient } from "./providers/client";
 import { fileMap } from "./types";
 import { Node, ZombieRole, Parachain } from "./sharedTypes";
 import { KubeClient } from "./providers/k8s/kubeClient";
@@ -248,18 +248,11 @@ export async function generateParachainFiles(
         );
       }
 
-      if (client.providerName === "native" && parachain.cumulusBased) {
-        // Inject a tmp base-path to prevent the use of a pre-existing un-purged data directory. This should only
-        // be injected for `cumulus` base parachains.
-        // See https://github.com/paritytech/zombienet/issues/1519
-        // NOTE: this is only needed in native provider since un k8s/podman the fs is always fresh
-        const exportGenesisStateCustomPath = `${client.tmpDir}/export-genesis-state/${parachain.id}`;
-        await fs.promises.mkdir(exportGenesisStateCustomPath, {
-          recursive: true,
-        });
-        genesisStateGenerator = injectBasePathInCmd(
+      if (client.providerName === "native") {
+        genesisStateGenerator = await injectBasePathInCmd(
+          client,
+          parachain.id,
           genesisStateGenerator,
-          exportGenesisStateCustomPath,
         );
       }
 
@@ -382,14 +375,36 @@ function injectChainInCmd(cmd: string, chain: string): string {
   return parts.join(" ");
 }
 
-// Inject the base-path  (e.g. --base-path <path> or -d <path>)
-// IFF is not present
-function injectBasePathInCmd(cmd: string, path: string): string {
+// NOTE: This is only used in native provider since in k8s/podman the fs is always fresh
+// Inject the base-path  (e.g. --base-path <path> or -d <path>) IFF is not present
+async function injectBasePathInCmd(
+  client: Client,
+  parachainId: number,
+  cmd: string,
+): Promise<string> {
   const parts = cmd.split(" ").filter(Boolean);
   // IFF is present don't modify the cmd
   if (parts.includes("-d") || parts.includes("--base-path")) return cmd;
 
+  // Check if the binary support the --base-path / -d flag
+  const helpCmd = `${parts[0]} ${parts[1]} --help`;
+  const helpText = (
+    await client.runCommand(["-c", helpCmd], { allowFail: true })
+  ).stdout;
+
+  if (!helpText.includes("--base-path")) return cmd; // flag not supported
+
+  // Inject a tmp base-path to prevent the use of a pre-existing un-purged data directory.
+  // See https://github.com/paritytech/zombienet/issues/1519
+  const exportGenesisStateCustomPath = `${client.tmpDir}/export-genesis-state/${parachainId}`;
+  await fs.promises.mkdir(exportGenesisStateCustomPath, {
+    recursive: true,
+  });
+
   // inject just after the subcommand
-  parts.splice(2, 0, `-d ${path}`);
+  debug(
+    `Injecting tmp dir for ${parts[0]} ${parts[1]} cmd, paraId ${parachainId}`,
+  );
+  parts.splice(2, 0, `-d ${exportGenesisStateCustomPath}`);
   return parts.join(" ");
 }
