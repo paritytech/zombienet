@@ -36,7 +36,7 @@
     "@polkadot/util": "^12.5.1",
     "@polkadot/util-crypto": "^12.5.1",
     "@types/chai": "^4.3.11",
-    "chai": "^4.3.10"
+    "chai": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.16",
