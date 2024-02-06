@@ -74,9 +74,12 @@ export function clearAuthorities(specPath: string) {
     if (runtimeConfig?.collatorSelection)
       runtimeConfig.collatorSelection.invulnerables = [];
 
-    // Clear staking
+    // clear staking
     if (runtimeConfig?.staking) {
-      stakingBond = BigInt(runtimeConfig.staking.stakers[0][2]);
+      // Set `stakingBond` IFF there is at least one
+      if (runtimeConfig.staking.stakers[0])
+        stakingBond = BigInt(runtimeConfig.staking.stakers[0][2]);
+
       runtimeConfig.staking.stakers = [];
       runtimeConfig.staking.invulnerables = [];
       runtimeConfig.staking.validatorCount = 0;
