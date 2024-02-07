@@ -25,7 +25,6 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
-  console.log("process.platform", process.platform);
   // If the platform is MacOS then the repos needs to be cloned and run locally by the user
   // as polkadot and/or polkadot-parachain do not release a valid binaries for MacOS
   if (process.platform === "darwin") {
