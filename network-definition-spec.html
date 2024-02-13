@@ -190,7 +190,7 @@
 <li><code>tracing_collator_service_namespace</code>: (String, default <code>tempo</code>) namespace where tempo is running, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>tracing_collator_service_port</code>: (Number, default <code>3100</code>) port of the query instance of tempo, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>node_spawn_timeout</code>: (Number, default per provider) timeout to spawn pod/process.</li>
-<li><code>local_ip</code>: (String, default &quot;127.0.0.1&quot;) ip used for expose local services (rpc/metrics/monitors).</li>
+<li><code>local_ip</code>: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).</li>
 </ul>
 <h2 id="relaychain"><a class="header" href="#relaychain"><code>relaychain</code></a></h2>
 <ul>
@@ -208,7 +208,7 @@
 </ul>
 </li>
 <li><code>default_resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the nodes by default.</li>
-<li><code>default_prometheus_prefix</code>: A parameter for customizing the metric's prefix. If parameter is placed in <code>relaychain</code> level, it will be &quot;passed&quot; to all <code>relaychain</code> nodes. Defaults to 'substrate'.</li>
+<li><code>default_prometheus_prefix</code>: A parameter for customizing the metric's prefix. If parameter is placed in <code>relaychain</code> level, it will be "passed" to all <code>relaychain</code> nodes. Defaults to 'substrate'.</li>
 <li><code>random_nominators_count</code>: (number, optional), if is set <em>and the stacking pallet is enabled</em> zombienet will generate <code>x</code> nominators and will be injected in the genesis.</li>
 <li><code>max_nominations</code>: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).</li>
 <li><code>nodes</code>:

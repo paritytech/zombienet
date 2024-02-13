@@ -215,9 +215,9 @@
 <li>
 <p>Histogram assertion: Get metrics from prometheus, calculate the histogram and assert on the target value/s.</p>
 <ul>
-<li><code>node-name</code>: reports histogram <code>memtric_name</code> has <em>comparator target_value</em> samples in buckets [&quot;bucket&quot;,&quot;bucket&quot;,...] [within x seconds]
+<li><code>node-name</code>: reports histogram <code>memtric_name</code> has <em>comparator target_value</em> samples in buckets ["bucket","bucket",...] [within x seconds]
 <ul>
-<li>alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets [&quot;0.1&quot;, &quot;0.25&quot;, &quot;0.5&quot;, &quot;+Inf&quot;] within 100 seconds</li>
+<li>alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets ["0.1", "0.25", "0.5", "+Inf"] within 100 seconds</li>
 </ul>
 </li>
 </ul>
@@ -225,7 +225,7 @@
 <li>
 <p>Metric assertion: Get metric from prometheus and assert on the target value.</p>
 <ul>
-<li><code>node-name</code>: reports <code>metric_name</code> <em>comparator target_value</em> (e.g &quot;is at least x&quot;, &quot;is greater than x&quot;) [within x seconds]
+<li><code>node-name</code>: reports <code>metric_name</code> <em>comparator target_value</em> (e.g "is at least x", "is greater than x") [within x seconds]
 <ul>
 <li>alice: reports node_roles is 4</li>
 </ul>
@@ -235,9 +235,9 @@
 <li>
 <p>Logs assertions: Get logs from nodes and assert on the matching pattern (support <code>regex</code> and <code>glob</code>).</p>
 <ul>
-<li><code>node-name</code>: log line (contains|matches) ( regex|glob) &quot;pattern&quot; [within x seconds]
+<li><code>node-name</code>: log line (contains|matches) ( regex|glob) "pattern" [within x seconds]
 <ul>
-<li>alice: log line matches glob &quot;<em>rted #1</em>&quot; within 10 seconds</li>
+<li>alice: log line matches glob "<em>rted #1</em>" within 10 seconds</li>
 </ul>
 </li>
 </ul>
@@ -245,9 +245,9 @@
 <li>
 <p>Logs assertions: Get logs from nodes and assert on the number of lines matching pattern (support <code>regex</code> and <code>glob</code>).</p>
 <ul>
-<li><code>node-name</code>: count of log lines (containing|matcheing) ( regex|glob) &quot;pattern&quot; [within x seconds]
+<li><code>node-name</code>: count of log lines (containing|matcheing) ( regex|glob) "pattern" [within x seconds]
 <ul>
-<li>alice: count of log lines matching glob &quot;<em>rted #1</em>&quot; within 10 seconds</li>
+<li>alice: count of log lines matching glob "<em>rted #1</em>" within 10 seconds</li>
 </ul>
 </li>
 </ul>
@@ -255,9 +255,9 @@
 <li>
 <p>System events assertion: Find a <code>system event</code> from subscription by matching a <code>pattern</code>. <em>NOTE</em> the subscription is made when we start this particular test, so we <strong>can not</strong> match on event in the past.</p>
 <ul>
-<li><code>node-name</code>: system event (contains|matches)( regex| glob) &quot;pattern&quot; [within x seconds]
+<li><code>node-name</code>: system event (contains|matches)( regex| glob) "pattern" [within x seconds]
 <ul>
-<li>alice: system event matches &quot;&quot;paraId&quot;:[0-9]+&quot; within 10 seconds</li>
+<li>alice: system event matches ""paraId":[0-9]+" within 10 seconds</li>
 </ul>
 </li>
 </ul>
@@ -265,9 +265,9 @@
 <li>
 <p>Tracing assertion: Match an array of <code>span names</code> from the supplied traceID. <em>NOTE</em> this is <strong>not</strong> supported with the native provider.</p>
 <ul>
-<li><code>node-name</code>: trace with traceID <id> contains [&quot;name&quot;, &quot;name2&quot;,...]
+<li><code>node-name</code>: trace with traceID <id> contains ["name", "name2",...]
 <ul>
-<li>alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains [&quot;answer-chunk-request&quot;, &quot;answer-chunk-request&quot;]</li>
+<li>alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]</li>
 </ul>
 </li>
 </ul>

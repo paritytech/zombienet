@@ -214,28 +214,28 @@ This simple config exists only in order to show how the same configuration exist
 <hr />
 <p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/parity/polkadot:latest&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
+default_image = "docker.io/parity/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
 
-chain = &quot;rococo-local&quot;
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
   validator = true
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
   validator = true
 
 [[parachains]]
 id = 100
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
-  command = &quot;polkadot-parachain&quot;
-  args = [&quot;-lparachain=debug&quot;]
+  name = "collator01"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
 </code></pre>
 <p>Using kubernetes as provider we can simply spawn this network by running:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
@@ -259,16 +259,16 @@ alice: reports node_roles is 4
 alice: reports sub_libp2p_is_major_syncing is 0
 
 # histogram
-alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets [&quot;0.1&quot;, &quot;0.25&quot;, &quot;0.5&quot;, &quot;+Inf&quot;] within 100 seconds
+alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets ["0.1", "0.25", "0.5", "+Inf"] within 100 seconds
 
 # logs
-bob: log line matches glob &quot;*rted #1*&quot; within 10 seconds
-bob: log line matches &quot;Imported #[0-9]+&quot; within 10 seconds
-bob: count of log lines matching &quot;Error&quot; is 0 within 10 seconds
+bob: log line matches glob "*rted #1*" within 10 seconds
+bob: log line matches "Imported #[0-9]+" within 10 seconds
+bob: count of log lines matching "Error" is 0 within 10 seconds
 
 # system events
-bob: system event contains &quot;A candidate was included&quot; within 20 seconds
-alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
+bob: system event contains "A candidate was included" within 20 seconds
+alice: system event matches glob "*was backed*" within 10 seconds
 
 #parachain tests
 alice: parachain 100 is registered within 225 seconds
@@ -286,28 +286,28 @@ For example, if you are building images in your <code>CI</code> and those images
 <p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment. An interesting addon test that needs to be noticed here, is that the bob validator, is using a different version of polkadot (v0.9.37) instead of the latest (which at the time of writing this documentation was v0.9.39):</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
 
-chain = &quot;rococo-local&quot;
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
   validator = true
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
   validator = true
-  image= &quot;{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}&quot;
+  image= "{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}"
 
 [[parachains]]
 id = 100
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;{{ZOMBIENET_COL_IMAGE}}&quot;
-  command = &quot;polkadot-parachain&quot;
+  name = "collator01"
+  image = "{{ZOMBIENET_COL_IMAGE}}"
+  command = "polkadot-parachain"
 </code></pre>
 <p>To spawn this network now we need to define the <code>ZOMBIENET_INTEGRATION_TEST_IMAGE</code>, <code>ZOMBIENET_ALTERNATIVE_TEST_IMAGE</code> and <code>ZOMBIENET_COL_IMAGE</code> environment variables.</p>
 <p>For example:</p>
@@ -329,19 +329,19 @@ export ZOMBIENET_COL_IMAGE=docker.io/parity/polkadot-parachain:latest
 <p>Sometimes you need to launch and test bigger networks and defining nodes one by one is a very <em>manual</em> and error prone task. For this use cases Zombienet allows to define <code>groups</code> of nodes, for both <code>validators</code> and <code>collators</code>.</p>
 <p>Using the <code>small network</code> example as base, we can add <code>groups</code> to spawn a bigger network.</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/paritypr/polkadot:latest&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
+default_image = "docker.io/paritypr/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
 
-chain = &quot;rococo-local&quot;
+chain = "rococo-local"
 
   [[relaychain.node_groups]]
-  name = &quot;a&quot;
-  args = [ &quot;-lparachain=debug&quot;, &quot;--database=paritydb-experimental&quot; ]
+  name = "a"
+  args = [ "-lparachain=debug", "--database=paritydb-experimental" ]
   count = 5
 
   [[relaychain.node_groups]]
-  name = &quot;b&quot;
+  name = "b"
   count = 5
 
 [[parachains]]
@@ -350,9 +350,9 @@ id = 100
   [[parachains.collator_groups]]
     count = 2
     [parachains.collator_groups.collator]
-    name = &quot;collator&quot;
-    command = &quot;polkadot-parachain&quot;
-    image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
+    name = "collator"
+    command = "polkadot-parachain"
+    image = "docker.io/parity/polkadot-parachain:latest"
 </code></pre>
 <p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, then Zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>).
 Again, the groups use the <code>default_*</code> fields if they are not overridden in the group definition.</p>

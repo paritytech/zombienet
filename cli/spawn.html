@@ -180,22 +180,22 @@
 timeout = 1000
 
 [relaychain]
-default_image = &quot;paritypr/polkadot-debug:master&quot;
-chain = &quot;rococo-local&quot;
+default_image = "paritypr/polkadot-debug:master"
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
 
 [[parachains]]
 id = 100
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;paritypr/colander:4131-ccd09bbf&quot;
-  command = &quot;adder-collator&quot;
+  name = "collator01"
+  image = "paritypr/colander:4131-ccd09bbf"
+  command = "adder-collator"
 </code></pre>
 <p>Then you can spawn the network by running the following command:</p>
 <pre><code class="language-bash">./zombienet-macos spawn examples/0001-small-network.toml

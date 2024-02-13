@@ -199,7 +199,7 @@
 <div style="break-before: page; page-break-before: always;"></div><h1 id="podman-requirements"><a class="header" href="#podman-requirements">Podman requirements</a></h1>
 <p>Zombienet supports <a href="https://podman.io/">Podman</a> <em>rootless</em> as provider.
 You only need to have <code>podman</code> installed in your environment to use it and either set it in the <em>network</em> file or with the <code>--provider</code> flag in the CLI.</p>
-<p><strong>Note:</strong> Currently, it is only possible to use <code>podman</code> for Zombienet users on Linux machines. 
+<p><strong>Note:</strong> Currently, it is only possible to use <code>podman</code> for Zombienet users on Linux machines.
 Although <code>podman</code> comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects <code>podman</code> to be running natively.</p>
 <p><strong>There is actually an issue with versions of podman &gt;3 preventing to run the prometheus pods. We are working on the issue.</strong></p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="native-requirements"><a class="header" href="#native-requirements">Native requirements</a></h1>
@@ -231,9 +231,9 @@ Usage: zombienet [options] [command]
 
 Options:
   -c, --spawn-concurrency &lt;concurrency&gt;  Number of concurrent spawning process to launch, default is 1
-  -p, --provider &lt;provider&gt;              Override provider to use (choices: &quot;podman&quot;,&quot;kubernetes&quot;, &quot;native&quot;, default: kubernetes)
+  -p, --provider &lt;provider&gt;              Override provider to use (choices: "podman","kubernetes", "native", default: kubernetes)
   -d, --dir &lt;path&gt;                       Directory path for placing the network files instead of random temp one (e.g. -d /home/user/my-zombienet)
-   -l, --logType &lt;logType&gt;&quot;               Type of logging on the console - defaults to 'table'&quot; (choices: &quot;table&quot;, &quot;text&quot;, &quot;silent&quot;)
+   -l, --logType &lt;logType&gt;"               Type of logging on the console - defaults to 'table'" (choices: "table", "text", "silent")
   -f, --force                            Force override all prompt commands
   -m, --monitor                          Start as monitor, do not auto cleanup network
   -h, --help                             display help for command
@@ -293,11 +293,11 @@ Do you want to continue? (y/n)y
 Start download...
 
 -&gt; downloading [========================================] 100% 0.0s
-Binary &quot;polkadot-parachain&quot; downloaded
-Giving permissions to &quot;polkadot-parachain&quot;
+Binary "polkadot-parachain" downloaded
+Giving permissions to "polkadot-parachain"
 -&gt; downloading [========================================] 100% 0.0s
-Binary &quot;polkadot&quot; downloaded
-Giving permissions to &quot;polkadot&quot;
+Binary "polkadot" downloaded
+Giving permissions to "polkadot"
 Please add the dir to your $PATH by running the command:
  export PATH=/home/&lt;username&gt;/zombienet/dist:$PATH
 </code></pre>
@@ -311,22 +311,22 @@ Please add the dir to your $PATH by running the command:
 timeout = 1000
 
 [relaychain]
-default_image = &quot;paritypr/polkadot-debug:master&quot;
-chain = &quot;rococo-local&quot;
+default_image = "paritypr/polkadot-debug:master"
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
 
 [[parachains]]
 id = 100
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;paritypr/colander:4131-ccd09bbf&quot;
-  command = &quot;adder-collator&quot;
+  name = "collator01"
+  image = "paritypr/colander:4131-ccd09bbf"
+  command = "adder-collator"
 </code></pre>
 <p>Then you can spawn the network by running the following command:</p>
 <pre><code class="language-bash">./zombienet-macos spawn examples/0001-small-network.toml
@@ -374,23 +374,23 @@ id = 100
 <p>ZombieNet can also make <em>replacements</em> in the network config using <code>env</code> variables. To define a replacement you need to use the <code>{{ENV_VAR_NAME}}</code> syntax.</p>
 <p>For example, from the previous example but using <code>env</code> variables could be:</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
-chain = &quot;rococo-local&quot;
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
 
 [[parachains]]
 id = 100
 add_to_genesis = false
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;{{COL_IMAGE}}&quot;
-  command = &quot;adder-collator&quot;
+  name = "collator01"
+  image = "{{COL_IMAGE}}"
+  command = "adder-collator"
 
 </code></pre>
 <p>Then you can <code>export</code> the needed values before run the command to spawn the network again:</p>
@@ -462,28 +462,28 @@ This simple config exists only in order to show how the same configuration exist
 <hr />
 <p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/parity/polkadot:latest&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
+default_image = "docker.io/parity/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
 
-chain = &quot;rococo-local&quot;
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
   validator = true
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
   validator = true
 
 [[parachains]]
 id = 100
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
-  command = &quot;polkadot-parachain&quot;
-  args = [&quot;-lparachain=debug&quot;]
+  name = "collator01"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
 </code></pre>
 <p>Using kubernetes as provider we can simply spawn this network by running:</p>
 <pre><code class="language-bash">./zombienet-linux -p kubernetes spawn examples/0001-small-network.toml
@@ -507,16 +507,16 @@ alice: reports node_roles is 4
 alice: reports sub_libp2p_is_major_syncing is 0
 
 # histogram
-alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets [&quot;0.1&quot;, &quot;0.25&quot;, &quot;0.5&quot;, &quot;+Inf&quot;] within 100 seconds
+alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets ["0.1", "0.25", "0.5", "+Inf"] within 100 seconds
 
 # logs
-bob: log line matches glob &quot;*rted #1*&quot; within 10 seconds
-bob: log line matches &quot;Imported #[0-9]+&quot; within 10 seconds
-bob: count of log lines matching &quot;Error&quot; is 0 within 10 seconds
+bob: log line matches glob "*rted #1*" within 10 seconds
+bob: log line matches "Imported #[0-9]+" within 10 seconds
+bob: count of log lines matching "Error" is 0 within 10 seconds
 
 # system events
-bob: system event contains &quot;A candidate was included&quot; within 20 seconds
-alice: system event matches glob &quot;*was backed*&quot; within 10 seconds
+bob: system event contains "A candidate was included" within 20 seconds
+alice: system event matches glob "*was backed*" within 10 seconds
 
 #parachain tests
 alice: parachain 100 is registered within 225 seconds
@@ -534,28 +534,28 @@ For example, if you are building images in your <code>CI</code> and those images
 <p>Following the previous example, we will replace the <em>images</em> with variables that will read the value from the environment. An interesting addon test that needs to be noticed here, is that the bob validator, is using a different version of polkadot (v0.9.37) instead of the latest (which at the time of writing this documentation was v0.9.39):</p>
 <p><a href="https://github.com/paritytech/zombienet/blob/main/examples/0002-small-network-env-vars.toml">0002-small-network-env-vars.toml</a></p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
+default_image = "{{ZOMBIENET_INTEGRATION_TEST_IMAGE}}"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
 
-chain = &quot;rococo-local&quot;
+chain = "rococo-local"
 
   [[relaychain.nodes]]
-  name = &quot;alice&quot;
+  name = "alice"
   validator = true
 
   [[relaychain.nodes]]
-  name = &quot;bob&quot;
+  name = "bob"
   validator = true
-  image= &quot;{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}&quot;
+  image= "{{ZOMBIENET_ALTERNATIVE_TEST_IMAGE}}"
 
 [[parachains]]
 id = 100
 
   [parachains.collator]
-  name = &quot;collator01&quot;
-  image = &quot;{{ZOMBIENET_COL_IMAGE}}&quot;
-  command = &quot;polkadot-parachain&quot;
+  name = "collator01"
+  image = "{{ZOMBIENET_COL_IMAGE}}"
+  command = "polkadot-parachain"
 </code></pre>
 <p>To spawn this network now we need to define the <code>ZOMBIENET_INTEGRATION_TEST_IMAGE</code>, <code>ZOMBIENET_ALTERNATIVE_TEST_IMAGE</code> and <code>ZOMBIENET_COL_IMAGE</code> environment variables.</p>
 <p>For example:</p>
@@ -577,19 +577,19 @@ export ZOMBIENET_COL_IMAGE=docker.io/parity/polkadot-parachain:latest
 <p>Sometimes you need to launch and test bigger networks and defining nodes one by one is a very <em>manual</em> and error prone task. For this use cases Zombienet allows to define <code>groups</code> of nodes, for both <code>validators</code> and <code>collators</code>.</p>
 <p>Using the <code>small network</code> example as base, we can add <code>groups</code> to spawn a bigger network.</p>
 <pre><code class="language-toml">[relaychain]
-default_image = &quot;docker.io/paritypr/polkadot:latest&quot;
-default_command = &quot;polkadot&quot;
-default_args = [ &quot;-lparachain=debug&quot; ]
+default_image = "docker.io/paritypr/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
 
-chain = &quot;rococo-local&quot;
+chain = "rococo-local"
 
   [[relaychain.node_groups]]
-  name = &quot;a&quot;
-  args = [ &quot;-lparachain=debug&quot;, &quot;--database=paritydb-experimental&quot; ]
+  name = "a"
+  args = [ "-lparachain=debug", "--database=paritydb-experimental" ]
   count = 5
 
   [[relaychain.node_groups]]
-  name = &quot;b&quot;
+  name = "b"
   count = 5
 
 [[parachains]]
@@ -598,9 +598,9 @@ id = 100
   [[parachains.collator_groups]]
     count = 2
     [parachains.collator_groups.collator]
-    name = &quot;collator&quot;
-    command = &quot;polkadot-parachain&quot;
-    image = &quot;docker.io/parity/polkadot-parachain:latest&quot;
+    name = "collator"
+    command = "polkadot-parachain"
+    image = "docker.io/parity/polkadot-parachain:latest"
 </code></pre>
 <p>We use <code>node_groups</code> and <code>collator_groups</code> to define the groups we want to spawn, then Zombienet will spawn the desired <code>count</code> and will name the <code>nodes</code>/<code>collators</code> with the <em>index</em> suffix (e.g <code>a-1</code>).
 Again, the groups use the <code>default_*</code> fields if they are not overridden in the group definition.</p>
@@ -681,7 +681,7 @@ For example:</p>
 <li><code>tracing_collator_service_namespace</code>: (String, default <code>tempo</code>) namespace where tempo is running, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>tracing_collator_service_port</code>: (Number, default <code>3100</code>) port of the query instance of tempo, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>node_spawn_timeout</code>: (Number, default per provider) timeout to spawn pod/process.</li>
-<li><code>local_ip</code>: (String, default &quot;127.0.0.1&quot;) ip used for expose local services (rpc/metrics/monitors).</li>
+<li><code>local_ip</code>: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).</li>
 </ul>
 <h2 id="relaychain"><a class="header" href="#relaychain"><code>relaychain</code></a></h2>
 <ul>
@@ -699,7 +699,7 @@ For example:</p>
 </ul>
 </li>
 <li><code>default_resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the nodes by default.</li>
-<li><code>default_prometheus_prefix</code>: A parameter for customizing the metric's prefix. If parameter is placed in <code>relaychain</code> level, it will be &quot;passed&quot; to all <code>relaychain</code> nodes. Defaults to 'substrate'.</li>
+<li><code>default_prometheus_prefix</code>: A parameter for customizing the metric's prefix. If parameter is placed in <code>relaychain</code> level, it will be "passed" to all <code>relaychain</code> nodes. Defaults to 'substrate'.</li>
 <li><code>random_nominators_count</code>: (number, optional), if is set <em>and the stacking pallet is enabled</em> zombienet will generate <code>x</code> nominators and will be injected in the genesis.</li>
 <li><code>max_nominations</code>: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).</li>
 <li><code>nodes</code>:
@@ -907,9 +907,9 @@ For example:</p>
 <li>
 <p>Histogram assertion: Get metrics from prometheus, calculate the histogram and assert on the target value/s.</p>
 <ul>
-<li><code>node-name</code>: reports histogram <code>memtric_name</code> has <em>comparator target_value</em> samples in buckets [&quot;bucket&quot;,&quot;bucket&quot;,...] [within x seconds]
+<li><code>node-name</code>: reports histogram <code>memtric_name</code> has <em>comparator target_value</em> samples in buckets ["bucket","bucket",...] [within x seconds]
 <ul>
-<li>alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets [&quot;0.1&quot;, &quot;0.25&quot;, &quot;0.5&quot;, &quot;+Inf&quot;] within 100 seconds</li>
+<li>alice: reports histogram polkadot_pvf_execution_time has at least 2 samples in buckets ["0.1", "0.25", "0.5", "+Inf"] within 100 seconds</li>
 </ul>
 </li>
 </ul>
@@ -917,7 +917,7 @@ For example:</p>
 <li>
 <p>Metric assertion: Get metric from prometheus and assert on the target value.</p>
 <ul>
-<li><code>node-name</code>: reports <code>metric_name</code> <em>comparator target_value</em> (e.g &quot;is at least x&quot;, &quot;is greater than x&quot;) [within x seconds]
+<li><code>node-name</code>: reports <code>metric_name</code> <em>comparator target_value</em> (e.g "is at least x", "is greater than x") [within x seconds]
 <ul>
 <li>alice: reports node_roles is 4</li>
 </ul>
@@ -927,9 +927,9 @@ For example:</p>
 <li>
 <p>Logs assertions: Get logs from nodes and assert on the matching pattern (support <code>regex</code> and <code>glob</code>).</p>
 <ul>
-<li><code>node-name</code>: log line (contains|matches) ( regex|glob) &quot;pattern&quot; [within x seconds]
+<li><code>node-name</code>: log line (contains|matches) ( regex|glob) "pattern" [within x seconds]
 <ul>
-<li>alice: log line matches glob &quot;<em>rted #1</em>&quot; within 10 seconds</li>
+<li>alice: log line matches glob "<em>rted #1</em>" within 10 seconds</li>
 </ul>
 </li>
 </ul>
@@ -937,9 +937,9 @@ For example:</p>
 <li>
 <p>Logs assertions: Get logs from nodes and assert on the number of lines matching pattern (support <code>regex</code> and <code>glob</code>).</p>
 <ul>
-<li><code>node-name</code>: count of log lines (containing|matcheing) ( regex|glob) &quot;pattern&quot; [within x seconds]
+<li><code>node-name</code>: count of log lines (containing|matcheing) ( regex|glob) "pattern" [within x seconds]
 <ul>
-<li>alice: count of log lines matching glob &quot;<em>rted #1</em>&quot; within 10 seconds</li>
+<li>alice: count of log lines matching glob "<em>rted #1</em>" within 10 seconds</li>
 </ul>
 </li>
 </ul>
@@ -947,9 +947,9 @@ For example:</p>
 <li>
 <p>System events assertion: Find a <code>system event</code> from subscription by matching a <code>pattern</code>. <em>NOTE</em> the subscription is made when we start this particular test, so we <strong>can not</strong> match on event in the past.</p>
 <ul>
-<li><code>node-name</code>: system event (contains|matches)( regex| glob) &quot;pattern&quot; [within x seconds]
+<li><code>node-name</code>: system event (contains|matches)( regex| glob) "pattern" [within x seconds]
 <ul>
-<li>alice: system event matches &quot;&quot;paraId&quot;:[0-9]+&quot; within 10 seconds</li>
+<li>alice: system event matches ""paraId":[0-9]+" within 10 seconds</li>
 </ul>
 </li>
 </ul>
@@ -957,9 +957,9 @@ For example:</p>
 <li>
 <p>Tracing assertion: Match an array of <code>span names</code> from the supplied traceID. <em>NOTE</em> this is <strong>not</strong> supported with the native provider.</p>
 <ul>
-<li><code>node-name</code>: trace with traceID <id> contains [&quot;name&quot;, &quot;name2&quot;,...]
+<li><code>node-name</code>: trace with traceID <id> contains ["name", "name2",...]
 <ul>
-<li>alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains [&quot;answer-chunk-request&quot;, &quot;answer-chunk-request&quot;]</li>
+<li>alice: trace with traceID 94c1501a78a0d83c498cc92deec264d9 contains ["answer-chunk-request", "answer-chunk-request"]</li>
 </ul>
 </li>
 </ul>
@@ -1061,8 +1061,8 @@ Usage: zombienet [options] [command]
 
 Options:
   -c, --spawn-concurrency &lt;concurrency&gt;    Number of concurrent spawning process to launch, default is 1
-  -p, --provider &lt;provider&gt;                Override provider to use (choices: &quot;podman&quot;, &quot;kubernetes&quot;, &quot;native&quot;)
-  -l, --logType &lt;logType&gt;                  Type of logging - defaults to 'table' (choices: &quot;table&quot;, &quot;text&quot;, &quot;silent&quot;)
+  -p, --provider &lt;provider&gt;                Override provider to use (choices: "podman", "kubernetes", "native")
+  -l, --logType &lt;logType&gt;                  Type of logging - defaults to 'table' (choices: "table", "text", "silent")
   -d, --dir &lt;path&gt;                         Directory path for placing the network files instead of random temp one 
                                            (e.g. -d /home/user/my-zombienet)
   -f, --force                              Force override all prompt commands
