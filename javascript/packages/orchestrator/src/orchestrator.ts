@@ -523,7 +523,7 @@ export async function start(
     // sleep to give time to last node process' to start
     await sleep(2 * 1000);
 
-    await verifyNodes(network);
+    await verifyNodes(network, networkSpec.settings.node_verifier);
 
     // inject chaos to the running network
     if (chaosSpecs.length > 0) await client.injectChaos(chaosSpecs);

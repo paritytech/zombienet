@@ -19,6 +19,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `tracing_collator_service_port`: (Number, default `3100`) port of the query instance of tempo, **only** available on `kubernetes`.
 - `node_spawn_timeout`: (Number, default per provider) timeout to spawn pod/process.
 - `local_ip`: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).
+- `node_verifier`: (String, "None" or "Metric"), Allow to manage how we verify node readiness or disable (None). The default value is `Metric`.
 
 ## `relaychain`
 

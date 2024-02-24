@@ -28,7 +28,13 @@ export const nodeChecker = async (node: NetworkNode) => {
 // process.
 // Also, worth noting that we are checking the nodes in `batches` of 10
 // at the moment. This value should work ok but we can also optimize later.
-export async function verifyNodes(network: Network) {
+export async function verifyNodes(network: Network, node_verifier = "Metric") {
+  if (node_verifier == "None") {
+    debug!("Node verification disabled!");
+    return;
+  }
+
+  // Metric
   // wait until all the node's are up
   const nodeCheckGenerators = Object.values(network.nodesByName).map(
     (node: NetworkNode) => {
@@ -36,7 +42,7 @@ export async function verifyNodes(network: Network) {
     },
   );
 
-  const nodesOk = await series(nodeCheckGenerators, 10);
+  const nodesOk = await series(nodeCheckGenerators, 15);
   if (!(nodesOk as any[]).every(Boolean))
     throw new Error("At least one of the nodes fails to start");
   debug("All nodes checked ok");

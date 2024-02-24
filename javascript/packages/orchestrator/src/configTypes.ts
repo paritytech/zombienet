@@ -95,6 +95,9 @@ export interface Settings {
   image_pull_policy?: "IfNotPresent" | "Never" | "Always";
   local_ip?: string; // ip used for expose local services (rpc/metrics/monitors)
   global_delay_network_global_settings?: DelayNetworkSettings;
+  // Allow to manage how we verify node readiness or disable (None)
+  // Metric: query prometheus startProcess metric
+  node_verifier?: "None" | "Metric";
 }
 
 export interface GlobalVolume {
