@@ -153,6 +153,7 @@ export async function generateNetworkSpec(
   networkSpec.settings = {
     timeout: DEFAULT_GLOBAL_TIMEOUT,
     enable_tracing: true,
+    node_verifier: "Metric",
     ...(config.settings ? config.settings : {}),
   };
 
