@@ -682,6 +682,7 @@ For example:</p>
 <li><code>tracing_collator_service_port</code>: (Number, default <code>3100</code>) port of the query instance of tempo, <strong>only</strong> available on <code>kubernetes</code>.</li>
 <li><code>node_spawn_timeout</code>: (Number, default per provider) timeout to spawn pod/process.</li>
 <li><code>local_ip</code>: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).</li>
+<li><code>node_verifier</code>: (String, "None" or "Metric"), Allow to manage how we verify node readiness or disable (None). The default value is <code>Metric</code>.</li>
 </ul>
 <h2 id="relaychain"><a class="header" href="#relaychain"><code>relaychain</code></a></h2>
 <ul>
