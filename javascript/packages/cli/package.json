@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/cli",
-  "version": "1.3.92",
+  "version": "1.3.93",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "scripts": {
@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@zombienet/dsl-parser-wrapper": "^0.1.10",
-    "@zombienet/orchestrator": "^0.0.74",
+    "@zombienet/orchestrator": "^0.0.75",
     "@zombienet/utils": "^0.0.24",
     "cli-progress": "^3.12.0",
     "commander": "^11.1.0",
