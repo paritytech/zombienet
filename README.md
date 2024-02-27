@@ -420,7 +420,6 @@ Below can be found some of the projects that are currently using Zombienet as in
 - [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
 - [Moonbeam](https://github.com/moonbeam-foundation/moonbeam/tree/master/test)
 - [T3rn](https://github.com/t3rn/t3rn/tree/development/tests/zombienet)
-- [ParaSpell✨](https://github.com/paraspell/ui-v2)
 
 
 ## Acknowledgement
