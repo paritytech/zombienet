@@ -2,7 +2,7 @@
   description = "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks";
   inputs = {
     # follow official nixpkgs release so that likely one already have the required dependencies in store
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
     };
