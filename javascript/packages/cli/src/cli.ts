@@ -159,7 +159,9 @@ program
     process.exit(0);
   });
 
-program.addHelpText('after', `
+program.addHelpText(
+  "after",
+  `
 
 Debug:
   The debug/verbose output is managed by the DEBUG environment variable, you can enable/disable specific debugging namespaces setting an space or comma-delimited names.
@@ -183,7 +185,8 @@ Debug:
   zombie::test
 
   NOTE: wildcard (e.g.'zombie*') are supported, for advance use check https://www.npmjs.com/package/debug#wildcards
-`);
+`,
+);
 
 program.parse(process.argv);
 
