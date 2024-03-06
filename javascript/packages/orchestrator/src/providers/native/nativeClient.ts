@@ -465,7 +465,9 @@ export class NativeClient extends Client {
     if (timeout) await sleep(timeout * 1000);
 
     // start without override the log file.
-    const log = fs.createWriteStream(this.processMap[name].logs,{ flags: "a" });
+    const log = fs.createWriteStream(this.processMap[name].logs, {
+      flags: "a",
+    });
     console.log(["-c", ...this.processMap[name].cmd!]);
     const nodeProcess = spawn(this.command, [
       "-c",
