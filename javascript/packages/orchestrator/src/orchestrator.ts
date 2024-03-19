@@ -74,6 +74,7 @@ export async function start(
   launchConfig: LaunchConfig,
   options?: OrcOptionsInterface,
 ) {
+  console.time("zombie_spawn");
   const opts = {
     ...{
       monitor: false,
@@ -534,6 +535,7 @@ export async function start(
     debug(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );
+    console.timeEnd("zombie_spawn");
 
     // clean cache before dump the info.
     network.cleanMetricsCache();
