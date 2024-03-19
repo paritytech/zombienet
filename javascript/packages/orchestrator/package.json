@@ -1,6 +1,6 @@
 {
   "name": "@zombienet/orchestrator",
-  "version": "0.0.76",
+  "version": "0.0.77",
   "description": "ZombieNet aim to be a testing framework for substrate based blockchains, providing a simple cli tool that allow users to spawn and test ephemeral Substrate based networks",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,7 +37,7 @@
     "url": "https://github.com/paritytech/zombienet/issues"
   },
   "dependencies": {
-    "@polkadot/api": "^10.11.2",
+    "@polkadot/api": "^10.12.4",
     "@polkadot/keyring": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.1",
     "@zombienet/utils": "^0.0.24",
