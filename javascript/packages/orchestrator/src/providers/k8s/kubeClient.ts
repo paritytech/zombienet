@@ -74,8 +74,9 @@ export class KubeClient extends Client {
     this.remoteDir = DEFAULT_REMOTE_DIR;
     this.dataDir = DEFAULT_DATA_DIR;
     // Use the same env vars from spawn/run
-    this.inCI = process.env.RUN_IN_CONTAINER === "1" || process.env.ZOMBIENET_IMAGE !== undefined;
-
+    this.inCI =
+      process.env.RUN_IN_CONTAINER === "1" ||
+      process.env.ZOMBIENET_IMAGE !== undefined;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -732,29 +733,106 @@ export class KubeClient extends Client {
     since: number | undefined = undefined,
     withTimestamp = false,
   ): Promise<string> {
-    if( this.inCI ) {
-      return ""
-    } else {
-      const args = ["logs"];
-      if (since && since > 0) args.push(`--since=${since}s`);
-      if (withTimestamp) args.push("--timestamps=true");
-      args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
-
-      const result = await this.runCommand(args, {
-        scoped: false,
-        allowFail: true,
-      });
-      if (result.exitCode == 0) {
-        return result.stdout;
-      } else {
-        const warnMsg = `[WARN] error getting log for pod: ${podName}`;
-        debug(warnMsg);
-        new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
-          [decorators.yellow(warnMsg)],
-        ]);
-        return result.stderr || "";
-      }
+    if (!this.inCI) {
+      // we can just return the logs from kube
+      const logs = await this.getNodeLogsFromKube(
+        podName,
+        since,
+        withTimestamp,
+      );
+      return logs;
     }
+
+    // if we are running in CI, could be the case that k8s had rotate the logs,
+    // so the simple `kubectl logs` will retrive only a part of them.
+    // We should read it from host filesystem to ensure we are reading all the logs.
+
+    // First get the logs files to check if we need to read from disk or not
+    const logFiles = await this.gzipedLogFiles(podName);
+    debug("logFiles", logFiles);
+    let logs = "";
+    if (logFiles.length === 0) {
+      logs = await this.getNodeLogsFromKube(podName, since, withTimestamp);
+    } else {
+      // need to read the files in order and accumulate in logs
+      const promises = logFiles.map((file) =>
+        this.readGzipedLogFile(podName, file),
+      );
+      const results = await Promise.all(promises);
+      for (const r of results) {
+        logs += r;
+      }
+
+      // now read the actual log from kube
+      logs += await this.getNodeLogsFromKube(podName);
+    }
+
+    return logs;
+  }
+
+  async gzipedLogFiles(podName: string): Promise<string[]> {
+    const podId = await this.getPodId(podName);
+    debug("podId", podId);
+    // log dir in ci /var/log/pods/<nsName>_<podName>_<podId>/<podName>
+    const logsDir = `/var/log/pods/${this.namespace}_${podName}_${podId}/${podName}`;
+    // ls dir sorting asc one file per line (only compressed files)
+    const args = ["exec", podName, "--", "ls", "-1", logsDir];
+    const result = await this.runCommand(args, {
+      scoped: true,
+      allowFail: false,
+    });
+
+    return result.stdout
+      .split("\n")
+      .filter((f) => f !== "0.log")
+      .map((fileName) => `${logsDir}/${fileName}`);
+  }
+
+  async getNodeLogsFromKube(
+    podName: string,
+    since: number | undefined = undefined,
+    withTimestamp = false,
+  ) {
+    const args = ["logs"];
+    if (since && since > 0) args.push(`--since=${since}s`);
+    if (withTimestamp) args.push("--timestamps=true");
+    args.push(...[podName, "-c", podName, "--namespace", this.namespace]);
+
+    const result = await this.runCommand(args, {
+      scoped: false,
+      allowFail: true,
+    });
+    if (result.exitCode == 0) {
+      return result.stdout;
+    } else {
+      const warnMsg = `[WARN] error getting log for pod: ${podName}`;
+      debug(warnMsg);
+      new CreateLogTable({ colWidths: [120], doubleBorder: true }).pushToPrint([
+        [decorators.yellow(warnMsg)],
+      ]);
+      return result.stderr || "";
+    }
+  }
+
+  async readGzipedLogFile(podName: string, file: string): Promise<string> {
+    const args = ["exec", podName, "--", "zcat", file];
+    const result = await this.runCommand(args, {
+      scoped: true,
+      allowFail: false,
+    });
+
+    return result.stdout;
+  }
+
+  async getPodId(podName: string): Promise<string> {
+    //  kubectl get pod <podName>  -n <nsName> -o jsonpath='{.metadata.uid}'
+    const args = ["get", "pod", podName, "-o", "jsonpath={.metadata.uid}"];
+    const result = await this.runCommand(args, {
+      scoped: true,
+      allowFail: false,
+    });
+
+    return result.stdout;
   }
 
   async dumpLogs(path: string, podName: string) {

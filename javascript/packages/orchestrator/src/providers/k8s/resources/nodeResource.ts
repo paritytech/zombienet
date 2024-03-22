@@ -24,6 +24,8 @@ export class NodeResource {
   ) {}
 
   public async generateSpec(inCI: boolean = false) {
+    // DEBUG LOCAL
+    inCI = true;
     const volumes = await this.generateVolumes(inCI);
     const volumeMounts = this.generateVolumesMounts(inCI);
     const containersPorts = await this.generateContainersPorts();
@@ -37,24 +39,34 @@ export class NodeResource {
   }
 
   private async generateVolumes(inCI: boolean): Promise<Volume[]> {
-    let volumes: Volume[] = [
+    const volumes: Volume[] = [
       { name: "tmp-cfg" },
       { name: "tmp-data" },
       { name: "tmp-relay-data" },
     ];
 
-    if( inCI ) volumes.push( { name: "pods", hostPath: { path: "/var/log/pods", type: "" } } );
+    if (inCI)
+      volumes.push({
+        name: "pods",
+        hostPath: { path: "/var/log/pods", type: "" },
+      });
 
     return volumes;
   }
 
   private generateVolumesMounts(inCI: boolean) {
-    let volMount =  [
+    const volMount = [
       { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
       { name: "tmp-data", mountPath: "/data", readOnly: false },
       { name: "tmp-relay-data", mountPath: "/relay-data", readOnly: false },
     ];
-    if( inCI ) volMount.push( { name: "pods", mountPath: "/var/log/pods", readOnly: true } );
+
+    if (inCI)
+      volMount.push({
+        name: "pods",
+        mountPath: "/var/log/pods",
+        readOnly: false /* should be true */,
+      });
     return volMount;
   }
 
