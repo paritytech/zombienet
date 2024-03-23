@@ -748,7 +748,7 @@ export class KubeClient extends Client {
     // We should read it from host filesystem to ensure we are reading all the logs.
 
     // First get the logs files to check if we need to read from disk or not
-    const logFiles = await this.gzipedLogFiles(podName);
+    const logFiles = await this.gzippedLogFiles(podName);
     debug("logFiles", logFiles);
     let logs = "";
     if (logFiles.length === 0) {
@@ -756,7 +756,7 @@ export class KubeClient extends Client {
     } else {
       // need to read the files in order and accumulate in logs
       const promises = logFiles.map((file) =>
-        this.readGzipedLogFile(podName, file),
+        this.readgzippedLogFile(podName, file),
       );
       const results = await Promise.all(promises);
       for (const r of results) {
@@ -770,7 +770,7 @@ export class KubeClient extends Client {
     return logs;
   }
 
-  async gzipedLogFiles(podName: string): Promise<string[]> {
+  async gzippedLogFiles(podName: string): Promise<string[]> {
     const podId = await this.getPodId(podName);
     debug("podId", podId);
     // log dir in ci /var/log/pods/<nsName>_<podName>_<podId>/<podName>
@@ -814,7 +814,7 @@ export class KubeClient extends Client {
     }
   }
 
-  async readGzipedLogFile(podName: string, file: string): Promise<string> {
+  async readgzippedLogFile(podName: string, file: string): Promise<string> {
     const args = ["exec", podName, "--", "zcat", file];
     const result = await this.runCommand(args, {
       scoped: true,
