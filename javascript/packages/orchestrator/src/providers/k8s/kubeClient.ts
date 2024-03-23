@@ -771,8 +771,12 @@ export class KubeClient extends Client {
   }
 
   async gzippedLogFiles(podName: string): Promise<string[]> {
-    const podId = await this.getPodId(podName);
+    const [podId, podStatus] = await this.getPodIdAndStatus(podName);
     debug("podId", podId);
+    debug("podStatus", podStatus);
+    // we can only get compressed files from `Running` pods
+    if(podStatus !== "Running") return [];
+
     // log dir in ci /var/log/pods/<nsName>_<podName>_<podId>/<podName>
     const logsDir = `/var/log/pods/${this.namespace}_${podName}_${podId}/${podName}`;
     // ls dir sorting asc one file per line (only compressed files)
@@ -824,15 +828,15 @@ export class KubeClient extends Client {
     return result.stdout;
   }
 
-  async getPodId(podName: string): Promise<string> {
+  async getPodIdAndStatus(podName: string): Promise<string[]> {
     //  kubectl get pod <podName>  -n <nsName> -o jsonpath='{.metadata.uid}'
-    const args = ["get", "pod", podName, "-o", "jsonpath={.metadata.uid}"];
+    const args = ["get", "pod", podName, "-o", "jsonpath={.metadata.uid}{\",\"}{.status.phase}"];
     const result = await this.runCommand(args, {
       scoped: true,
       allowFail: false,
     });
 
-    return result.stdout;
+    return result.stdout.split(",");
   }
 
   async dumpLogs(path: string, podName: string) {
