@@ -65,7 +65,7 @@ export class NodeResource {
       volMount.push({
         name: "pods",
         mountPath: "/var/log/pods",
-        readOnly: false /* should be true */,
+        readOnly: true /* set to false for debugging */,
       });
     return volMount;
   }
