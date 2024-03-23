@@ -775,7 +775,7 @@ export class KubeClient extends Client {
     debug("podId", podId);
     debug("podStatus", podStatus);
     // we can only get compressed files from `Running` pods
-    if(podStatus !== "Running") return [];
+    if (podStatus !== "Running") return [];
 
     // log dir in ci /var/log/pods/<nsName>_<podName>_<podId>/<podName>
     const logsDir = `/var/log/pods/${this.namespace}_${podName}_${podId}/${podName}`;
@@ -830,7 +830,13 @@ export class KubeClient extends Client {
 
   async getPodIdAndStatus(podName: string): Promise<string[]> {
     //  kubectl get pod <podName>  -n <nsName> -o jsonpath='{.metadata.uid}'
-    const args = ["get", "pod", podName, "-o", "jsonpath={.metadata.uid}{\",\"}{.status.phase}"];
+    const args = [
+      "get",
+      "pod",
+      podName,
+      "-o",
+      'jsonpath={.metadata.uid}{","}{.status.phase}',
+    ];
     const result = await this.runCommand(args, {
       scoped: true,
       allowFail: false,
