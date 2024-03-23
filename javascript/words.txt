@@ -58,6 +58,8 @@ framesystem
 fullpaths
 genshiro
 gurke
+gzipped
+Gzipped
 hasher
 hashers
 hostpath
@@ -177,6 +179,7 @@ willbe
 xcmp
 xinfra
 xzvf
+zcat
 zipkin
 zndsl
 zombienet
