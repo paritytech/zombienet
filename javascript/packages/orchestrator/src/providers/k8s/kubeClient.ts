@@ -781,7 +781,7 @@ export class KubeClient extends Client {
     const logsDir = `/var/log/pods/${this.namespace}_${podName}_${podId}/${podName}`;
     // ls dir sorting asc one file per line (only compressed files)
     // note: use coreutils here since some images (paras) doesn't have `ls`
-    const args = ["exec", podName, "--", "/cfg/coreutils ls", "-1", logsDir];
+    const args = ["exec", podName, "--", "/cfg/coreutils", "ls", "-1", logsDir];
     const result = await this.runCommand(args, {
       scoped: true,
       allowFail: false,
