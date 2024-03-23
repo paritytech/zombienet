@@ -744,7 +744,7 @@ export class KubeClient extends Client {
     }
 
     // if we are running in CI, could be the case that k8s had rotate the logs,
-    // so the simple `kubectl logs` will retrive only a part of them.
+    // so the simple `kubectl logs` will retrieve only a part of them.
     // We should read it from host filesystem to ensure we are reading all the logs.
 
     // First get the logs files to check if we need to read from disk or not
