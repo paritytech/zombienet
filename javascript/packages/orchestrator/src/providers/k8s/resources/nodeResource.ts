@@ -23,9 +23,11 @@ export class NodeResource {
     protected readonly nodeSetupConfig: Node,
   ) {}
 
-  public async generateSpec() {
-    const volumes = await this.generateVolumes();
-    const volumeMounts = this.generateVolumesMounts();
+  public async generateSpec(inCI: boolean = false) {
+    // DEBUG LOCAL
+    inCI = true;
+    const volumes = await this.generateVolumes(inCI);
+    const volumeMounts = this.generateVolumesMounts(inCI);
     const containersPorts = await this.generateContainersPorts();
     const initContainers = this.generateInitContainers();
     const containers = await this.generateContainers(
@@ -33,23 +35,39 @@ export class NodeResource {
       containersPorts,
     );
 
-    return this.generatePodSpec(initContainers, containers, volumes);
+    return this.generatePodSpec(initContainers, containers, volumes, inCI);
   }
 
-  private async generateVolumes(): Promise<Volume[]> {
-    return [
+  private async generateVolumes(inCI: boolean): Promise<Volume[]> {
+    const volumes: Volume[] = [
       { name: "tmp-cfg" },
       { name: "tmp-data" },
       { name: "tmp-relay-data" },
     ];
+
+    if (inCI)
+      volumes.push({
+        name: "pods",
+        hostPath: { path: "/var/log/pods", type: "" },
+      });
+
+    return volumes;
   }
 
-  private generateVolumesMounts() {
-    return [
+  private generateVolumesMounts(inCI: boolean) {
+    const volMount = [
       { name: "tmp-cfg", mountPath: "/cfg", readOnly: false },
       { name: "tmp-data", mountPath: "/data", readOnly: false },
       { name: "tmp-relay-data", mountPath: "/relay-data", readOnly: false },
     ];
+
+    if (inCI)
+      volMount.push({
+        name: "pods",
+        mountPath: "/var/log/pods",
+        readOnly: true /* set to false for debugging */,
+      });
+    return volMount;
   }
 
   private async generateContainersPorts(): Promise<ContainerPort[]> {
@@ -168,6 +186,7 @@ export class NodeResource {
     initContainers: Container[],
     containers: Container[],
     volumes: Volume[],
+    inCI: boolean = false,
   ): PodSpec {
     const { name, zombieRole } = this.nodeSetupConfig;
     const zombieRoleLabel = this.computeZombieRoleLabel();
@@ -197,7 +216,7 @@ export class NodeResource {
         restartPolicy,
         volumes,
         securityContext: {
-          fsGroup: 1000,
+          fsGroup: inCI ? 0 : 1000,
           runAsUser: 1000,
           runAsGroup: 1000,
         },

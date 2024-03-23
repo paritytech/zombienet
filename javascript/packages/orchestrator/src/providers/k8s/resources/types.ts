@@ -15,6 +15,7 @@ export interface VolumeMount {
 
 export interface Volume {
   name: string;
+  hostPath?: any;
 }
 
 export interface ContainerPort {

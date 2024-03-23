@@ -61,6 +61,7 @@ export class KubeClient extends Client {
   localMagicFilepath: string;
   remoteDir: string;
   dataDir: string;
+  inCI: boolean;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -72,6 +73,10 @@ export class KubeClient extends Client {
     this.localMagicFilepath = `${tmpDir}/finished.txt`;
     this.remoteDir = DEFAULT_REMOTE_DIR;
     this.dataDir = DEFAULT_DATA_DIR;
+    // Use the same env vars from spawn/run
+    this.inCI =
+      process.env.RUN_IN_CONTAINER === "1" ||
+      process.env.ZOMBIENET_IMAGE !== undefined;
   }
 
   async validateAccess(): Promise<boolean> {
@@ -729,6 +734,71 @@ export class KubeClient extends Client {
     since: number | undefined = undefined,
     withTimestamp = false,
   ): Promise<string> {
+    if (!this.inCI) {
+      // we can just return the logs from kube
+      const logs = await this.getNodeLogsFromKube(
+        podName,
+        since,
+        withTimestamp,
+      );
+      return logs;
+    }
+
+    // if we are running in CI, could be the case that k8s had rotate the logs,
+    // so the simple `kubectl logs` will retrieve only a part of them.
+    // We should read it from host filesystem to ensure we are reading all the logs.
+
+    // First get the logs files to check if we need to read from disk or not
+    const logFiles = await this.gzippedLogFiles(podName);
+    debug("logFiles", logFiles);
+    let logs = "";
+    if (logFiles.length === 0) {
+      logs = await this.getNodeLogsFromKube(podName, since, withTimestamp);
+    } else {
+      // need to read the files in order and accumulate in logs
+      const promises = logFiles.map((file) =>
+        this.readgzippedLogFile(podName, file),
+      );
+      const results = await Promise.all(promises);
+      for (const r of results) {
+        logs += r;
+      }
+
+      // now read the actual log from kube
+      logs += await this.getNodeLogsFromKube(podName);
+    }
+
+    return logs;
+  }
+
+  async gzippedLogFiles(podName: string): Promise<string[]> {
+    const [podId, podStatus] = await this.getPodIdAndStatus(podName);
+    debug("podId", podId);
+    debug("podStatus", podStatus);
+    // we can only get compressed files from `Running` pods
+    if (podStatus !== "Running") return [];
+
+    // log dir in ci /var/log/pods/<nsName>_<podName>_<podId>/<podName>
+    const logsDir = `/var/log/pods/${this.namespace}_${podName}_${podId}/${podName}`;
+    // ls dir sorting asc one file per line (only compressed files)
+    // note: use coreutils here since some images (paras) doesn't have `ls`
+    const args = ["exec", podName, "--", "/cfg/coreutils", "ls", "-1", logsDir];
+    const result = await this.runCommand(args, {
+      scoped: true,
+      allowFail: false,
+    });
+
+    return result.stdout
+      .split("\n")
+      .filter((f) => f !== "0.log")
+      .map((fileName) => `${logsDir}/${fileName}`);
+  }
+
+  async getNodeLogsFromKube(
+    podName: string,
+    since: number | undefined = undefined,
+    withTimestamp = false,
+  ) {
     const args = ["logs"];
     if (since && since > 0) args.push(`--since=${since}s`);
     if (withTimestamp) args.push("--timestamps=true");
@@ -748,6 +818,33 @@ export class KubeClient extends Client {
       ]);
       return result.stderr || "";
     }
+  }
+
+  async readgzippedLogFile(podName: string, file: string): Promise<string> {
+    const args = ["exec", podName, "--", "zcat", file];
+    const result = await this.runCommand(args, {
+      scoped: true,
+      allowFail: false,
+    });
+
+    return result.stdout;
+  }
+
+  async getPodIdAndStatus(podName: string): Promise<string[]> {
+    //  kubectl get pod <podName>  -n <nsName> -o jsonpath='{.metadata.uid}'
+    const args = [
+      "get",
+      "pod",
+      podName,
+      "-o",
+      'jsonpath={.metadata.uid}{","}{.status.phase}',
+    ];
+    const result = await this.runCommand(args, {
+      scoped: true,
+      allowFail: false,
+    });
+
+    return result.stdout.split(",");
   }
 
   async dumpLogs(path: string, podName: string) {
@@ -904,6 +1001,7 @@ export class KubeClient extends Client {
     debug(result);
     fileUploadCache[fileHash] = fileName;
   }
+
   getLogsCommand(name: string): string {
     return `kubectl logs -f ${name} -c ${name} -n ${this.namespace}`;
   }
