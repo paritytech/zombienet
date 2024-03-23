@@ -140,6 +140,7 @@ propery
 protobuf
 rawdata
 rawmetric
+readgzipped
 relaychain
 resourse
 runtimes
