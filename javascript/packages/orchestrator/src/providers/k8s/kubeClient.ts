@@ -772,11 +772,12 @@ export class KubeClient extends Client {
   }
 
   async gzippedLogFiles(podName: string): Promise<string[]> {
-    const [podId, podStatus] = await this.getPodIdAndStatus(podName);
+    const [podId, podStatus, zombieRole] = await this.getPodInfo(podName);
     debug("podId", podId);
     debug("podStatus", podStatus);
-    // we can only get compressed files from `Running` pods
-    if (podStatus !== "Running") return [];
+    debug("zombieRole", zombieRole);
+    // we can only get compressed files from `Running` and not temp pods
+    if (podStatus !== "Running" || zombieRole == "temp") return [];
 
     // log dir in ci /var/log/pods/<nsName>_<podName>_<podId>/<podName>
     const logsDir = `/var/log/pods/${this.namespace}_${podName}_${podId}/${podName}`;
@@ -830,14 +831,14 @@ export class KubeClient extends Client {
     return result.stdout;
   }
 
-  async getPodIdAndStatus(podName: string): Promise<string[]> {
+  async getPodInfo(podName: string): Promise<string[]> {
     //  kubectl get pod <podName>  -n <nsName> -o jsonpath='{.metadata.uid}'
     const args = [
       "get",
       "pod",
       podName,
       "-o",
-      'jsonpath={.metadata.uid}{","}{.status.phase}',
+      'jsonpath={.metadata.uid}{","}{.status.phase}{","}{.metadata.labels.zombie-role}',
     ];
     const result = await this.runCommand(args, {
       scoped: true,
