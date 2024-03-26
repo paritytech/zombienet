@@ -822,7 +822,7 @@ export class KubeClient extends Client {
   }
 
   async readgzippedLogFile(podName: string, file: string): Promise<string> {
-    const args = ["exec", podName, "--", "zcat", file];
+    const args = ["exec", podName, "--", "zcat", "-f", file];
     const result = await this.runCommand(args, {
       scoped: true,
       allowFail: false,
