@@ -49,6 +49,7 @@ import { spawnNode } from "./spawner";
 import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
 import { ComputedNetwork, LaunchConfig } from "./configTypes";
 import { Node, Parachain } from "./sharedTypes";
+import { performance } from "perf_hooks";
 
 const debug = require("debug")("zombie");
 
@@ -74,7 +75,8 @@ export async function start(
   launchConfig: LaunchConfig,
   options?: OrcOptionsInterface,
 ) {
-  console.time("zombie_spawn");
+  const spawnStart = performance.now();
+
   const opts = {
     ...{
       monitor: false,
@@ -535,7 +537,22 @@ export async function start(
     debug(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );
-    console.timeEnd("zombie_spawn");
+
+    const spawnEnd = performance.now();
+    const spawnElapsedSecs = Math.round((spawnEnd - spawnStart) / 1000);
+    debug(`\t 🕰 Spawn elapsed time: ${spawnElapsedSecs} secs`);
+
+    if (options?.inCI && process.env["CI_JOB_NAME"]) {
+      const jobId = process.env["CI_JOB_ID"];
+      const jobName = process.env["CI_JOB_NAME"];
+      await fetch(
+        "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombienet",
+        {
+          method: "POST",
+          body: `spawn_network_ready_secs{job_id="${jobId}", job_name="${jobName}"} ${spawnElapsedSecs}\n`,
+        },
+      );
+    }
 
     // clean cache before dump the info.
     network.cleanMetricsCache();
