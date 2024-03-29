@@ -550,11 +550,13 @@ export async function start(
       const help = `# HELP ${metricName} Elapsed time to spawn the network in seconds`;
       const type = `# TYPE ${metricName} gauge`;
       const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"} ${spawnElapsedSecs}`;
+      const body = [help, type, metricString, "\n"].join("\n");
+      debug!(`Sending metric with content:\n ${body}`);
       await fetch(
         "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics",
         {
           method: "POST",
-          body: [help, type, metricString, "\n"].join("\n"),
+          body
         },
       );
     }
