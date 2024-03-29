@@ -540,16 +540,20 @@ export async function start(
 
     const spawnEnd = performance.now();
     const spawnElapsedSecs = Math.round((spawnEnd - spawnStart) / 1000);
-    debug(`\t 🕰 Spawn elapsed time: ${spawnElapsedSecs} secs`);
+    debug(`\t 🕰 [Spawn] elapsed time: ${spawnElapsedSecs} secs`);
 
     if (options?.inCI && process.env["CI_JOB_NAME"]) {
       const jobId = process.env["CI_JOB_ID"];
       const jobName = process.env["CI_JOB_NAME"];
+      const metricName = "zombie_network_ready_secs";
+      const help = `# HELP ${metricName} Elapsed time to spawn the network in seconds`;
+      const type = `# TYPE ${metricName} gauge`;
+      const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}"} ${spawnElapsedSecs}`;
       await fetch(
-        "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombienet",
+        "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics",
         {
           method: "POST",
-          body: `spawn_network_ready_secs{job_id="${jobId}", job_name="${jobName}"} ${spawnElapsedSecs}\n`,
+          body: [help, type, metricString, "\n"].join("\n"),
         },
       );
     }
