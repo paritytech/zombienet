@@ -556,7 +556,7 @@ export async function start(
         "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics",
         {
           method: "POST",
-          body
+          body,
         },
       );
     }
