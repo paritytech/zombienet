@@ -545,10 +545,11 @@ export async function start(
     if (options?.inCI && process.env["CI_JOB_NAME"]) {
       const jobId = process.env["CI_JOB_ID"];
       const jobName = process.env["CI_JOB_NAME"];
+      const projectName = process.env["CI_PROJECT_NAME"] || "";
       const metricName = "zombie_network_ready_secs";
       const help = `# HELP ${metricName} Elapsed time to spawn the network in seconds`;
       const type = `# TYPE ${metricName} gauge`;
-      const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}"} ${spawnElapsedSecs}`;
+      const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"} ${spawnElapsedSecs}`;
       await fetch(
         "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics",
         {
