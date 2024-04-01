@@ -138,6 +138,8 @@ prevotes
 procps
 propery
 protobuf
+PUSHGATEWAY
+pushgateway
 rawdata
 rawmetric
 readgzipped

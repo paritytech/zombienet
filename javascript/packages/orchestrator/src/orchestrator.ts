@@ -542,7 +542,11 @@ export async function start(
     const spawnElapsedSecs = Math.round((spawnEnd - spawnStart) / 1000);
     debug(`\t 🕰 [Spawn] elapsed time: ${spawnElapsedSecs} secs`);
 
-    if (options?.inCI && process.env["CI_JOB_NAME"]) {
+    if (
+      options?.inCI &&
+      process.env["PUSHGATEWAY_URL"] &&
+      process.env["CI_JOB_NAME"]
+    ) {
       const jobId = process.env["CI_JOB_ID"];
       const jobName = process.env["CI_JOB_NAME"];
       const projectName = process.env["CI_PROJECT_NAME"] || "";
@@ -552,13 +556,10 @@ export async function start(
       const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"} ${spawnElapsedSecs}`;
       const body = [help, type, metricString, "\n"].join("\n");
       debug!(`Sending metric with content:\n ${body}`);
-      await fetch(
-        "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics",
-        {
-          method: "POST",
-          body,
-        },
-      );
+      await fetch(process.env["PUSHGATEWAY_URL"], {
+        method: "POST",
+        body,
+      });
     }
 
     // clean cache before dump the info.
