@@ -40,7 +40,7 @@
     "@polkadot/api": "^10.12.4",
     "@polkadot/keyring": "^12.6.2",
     "@polkadot/util-crypto": "^12.6.1",
-    "@zombienet/utils": "^0.0.24",
+    "@zombienet/utils": "^0.0.25",
     "chai": "^4.3.10",
     "debug": "^4.3.4",
     "execa": "^5.1.1",
