@@ -14,6 +14,7 @@ import {
   series,
   setLogType,
   sleep,
+  registerSpawnElapsedTimeSecs,
 } from "@zombienet/utils";
 import fs from "fs";
 import tmp from "tmp-promise";
@@ -541,26 +542,7 @@ export async function start(
     const spawnEnd = performance.now();
     const spawnElapsedSecs = Math.round((spawnEnd - spawnStart) / 1000);
     debug(`\t 🕰 [Spawn] elapsed time: ${spawnElapsedSecs} secs`);
-
-    if (
-      options?.inCI &&
-      process.env["PUSHGATEWAY_URL"] &&
-      process.env["CI_JOB_NAME"]
-    ) {
-      const jobId = process.env["CI_JOB_ID"];
-      const jobName = process.env["CI_JOB_NAME"];
-      const projectName = process.env["CI_PROJECT_NAME"] || "";
-      const metricName = "zombie_network_ready_secs";
-      const help = `# HELP ${metricName} Elapsed time to spawn the network in seconds`;
-      const type = `# TYPE ${metricName} gauge`;
-      const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"} ${spawnElapsedSecs}`;
-      const body = [help, type, metricString, "\n"].join("\n");
-      debug!(`Sending metric with content:\n ${body}`);
-      await fetch(process.env["PUSHGATEWAY_URL"], {
-        method: "POST",
-        body,
-      });
-    }
+    if (options?.inCI) await registerSpawnElapsedTimeSecs(spawnElapsedSecs);
 
     // clean cache before dump the info.
     network.cleanMetricsCache();
