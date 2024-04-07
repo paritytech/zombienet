@@ -5,6 +5,7 @@ import {
   setLogType,
   sleep,
   LogType,
+  registerTotalElapsedTimeSecs,
 } from "@zombienet/utils";
 import fs from "fs";
 import Mocha from "mocha";
@@ -40,6 +41,7 @@ export async function run(
   dir: string | undefined,
   force: boolean = false,
 ) {
+  const testStart = performance.now();
   logType && setLogType(logType);
   let network: Network;
   const backchannelMap: BackchannelMap = {};
@@ -131,6 +133,12 @@ export async function run(
   suite.afterAll("teardown", async function () {
     this.timeout(180 * 1000);
     if (network && !network.wasRunning) {
+      // report metric
+      const testEnd = performance.now();
+      const elapsedSecs = Math.round((testEnd - testStart) / 1000);
+      debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
+      if(inCI) await registerTotalElapsedTimeSecs(elapsedSecs);
+
       const logsPath = await network.dumpLogs(false);
       const tests = this.test?.parent?.tests;
 
