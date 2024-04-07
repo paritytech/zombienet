@@ -6,4 +6,4 @@ export * from "./net";
 export * from "./nunjucksRelativeLoader";
 export * from "./promiseSeries";
 export * from "./tableCli";
-export * from "./zombieMetrics"
+export * from "./zombieMetrics";

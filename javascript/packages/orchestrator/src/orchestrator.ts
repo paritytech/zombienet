@@ -542,7 +542,7 @@ export async function start(
     const spawnEnd = performance.now();
     const spawnElapsedSecs = Math.round((spawnEnd - spawnStart) / 1000);
     debug(`\t 🕰 [Spawn] elapsed time: ${spawnElapsedSecs} secs`);
-    if(options?.inCI) await registerSpawnElapsedTimeSecs(spawnElapsedSecs);
+    if (options?.inCI) await registerSpawnElapsedTimeSecs(spawnElapsedSecs);
 
     // clean cache before dump the info.
     network.cleanMetricsCache();

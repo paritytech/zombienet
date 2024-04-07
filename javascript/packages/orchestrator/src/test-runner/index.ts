@@ -137,7 +137,7 @@ export async function run(
       const testEnd = performance.now();
       const elapsedSecs = Math.round((testEnd - testStart) / 1000);
       debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
-      if(inCI) await registerTotalElapsedTimeSecs(elapsedSecs);
+      if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs);
 
       const logsPath = await network.dumpLogs(false);
       const tests = this.test?.parent?.tests;
