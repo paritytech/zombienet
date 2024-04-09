@@ -17,10 +17,16 @@ def deployment_webhook_mutate():
        if labels["x-infra-instance"]=="ondemand":
           return admission_response_patch(True, "Adding allow label", json_patch = jsonpatch.JsonPatch([{"op": "add", "path": "/spec/tolerations", "value": [{"effect":"NoExecute", "key":"workload-type", 
            "operator":"Equal", "value":"large-testnet"}]}, {"op":"add", "path":"/spec/nodeSelector", "value": {"nodetype":"large-network"}}]))
-       else:
+       elif labels["x-infra-instance"]=="ondemand-iops":
+          return admission_response_patch(True, "Adding allow label", json_patch = jsonpatch.JsonPatch([{"op": "add", "path": "/spec/tolerations", "value": [{"effect":"NoExecute", "key":"workload-type", 
+           "operator":"Equal", "value":"large-testnet-iops"}]}, {"op":"add", "path":"/spec/nodeSelector", "value": {"nodetype":"large-network-iops"}}]))
+       elif labels["x-infra-instance"]=="spot":
           return admission_response_patch(True, "Adding allow label", json_patch = jsonpatch.JsonPatch([{"op": "add", "path": "/spec/tolerations", "value": [{"effect":"NoExecute", "key":"workload-type", 
            "operator":"Equal", "value":"xlarge-testnet"}]}, {"op":"add", "path":"/spec/nodeSelector", "value": {"nodetype":"xlarge-network"}}]))
-           
+       else:    
+          return admission_response_patch(True, "Adding allow label", json_patch = jsonpatch.JsonPatch([{"op": "add", "path": "/spec/tolerations", "value": [{"effect":"NoExecute", "key":"workload-type", 
+           "operator":"Equal", "value":"xlarge-testnet-iops"}]}, {"op":"add", "path":"/spec/nodeSelector", "value": {"nodetype":"xlarge-network-iops"}}]))
+
 #          return admission_response_patch(True, "Adding allow label", json_patch = jsonpatch.JsonPatch([{"op": "add", "path": "/spec/tolerations", "value": [{"operator":"Exists"}]}, {"op":"add", "path":"/spec/affinity", "value": {"nodeAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"weight":100,"preference":{"matchExpressions":[{"key":"nodetype","operator":"In","values":["xlarge-network"]}]}},{"weight":50,"preference":{"matchExpressions":[{"key":"nodetype","operator":"In","values":["large-network"]}]}}]}} }]))
        
     elif namespace.startswith("zombie-") and not hasNodeSelector:
