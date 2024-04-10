@@ -58,6 +58,8 @@ framesystem
 fullpaths
 genshiro
 gurke
+gzipped
+Gzipped
 hasher
 hashers
 hostpath
@@ -136,8 +138,11 @@ prevotes
 procps
 propery
 protobuf
+PUSHGATEWAY
+pushgateway
 rawdata
 rawmetric
+readgzipped
 relaychain
 resourse
 runtimes
@@ -177,6 +182,7 @@ willbe
 xcmp
 xinfra
 xzvf
+zcat
 zipkin
 zndsl
 zombienet

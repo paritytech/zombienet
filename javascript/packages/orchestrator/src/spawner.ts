@@ -55,7 +55,7 @@ export const spawnNode = async (
   debug(`creating node: ${node.name}`);
   const podDef = await (node.name === "bootnode"
     ? genBootnodeDef(namespace, node)
-    : genNodeDef(namespace, node));
+    : genNodeDef(namespace, node, opts.inCI));
 
   const finalFilesToCopyToNode = [...filesToCopy];
 

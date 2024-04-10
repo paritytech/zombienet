@@ -14,6 +14,7 @@ import {
   series,
   setLogType,
   sleep,
+  registerSpawnElapsedTimeSecs,
 } from "@zombienet/utils";
 import fs from "fs";
 import tmp from "tmp-promise";
@@ -49,6 +50,7 @@ import { spawnNode } from "./spawner";
 import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
 import { ComputedNetwork, LaunchConfig } from "./configTypes";
 import { Node, Parachain } from "./sharedTypes";
+import { performance } from "perf_hooks";
 
 const debug = require("debug")("zombie");
 
@@ -74,7 +76,8 @@ export async function start(
   launchConfig: LaunchConfig,
   options?: OrcOptionsInterface,
 ) {
-  console.time("zombie_spawn");
+  const spawnStart = performance.now();
+
   const opts = {
     ...{
       monitor: false,
@@ -535,7 +538,11 @@ export async function start(
     debug(
       `\t 🚀 LAUNCH COMPLETE under namespace ${decorators.green(namespace)} 🚀`,
     );
-    console.timeEnd("zombie_spawn");
+
+    const spawnEnd = performance.now();
+    const spawnElapsedSecs = Math.round((spawnEnd - spawnStart) / 1000);
+    debug(`\t 🕰 [Spawn] elapsed time: ${spawnElapsedSecs} secs`);
+    if (options?.inCI) await registerSpawnElapsedTimeSecs(spawnElapsedSecs);
 
     // clean cache before dump the info.
     network.cleanMetricsCache();

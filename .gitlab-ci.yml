@@ -26,6 +26,7 @@ variables:
   # Improve gitlab cache performance
   CACHE_COMPRESSION_LEVEL: "fastest"
   FF_USE_FASTZIP: "true"
+  PUSHGATEWAY_URL: "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics"
 
 cache:
   - key:
