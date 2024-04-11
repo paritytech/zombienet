@@ -55,7 +55,7 @@
     "peer-id": "^0.16.0",
     "tmp-promise": "^3.0.3",
     "typescript": "^5.3.3",
-    "yaml": "^2.3.4"
+    "yaml": "^2.4.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
