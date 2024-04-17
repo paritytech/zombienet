@@ -1,1 +1,1 @@
-admissio controller
+admission controller
