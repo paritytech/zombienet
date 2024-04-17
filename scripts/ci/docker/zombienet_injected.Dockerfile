@@ -14,11 +14,15 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# install rust
+ENV RUST_VERSION=1.75.0
+RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y
+
 # install gcloud and kubectl
 WORKDIR /home/nonroot/
 ENV CLOUDSDK_INSTALL_DIR /usr/local/gcloud
 RUN curl -sSL https://sdk.cloud.google.com | bash
-ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin
+ENV PATH $PATH:/usr/local/gcloud/google-cloud-sdk/bin:/root/.cargo/bin
 RUN gcloud components install kubectl
 
 # Non-root user for security purposes.
