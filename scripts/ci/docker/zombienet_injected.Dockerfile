@@ -9,14 +9,10 @@ LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.created="${BUILD_DATE}"
 
 RUN apt-get update && \
-    apt-get install -y curl gnupg lsb-release jq tini vim procps && \
+    apt-get install -y curl gnupg lsb-release jq tini vim procps build-essential && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
-
-# install rust
-ENV RUST_VERSION=1.75.0
-RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y
 
 # install gcloud and kubectl
 WORKDIR /home/nonroot/
@@ -62,6 +58,13 @@ RUN chown -R nonroot. /etc/zombie-net
 
 # Use the non-root user to run our application
 USER nonroot
+
+# install rust
+ENV RUST_VERSION=1.75.0
+RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y
+
+ENV PATH $PATH:/home/nonroot/.cargo/bin
+
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
 ENTRYPOINT ["tini", "--", "bash"]
 
