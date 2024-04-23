@@ -64,7 +64,7 @@ ENV RUST_VERSION=1.75.0
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y
 ENV PATH $PATH:/home/nonroot/.cargo/bin
 # install nextest
-RUN /bin/sh -c cargo install cargo-nextest --locked
+RUN cargo install cargo-nextest --locked 
 
 # Tini allows us to avoid several Docker edge cases, see https://github.com/krallin/tini.
 ENTRYPOINT ["tini", "--", "bash"]
