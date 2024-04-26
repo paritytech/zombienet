@@ -126,6 +126,8 @@ const DEFAULT_KEYSTORE_KEY_TYPES: string[] = [
   "nmbs",
   "rand",
   "rate",
+  "bcsv",
+  "ftsv",
 ];
 
 export {
