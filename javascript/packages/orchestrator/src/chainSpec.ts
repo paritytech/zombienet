@@ -178,6 +178,8 @@ export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
         nimbus: sr_account.address,
         vrf: sr_account.address,
         mixnet: sr_account.address,
+        bcsv: sr_account.address,
+        ftsv: ed_account.address,
       },
     ];
 

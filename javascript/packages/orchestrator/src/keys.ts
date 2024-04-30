@@ -90,6 +90,8 @@ export async function generateKeystoreFiles(
     rand: node.accounts.sr_account.publicKey, // Randomness (Moonbeam)
     rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
     mixn: node.accounts.sr_account.publicKey, // Mixnet
+    bcsv: node.accounts.sr_account.publicKey, // BlockchainSrvc (StorageHub)
+    ftsv: node.accounts.ed_account.publicKey, // FileTransferSrvc (StorageHub)
   };
 
   // 2 ways keys can be defined:

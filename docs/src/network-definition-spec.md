@@ -146,3 +146,5 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `rand` - `sr`
   - `rate` - `ed`
   - `acco` - `sr`
+  - `bcsv` - `sr`
+  - `ftsv` - `ed`
