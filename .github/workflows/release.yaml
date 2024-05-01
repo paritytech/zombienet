@@ -19,7 +19,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '18'
           working-directory: './javascript'
       - run: npm install
         working-directory: "./javascript"
@@ -71,7 +71,8 @@ jobs:
   build_release_for_mac:
     name: build_release_for_mac
     needs: build_release_for_linux
-    runs-on: macos-latest
+    runs-on: macos-13 # x64
+    # runs-on: macos-latest is arm
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -80,7 +81,7 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '18'
           working-directory: './javascript'
       - run: npm install && npm update
         working-directory: "./javascript"
