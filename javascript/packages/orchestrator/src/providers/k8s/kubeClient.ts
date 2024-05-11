@@ -30,6 +30,7 @@ import { genServiceDef } from "./dynResourceDefinition";
 const fs = require("fs").promises;
 
 const debug = require("debug")("zombie::kube::client");
+const debugLogs = require("debug")("zombie::kube::client::logs");
 
 export interface ReplaceMapping {
   [propertyName: string]: string;
@@ -750,7 +751,7 @@ export class KubeClient extends Client {
 
     // First get the logs files to check if we need to read from disk or not
     const logFiles = await this.gzippedLogFiles(podName);
-    debug("logFiles", logFiles);
+    debugLogs("logFiles", logFiles);
     let logs = "";
     if (logFiles.length === 0) {
       logs = await this.getNodeLogsFromKube(podName, since, withTimestamp);
@@ -773,9 +774,9 @@ export class KubeClient extends Client {
 
   async gzippedLogFiles(podName: string): Promise<string[]> {
     const [podId, podStatus, zombieRole] = await this.getPodInfo(podName);
-    debug("podId", podId);
-    debug("podStatus", podStatus);
-    debug("zombieRole", zombieRole);
+    debugLogs("podId", podId);
+    debugLogs("podStatus", podStatus);
+    debugLogs("zombieRole", zombieRole);
     // we can only get compressed files from `Running` and not temp pods
     if (podStatus !== "Running" || zombieRole == "temp") return [];
 
@@ -823,6 +824,7 @@ export class KubeClient extends Client {
 
   async readgzippedLogFile(podName: string, file: string): Promise<string> {
     const args = ["exec", podName, "--", "zcat", "-f", file];
+    debugLogs("readgzippedLogFile args", args);
     const result = await this.runCommand(args, {
       scoped: true,
       allowFail: false,
