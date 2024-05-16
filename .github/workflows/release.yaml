@@ -71,8 +71,12 @@ jobs:
   build_release_for_mac:
     name: build_release_for_mac
     needs: build_release_for_linux
-    runs-on: macos-13 # x64
-    # runs-on: macos-latest is arm
+    strategy:
+      matrix:
+        target:
+          - { runner: macos-13, arch: x86_64 }
+          - { runner: macos-14, arch: arm64 }
+    runs-on: ${{ matrix.target.runner }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -99,5 +103,5 @@ jobs:
         with:
           upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
           asset_path: ./javascript/bins/zombienet-macos
-          asset_name: zombienet-macos
+          asset_name: zombienet-macos-${{ matrix.target.arch }}
           asset_content_type: application/octet-stream
