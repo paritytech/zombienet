@@ -20,7 +20,8 @@
     "lint:write": "eslint './**' --fix && npx prettier --write .",
     "package": "npm run -w packages/cli package",
     "package:linux": "npm run -w packages/cli package:linux",
-    "package:macos": "npm run -w packages/cli package:macos",
+    "package:macos:x64": "npm run -w packages/cli package:macos:x64",
+    "package:macos:arm64": "npm run -w packages/cli package:macos:arm64",
     "zombie": "node ./packages/cli/dist/cli.js",
     "test": "npm run test --workspaces --if-present",
     "postinstall": "if [[ -f .husky/post-install.js ]]; then cd .. && node javascript/.husky/post-install.js; fi"
