@@ -61,7 +61,8 @@ jobs:
         working-directory: "./javascript"
       - name: Gets latest created release info
         id: latest_release_info
-        uses: jossef/action-latest-release-info@v1.2.1
+        #uses: jossef/action-latest-release-info@v1.2.1
+        uses: pepoviola/action-latest-release-info@v0.0.1
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
         env:
