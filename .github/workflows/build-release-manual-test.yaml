@@ -36,7 +36,12 @@ jobs:
   build_release_for_mac:
     name: build_release_for_mac
     needs: build_release_for_linux
-    runs-on: macos-13 # x64
+    strategy:
+      matrix:
+        target:
+          - { runner: macos-13, arch: x64 }
+          - { runner: macos-14, arch: arm64 }
+    runs-on: ${{ matrix.target.runner }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -51,8 +56,8 @@ jobs:
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
-      - run: npm run package:macos
+      - run: npm run package:macos:${{ matrix.target.arch }}
         working-directory: "./javascript"
       - name: Test if zombienet-mac runs
-        run: ./bins/zombienet-macos version
+        run: ./bins/zombienet-macos-${{ matrix.target.arch }} version
         working-directory: "./javascript"

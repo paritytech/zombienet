@@ -11,7 +11,8 @@
     "test": "echo \"Error: no test specified\"",
     "package": "pkg . -o ../../bins/zombienet",
     "package:linux": "pkg . -o ../../bins/zombienet-linux -t node18-linux-x64,node18-linux-arm64",
-    "package:macos": "pkg . -o ../../bins/zombienet-macos -t node18-macos-x64"
+    "package:macos:x86_64": "pkg . -o ../../bins/zombienet-macos-x64 -t node18-macos-x64",
+    "package:macos:arm64": "pkg . -o ../../bins/zombienet-macos-arm64 -t node18-macos-arm64"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     ],
     "targets": [
       "node18-macos-x64",
+      "node18-macos-arm64",
       "node18-linux-x64",
       "node18-linux-arm64"
     ]
