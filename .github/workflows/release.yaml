@@ -20,7 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          working-directory: './javascript'
       - run: npm install
         working-directory: "./javascript"
       - run: npm run build
@@ -86,7 +85,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          working-directory: './javascript'
       - run: npm install && npm update
         working-directory: "./javascript"
       - run: npm run build
