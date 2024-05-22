@@ -59,3 +59,15 @@ jobs:
       - name: Test if zombienet-mac runs
         run: ./bins/zombienet-macos-${{ matrix.target.arch }} version
         working-directory: "./javascript"
+      - name: Gets latest created release info
+        id: latest_release_info
+        uses: jossef/action-latest-release-info@v1.2.2
+      - name: upload macos artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.latest_release_info.outputs.upload_url }}
+          asset_path: ./javascript/bins/zombienet-macos-${{ matrix.target.arch }}
+          asset_name: zombienet-macos-${{ matrix.target.arch }}
+          asset_content_type: application/octet-stream
