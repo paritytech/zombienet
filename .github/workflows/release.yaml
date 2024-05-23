@@ -20,7 +20,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          working-directory: './javascript'
       - run: npm install
         working-directory: "./javascript"
       - run: npm run build
@@ -74,7 +73,7 @@ jobs:
     strategy:
       matrix:
         target:
-          - { runner: macos-13, arch: x86_64 }
+          - { runner: macos-13, arch: x64 }
           - { runner: macos-14, arch: arm64 }
     runs-on: ${{ matrix.target.runner }}
     steps:
@@ -86,15 +85,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          working-directory: './javascript'
       - run: npm install && npm update
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
-      - run: npm run package:macos
+      - run: npm run package:macos:${{ matrix.target.arch }}
         working-directory: "./javascript"
       - name: Test if zombienet-mac runs
-        run: ./bins/zombienet-macos version
+        run: ./bins/zombienet-macos-${{ matrix.target.arch }} version
         working-directory: "./javascript"
       - name: upload macos artifact
         uses: actions/upload-release-asset@v1
@@ -102,6 +100,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ needs.build_release_for_linux.outputs.upload_url }}
-          asset_path: ./javascript/bins/zombienet-macos
+          asset_path: ./javascript/bins/zombienet-macos-${{ matrix.target.arch }}
           asset_name: zombienet-macos-${{ matrix.target.arch }}
           asset_content_type: application/octet-stream

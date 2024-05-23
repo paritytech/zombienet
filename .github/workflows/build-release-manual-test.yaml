@@ -21,7 +21,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          working-directory: './javascript'
       - run: npm install
         working-directory: "./javascript"
       - run: npm run build
@@ -36,7 +35,12 @@ jobs:
   build_release_for_mac:
     name: build_release_for_mac
     needs: build_release_for_linux
-    runs-on: macos-13 # x64
+    strategy:
+      matrix:
+        target:
+          - { runner: macos-13, arch: x64 }
+          - { runner: macos-14, arch: arm64 }
+    runs-on: ${{ matrix.target.runner }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -46,13 +50,29 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          working-directory: './javascript'
       - run: npm install && npm update
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
-      - run: npm run package:macos
+      - run: npm run package:macos:${{ matrix.target.arch }}
         working-directory: "./javascript"
       - name: Test if zombienet-mac runs
-        run: ./bins/zombienet-macos version
+        run: ./bins/zombienet-macos-${{ matrix.target.arch }} version
         working-directory: "./javascript"
+
+      # uncomment to upload the artifacts to the latest release
+      # - name: Gets latest created release info
+      #   id: latest_release_info
+      #   #uses: jossef/action-latest-release-info@v1.2.1
+      #   uses: pepoviola/action-latest-release-info@v0.0.2
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      # - name: upload macos artifact
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}
+      #   with:
+      #     upload_url: ${{ steps.latest_release_info.outputs.upload_url }}
+      #     asset_path: ./javascript/bins/zombienet-macos-${{ matrix.target.arch }}
+      #     asset_name: zombienet-macos-${{ matrix.target.arch }}
+      #     asset_content_type: application/octet-stream
