@@ -62,7 +62,7 @@ jobs:
       - name: Gets latest created release info
         id: latest_release_info
         #uses: jossef/action-latest-release-info@v1.2.1
-        uses: pepoviola/action-latest-release-info@v0.0.1
+        uses: pepoviola/action-latest-release-info@v0.0.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: upload macos artifact
