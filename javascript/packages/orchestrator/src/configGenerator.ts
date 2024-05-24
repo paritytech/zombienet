@@ -177,16 +177,17 @@ export async function generateNetworkSpec(
     } else {
       networkSpec.relaychain.chainSpecPath = chainSpecPath;
     }
-  } else {
-    // Create the chain spec
-    networkSpec.relaychain.chainSpecCommand = config.relaychain
-      .chain_spec_command
-      ? config.relaychain.chain_spec_command
-      : DEFAULT_CHAIN_SPEC_COMMAND.replace(
-          "{{DEFAULT_COMMAND}}",
-          networkSpec.relaychain.defaultCommand,
-        );
   }
+
+  // even if we have a chain_spec_path we need to set
+  // the command to generate the raw version
+
+  networkSpec.relaychain.chainSpecCommand = config.relaychain.chain_spec_command
+    ? config.relaychain.chain_spec_command
+    : DEFAULT_CHAIN_SPEC_COMMAND.replace(
+        "{{DEFAULT_COMMAND}}",
+        networkSpec.relaychain.defaultCommand,
+      );
 
   const relayChainBootnodes: string[] = [];
 

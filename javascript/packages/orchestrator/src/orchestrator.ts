@@ -297,8 +297,7 @@ export async function start(
         namespace,
         networkSpec.relaychain.defaultImage,
         chainName,
-        networkSpec.relaychain.chainSpecCommand ||
-          networkSpec.relaychain.defaultCommand,
+        networkSpec.relaychain.chainSpecCommand!,
         chainSpecFullPath,
       );
     } else {
