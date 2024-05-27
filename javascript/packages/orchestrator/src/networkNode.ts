@@ -433,6 +433,8 @@ export class NetworkNode implements NetworkNodeInterface {
   async countPatternLines(
     pattern: string,
     isGlob: boolean,
+    comparator: string,
+    desiredMetricValue: number,
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
     try {
@@ -441,18 +443,31 @@ export class NetworkNode implements NetworkNodeInterface {
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
       const getValue = async (): Promise<number> => {
-        await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
-        const logs = await client.getNodeLogs(this.name, undefined, true);
+        let done = false;
 
-        for (let line of logs.split("\n")) {
-          if (client.providerName !== "native") {
-            // remove the extra timestamp
-            line = line.split(" ").slice(1).join(" ");
+        while (!done) {
+          let value = 0;
+          const logs = await client.getNodeLogs(this.name, undefined, true);
+
+          for (let line of logs.split("\n")) {
+            if (client.providerName !== "native") {
+              // remove the extra timestamp
+              line = line.split(" ").slice(1).join(" ");
+            }
+            if (re.test(line)) {
+              value += 1;
+            }
           }
-          if (re.test(line)) {
-            total_count += 1;
+
+          // save to return
+          total_count = value;
+          if (compare(comparator, value, desiredMetricValue)) {
+            done = true;
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
+
         return total_count;
       };
 

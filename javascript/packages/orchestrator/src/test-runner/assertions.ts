@@ -189,7 +189,13 @@ const CountLogMatch = ({
     const nodes = network.getNodes(node_name!);
     const results = await Promise.all(
       nodes.map((node: any) =>
-        node.countPatternLines(pattern!, isGlob, timeout),
+        node.countPatternLines(
+          pattern!,
+          isGlob,
+          toChaiComparator(op!),
+          target_value,
+          timeout,
+        ),
       ),
     );
 
