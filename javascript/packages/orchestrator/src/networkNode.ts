@@ -447,7 +447,6 @@ export class NetworkNode implements NetworkNodeInterface {
 
         while (!done) {
           let value = 0;
-          //await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
           const logs = await client.getNodeLogs(this.name, undefined, true);
 
           for (let line of logs.split("\n")) {
@@ -465,7 +464,7 @@ export class NetworkNode implements NetworkNodeInterface {
           if (compare(comparator, value, desiredMetricValue)) {
             done = true;
           } else {
-            await new Promise((resolve) => setTimeout(resolve, timeout * 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
 
