@@ -178,6 +178,18 @@ Then you can spawn the network by running the following command:
 ❯ ./zombienet-macos spawn --provider native examples/0001-small-network.toml
 ```
 
+**Note:** before spawning network one needs to verify that `kubectl`'s namespace is set to `default`
+```bash
+❯ kubectl config get-contexts
+
+CURRENT   NAME                   CLUSTER          AUTHINFO         NAMESPACE
+*         docker-desktop         docker-desktop   docker-desktop   default
+
+# if not then set it to default value
+
+❯ kubectl config set-context --current --namespace='default'
+```
+
 Note that the command expects two binaries `polkadot` and `adder-collator` to be installed on your system. See further down for how to get them.
 
 You can follow the output of the `steps` to spawn the network and once the network is launched a
