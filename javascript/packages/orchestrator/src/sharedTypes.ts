@@ -147,6 +147,7 @@ export interface Resources {
 export interface CommonParachainConfig {
   id: number;
   chain?: string;
+  force_decorator?: string;
   genesis?: JSON | ObjectJSON;
   balance?: number;
   delayNetworkSettings?: DelayNetworkSettings;
