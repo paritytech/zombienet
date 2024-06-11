@@ -13,7 +13,6 @@ Below can be found some of the projects that are currently using Zombienet as in
 **In the Polkadot ecosystem:**
 
 - [Acurast](https://github.com/Acurast/acurast-substrate/blob/10c3160a297ae6c3092ee692e6d3b632896fca65/Makefile)
-- [Astar](https://github.com/AstarNetwork/Astar/blob/master/.github/workflows/zombienetRpcTest.yml#L44)
 - [Gossamer](https://github.com/ChainSafe/gossamer/issues/2843)
 - [Oak/Turing/Neumann](https://github.com/OAK-Foundation/OAK-blockchain/tree/master/zombienets)
 - [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/rococo-local)
