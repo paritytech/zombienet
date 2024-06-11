@@ -9,6 +9,7 @@ enum CHAIN {
   Oak = "oak",
   Mangata = "mangata",
   Generic = "generic",
+  GenericEvm = "generic_evm",
   LocalV = "local_v",
   MainnetLocalV = "mainnet_local_v",
 }
@@ -29,8 +30,10 @@ import mainnet_local_v from "./mainnet-local-v";
 import mangata from "./mangata";
 import moonbeam from "./moonbeam";
 import oak from "./oak";
+import generic_evm from "./generic-evm";
 
-function whichChain(chain: string): CHAIN {
+function whichChain(chain_name: string, force_decorator?: string): CHAIN {
+  const chain = force_decorator ? force_decorator : chain_name;
   if (chain.includes("statemint") || chain.includes("asset-hub-polkadot"))
     return CHAIN.AssetHubPolkadot;
   if (/moonbase|moonriver|moonbeam/.test(chain)) return CHAIN.Moonbeam;
@@ -43,6 +46,7 @@ function whichChain(chain: string): CHAIN {
   if (/mangata/.test(chain)) return CHAIN.Mangata;
   if (/local-v/.test(chain)) return CHAIN.LocalV;
   if (/mainnet-local-v/.test(chain)) return CHAIN.MainnetLocalV;
+  if (/generic-evm/.test(chain)) return CHAIN.GenericEvm;
 
   return CHAIN.Generic;
 }
@@ -110,6 +114,14 @@ const MainnetLocalVDecorators: Decorator = Object.keys(mainnet_local_v).reduce(
   Object.create({}),
 );
 
+const GenericEvmDecorators: Decorator = Object.keys(generic_evm).reduce(
+  (memo, fn) => {
+    memo[fn] = (generic_evm as Decorator)[fn];
+    return memo;
+  },
+  Object.create({}),
+);
+
 const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   moonbeam: moonbeamDecorators,
   asset_hub_polkadot: assetHubPolkadotDecorators,
@@ -123,6 +135,7 @@ const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   local_v: localVDecorators,
   mainnet_local_v: MainnetLocalVDecorators,
   generic: {},
+  generic_evm: GenericEvmDecorators,
 };
 
 function decorate(chain: CHAIN, fns: Function[]) {
