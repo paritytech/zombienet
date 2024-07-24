@@ -204,8 +204,8 @@
 <li><code>default_substrate_cli_args_version</code>: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>default_overrides</code>: (Array of objects) An array of overrides to upload to the nodes, objects with:
 <ul>
-<li><code>local_path</code>: string;</li>
-<li><code>remote_name</code>: string;</li>
+<li><code>local_path</code>: string.</li>
+<li><code>remote_name</code>: string.</li>
 </ul>
 </li>
 <li><code>default_resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the nodes by default.</li>
@@ -233,9 +233,9 @@
 <li><code>overrides</code>: Array of <code>overrides</code> definitions.</li>
 <li><code>add_to_bootnodes</code>: (Boolean, default false) Add this node to the bootnode list.</li>
 <li><code>resources</code>: (Object) <strong>Only</strong> available in <code>kubernetes</code>, represent the resources <code>limits</code>/<code>reservations</code> needed by the node.</li>
-<li><code>ws_port</code>: (number), WS port to use.;</li>
-<li><code>rpc_port</code>: (number) RPC port to use;</li>
-<li><code>prometheus_port</code>: (number) Prometheus port to use;</li>
+<li><code>ws_port</code>: (number), WS port to use.</li>
+<li><code>rpc_port</code>: (number) RPC port to use.</li>
+<li><code>prometheus_port</code>: (number) Prometheus port to use.</li>
 <li><code>prometheus_prefix</code>: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.</li>
 <li><code>keystore_key_types</code>: Defines which keystore keys should be created, for more details checkout details below.</li>
 </ul>
