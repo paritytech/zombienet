@@ -31,8 +31,8 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
 - `default_substrate_cli_args_version`: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 - `default_overrides`: (Array of objects) An array of overrides to upload to the nodes, objects with:
-  - `local_path`: string;
-  - `remote_name`: string;
+  - `local_path`: string.
+  - `remote_name`: string.
 - `default_resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the nodes by default.
 - `default_prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
@@ -54,9 +54,9 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `overrides`: Array of `overrides` definitions.
   - `add_to_bootnodes`: (Boolean, default false) Add this node to the bootnode list.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
-  - `ws_port`: (number), WS port to use.;
-  - `rpc_port`: (number) RPC port to use;
-  - `prometheus_port`: (number) Prometheus port to use;
+  - `ws_port`: (number), WS port to use.
+  - `rpc_port`: (number) RPC port to use.
+  - `prometheus_port`: (number) Prometheus port to use.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
   - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
 - `node_groups`:
