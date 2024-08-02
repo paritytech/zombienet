@@ -49,7 +49,7 @@ function whichChain(chain_name: string, force_decorator?: string): CHAIN {
   if (/local-v/.test(chain)) return CHAIN.LocalV;
   if (/mainnet-local-v/.test(chain)) return CHAIN.MainnetLocalV;
   if (/generic-evm/.test(chain)) return CHAIN.GenericEvm;
-  if (/vow|avn|/.test(chain)) return CHAIN.Aventus;
+  if (/vow-net|avn-chain/.test(chain)) return CHAIN.Aventus;
 
   return CHAIN.Generic;
 }

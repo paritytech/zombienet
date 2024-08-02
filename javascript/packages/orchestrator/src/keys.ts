@@ -92,7 +92,6 @@ export async function generateKeystoreFiles(
     mixn: node.accounts.sr_account.publicKey, // Mixnet
     bcsv: node.accounts.sr_account.publicKey, // BlockchainSrvc (StorageHub)
     ftsv: node.accounts.ed_account.publicKey, // FileTransferSrvc (StorageHub)
-    avnk: node.accounts.sr_account.publicKey, // Aventus
   };
 
   // 2 ways keys can be defined:
