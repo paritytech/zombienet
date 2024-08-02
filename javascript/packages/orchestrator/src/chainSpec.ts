@@ -756,7 +756,7 @@ export async function customizePlainRelayChain(
         validatorKeys.push(node.accounts.sr_stash.address);
 
         if (keyType === "session") {
-          const chain = whichChain(networkSpec.relaychain.chain);
+          const chain = whichChain(networkSpec.relaychain.chain, networkSpec.relaychain.force_decorator);
           const [decoratedGetNodeKey] = decorate(chain, [getNodeKey]);
           const key = decoratedGetNodeKey(node);
           await addAuthority(specPath, node, key);

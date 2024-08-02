@@ -12,6 +12,7 @@ enum CHAIN {
   GenericEvm = "generic_evm",
   LocalV = "local_v",
   MainnetLocalV = "mainnet_local_v",
+  Aventus = "aventus",
 }
 
 interface Decorator {
@@ -31,6 +32,7 @@ import mangata from "./mangata";
 import moonbeam from "./moonbeam";
 import oak from "./oak";
 import generic_evm from "./generic-evm";
+import aventus from "./aventus";
 
 function whichChain(chain_name: string, force_decorator?: string): CHAIN {
   const chain = force_decorator ? force_decorator : chain_name;
@@ -47,9 +49,15 @@ function whichChain(chain_name: string, force_decorator?: string): CHAIN {
   if (/local-v/.test(chain)) return CHAIN.LocalV;
   if (/mainnet-local-v/.test(chain)) return CHAIN.MainnetLocalV;
   if (/generic-evm/.test(chain)) return CHAIN.GenericEvm;
+  if (/vow-net|avn-chain/.test(chain)) return CHAIN.Aventus;
 
   return CHAIN.Generic;
 }
+const aventusDecorators: Decorator = Object.keys(aventus).reduce(
+  (memo, fn) => {
+    memo[fn] = (aventus as Decorator)[fn];
+  return memo;
+}, Object.create({}));
 
 const moonbeamDecorators: Decorator = Object.keys(moonbeam).reduce(
   (memo, fn) => {
@@ -136,6 +144,7 @@ const decorators: { [para in CHAIN]: { [fn: string]: Function } } = {
   mainnet_local_v: MainnetLocalVDecorators,
   generic: {},
   generic_evm: GenericEvmDecorators,
+  aventus: aventusDecorators,
 };
 
 function decorate(chain: CHAIN, fns: Function[]) {
