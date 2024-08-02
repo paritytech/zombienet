@@ -53,9 +53,8 @@ function whichChain(chain_name: string, force_decorator?: string): CHAIN {
 
   return CHAIN.Generic;
 }
-const aventusDecorators: Decorator = Object.keys(aventus).reduce(
-  (memo, fn) => {
-    memo[fn] = (aventus as Decorator)[fn];
+const aventusDecorators: Decorator = Object.keys(aventus).reduce((memo, fn) => {
+  memo[fn] = (aventus as Decorator)[fn];
   return memo;
 }, Object.create({}));
 
