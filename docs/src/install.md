@@ -31,6 +31,12 @@ If you have `Node.js`, you can install `zombienet` locally via NPM:
 npm i @zombienet/cli@latest -g
 ```
 
+Then you should be able to access the `zombienet` command:
+
+```
+zombienet help
+```
+
 ## Using Nix
 
 [Nix](https://nixos.org/) is a package manager which is available for both `linux` and `macos`.

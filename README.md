@@ -67,6 +67,12 @@ If you have `Node.js`, you can install `zombienet` locally via NPM:
 npm i @zombienet/cli -g
 ```
 
+Then you should be able to access the `zombienet` command:
+
+```
+zombienet help
+```
+
 ## Status
 
 At the moment Zombienet *only* works with `local` chains (e.g. rococo-local, polkadot-local, etc).
