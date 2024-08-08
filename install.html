@@ -175,6 +175,30 @@
                     <main>
                         <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>ZombieNet releases are available in <a href="https://github.com/paritytech/zombienet/releases">github</a>. Each release provides executables for both <code>linux</code> and <code>macos</code> created with <a href="https://github.com/vercel/pkg">pkg</a> and allows running <code>zombienet</code> cli <em>without</em> having <code>Node.js</code> installed. <strong>But</strong> each <code>provider</code> define its own requirements (e.g. k8s, podman).</p>
+<h2 id="using-binaries-on-macos"><a class="header" href="#using-binaries-on-macos">Using Binaries on MacOS</a></h2>
+<p>After you have downloaded <code>zombienet-macos-arm64</code> or <code>zombienet-macos-x64</code>, you will need to:</p>
+<ul>
+<li>Move the binary to your working directory.</li>
+<li>Rename the binary to just <code>zombienet</code> without any <code>macos-&lt;version&gt;</code> extension for convenience.</li>
+<li>Enable the binary to be executable:
+<pre><code class="language-bash">chmod +x ./zombienet
+</code></pre>
+</li>
+<li>Remove the binary from quarantine:
+<pre><code class="language-bash">xattr -d com.apple.quarantine ./zombienet
+</code></pre>
+</li>
+</ul>
+<p>Then you should be able to access the binary:</p>
+<pre><code class="language-bash">./zombienet help
+</code></pre>
+<h2 id="using-npm"><a class="header" href="#using-npm">Using NPM</a></h2>
+<p>If you have <code>Node.js</code>, you can install <code>zombienet</code> locally via NPM:</p>
+<pre><code class="language-bash">npm i @zombienet/cli@latest -g
+</code></pre>
+<p>Then you should be able to access the <code>zombienet</code> command:</p>
+<pre><code>zombienet help
+</code></pre>
 <h2 id="using-nix"><a class="header" href="#using-nix">Using Nix</a></h2>
 <p><a href="https://nixos.org/">Nix</a> is a package manager which is available for both <code>linux</code> and <code>macos</code>.</p>
 <p>The ZombieNet repository provides a <code>flake.nix</code> file, which can be used if you have <a href="https://nixos.wiki/wiki/Flakes#Enable_flakes">nix flakes enabled</a>. (e.g. <code>experimental-features = nix-command flakes</code> is in <code>~/.config/nix/nix.conf</code>). Use the flake reference <code>github:paritytech/zombienet</code> for the latest on <code>main</code>, or <code>github:paritytech/zombienet/&lt;tag&gt;</code> for a particular revision.</p>
