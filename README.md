@@ -38,6 +38,27 @@ Zombienet releases are available in `github`. Each one provides an executable fo
 **Note:** Currently, it is only possible to use `podman` for Zombienet users on Linux machines.
 Although `podman` comes with support for macOS, it is done using an internal VM and the Zombienet provider code expects `podman` to be running natively.
 
+### Using Binaries on MacOS
+
+After you have downloaded `zombienet-macos-arm64` or `zombienet-macos-x64`, you will need to:
+
+- Move the binary to your working directory.
+- Rename the binary to just `zombienet` without any `macos-<version>` extension for convenience.
+- Enable the binary to be executable:
+	```bash
+	chmod +x ./zombienet
+	```
+- Remove the binary from quarantine:
+	```bash
+	xattr -d com.apple.quarantine ./zombienet
+	```
+
+Then you should be able to access the binary:
+
+```bash
+./zombienet help
+```
+
 ### Install from NPM
 
 If you have `Node.js`, you can install `zombienet` locally via NPM:
