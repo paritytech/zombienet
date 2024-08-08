@@ -2,6 +2,14 @@
 
 ZombieNet releases are available in [github](https://github.com/paritytech/zombienet/releases). Each release provides executables for both `linux` and `macos` created with [pkg](https://github.com/vercel/pkg) and allows running `zombienet` cli *without* having `Node.js` installed. **But** each `provider` define its own requirements (e.g. k8s, podman).
 
+## Using NPM
+
+If you have `Node.js`, you can install `zombienet` locally via NPM:
+
+```bash
+npm i @zombienet/cli@latest -g
+```
+
 ## Using Nix
 
 [Nix](https://nixos.org/) is a package manager which is available for both `linux` and `macos`.
