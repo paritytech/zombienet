@@ -2,6 +2,41 @@
 
 ZombieNet releases are available in [github](https://github.com/paritytech/zombienet/releases). Each release provides executables for both `linux` and `macos` created with [pkg](https://github.com/vercel/pkg) and allows running `zombienet` cli *without* having `Node.js` installed. **But** each `provider` define its own requirements (e.g. k8s, podman).
 
+## Using Binaries on MacOS
+
+After you have downloaded `zombienet-macos-arm64` or `zombienet-macos-x64`, you will need to:
+
+- Move the binary to your working directory.
+- Rename the binary to just `zombienet` without any `macos-<version>` extension for convenience.
+- Enable the binary to be executable:
+	```bash
+	chmod +x ./zombienet
+	```
+- Remove the binary from quarantine:
+	```bash
+	xattr -d com.apple.quarantine ./zombienet
+	```
+
+Then you should be able to access the binary:
+
+```bash
+./zombienet help
+```
+
+## Using NPM
+
+If you have `Node.js`, you can install `zombienet` locally via NPM:
+
+```bash
+npm i @zombienet/cli@latest -g
+```
+
+Then you should be able to access the `zombienet` command:
+
+```
+zombienet help
+```
+
 ## Using Nix
 
 [Nix](https://nixos.org/) is a package manager which is available for both `linux` and `macos`.
