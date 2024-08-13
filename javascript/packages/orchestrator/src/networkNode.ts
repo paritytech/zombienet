@@ -437,16 +437,16 @@ export class NetworkNode implements NetworkNodeInterface {
     desiredMetricValue: number,
     timeout: number = DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   ): Promise<number> {
+    let total_count = 0;
     try {
-      let total_count = 0;
       const re = isGlob ? makeRe(pattern) : new RegExp(pattern, "ig");
       if (!re) throw new Error(`Invalid glob pattern: ${pattern} `);
       const client = getClient();
-      const getValue = async (): Promise<number> => {
+      const getValue = async (): Promise<void> => {
         let done = false;
 
         while (!done) {
-          let value = 0;
+          let counter = 0;
           const logs = await client.getNodeLogs(this.name, undefined, true);
 
           for (let line of logs.split("\n")) {
@@ -455,20 +455,17 @@ export class NetworkNode implements NetworkNodeInterface {
               line = line.split(" ").slice(1).join(" ");
             }
             if (re.test(line)) {
-              value += 1;
+              counter += 1;
             }
           }
 
-          // save to return
-          total_count = value;
-          if (compare(comparator, value, desiredMetricValue)) {
+          total_count = counter;
+          if (compare(comparator, counter, desiredMetricValue)) {
             done = true;
           } else {
             await new Promise((resolve) => setTimeout(resolve, 1000));
           }
         }
-
-        return total_count;
       };
 
       const resp = await Promise.race([
@@ -495,7 +492,7 @@ export class NetworkNode implements NetworkNodeInterface {
           err?.message,
         )}\n`,
       );
-      return 0;
+      return total_count;
     }
   }
 
