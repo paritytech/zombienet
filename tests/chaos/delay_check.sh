@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 POD=$1
 PORT=$2 # 9615 for prometheus

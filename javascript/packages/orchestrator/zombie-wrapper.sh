@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -uxo pipefail
 
 if [ -f /cfg/coreutils ]; then
