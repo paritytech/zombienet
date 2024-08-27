@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 KEY_ENCODED=$1
 SCRIPT=$(realpath "$0")
