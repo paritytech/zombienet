@@ -95,6 +95,8 @@ Zombienet project has it's own `k8s` cluster in GCP, to use it please ping
 
 ### With Podman
 
+__:warning: Zombienet currently only supports podman v2 or older, for newer version you will need to apply [this patch](https://github.com/paritytech/zombienet/issues/827#issuecomment-1592000242) manually! :warning:__
+
 Zombienet supports [Podman](https://podman.io/) *rootless* as provider, you only need to have
 `podman` installed in your environment to use and either set in the *network* file or with the
 `--provider` flag in the cli. `Podman` for `zombienet` is currently only supported for Linux machines.
