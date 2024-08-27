@@ -17,6 +17,7 @@ else
     LS="ls"
     KILL="kill"
     SLEEP="sleep"
+    ECHO="echo"
     CAT="cat"
 fi
 
