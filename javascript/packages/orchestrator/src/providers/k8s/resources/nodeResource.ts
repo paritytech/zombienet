@@ -203,6 +203,7 @@ export class NodeResource {
           "app.kubernetes.io/name": this.namespace,
           "app.kubernetes.io/instance": name,
           "x-infra-instance": process.env.X_INFRA_INSTANCE || "ondemand",
+          "managed-by": "zombienet",
         },
         annotations: {
           "prometheus.io/scrape": "true",

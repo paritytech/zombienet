@@ -23,6 +23,7 @@ export class BootNodeResource extends NodeResource {
           "zombie-role": ZombieRole.BootNode,
           app: "zombienet",
           "x-infra-instance": process.env.X_INFRA_INSTANCE || "ondemand",
+          "managed-by": "zombienet",
         },
       },
       spec: {
