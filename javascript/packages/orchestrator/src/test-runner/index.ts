@@ -139,7 +139,14 @@ export async function run(
       debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
       if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs);
 
-      const logsPath = await network.dumpLogs(false);
+      let logsPath;
+      try {
+        logsPath = await network.dumpLogs(false);
+      } catch(e) {
+        console.log(`${decorators.red("❌ Error dumping logs!")}`);
+        console.log(`err: ${e}`);
+      }
+
       const tests = this.test?.parent?.tests;
 
       if (tests) {
@@ -154,7 +161,12 @@ export async function run(
 
         // All test passed, just remove the network
         console.log(`\n\t ${decorators.green("Deleting network")}`);
-        await network.stop();
+        try {
+          await network.stop();
+        } catch(e) {
+          console.log(`${decorators.yellow("⚠️  Error deleting network")}`);
+          console.log(`err: ${e}`);
+        }
 
         // show logs
         console.log(
