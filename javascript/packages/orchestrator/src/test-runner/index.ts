@@ -142,7 +142,7 @@ export async function run(
       let logsPath;
       try {
         logsPath = await network.dumpLogs(false);
-      } catch(e) {
+      } catch (e) {
         console.log(`${decorators.red("❌ Error dumping logs!")}`);
         console.log(`err: ${e}`);
       }
@@ -163,7 +163,7 @@ export async function run(
         console.log(`\n\t ${decorators.green("Deleting network")}`);
         try {
           await network.stop();
-        } catch(e) {
+        } catch (e) {
           console.log(`${decorators.yellow("⚠️  Error deleting network")}`);
           console.log(`err: ${e}`);
         }
