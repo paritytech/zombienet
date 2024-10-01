@@ -750,6 +750,7 @@ export class KubeClient extends Client {
     // We should read it from host filesystem to ensure we are reading all the logs.
 
     // First get the logs files to check if we need to read from disk or not
+    debugLogs("getting logFiles for:", podName);
     const logFiles = await this.gzippedLogFiles(podName);
     debugLogs("logFiles", logFiles);
     let logs = "";

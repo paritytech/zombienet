@@ -168,10 +168,11 @@ export class Network {
       [],
     );
 
-    const dumpsPromises = this.relay.concat(paraNodes).map((node) => {
-      this.client.dumpLogs(this.tmpDir, node.name);
-    });
-    await Promise.allSettled(dumpsPromises);
+    const dumpsNodes = this.relay.concat(paraNodes);
+    await Promise.allSettled(dumpsNodes.map((node) => {
+        this.client.dumpLogs(this.tmpDir, node.name);
+      })
+    );
 
     if (showLogPath)
       new CreateLogTable({ colWidths: [20, 100] }).pushToPrint([
