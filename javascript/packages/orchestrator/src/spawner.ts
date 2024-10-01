@@ -179,6 +179,8 @@ export const spawnNode = async (
   }
 
   networkNode.group = node.group;
+  // add the full spec
+  networkNode.spec = node;
 
   if (parachain) {
     const paraId = parachain.id;
