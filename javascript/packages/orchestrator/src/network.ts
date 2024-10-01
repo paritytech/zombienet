@@ -169,9 +169,10 @@ export class Network {
     );
 
     const dumpsNodes = this.relay.concat(paraNodes);
-    await Promise.allSettled(dumpsNodes.map((node) => {
+    await Promise.allSettled(
+      dumpsNodes.map((node) => {
         this.client.dumpLogs(this.tmpDir, node.name);
-      })
+      }),
     );
 
     if (showLogPath)
