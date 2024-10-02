@@ -46,6 +46,10 @@ COPY javascript/package-lock.json ./
 RUN npm install --production
 RUN chown -R nonroot. /home/nonroot
 
+#debug
+
+RUN ls -la /home/nonroot
+
 # Change `cli` permissions and link to easy call
 RUN chmod +x /home/nonroot/zombie-net/packages/cli/dist/cli.js
 RUN ln -s /home/nonroot/zombie-net/packages/cli/dist/cli.js /usr/local/bin/zombie
