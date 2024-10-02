@@ -1,0 +1,62 @@
+name: Zombienet Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  IMAGE_NAME: paritypr/zombienet
+  VERSION: ${{ github.sha }}
+
+jobs:
+  build_image:
+    name: Check that the image can be build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Build and push Docker image from main
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./scripts/ci/docker/zombienet_injected.Dockerfile
+          push: false
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.IMAGE_NAME }}:latest
+
+  build_push_image:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build_image]
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USER }}
+      #     password: ${{ secrets.DOCKERHUB_PASS }}
+
+      # - name: Build and push Docker image from main
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile
+      #     push: true
+      #     tags: |
+      #       ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+      #       ${{ env.IMAGE_NAME }}:latest
