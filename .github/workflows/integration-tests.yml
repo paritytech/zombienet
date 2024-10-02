@@ -19,15 +19,15 @@ env:
 
 jobs:
   build_image:
-    name: Check that the image can be build
+    name: Build image
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
 
       - name: Build and push Docker image from main
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./scripts/ci/docker/zombienet_injected.Dockerfile
@@ -37,13 +37,14 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
 
   build_push_image:
-    name: Push Docker image to Docker Hub
+    name: Build and Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [build_image]
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
 
       # - name: Log in to Docker Hub
       #   uses: docker/login-action@v3
@@ -52,7 +53,7 @@ jobs:
       #     password: ${{ secrets.DOCKERHUB_PASS }}
 
       # - name: Build and push Docker image from main
-      #   uses: docker/build-push-action@v5
+      #   uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
       #   with:
       #     context: .
       #     file: ./Dockerfile
