@@ -26,22 +26,16 @@ jobs:
       # - name: Check out the repo
       #   uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
 
-      - name: Build and Push Docker Image
-        uses: paritytech/build-n-push-action@main
+      #docker/build-push-action has a built-in checkout
+      - name: Build and push Docker image from main
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
-          push_to_registry: "false"
-          image_name: ${{ env.IMAGE_NAME }}
-          dockerfile_path: "./scripts/ci/docker/zombienet_injected.Dockerfile"
-
-      # - name: Build and push Docker image from main
-      #   uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
-      #   with:
-      #     # context: .
-      #     file: ./scripts/ci/docker/zombienet_injected.Dockerfile
-      #     push: false
-      #     tags: |
-      #       ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-      #       ${{ env.IMAGE_NAME }}:latest
+          # context: .
+          file: ./scripts/ci/docker/zombienet_injected.Dockerfile
+          push: false
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.IMAGE_NAME }}:latest
 
   build_push_image:
     name: Build and Push Docker image to Docker Hub
