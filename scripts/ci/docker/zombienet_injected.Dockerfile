@@ -49,6 +49,10 @@ RUN chown -R nonroot. /home/nonroot
 #debug
 
 RUN ls -la /home/nonroot
+RUN ls -la /home/nonroot/zombie-net
+RUN ls -la /home/nonroot/zombie-net/packages
+RUN ls -la /home/nonroot/zombie-net/packages/cli
+RUN ls -la /home/nonroot/zombie-net/packages/cli/dist
 
 # Change `cli` permissions and link to easy call
 RUN chmod +x /home/nonroot/zombie-net/packages/cli/dist/cli.js
