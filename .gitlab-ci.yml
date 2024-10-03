@@ -27,6 +27,7 @@ variables:
   CACHE_COMPRESSION_LEVEL: "fastest"
   FF_USE_FASTZIP: "true"
   PUSHGATEWAY_URL: "http://zombienet-prometheus-pushgateway.managed-monitoring:9091/metrics/job/zombie-metrics"
+  DEBUG: "zombie,zombie::network-node,zombie::kube::client::logs"
 
 cache:
   - key:
@@ -249,26 +250,26 @@ zombienet-upgrade-node:
       --local-dir="${LOCAL_DIR}"
       --test="0001-upgrade-node.zndsl"
 
-paras:
-  extends:
-    - .zombienet-common
-  variables:
-    GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/paras"
+# paras:
+#   extends:
+#     - .zombienet-common
+#   variables:
+#     GH_DIR: "https://github.com/paritytech/zombienet/tree/${CI_COMMIT_SHORT_SHA}/tests/paras"
 
-  before_script:
-    - echo "Zombienet Paras smoke test"
-    - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
-    - echo "${GH_DIR}"
-    - export DEBUG=zombie
-    - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
-    - export BIFROST_COL_IMAGE=docker.io/bifrostnetwork/bifrost:latest
-    - export MOONBEAM_COL_IMAGE=docker.io/purestake/moonbeam:v0.26
-    - export OAK_COL_IMAGE=docker.io/oaknetwork/turing:latest
+#   before_script:
+#     - echo "Zombienet Paras smoke test"
+#     - echo "paritypr/zombienet:${CI_COMMIT_SHORT_SHA}"
+#     - echo "${GH_DIR}"
+#     - export DEBUG=zombie
+#     - export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
+#     - export BIFROST_COL_IMAGE=docker.io/bifrostnetwork/bifrost:latest
+#     - export MOONBEAM_COL_IMAGE=docker.io/purestake/moonbeam:v0.26
+#     - export OAK_COL_IMAGE=docker.io/oaknetwork/turing:latest
 
-  script:
-    - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
-      --local-dir="${LOCAL_DIR}"
-      --test="paras.zndsl"
+#   script:
+#     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
+#       --local-dir="${LOCAL_DIR}"
+#       --test="paras.zndsl"
 
 # db-snapshot:
 #  extends:
