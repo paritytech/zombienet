@@ -851,7 +851,7 @@ export class KubeClient extends Client {
     return result.stdout.split(",");
   }
 
-  async dumpLogs(path: string, podName: string) {
+  async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
     await fs.writeFile(dstFileName, logs);
