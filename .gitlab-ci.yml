@@ -71,6 +71,16 @@ cache:
     - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/ # i.e. v1.0, v2.1rc1
 
+build:
+  stage: build
+  <<: *kubernetes-env
+  <<: *common-refs
+  script:
+    - cd javascript
+    - npm install
+    - npm run clean
+    - npm run build
+
 # template task for building and pushing an image
 .build-push-docker-image: &build-push-docker-image
   script:
