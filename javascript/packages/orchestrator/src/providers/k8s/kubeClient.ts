@@ -63,6 +63,7 @@ export class KubeClient extends Client {
   remoteDir: string;
   dataDir: string;
   inCI: boolean;
+  fileServerIP?: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -449,13 +450,11 @@ export class KubeClient extends Client {
       // download the file in the container
       const args = ["exec", identifier];
       if (container) args.push("-c", container);
-      let extraArgs = [
-        "--",
-        "/usr/bin/wget",
-        "-O",
-        podFilePath,
-        `http://fileserver/${fileHash}`,
-      ];
+      const url = this.fileServerIP
+        ? `http://${this.fileServerIP}/${fileHash}`
+        : `http://fileserver/${fileHash}`;
+
+      let extraArgs = ["--", "/usr/bin/wget", "-O", podFilePath, url];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
       let result = await this.runCommand([...args, ...extraArgs]);
       debug(result);
@@ -580,6 +579,9 @@ export class KubeClient extends Client {
       throw new Error(
         `Can't connect to fileServer, after ${attempts} attempts`,
       );
+
+    // store the fileserver ip
+    this.fileServerIP = await this.getNodeIP("fileserver");
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
