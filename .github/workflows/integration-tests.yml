@@ -23,14 +23,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      # - name: Check out the repo
-      #   uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
 
+      - name: npm build
+        run: |
+          cd javascript
+          npm install
+          npm run clean
+          npm run build
+        # working-directory: ./javascript
       #docker/build-push-action has a built-in checkout
       - name: Build and push Docker image from main
         uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
-          file: ./scripts/ci/docker/zombienet_builder.Dockerfile
+          file: ./scripts/ci/docker/zombienet_injected.Dockerfile
           push: false
           tags: |
             ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
