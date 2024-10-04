@@ -32,6 +32,7 @@ jobs:
           npm install
           npm run clean
           npm run build
+          ls -la packages/cli/dist/cli.js
         # working-directory: ./javascript
       #docker/build-push-action has a built-in checkout
       - name: Build and push Docker image from main
