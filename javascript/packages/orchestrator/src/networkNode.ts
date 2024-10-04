@@ -233,7 +233,9 @@ export class NetworkNode implements NetworkNodeInterface {
           desiredMetricValue === null ||
           compare(comparator!, value, desiredMetricValue)
         ) {
-          debug(`[${this.name}] value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
+          debug(
+            `[${this.name}] value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`,
+          );
           return value;
         }
       }
@@ -244,7 +246,9 @@ export class NetworkNode implements NetworkNodeInterface {
         while (!done && !timedout) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          debug(`[${this.name}] Fetching metrics - q: ${c}  time:  ${new Date()}`);
+          debug(
+            `[${this.name}] Fetching metrics - q: ${c}  time:  ${new Date()}`,
+          );
           this.cachedMetrics = await fetchMetrics(this.prometheusUri);
           value = this._getMetric(metricName, desiredMetricValue === null);
 

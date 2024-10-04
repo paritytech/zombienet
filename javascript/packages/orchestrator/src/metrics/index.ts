@@ -21,12 +21,14 @@ enum metricKeysMapping {
   PeersCount = "sub_libp2p_peers_count",
 }
 
-export async function fetchMetrics(metricUri: string, node_name = ""): Promise<Metrics> {
+export async function fetchMetrics(
+  metricUri: string,
+  node_name = "",
+): Promise<Metrics> {
   let metrics = {}; // empty by default
-  let debug_msg = node_name ? `[${node_name}]` : "";
+  const debug_msg = node_name ? `[${node_name}]` : "";
   try {
-
-    debug([debug_msg,`fetching: ${metricUri}`].join(" "));
+    debug([debug_msg, `fetching: ${metricUri}`].join(" "));
     const fetchResult = await fetch(metricUri, {
       signal: TimeoutAbortController(2).signal,
       method: "GET",
