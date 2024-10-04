@@ -38,6 +38,9 @@ export async function fetchMetrics(
     });
 
     if (!fetchResult.ok) {
+      debug(
+        [debug_msg, `fetch error - status: ${fetchResult.status}`].join(" "),
+      );
       throw new Error(`Error - status: ${fetchResult.status}`);
     }
 
