@@ -121,6 +121,7 @@ export class KubeClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
+    longRunning?: boolean,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -229,6 +230,9 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.waitPodReady(name);
+
+    if (longRunning)
+      await this.runCommand(["wait", "--for=condition=Ready", `Pod/${name}`]);
 
     logTable = new CreateLogTable({
       colWidths: [20, 100],
@@ -566,13 +570,18 @@ export class KubeClient extends Client {
     });
     debug("waiting for pod: fileserver, to be ready");
     await this.waitPodReady("fileserver");
+    await this.runCommand(["wait", "--for=condition=Ready", "Pod/fileserver"]);
     debug("pod: fileserver, ready");
     let fileServerOk = false;
     let attempts = 0;
     // try 5 times at most
     for (attempts; attempts < 5; attempts++) {
-      if (await this.checkFileServer()) fileServerOk = true;
-      else sleep(1 * 1000);
+      if (await this.checkFileServer()) {
+        fileServerOk = true;
+        break; // ready to go!
+      } else {
+        sleep(1 * 1000);
+      }
     }
 
     if (!fileServerOk)

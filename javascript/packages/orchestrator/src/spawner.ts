@@ -106,6 +106,7 @@ export const spawnNode = async (
     keystoreLocalDir,
     parachainSpecId || network.chainId,
     node.dbSnapshot,
+    true, // long running
   );
 
   const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
