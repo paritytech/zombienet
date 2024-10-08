@@ -27,7 +27,7 @@ export interface ContainerPort {
 export interface Container {
   image: string;
   name: string;
-  imagePullPolicy?: "Always";
+  imagePullPolicy?: "Always" | "IfNotPresent" | "Never";
   volumeMounts?: VolumeMount[];
   ports?: ContainerPort[];
   command: string[];
