@@ -30,6 +30,7 @@ jobs:
         run: |
           cd javascript
           npm install
+          npm dedupe
           npm run clean
           npm run build
 
@@ -56,6 +57,7 @@ jobs:
         run: |
           cd javascript
           npm install
+          npm dedupe
           npm run clean
           npm run build
 
