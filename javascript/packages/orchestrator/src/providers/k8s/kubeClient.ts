@@ -321,7 +321,12 @@ export class KubeClient extends Client {
   }
 
   async waitTransferContainerReady(pod: string): Promise<void> {
-    await this.runCommand(["wait", "--for=condition=Running", `Pod/${pod}`, `-c ${TRANSFER_CONTAINER_NAME}`]);
+    await this.runCommand([
+      "wait",
+      "--for=condition=Running",
+      `Pod/${pod}`,
+      `-c ${TRANSFER_CONTAINER_NAME}`,
+    ]);
     await this.waitContainerInState(pod, TRANSFER_CONTAINER_NAME, "running");
 
     await this.waitLog(
