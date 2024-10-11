@@ -193,6 +193,9 @@ fn parse_custom_script_rule(
             Rule::double_quoted_string => {
                 args = Some(inner_record.as_str().trim_matches('"').to_owned());
             }
+            Rule::single_quoted_string => {
+                args = Some(inner_record.as_str().trim_matches('\'').to_owned());
+            }
             Rule::comparison => {
                 cmp = Some(parse_comparison(inner_record)?);
             }
