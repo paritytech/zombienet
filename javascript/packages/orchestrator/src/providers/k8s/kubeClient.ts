@@ -321,6 +321,7 @@ export class KubeClient extends Client {
   }
 
   async waitTransferContainerReady(pod: string): Promise<void> {
+    await this.runCommand(["wait", "--for=condition=Running", `Pod/${pod}`, `-c ${TRANSFER_CONTAINER_NAME}`]);
     await this.waitContainerInState(pod, TRANSFER_CONTAINER_NAME, "running");
 
     await this.waitLog(
@@ -569,8 +570,8 @@ export class KubeClient extends Client {
       xinfra,
     });
     debug("waiting for pod: fileserver, to be ready");
-    await this.waitPodReady("fileserver");
     await this.runCommand(["wait", "--for=condition=Ready", "Pod/fileserver"]);
+    await this.waitPodReady("fileserver");
     debug("pod: fileserver, ready");
     let fileServerOk = false;
     let attempts = 0;
