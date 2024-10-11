@@ -273,8 +273,8 @@ const CustomJs = ({
       ? custom_args === ""
         ? []
         : custom_args.charAt(0) === "{" // allow to pass a single quoted json
-        ? JSON.parse(custom_args)
-        : custom_args.split(",")
+          ? JSON.parse(custom_args)
+          : custom_args.split(",")
       : [];
 
     let resolvedJsFilePath = path.resolve(configBasePath, file_path!);
