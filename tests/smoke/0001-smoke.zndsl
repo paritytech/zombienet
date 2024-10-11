@@ -29,6 +29,8 @@ alice: system event matches "paraId(.)*[0-9]+" within 20 seconds
 alice: js-script ./0001-custom.js return is greater than 1 within 200 seconds
 alice: js-script ./0001-custom.js within 200 seconds
 alice: js-script ./0001-custom.js with "alice" within 200 seconds
+# json argument
+alice: js-script ./0001-custom-json.js with '{"account": "alice", "nums": [0,1,2,3], "bool": true}' within 200 seconds
 alice: run ./0001-custom.sh within 200 seconds
 
 # Histogram assertions
