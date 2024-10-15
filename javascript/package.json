@@ -24,7 +24,7 @@
     "package:macos:arm64": "npm run -w packages/cli package:macos:arm64",
     "zombie": "node ./packages/cli/dist/cli.js",
     "test": "npm run test --workspaces --if-present",
-    "postinstall": "if [[ -f .husky/post-install.js ]]; then cd .. && node javascript/.husky/post-install.js; fi"
+    "postinstall": "bash -c 'if [[ -f .husky/post-install.js ]]; then cd .. && node javascript/.husky/post-install.js; fi'"
   },
   "engines": {
     "node": ">=18"
