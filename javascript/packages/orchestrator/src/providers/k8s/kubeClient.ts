@@ -232,7 +232,13 @@ export class KubeClient extends Client {
     await this.waitPodReady(name);
 
     if (longRunning)
-      await this.runCommand(["wait", "--for=condition=Ready", `Pod/${name}`]);
+      await this.runCommand([
+        "wait",
+        "--for=condition=Ready",
+        // wait for 5 mins in case we need to spin a new vm
+        "--timeout=300s",
+        `Pod/${name}`,
+      ]);
 
     logTable = new CreateLogTable({
       colWidths: [20, 100],
@@ -569,7 +575,13 @@ export class KubeClient extends Client {
       xinfra,
     });
     debug("waiting for pod: fileserver, to be ready");
-    await this.runCommand(["wait", "--for=condition=Ready", "Pod/fileserver"]);
+    await this.runCommand([
+      "wait",
+      "--for=condition=Ready",
+      // wait for 5 mins in case we need to spin a new vm
+      "--timeout=300s",
+      "Pod/fileserver",
+    ]);
     await this.waitPodReady("fileserver");
     debug("pod: fileserver, ready");
     let fileServerOk = false;
