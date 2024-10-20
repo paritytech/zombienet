@@ -235,7 +235,8 @@ export class KubeClient extends Client {
       await this.runCommand([
         "wait",
         "--for=condition=Ready",
-        "--timeout=240s",
+        // wait for 5 mins in case we need to spin a new vm
+        "--timeout=300s",
         `Pod/${name}`,
       ]);
 
@@ -577,7 +578,8 @@ export class KubeClient extends Client {
     await this.runCommand([
       "wait",
       "--for=condition=Ready",
-      "--timeout=240s",
+      // wait for 5 mins in case we need to spin a new vm
+      "--timeout=300s",
       "Pod/fileserver",
     ]);
     await this.waitPodReady("fileserver");
