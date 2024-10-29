@@ -38,7 +38,7 @@
     "ts-node": "^10.9.2"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.11",
+    "@types/chai": "^5.0.1",
     "@types/deep-equal-in-any-order": "^1.0.3",
     "@types/mocha": "^10.0.6",
     "@types/nunjucks": "^3.2.6",
