@@ -9,8 +9,7 @@ jobs:
     container:
       image: docker.io/paritytech/zombienet:v1.3.116
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: test
-        run: echo "hello world"
+        run: |
+          echo "hello world"
+          ls -R
