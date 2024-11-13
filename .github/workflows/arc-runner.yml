@@ -15,4 +15,16 @@ jobs:
           echo "hello world"
           ls -R
           ls /home/nonroot/zombie-net/
-          kubectl get ns
+          touch hamid
+  post-test:
+    runs-on: zombienet-arc-runner
+    needs: test-arc-runner 
+    container:
+      image: docker.io/paritytech/zombienet:v1.3.116
+    steps:
+      - name: Post-Test Step
+        run: |
+          pwd
+          echo "Post-test job starting..."
+          ls -R
+          cat hamid || echo "File 'hamid' not found"        
