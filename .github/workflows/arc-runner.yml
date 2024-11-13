@@ -6,6 +6,8 @@ on:
 jobs:
   test-arc-runner:
     runs-on: zombienet-arc-runner 
+    container:
+      image: docker.io/paritytech/zombienet:v1.3.116
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
