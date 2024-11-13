@@ -16,8 +16,7 @@ jobs:
           ls -R
           ls /home/nonroot/zombie-net/
           id
-          ll -R /__w
-          touch hamid
+          touch /tmp/hamid
   post-test:
     runs-on: zombienet-arc-runner
     needs: test-arc-runner 
