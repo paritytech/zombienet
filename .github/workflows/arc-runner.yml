@@ -11,5 +11,6 @@ jobs:
     steps:
       - name: test
         run: |
+          pwd
           echo "hello world"
           ls -R
