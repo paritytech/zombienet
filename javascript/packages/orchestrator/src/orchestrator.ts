@@ -483,7 +483,8 @@ export async function start(
           );
           await sleep(2000);
           // add bootnodes to chain spec
-          await addBootNodes(parachain.specPath!, [collatorMultiAddress]);
+          // JAVIER: do not add the bootnode to the chain-spec of the para to test dht bootnode discovery
+          // await addBootNodes(parachain.specPath!, [collatorMultiAddress]);
         }
       }
 
