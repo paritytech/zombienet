@@ -28,4 +28,4 @@ jobs:
           pwd
           echo "Post-test job starting..."
           ls -R
-          cat hamid || echo "File 'hamid' not found"        
+          cat /tmp/hamid || echo "File 'hamid' not found"        
