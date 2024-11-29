@@ -21,10 +21,14 @@ enum metricKeysMapping {
   PeersCount = "sub_libp2p_peers_count",
 }
 
-export async function fetchMetrics(metricUri: string): Promise<Metrics> {
+export async function fetchMetrics(
+  metricUri: string,
+  node_name = "",
+): Promise<Metrics> {
   let metrics = {}; // empty by default
+  const debug_msg = node_name ? `[${node_name}]` : "";
   try {
-    debug(`fetching: ${metricUri}`);
+    debug([debug_msg, `fetching: ${metricUri}`].join(" "));
     const fetchResult = await fetch(metricUri, {
       signal: TimeoutAbortController(2).signal,
       method: "GET",
@@ -34,6 +38,9 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
     });
 
     if (!fetchResult.ok) {
+      debug(
+        [debug_msg, `fetch error - status: ${fetchResult.status}`].join(" "),
+      );
       throw new Error(`Error - status: ${fetchResult.status}`);
     }
 
@@ -43,7 +50,7 @@ export async function fetchMetrics(metricUri: string): Promise<Metrics> {
     debug(`ERR: ${err}`);
     console.log(
       `\n${decorators.red(`Error`)} \t ${decorators.bright(
-        `fetching metrics from: ${metricUri}`,
+        `fetching metrics from: ${metricUri} ${debug_msg}`,
       )}`,
     );
   }

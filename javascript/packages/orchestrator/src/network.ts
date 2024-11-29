@@ -162,7 +162,16 @@ export class Network {
   async dumpLogs(showLogPath = true): Promise<string> {
     const logsPath = this.tmpDir + "/logs";
     // create dump directory in local temp
-    if (!fs.existsSync(logsPath)) fs.mkdirSync(logsPath);
+    try {
+      await fs.promises.access(
+        logsPath,
+        fs.promises.constants.R_OK | fs.promises.constants.W_OK,
+      );
+    } catch {
+      // create dir
+      await fs.promises.mkdir(logsPath);
+    }
+
     const paraNodes: NetworkNode[] = Object.values(this.paras).reduce(
       (memo: NetworkNode[], value) => memo.concat(value.nodes),
       [],
@@ -170,9 +179,7 @@ export class Network {
 
     const dumpsNodes = this.relay.concat(paraNodes);
     await Promise.allSettled(
-      dumpsNodes.map((node) => {
-        this.client.dumpLogs(this.tmpDir, node.name);
-      }),
+      dumpsNodes.map((node) => this.client.dumpLogs(this.tmpDir, node.name)),
     );
 
     if (showLogPath)

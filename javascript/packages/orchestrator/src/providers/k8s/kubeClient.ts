@@ -63,6 +63,7 @@ export class KubeClient extends Client {
   remoteDir: string;
   dataDir: string;
   inCI: boolean;
+  fileServerIP?: string;
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
@@ -120,6 +121,7 @@ export class KubeClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
+    longRunning?: boolean,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -228,6 +230,15 @@ export class KubeClient extends Client {
 
     await this.putLocalMagicFile(name);
     await this.waitPodReady(name);
+
+    if (longRunning)
+      await this.runCommand([
+        "wait",
+        "--for=condition=Ready",
+        // wait for 5 mins in case we need to spin a new vm
+        "--timeout=300s",
+        `Pod/${name}`,
+      ]);
 
     logTable = new CreateLogTable({
       colWidths: [20, 100],
@@ -449,13 +460,11 @@ export class KubeClient extends Client {
       // download the file in the container
       const args = ["exec", identifier];
       if (container) args.push("-c", container);
-      let extraArgs = [
-        "--",
-        "/usr/bin/wget",
-        "-O",
-        podFilePath,
-        `http://fileserver/${fileHash}`,
-      ];
+      const url = this.fileServerIP
+        ? `http://${this.fileServerIP}/${fileHash}`
+        : `http://fileserver/${fileHash}`;
+
+      let extraArgs = ["--", "/usr/bin/wget", "-O", podFilePath, url];
       debug("copyFileToPodFromFileServer", [...args, ...extraArgs]);
       let result = await this.runCommand([...args, ...extraArgs]);
       debug(result);
@@ -566,20 +575,34 @@ export class KubeClient extends Client {
       xinfra,
     });
     debug("waiting for pod: fileserver, to be ready");
+    await this.runCommand([
+      "wait",
+      "--for=condition=Ready",
+      // wait for 5 mins in case we need to spin a new vm
+      "--timeout=300s",
+      "Pod/fileserver",
+    ]);
     await this.waitPodReady("fileserver");
     debug("pod: fileserver, ready");
     let fileServerOk = false;
     let attempts = 0;
     // try 5 times at most
     for (attempts; attempts < 5; attempts++) {
-      if (await this.checkFileServer()) fileServerOk = true;
-      else sleep(1 * 1000);
+      if (await this.checkFileServer()) {
+        fileServerOk = true;
+        break; // ready to go!
+      } else {
+        sleep(1 * 1000);
+      }
     }
 
     if (!fileServerOk)
       throw new Error(
         `Can't connect to fileServer, after ${attempts} attempts`,
       );
+
+    // store the fileserver ip
+    this.fileServerIP = await this.getNodeIP("fileserver");
 
     // ensure baseline resources if we are running in CI
     if (process.env.RUN_IN_CONTAINER === "1")
@@ -851,7 +874,7 @@ export class KubeClient extends Client {
     return result.stdout.split(",");
   }
 
-  async dumpLogs(path: string, podName: string) {
+  async dumpLogs(path: string, podName: string): Promise<void> {
     const dstFileName = `${path}/logs/${podName}.log`;
     const logs = await this.getNodeLogs(podName);
     await fs.writeFile(dstFileName, logs);

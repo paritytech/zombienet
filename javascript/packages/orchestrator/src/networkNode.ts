@@ -233,7 +233,9 @@ export class NetworkNode implements NetworkNodeInterface {
           desiredMetricValue === null ||
           compare(comparator!, value, desiredMetricValue)
         ) {
-          debug(`value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`);
+          debug(
+            `[${this.name}] value: ${value} ~ desiredMetricValue: ${desiredMetricValue}`,
+          );
           return value;
         }
       }
@@ -244,7 +246,9 @@ export class NetworkNode implements NetworkNodeInterface {
         while (!done && !timedout) {
           c++;
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          debug(`fetching metrics - q: ${c}  time:  ${new Date()}`);
+          debug(
+            `[${this.name}] Fetching metrics - q: ${c}  time:  ${new Date()}`,
+          );
           this.cachedMetrics = await fetchMetrics(this.prometheusUri);
           value = this._getMetric(metricName, desiredMetricValue === null);
 
@@ -256,7 +260,7 @@ export class NetworkNode implements NetworkNodeInterface {
             done = true;
           } else {
             debug(
-              `current value: ${value} for metric ${rawMetricName}, keep trying...`,
+              `[${this.name}] Current value: ${value} for metric ${rawMetricName}, keep trying...`,
             );
           }
         }
@@ -268,7 +272,7 @@ export class NetworkNode implements NetworkNodeInterface {
           setTimeout(() => {
             timedout = true;
             const err = new Error(
-              `Timeout(${timeout}), "getting desired metric value ${desiredMetricValue} within ${timeout} secs".`,
+              `[${this.name}] Timeout(${timeout}), "getting desired metric value ${desiredMetricValue} within ${timeout} secs".`,
             );
             return resolve(err);
           }, timeout * 1000),

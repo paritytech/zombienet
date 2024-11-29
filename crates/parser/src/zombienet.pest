@@ -73,7 +73,7 @@ log_match = { node_name ~ "log line" ~ ("contains"|"matches") ~ match_type? ~ do
 count_log_match = { node_name ~ "count of log lines" ~ ("containing"|"matching") ~ match_type? ~ double_quoted_string ~ "is" ~ (comparison | int+) ~ within? }
 trace = { node_name ~ "trace with traceID" ~ span_id ~ "contains" ~ square_brackets_strings ~ within? }
 system_event = { node_name ~ "system event" ~ ("contains"|"matches") ~ match_type? ~ double_quoted_string ~ within? }
-custom_js = { node_name ~ "js-script" ~ file_path ~ ("with" ~ double_quoted_string)? ~ ( "return" ~ comparison )? ~ within? }
+custom_js = { node_name ~ "js-script" ~ file_path ~ ("with" ~ (double_quoted_string|single_quoted_string))? ~ ( "return" ~ comparison )? ~ within? }
 custom_ts = { node_name ~ "ts-script" ~ file_path ~ ("with" ~ double_quoted_string)? ~ ( "return" ~ comparison )? ~ within? }
 custom_sh = { node_name ~ "run" ~ file_path ~ ("with" ~ double_quoted_string)? ~ ( "return" ~ comparison )? ~ within? }
 
