@@ -29,13 +29,14 @@ RUN gcloud components install kubectl
 #
 # Static GID/UID is also useful for chown'ing files outside the container where
 # such a user does not exist.
-RUN groupadd --gid 10001 nonroot && \
-    useradd  --home-dir /home/nonroot \
-    --create-home \
-    --shell /bin/bash \
-    --gid nonroot \
-    --groups nonroot \
-    --uid 10000 nonroot
+
+# RUN groupadd --gid 10001 nonroot && \
+#     useradd  --home-dir /home/nonroot \
+#     --create-home \
+#     --shell /bin/bash \
+#     --gid nonroot \
+#     --groups nonroot \
+#     --uid 10000 nonroot
 
 WORKDIR /home/nonroot/zombie-net
 COPY javascript/packages ./packages
@@ -44,7 +45,7 @@ COPY tests ./tests
 COPY javascript/package.json ./
 COPY javascript/package-lock.json ./
 RUN npm install --production
-RUN chown -R nonroot. /home/nonroot
+# RUN chown -R nonroot. /home/nonroot
 
 # RUN ls -la /home/nonroot/zombie-net/packages/cli/dist
 
@@ -54,9 +55,9 @@ RUN ln -s /home/nonroot/zombie-net/packages/cli/dist/cli.js /usr/local/bin/zombi
 
 # Dependency for run test script when run inside container
 RUN mkdir -p /var/log/zombie-net
-RUN chown -R nonroot. /var/log/zombie-net
+# RUN chown -R nonroot. /var/log/zombie-net
 RUN mkdir -p /etc/zombie-net
-RUN chown -R nonroot. /etc/zombie-net
+# RUN chown -R nonroot. /etc/zombie-net
 
 # Use the non-root user to run our application
 # USER nonroot
