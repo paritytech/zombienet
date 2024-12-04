@@ -79,7 +79,7 @@ jobs:
 
   set-variables:
     name: Set variables
-    runs-on: parity-default
+    runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.version.outputs.IMAGE }}
     steps:
