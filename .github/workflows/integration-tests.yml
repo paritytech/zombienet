@@ -100,6 +100,7 @@ jobs:
     needs: [build_push_image, set-variables]
     env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      RUN_IN_CONTAINER: 1
       FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 1
     steps:
       - name: Check out the repo
