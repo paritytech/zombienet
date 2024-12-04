@@ -59,7 +59,7 @@ RUN mkdir -p /etc/zombie-net
 RUN chown -R nonroot. /etc/zombie-net
 
 # Use the non-root user to run our application
-USER nonroot
+# USER nonroot
 
 # install rust
 ENV RUST_VERSION=1.80.0
