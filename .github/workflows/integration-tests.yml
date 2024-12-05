@@ -102,6 +102,7 @@ jobs:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
       RUN_IN_CONTAINER: 1
       FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 1
+      GHA_CLUSTER_SERVER_ADDR: "https://kubernetes.default:443"
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
