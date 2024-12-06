@@ -16,6 +16,9 @@ permissions: {}
 env:
   IMAGE_NAME: paritypr/zombienet
   VERSION: ${{ github.sha }}
+  RUN_IN_CONTAINER: 1
+  FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 1
+  GHA_CLUSTER_SERVER_ADDR: "https://kubernetes.default:443"
 
 jobs:
   # build_image:
@@ -89,8 +92,13 @@ jobs:
           export IMAGE="${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
           echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
           echo "set IMAGE=${IMAGE}"
+          export DEBUG=zombie
+          export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
+          export COL_IMAGE="docker.io/paritypr/colander:master"
+          # TODO: add script to get latest from dockerhub
+          export CUMULUS_TEST_IMAGE="docker.io/paritypr/test-parachain:c90f9713b5bc73a9620b2e72b226b4d11e018190"
 
-  # example job
+
   zombienet-smoke:
     name: Zombienet Smoke Tests
     runs-on: zombienet-arc-runner
@@ -98,27 +106,89 @@ jobs:
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
     needs: [build_push_image, set-variables]
-    env:
+    #env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
-      RUN_IN_CONTAINER: 1
-      FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 1
-      GHA_CLUSTER_SERVER_ADDR: "https://kubernetes.default:443"
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
 
       - name: smoke test
         run: |
-          echo "Zombienet Tests Config"
+          echo "Zombienet Tests"
           echo "${ZOMBIENET_IMAGE}"
           echo "${GH_DIR}"
-          # echo "${LOCAL_DIR}"
-          export DEBUG=zombie
-          export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
-          export COL_IMAGE="docker.io/paritypr/colander:master"
-          # TODO: add script to get latest from dockerhub
-          export CUMULUS_TEST_IMAGE="docker.io/paritypr/test-parachain:c90f9713b5bc73a9620b2e72b226b4d11e018190"
           echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
           echo "col_image ${COL_IMAGE}"
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests" --test="0001-smoke.zndsl"
+
+  zombienet-scale-net-config:
+    name: Zombienet Scale net
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    #env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: scale-net test
+        run: |
+          echo "Zombienet Scale Net"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/scale-net" --test="0001-scale-net.zndsl"
+
+  zombienet-upgrade-node:
+    name: Zombienet Upgrade Node
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    #env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: upgrade node test
+        run: |
+          echo "Zombienet Upgrade Node"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          export COL_IMAGE="docker.io/paritypr/colander:4519"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/k8s" --test="0001-upgrade-node.zndsl"
+
+
+  zombienet-chaos-delay:
+    name: Zombienet Upgrade Node
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    #env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: chaos-delay test
+        run: |
+          echo "Zombienet Chaos Delay"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/chaos" --test="0001-delay.zndsl"
