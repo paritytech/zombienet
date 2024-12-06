@@ -97,7 +97,7 @@ jobs:
           echo "set DEBUG=${DEBUG}"
           export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
           echo "ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}" >> $GITHUB_OUTPUT
-          echo "set ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}
+          echo "set ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
           export COL_IMAGE="docker.io/paritypr/colander:master"
           echo "COL_IMAGE=${COL_IMAGE}" >> $GITHUB_OUTPUT
           echo "set COL_IMAGE=${COL_IMAGE}"
