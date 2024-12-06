@@ -129,6 +129,13 @@ jobs:
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests" --test="0001-smoke.zndsl"
 
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs
+          path: |
+            /tmp/zombie*/logs/*
+
   zombienet-scale-net-config:
     name: Zombienet Scale net
     runs-on: zombienet-arc-runner
