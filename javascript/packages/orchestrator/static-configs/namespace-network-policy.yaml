@@ -13,6 +13,7 @@ spec:
           values:
           - {{namespace}}
           - gitlab
+          - arc-runners
           - loki
           - tempo
           - monitoring
