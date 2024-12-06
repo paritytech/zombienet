@@ -93,14 +93,21 @@ jobs:
           echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
           echo "set IMAGE=${IMAGE}"
           export DEBUG=zombie
+          echo "DEBUG=${DEBUG}" >> $GITHUB_OUTPUT
+          echo "set DEBUG=${DEBUG}"
           export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
+          echo "ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}" >> $GITHUB_OUTPUT
+          echo "set ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}
           export COL_IMAGE="docker.io/paritypr/colander:master"
+          echo "COL_IMAGE=${COL_IMAGE}" >> $GITHUB_OUTPUT
+          echo "set COL_IMAGE=${COL_IMAGE}"
           # TODO: add script to get latest from dockerhub
           export CUMULUS_TEST_IMAGE="docker.io/paritypr/test-parachain:c90f9713b5bc73a9620b2e72b226b4d11e018190"
-
+          echo "CUMULUS_TEST_IMAGE=${CUMULUS_TEST_IMAGE}" >> $GITHUB_OUTPUT
+          echo "set CUMULUS_TEST_IMAGE=${CUMULUS_TEST_IMAGE}"
 
   zombienet-smoke:
-    name: Zombienet Smoke Tests
+    name: Zombienet Smoke
     runs-on: zombienet-arc-runner
     timeout-minutes: 30
     container:
@@ -171,7 +178,7 @@ jobs:
 
 
   zombienet-chaos-delay:
-    name: Zombienet Upgrade Node
+    name: Zombienet Chaos Delay
     runs-on: zombienet-arc-runner
     timeout-minutes: 30
     container:
