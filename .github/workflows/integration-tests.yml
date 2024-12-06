@@ -85,6 +85,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       VERSION: ${{ steps.version.outputs.IMAGE }}
+      DEBUG: ${{ steps.env.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ steps.env.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ steps.env.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ steps.env.outputs.CUMULUS_TEST_IMAGE }}
     steps:
       - name: Define version
         id: version
@@ -92,6 +96,9 @@ jobs:
           export IMAGE="${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
           echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
           echo "set IMAGE=${IMAGE}"
+      - name: Define env
+        id: env
+        run: |
           export DEBUG=zombie
           echo "DEBUG=${DEBUG}" >> $GITHUB_OUTPUT
           echo "set DEBUG=${DEBUG}"
@@ -113,8 +120,12 @@ jobs:
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
     needs: [build_push_image, set-variables]
-    #env:
+    env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
@@ -143,8 +154,12 @@ jobs:
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
     needs: [build_push_image, set-variables]
-    #env:
+    env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
@@ -166,8 +181,12 @@ jobs:
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
     needs: [build_push_image, set-variables]
-    #env:
+    env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
@@ -191,8 +210,12 @@ jobs:
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
     needs: [build_push_image, set-variables]
-    #env:
+    env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
