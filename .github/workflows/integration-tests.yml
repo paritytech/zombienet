@@ -99,7 +99,12 @@ jobs:
       - name: Define env
         id: env
         run: |
-          export DEBUG=zombie
+          if [[ ${{ github.run_attempt }} -gt 1 ]]; then
+            # more debug in rerun
+            export DEBUG=zombie*
+          else
+            export DEBUG=zombie*
+          fi;
           echo "DEBUG=${DEBUG}" >> $GITHUB_OUTPUT
           echo "set DEBUG=${DEBUG}"
           export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
