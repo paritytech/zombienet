@@ -148,7 +148,7 @@ jobs:
       - name: upload logs
         uses: actions/upload-artifact@v4
         with:
-          name: zombienet-logs
+          name: zombienet-logs-smoke
           path: |
             /tmp/zombie*/logs/*
 
@@ -182,7 +182,7 @@ jobs:
       - name: upload logs
         uses: actions/upload-artifact@v4
         with:
-          name: zombienet-logs
+          name: zombienet-logs-scale-net
           path: |
             /tmp/zombie*/logs/*
 
@@ -217,7 +217,7 @@ jobs:
       - name: upload logs
         uses: actions/upload-artifact@v4
         with:
-          name: zombienet-logs
+          name: zombienet-logs-upgrade
           path: |
             /tmp/zombie*/logs/*
 
@@ -251,6 +251,6 @@ jobs:
       - name: upload logs
         uses: actions/upload-artifact@v4
         with:
-          name: zombienet-logs
+          name: zombienet-logs-chaos
           path: |
             /tmp/zombie*/logs/*
