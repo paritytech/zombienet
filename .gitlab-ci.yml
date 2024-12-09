@@ -14,7 +14,6 @@ stages:
   - publish
   - zombienet
 
-
 variables:
   CI_IMAGE: "node:18"
   DOCKERFILE: scripts/ci/docker/zombienet_injected.Dockerfile
@@ -32,13 +31,13 @@ variables:
 cache:
   - key:
       files:
-      - javascript/package-lock.json
+        - javascript/package-lock.json
   - paths:
-    - javascript/packages/cli/dist
-    - javascript/packages/orchestrator/dist
-    - javascript/packages/utils/dist
-    - javascript/package.json
-    - javascript/package-lock.json
+      - javascript/packages/cli/dist
+      - javascript/packages/orchestrator/dist
+      - javascript/packages/utils/dist
+      - javascript/package.json
+      - javascript/package-lock.json
 
 .kubernetes-env: &kubernetes-env
   image: $CI_IMAGE
@@ -52,9 +51,9 @@ cache:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_REF_NAME =~ /^[0-9]+$/ # PRs
     - changes:
-      - javascript/**/*
-      - tests/**/*
-      - crates/**/*
+        - javascript/**/*
+        - tests/**/*
+        - crates/**/*
 
 # run jobs always
 .common-refs: &common-refs
@@ -72,16 +71,6 @@ cache:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_COMMIT_REF_NAME == "main"
     - if: $CI_COMMIT_REF_NAME =~ /^v[0-9]+\.[0-9]+.*$/ # i.e. v1.0, v2.1rc1
-
-test:
-  stage: test
-  <<: *kubernetes-env
-  <<: *common-refs
-  script:
-    - cd javascript
-    - npm install
-    # - npm run test
-    - echo testme
 
 build:
   stage: build
@@ -174,7 +163,6 @@ publish-docker-image-description:
         - scripts/ci/docker/Dockerfile.README.md
   script:
     - cd / && sh entrypoint.sh
-
 
 .zombienet-common:
   before_script:
@@ -288,4 +276,3 @@ chaos-delay:
     - /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh
       --local-dir="${LOCAL_DIR}"
       --test="0001-delay.zndsl"
-
