@@ -179,6 +179,13 @@ jobs:
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/scale-net" --test="0001-scale-net.zndsl"
 
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs
+          path: |
+            /tmp/zombie*/logs/*
+
   zombienet-upgrade-node:
     name: Zombienet Upgrade Node
     runs-on: zombienet-arc-runner
@@ -207,6 +214,12 @@ jobs:
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/k8s" --test="0001-upgrade-node.zndsl"
 
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs
+          path: |
+            /tmp/zombie*/logs/*
 
   zombienet-chaos-delay:
     name: Zombienet Chaos Delay
@@ -234,3 +247,10 @@ jobs:
           echo "col_image ${COL_IMAGE}"
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/chaos" --test="0001-delay.zndsl"
+
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs
+          path: |
+            /tmp/zombie*/logs/*
