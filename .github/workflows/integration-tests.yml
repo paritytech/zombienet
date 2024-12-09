@@ -101,7 +101,7 @@ jobs:
         run: |
           if [[ ${{ github.run_attempt }} -gt 1 ]]; then
             # more debug in rerun
-            export DEBUG=zombie,zombie::js-helpers*,zombie::paras,zombie::network-node,zombie::kube::client::logs
+            export DEBUG=zombie,zombie::js-helpers*,zombie::network-node,zombie::kube::client::logs
           else
             export DEBUG=zombie*
           fi;
