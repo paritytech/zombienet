@@ -103,7 +103,7 @@ jobs:
             # more debug in rerun
             export DEBUG=zombie,zombie::js-helpers*,zombie::network-node,zombie::kube::client::logs
           else
-            export DEBUG=zombie*
+            export DEBUG=zombie
           fi;
           echo "DEBUG=${DEBUG}" >> $GITHUB_OUTPUT
           echo "set DEBUG=${DEBUG}"
