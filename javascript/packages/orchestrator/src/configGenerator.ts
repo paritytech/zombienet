@@ -126,6 +126,7 @@ export async function generateNetworkSpec(
         config.relaychain?.max_nominations || DEFAULT_MAX_NOMINATIONS,
       nodes: [],
       chain: config.relaychain.chain || DEFAULT_CHAIN,
+      force_decorator: config.relaychain.force_decorator,
       overrides: globalOverrides,
       defaultResources: config.relaychain.default_resources,
       defaultPrometheusPrefix:
