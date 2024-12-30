@@ -24,7 +24,7 @@
     "package:macos:arm64": "npm run -w packages/cli package:macos:arm64",
     "zombie": "node ./packages/cli/dist/cli.js",
     "test": "npm run test --workspaces --if-present",
-    "postinstall": "if [[ -f .husky/post-install.js ]]; then cd .. && node javascript/.husky/post-install.js; fi"
+    "postinstall": "bash -c 'if [[ -f .husky/post-install.js ]]; then cd .. && node javascript/.husky/post-install.js; fi'"
   },
   "engines": {
     "node": ">=18"
@@ -33,9 +33,6 @@
     "zombienet": "./packages/cli/dist/cli.js"
   },
   "dependencies": {
-    "@polkadot/keyring": "^12.6.2",
-    "@polkadot/util": "^12.5.1",
-    "@polkadot/util-crypto": "^12.5.1",
     "@types/chai": "^4.3.11",
     "chai": "^4.3.10"
   },

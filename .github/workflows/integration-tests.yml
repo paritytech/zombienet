@@ -1,0 +1,229 @@
+name: Zombienet Integration Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  IMAGE_NAME: paritypr/zombienet
+  VERSION: ${{ github.sha }}
+  RUN_IN_CONTAINER: 1
+  FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 1
+  GHA_CLUSTER_SERVER_ADDR: "https://kubernetes.default:443"
+
+jobs:
+  build_push_image:
+    name: Build and Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: npm build
+        run: |
+          cd javascript
+          npm install
+          npm dedupe
+          npm run clean
+          npm run build
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          file: ./scripts/ci/docker/zombienet_injected.Dockerfile
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.IMAGE_NAME }}:latest
+
+  set-variables:
+    name: Set variables
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.version.outputs.IMAGE }}
+      DEBUG: ${{ steps.env.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ steps.env.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ steps.env.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ steps.env.outputs.CUMULUS_TEST_IMAGE }}
+    steps:
+      - name: Define version
+        id: version
+        run: |
+          export IMAGE="${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
+          echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "set IMAGE=${IMAGE}"
+      - name: Define env
+        id: env
+        run: |
+          if [[ ${{ github.run_attempt }} -gt 1 ]]; then
+            # more debug in rerun
+            export DEBUG=zombie,zombie::js-helpers*,zombie::network-node,zombie::kube::client::logs
+          else
+            export DEBUG=zombie
+          fi;
+          echo "DEBUG=${DEBUG}" >> $GITHUB_OUTPUT
+          echo "set DEBUG=${DEBUG}"
+          export ZOMBIENET_INTEGRATION_TEST_IMAGE="docker.io/paritypr/polkadot-debug:master"
+          echo "ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}" >> $GITHUB_OUTPUT
+          echo "set ZOMBIENET_INTEGRATION_TEST_IMAGE=${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          export COL_IMAGE="docker.io/paritypr/colander:master"
+          echo "COL_IMAGE=${COL_IMAGE}" >> $GITHUB_OUTPUT
+          echo "set COL_IMAGE=${COL_IMAGE}"
+          # TODO: add script to get latest from dockerhub
+          export CUMULUS_TEST_IMAGE="docker.io/paritypr/test-parachain:c90f9713b5bc73a9620b2e72b226b4d11e018190"
+          echo "CUMULUS_TEST_IMAGE=${CUMULUS_TEST_IMAGE}" >> $GITHUB_OUTPUT
+          echo "set CUMULUS_TEST_IMAGE=${CUMULUS_TEST_IMAGE}"
+
+  zombienet-smoke:
+    name: Zombienet Smoke
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: smoke test
+        run: |
+          echo "Zombienet Tests"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests" --test="0001-smoke.zndsl"
+
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs-smoke
+          path: |
+            /tmp/zombie*/logs/*
+
+  zombienet-scale-net-config:
+    name: Zombienet Scale net
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: scale-net test
+        run: |
+          echo "Zombienet Scale Net"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/scale-net" --test="0001-scale-net.zndsl"
+
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs-scale-net
+          path: |
+            /tmp/zombie*/logs/*
+
+  zombienet-upgrade-node:
+    name: Zombienet Upgrade Node
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: upgrade node test
+        run: |
+          echo "Zombienet Upgrade Node"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          export COL_IMAGE="docker.io/paritypr/colander:4519"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/k8s" --test="0001-upgrade-node.zndsl"
+
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs-upgrade
+          path: |
+            /tmp/zombie*/logs/*
+
+  zombienet-chaos-delay:
+    name: Zombienet Chaos Delay
+    runs-on: zombienet-arc-runner
+    timeout-minutes: 30
+    container:
+      image: ${{ needs.set-variables.outputs.VERSION }}
+    needs: [build_push_image, set-variables]
+    env:
+      # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
+      DEBUG: ${{ needs.set-variables.outputs.DEBUG }}
+      ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
+      COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
+      CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: chaos-delay test
+        run: |
+          echo "Zombienet Chaos Delay"
+          echo "${ZOMBIENET_IMAGE}"
+          echo "${GH_DIR}"
+          echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
+          echo "col_image ${COL_IMAGE}"
+
+          /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/chaos" --test="0001-delay.zndsl"
+
+      - name: upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: zombienet-logs-chaos
+          path: |
+            /tmp/zombie*/logs/*

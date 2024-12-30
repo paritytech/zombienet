@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -uxo pipefail
 
 if [ -f /cfg/coreutils ]; then
@@ -17,6 +17,7 @@ else
     LS="ls"
     KILL="kill"
     SLEEP="sleep"
+    ECHO="echo"
     CAT="cat"
 fi
 

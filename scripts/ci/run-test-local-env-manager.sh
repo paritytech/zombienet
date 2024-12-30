@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Based on https://gitlab.parity.io/parity/simnet/-/blob/master/scripts/ci/run-test-environment-manager-v2.sh
 
@@ -148,8 +148,15 @@ function set_instance_env {
 function run_test {
   # RUN_IN_CONTAINER is env var that is set in the dockerfile
   if  [[ -v RUN_IN_CONTAINER  ]]; then
-    gcloud auth activate-service-account --key-file "${GOOGLE_CREDENTIALS}"
-    gcloud container clusters get-credentials parity-zombienet --zone europe-west3-b --project parity-zombienet
+    if [[ -v GHA_CLUSTER_SERVER_ADDR ]]; then
+      kubectl config set-cluster parity-zombienet --server="${GHA_CLUSTER_SERVER_ADDR}" --certificate-authority=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      kubectl config set-credentials pod-token --token="$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)"
+      kubectl config set-context pod-context --cluster=parity-zombienet --user=pod-token
+      kubectl config use-context pod-context
+    else
+      gcloud auth activate-service-account --key-file "${GOOGLE_CREDENTIALS}"
+      gcloud container clusters get-credentials parity-zombienet --zone europe-west3-b --project parity-zombienet
+    fi;
   fi
   cd "${OUTPUT_DIR}"
   set -x

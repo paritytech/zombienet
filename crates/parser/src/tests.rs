@@ -579,6 +579,36 @@ fn custom_js_with_args_parse_ok() {
 }
 
 #[test]
+fn custom_js_with_single_quotes_args_parse_ok() {
+    let line: &str =
+        r#"alice: js-script ./0008-custom.js with '{"a":1,"b":["demo"]}' within 200 seconds"#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "creds": "config",
+        "assertions": [
+            {
+                "original_line": "alice: js-script ./0008-custom.js with '{\"a\":1,\"b\":[\"demo\"]}' within 200 seconds",
+                "parsed": {
+                  "fn": "CustomJs",
+                  "args": {
+                    "node_name": "alice",
+                    "file_path": "./0008-custom.js",
+                    "custom_args": "{\"a\":1,\"b\":[\"demo\"]}",
+                    "timeout": 200,
+                    "is_ts": false
+                  }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, CREDS, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn custom_ts_parse_ok() {
     let line: &str = r#"alice: ts-script ./0008-custom-ts.ts within 200 seconds"#;
     let data = r#"{
