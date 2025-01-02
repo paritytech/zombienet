@@ -200,7 +200,6 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
     );
 
     for (const binary of binaries) {
-      console.log(options);
       promises.push(
         new Promise<void>(async (resolve) => {
           const result = options[binary];
