@@ -449,7 +449,7 @@ Below can be found some of the projects that are currently using Zombienet as in
 - [Composable](https://github.com/ComposableFi/composable) via `nix run "composable#devnet-picasso"`
 - [Gossamer](https://github.com/ChainSafe/gossamer/issues/2843)
 - [Oak/Turing/Neumann](https://github.com/OAK-Foundation/OAK-blockchain/tree/master/zombienets)
-- [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/rococo-local)
+- [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/launch-configs/zombienet)
 - [InvArch](https://github.com/InvArch/InvArch-Node/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
 - [Mangata](https://github.com/mangata-finance/mangata-node/tree/develop/devops/zombienet)
 - [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)

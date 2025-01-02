@@ -63,7 +63,7 @@ RUN mkdir -p /etc/zombie-net
 # USER nonroot
 
 # install rust
-ENV RUST_VERSION=1.80.0
+ENV RUST_VERSION=1.81.0
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain $RUST_VERSION -y
 ENV PATH $PATH:/home/nonroot/.cargo/bin
 # install nextest
