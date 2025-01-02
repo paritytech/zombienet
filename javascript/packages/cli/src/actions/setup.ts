@@ -25,13 +25,13 @@ const options: OptIf = {};
  * @returns
  */
 export async function setup(params: any, opts?: any) {
-  // If the platform is MacOS then the repos needs to be cloned and run locally by the user
+  // If the platform is MacOS (intel) then the repos needs to be cloned and run locally by the user
   // as polkadot and/or polkadot-parachain do not release a valid binaries for MacOS
-  if (process.platform === "darwin") {
+  if (process.platform === "darwin" && process.arch !== "arm64") {
     console.log(
       `${decorators.red(
         "\n\n------------------------------------------------------------------------\n\nNote: ",
-      )} You are using MacOS. Please, clone Polkadot SDK from ` +
+      )} You are using MacOS (intel). Please, clone Polkadot SDK from ` +
         decorators.cyan("https://github.com/paritytech/polkadot-sdk") +
         ` \n in order to build the polkadot and/or polkadot-parachain locally.\n At the moment there is no binaries for MacOs as releases.` +
         decorators.red(
@@ -42,16 +42,18 @@ export async function setup(params: any, opts?: any) {
   }
 
   console.log(decorators.green("\n\n🧟🧟🧟 ZombieNet Setup 🧟🧟🧟\n\n"));
-  if (!["linux"].includes(process.platform)) {
+  if (!isValidHost()) {
     console.log(
-      "Zombienet setup currently supports only linux. \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
+      "Zombienet setup currently supports only linux(x64) and MacOS (arm64). \n Alternative, you can use k8s or podman. For more read here: https://github.com/paritytech/zombienet#requirements-by-provider",
     );
     return;
   }
 
   console.log(decorators.green("Gathering latest releases' versions...\n"));
+  const arch_sufix = process.arch === "arm64" ? "aarch64-apple-darwin" : "";
+
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT).then(
+    latestPolkadotReleaseURL(POLKADOT_SDK, `${POLKADOT}-${arch_sufix}`).then(
       (res: [string, string]) => {
         options[POLKADOT] = {
           name: POLKADOT,
@@ -64,46 +66,47 @@ export async function setup(params: any, opts?: any) {
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_PREPARE_WORKER).then(
-      (res: [string, string]) => {
-        options[POLKADOT_PREPARE_WORKER] = {
-          name: POLKADOT_PREPARE_WORKER,
-          url: res[0],
-          size: res[1],
-        };
-        resolve();
-      },
-    );
+    latestPolkadotReleaseURL(
+      POLKADOT_SDK,
+      `${POLKADOT_PREPARE_WORKER}-${arch_sufix}`,
+    ).then((res: [string, string]) => {
+      options[POLKADOT_PREPARE_WORKER] = {
+        name: POLKADOT_PREPARE_WORKER,
+        url: res[0],
+        size: res[1],
+      };
+      resolve();
+    });
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_EXECUTE_WORKER).then(
-      (res: [string, string]) => {
-        options[POLKADOT_EXECUTE_WORKER] = {
-          name: POLKADOT_EXECUTE_WORKER,
-          url: res[0],
-          size: res[1],
-        };
-        resolve();
-      },
-    );
+    latestPolkadotReleaseURL(
+      POLKADOT_SDK,
+      `${POLKADOT_EXECUTE_WORKER}-${arch_sufix}`,
+    ).then((res: [string, string]) => {
+      options[POLKADOT_EXECUTE_WORKER] = {
+        name: POLKADOT_EXECUTE_WORKER,
+        url: res[0],
+        size: res[1],
+      };
+      resolve();
+    });
   });
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT_SDK, POLKADOT_PARACHAIN).then(
-      (res: [string, string]) => {
-        options[POLKADOT_PARACHAIN] = {
-          name: POLKADOT_PARACHAIN,
-          url: res[0],
-          size: res[1],
-        };
-        resolve();
-      },
-    );
+    latestPolkadotReleaseURL(
+      POLKADOT_SDK,
+      `${POLKADOT_PARACHAIN}-${arch_sufix}`,
+    ).then((res: [string, string]) => {
+      options[POLKADOT_PARACHAIN] = {
+        name: POLKADOT_PARACHAIN,
+        url: res[0],
+        size: res[1],
+      };
+      resolve();
+    });
   });
 
-  // If the platform is MacOS then the polkadot repo needs to be cloned and run locally by the user
-  // as polkadot do not release a binary for MacOS
   if (params[0] === "all") {
     params = [POLKADOT, POLKADOT_PARACHAIN];
   }
@@ -165,6 +168,18 @@ export async function setup(params: any, opts?: any) {
 }
 
 // helper fns
+
+// Check if the host is a valid platform/arch
+const isValidHost = (): boolean => {
+  const isValid =
+    process.platform === "linux" && process.arch === "x64"
+      ? true
+      : process.platform === "darwin" && process.arch === "arm64"
+        ? true
+        : false;
+
+  return isValid;
+};
 // Download the binaries
 const downloadBinaries = async (binaries: string[]): Promise<void> => {
   try {
@@ -185,6 +200,7 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
     );
 
     for (const binary of binaries) {
+      console.log(options);
       promises.push(
         new Promise<void>(async (resolve) => {
           const result = options[binary];
