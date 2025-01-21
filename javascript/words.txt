@@ -6,6 +6,7 @@ anguage
 asgn
 astar
 auths
+AUTHINFO
 autoremove
 availables
 aventus
