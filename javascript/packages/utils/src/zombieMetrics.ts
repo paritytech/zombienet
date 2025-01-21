@@ -26,13 +26,14 @@ export async function registerSpawnElapsedTimeSecs(elapsed: number) {
   }
 }
 
-export async function registerTotalElapsedTimeSecs(elapsed: number) {
+export async function registerTotalElapsedTimeSecs(elapsed: number, success: boolean) {
   if (canSend()) {
+    let status = success ? 'pass' : 'fail';
     const [jobId, jobName, projectName, pushGatewayUrl] = getFromCI();
     const metricName = "zombie_test_complete_secs";
     const help = `# HELP ${metricName} Elapsed time to complete the test job in seconds (including spawning, but not teardown)`;
     const type = `# TYPE ${metricName} gauge`;
-    const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"} ${elapsed}`;
+    const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"}, status="${status}" ${elapsed}`;
     const body = [help, type, metricString, "\n"].join("\n");
     await fetch(pushGatewayUrl!, {
       method: "POST",
