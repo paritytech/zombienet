@@ -156,7 +156,7 @@ export class NodeResource {
       {
         image,
         name,
-        imagePullPolicy: "Always",
+        imagePullPolicy: "IfNotPresent",
         ports,
         env,
         volumeMounts,
