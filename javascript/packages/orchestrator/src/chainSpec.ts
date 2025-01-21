@@ -130,14 +130,12 @@ export async function addBalances(specPath: string, nodes: Node[]) {
         const balanceToAdd = stakingBond
           ? node.validator && node.balance > stakingBond
             ? node.balance
-            : stakingBond! + BigInt(1)
+            : stakingBond! * BigInt(2) // Double the balance we use for stake
           : node.balance;
 
         balanceMap[stashKey] = balanceToAdd;
 
-        const logLine = `👤 Added Balance ${
-          node.balance
-        } for ${decorators.green(node.name)} - ${decorators.magenta(stashKey)}`;
+        const logLine = `👤 Added Balance ${balanceToAdd} for ${decorators.green(node.name)} - ${decorators.magenta(stashKey)}`;
         new CreateLogTable({
           colWidths: [120],
           doubleBorder: true,
