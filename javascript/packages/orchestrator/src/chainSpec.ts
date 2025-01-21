@@ -135,9 +135,7 @@ export async function addBalances(specPath: string, nodes: Node[]) {
 
         balanceMap[stashKey] = balanceToAdd;
 
-        const logLine = `👤 Added Balance ${
-          balanceToAdd
-        } for ${decorators.green(node.name)} - ${decorators.magenta(stashKey)}`;
+        const logLine = `👤 Added Balance ${balanceToAdd} for ${decorators.green(node.name)} - ${decorators.magenta(stashKey)}`;
         new CreateLogTable({
           colWidths: [120],
           doubleBorder: true,
