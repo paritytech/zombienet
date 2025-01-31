@@ -132,13 +132,12 @@ export async function run(
 
   suite.afterAll("teardown", async function () {
     this.timeout(180 * 1000);
+    // report metric
+    const testEnd = performance.now();
+    const elapsedSecs = Math.round((testEnd - testStart) / 1000);
+    debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
+    let success: boolean = false;
     if (network && !network.wasRunning) {
-      // report metric
-      const testEnd = performance.now();
-      const elapsedSecs = Math.round((testEnd - testStart) / 1000);
-      debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
-      if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs);
-
       let logsPath;
       try {
         logsPath = await network.dumpLogs(false);
@@ -157,6 +156,8 @@ export async function run(
           console.log(
             `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
           );
+        } else {
+          success = true;
         }
 
         // All test passed, just remove the network
@@ -227,6 +228,8 @@ export async function run(
         }
       }
     }
+    // submit metric
+    if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs, success);
     return;
   });
 

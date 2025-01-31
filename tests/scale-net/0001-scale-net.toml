@@ -9,12 +9,12 @@ chain = "rococo-local"
 
   [[relaychain.node_groups]]
   name = "a"
-  count = 1
+  count = 2
   {% include("./a-group.toml")%}
 
   [[relaychain.node_groups]]
   name = "b"
-  count = 1
+  count = 2
   {% include("./b-group.toml")%}
 
 {% for id in [100,200] %}
