@@ -31,7 +31,7 @@ jobs:
 
       - name: Upload build artifacts
         if: ${{ matrix.node-version == '18.x' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-build-${{ github.sha }}
           path: |
@@ -95,7 +95,7 @@ jobs:
   #       with:
   #         name: ${{ runner.os }}-build-${{ github.sha }}
   #         path: ./javascript/packages
-        
+
   #     - name: Install dependencies
   #       run: npm install --ignore-scripts
   #       working-directory: ./javascript
