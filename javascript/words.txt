@@ -126,6 +126,7 @@ paritypr
 paritytech
 pecific
 pendings
+pepoviola
 pids
 pnetwork
 podmonitor
