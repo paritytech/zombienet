@@ -782,7 +782,9 @@ async function getPorts(provider: string, nodeSetup: any): Promise<any> {
   let ports = DEFAULT_PORTS;
 
   if (nodeSetup.ws_port) {
-    console.warn("'ws-port flag was deprecated in https://github.com/paritytech/substrate/pull/13384 (v0.9.43).\nIf you are using a recent version please use 'rpc_port' to set the port");
+    console.warn(
+      "'ws-port flag was deprecated in https://github.com/paritytech/substrate/pull/13384 (v0.9.43).\nIf you are using a recent version please use 'rpc_port' to set the port",
+    );
   }
 
   if (provider === "native") {
