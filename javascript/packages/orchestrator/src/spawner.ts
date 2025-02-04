@@ -12,6 +12,7 @@ import {
   LOCALHOST,
   METRICS_URI_PATTERN,
   PROMETHEUS_PORT,
+  RPC_HTTP_PORT,
   RPC_WS_PORT,
   WS_URI_PATTERN,
 } from "./constants";
@@ -121,7 +122,8 @@ export const spawnNode = async (
 
   let networkNode: NetworkNode;
 
-  const endpointPort = RPC_WS_PORT;
+  const endpointPort =
+    node.substrateCliArgsVersion == 0 ? RPC_WS_PORT : RPC_HTTP_PORT;
   if (opts.inCI) {
     // UPDATE: 04-10-2024 Since we have several reports of failures related to
     // can't access metrics by dns, we switch back to use the pod ip.

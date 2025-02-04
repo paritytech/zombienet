@@ -101,9 +101,11 @@ export async function genCumulusCollatorCmd(
 
   if (validator) fullCmd.push(...["--collator"]);
 
+  // ports passed to the relaychain part of the collator binary
   const collatorPorts: PortsInterface = {
     "--port": 0,
     "--rpc-port": 0,
+    "--prometheus-port": 0,
   };
 
   if (nodeSetup.args.length > 0) {
@@ -341,10 +343,10 @@ const getPortFlagsByCliArgsVersion = (nodeSetup: Node) => {
     portFlags["--rpc-port"] = (nodeSetup.rpcPort || RPC_HTTP_PORT).toString();
     portFlags["--ws-port"] = (nodeSetup.wsPort || RPC_WS_PORT).toString();
   } else {
-    // use ws port as default
-    const portToUse = nodeSetup.wsPort
-      ? nodeSetup.wsPort
-      : nodeSetup.rpcPort || RPC_HTTP_PORT;
+    // use rpc_port as default (since ws_port was deprecated in https://github.com/paritytech/substrate/pull/13384)
+    const portToUse = nodeSetup.rpcPort
+      ? nodeSetup.rpcPort
+      : nodeSetup.wsPort || RPC_HTTP_PORT;
     portFlags["--rpc-port"] = portToUse.toString();
   }
 
