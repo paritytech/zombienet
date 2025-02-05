@@ -101,6 +101,7 @@ export interface ParachainConfig {
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
   genesis?: JSON | ObjectJSON;
+  default_args: string[];
 }
 
 export interface HrmpChannelsConfig {

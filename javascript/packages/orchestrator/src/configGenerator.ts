@@ -407,6 +407,7 @@ export async function generateNetworkSpec(
         name: getUniqueName(parachain.id.toString()),
         para,
         cumulusBased: isCumulusBased,
+        defaultArgs: parachain.default_args || [],
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
@@ -553,7 +554,7 @@ async function getCollatorNodeFromConfig(
   cumulusBased: boolean,
   group?: string,
 ): Promise<Node> {
-  let args: string[] = [];
+  let args: string[] = sanitizeArgs(parachain.default_args || []);
 
   const env = collatorConfig.env
     ? DEFAULT_ENV.concat(collatorConfig.env)

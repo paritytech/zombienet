@@ -53,6 +53,7 @@ export interface Parachain extends CommonParachainConfig {
   wasmPath?: string;
   statePath?: string;
   collators: Node[];
+  defaultArgs: string[];
 }
 
 export interface Node extends NodeCommonTypes, Ports {
