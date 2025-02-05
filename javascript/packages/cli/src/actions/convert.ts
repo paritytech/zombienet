@@ -111,7 +111,7 @@ function convertSimpleParachain(
     invulnerable: true,
   };
 
-  return { id: +id, collators: [collator] };
+  return { id: +id, collators: [collator], default_args: [] };
 }
 
 function convertParachain(
@@ -133,7 +133,7 @@ function convertParachain(
     }),
   );
 
-  return { id: +id, chain, collators };
+  return { id: +id, chain, collators, default_args: [] };
 }
 
 function convertHrmpChannels(
