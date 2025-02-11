@@ -141,7 +141,9 @@ async function addParaCustom(specPath: string, node: Node) {
 
   const expectedBalance = stakingBond + reservedBalance;
   if (collatorBalance) {
-    collatorBalance[1] = expectedBalance;
+    if (collatorBalance[1] < expectedBalance) {
+      collatorBalance[1] = expectedBalance;
+    }
   } else {
     runtimeConfig.balances.balances.push([
       eth_account.address,
