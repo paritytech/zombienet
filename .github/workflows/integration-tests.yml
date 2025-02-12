@@ -80,12 +80,11 @@ jobs:
 
       - name: build
         run: |
-          export DOCKER_IMAGES_VERSION=${{ env.VERSION }}
           docker build \
             -t ${{ env.IMAGE_NAME }}:${{ env.VERSION }} \
             -f ./scripts/ci/docker/zombienet_injected.Dockerfile \
             .
-          docker push "${{ inputs.image-name }}:$DOCKER_IMAGES_VERSION"
+          docker push "${{ env.IMAGE_NAME }}:${{ env.VERSION }}"
 
   set-variables:
     name: Set variables
