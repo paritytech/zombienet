@@ -57,7 +57,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
   build_push_image:
     name: Build and Push Docker image to GCP
-    runs-on: ubuntu-latest
+    runs-on: parity-default
     timeout-minutes: 30
     steps:
       - name: Check out the repo
