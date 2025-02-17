@@ -1,0 +1,42 @@
+name: Zombienet Setup Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+    setup_test:
+        strategy:
+          matrix:
+            target: [ubunu-latest, macos-latest]
+        runs-on: ${{ matrix.target }}
+        steps:
+          - name: checkout
+            uses: actions/checkout@v4
+            with:
+              fetch-depth: 0
+          - name: setup node
+            uses: actions/setup-node@v4
+            with:
+              node-version: '20'
+          - run: npm install && npm update
+            working-directory: "./javascript"
+          - run: npm run build
+            working-directory: "./javascript"
+          - run: |
+              PDW=$(pwd)
+              mkdir /tmp/a
+              cd /tmp/a
+              $PWD/packages/cli/dist/cli.js setup -y all
+            working-directory: "./javascript"
+          - name: Clean
+            run: rm -rf /tmp/a
