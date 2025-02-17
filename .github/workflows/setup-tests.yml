@@ -21,7 +21,7 @@ jobs:
     setup_test:
         strategy:
           matrix:
-            target: [ubunu-latest, macos-latest]
+            target: [ubuntu-latest, macos-latest]
         runs-on: ${{ matrix.target }}
         steps:
           - name: checkout
