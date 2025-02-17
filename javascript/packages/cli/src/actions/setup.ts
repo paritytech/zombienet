@@ -310,9 +310,13 @@ const latestPolkadotReleaseURL = async (
       throw new Error(
         "Could not find a release. Error 404 (not found) detected",
       );
+    } else if (err.response) {
+      throw new Error(
+        `Error status: ${err?.response?.status}. Error message: ${err?.response}`,
+      );
     }
-    throw new Error(
-      `Error status: ${err?.response?.status}. Error message: ${err?.response}`,
-    );
+
+    // fallthrough
+    throw new Error(`Error: ${err}`);
   }
 };
