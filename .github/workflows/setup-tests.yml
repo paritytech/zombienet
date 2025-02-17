@@ -33,7 +33,8 @@ jobs:
           - run: npm run build
             working-directory: "./javascript"
           - run: |
-              PDW=$(pwd)
+              PWD=$(pwd)
+              echo "pwd: ${PWD}"
               mkdir /tmp/a
               cd /tmp/a
               $PWD/packages/cli/dist/cli.js setup -y all
