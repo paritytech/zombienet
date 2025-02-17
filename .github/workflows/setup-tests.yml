@@ -37,7 +37,5 @@ jobs:
               echo "javascript directory: ${JS_DIR}"
               mkdir /tmp/a
               cd /tmp/a
-              $JS_DIR/packages/cli/dist/cli.js setup -y all
+              node $JS_DIR/packages/cli/dist/cli.js setup -y all
             working-directory: "./javascript"
-          - name: Clean
-            run: rm -rf /tmp/a
