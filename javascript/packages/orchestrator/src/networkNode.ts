@@ -4,6 +4,7 @@ import { makeRe } from "minimatch";
 import {
   DEFAULT_INDIVIDUAL_TEST_TIMEOUT,
   LOCALHOST,
+  RPC_HTTP_PORT,
   RPC_WS_PORT,
   WS_URI_PATTERN,
 } from "./constants";
@@ -78,10 +79,14 @@ export class NetworkNode implements NetworkNodeInterface {
 
     const url = new URL(this.wsUri);
     if (
-      parseInt(url.port, 10) !== RPC_WS_PORT &&
+      ![RPC_WS_PORT, RPC_HTTP_PORT].includes(parseInt(url.port, 10)) &&
       client.providerName !== "native"
     ) {
-      const fwdPort = await client.startPortForwarding(RPC_WS_PORT, this.name);
+      // use rpc_port as default (since ws_port was deprecated in https://github.com/paritytech/substrate/pull/13384)
+      const fwdPort = await client.startPortForwarding(
+        RPC_HTTP_PORT,
+        this.name,
+      );
 
       this.wsUri = WS_URI_PATTERN.replace("{{IP}}", LOCALHOST).replace(
         "{{PORT}}",
