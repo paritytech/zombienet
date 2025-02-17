@@ -276,6 +276,8 @@ const latestPolkadotReleaseURL = async (
   name: string,
 ): Promise<[string, string]> => {
   try {
+    const release_url = `https://api.github.com/repos/paritytech/${repo}/releases`;
+    debug(`release url: ${release_url}`);
     const releases = await fetch(
       `https://api.github.com/repos/paritytech/${repo}/releases`,
     );
@@ -283,6 +285,7 @@ const latestPolkadotReleaseURL = async (
     let obj: any;
 
     const allReleases = await releases.json();
+    debug(`all releases: \n ${allReleases}`);
     const release = allReleases.find((r: any) => {
       obj = r?.assets?.find((a: any) => a.name === name);
       return Boolean(obj);
