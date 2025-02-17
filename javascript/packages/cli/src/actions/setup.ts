@@ -282,8 +282,17 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
 const getAllReleases = async (repo: string): Promise<any> => {
   const release_url = `https://api.github.com/repos/paritytech/${repo}/releases`;
   debug(`release url: ${release_url}`);
+  const headers: any = {
+    Accept: "application/vnd.github+json",
+  };
+
+  if (process.env.GH_TOKEN) {
+    headers["Authorization"] = `Bearer ${process.env.GH_TOKEN}`;
+  }
+
   const releases = await fetch(
     `https://api.github.com/repos/paritytech/${repo}/releases`,
+    headers,
   );
 
   const allReleases = await releases.json();
