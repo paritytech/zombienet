@@ -54,10 +54,13 @@ export async function setup(params: any, opts?: any) {
   console.log(decorators.green("Gathering latest releases' versions...\n"));
   const arch_sufix = process.arch === "arm64" ? "aarch64-apple-darwin" : "";
 
+  const allReleases = await getAllReleases(POLKADOT_SDK);
+
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
       `${POLKADOT}${arch_sufix ? "-" + arch_sufix : ""}`,
+      allReleases,
     ).then((res: [string, string]) => {
       options[POLKADOT] = {
         name: POLKADOT,
@@ -72,6 +75,7 @@ export async function setup(params: any, opts?: any) {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
       `${POLKADOT_PREPARE_WORKER}${arch_sufix ? "-" + arch_sufix : ""}`,
+      allReleases,
     ).then((res: [string, string]) => {
       options[POLKADOT_PREPARE_WORKER] = {
         name: POLKADOT_PREPARE_WORKER,
@@ -86,6 +90,7 @@ export async function setup(params: any, opts?: any) {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
       `${POLKADOT_EXECUTE_WORKER}${arch_sufix ? "-" + arch_sufix : ""}`,
+      allReleases,
     ).then((res: [string, string]) => {
       options[POLKADOT_EXECUTE_WORKER] = {
         name: POLKADOT_EXECUTE_WORKER,
@@ -100,6 +105,7 @@ export async function setup(params: any, opts?: any) {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
       `${POLKADOT_PARACHAIN}${arch_sufix ? "-" + arch_sufix : ""}`,
+      allReleases,
     ).then((res: [string, string]) => {
       options[POLKADOT_PARACHAIN] = {
         name: POLKADOT_PARACHAIN,
@@ -261,6 +267,9 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
       ),
       decorators.blue(`export PATH=${process.cwd()}:$PATH\n\n`),
     );
+
+    // set exit code
+    process.exitCode = 0;
   } catch (err) {
     console.log(
       `\n ${decorators.red("Unexpected error: ")} \t ${decorators.bright(
@@ -270,22 +279,29 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
   }
 };
 
+const getAllReleases = async (repo: string): Promise<any> => {
+  const release_url = `https://api.github.com/repos/paritytech/${repo}/releases`;
+  debug(`release url: ${release_url}`);
+  const releases = await fetch(
+    `https://api.github.com/repos/paritytech/${repo}/releases`,
+  );
+
+  const allReleases = await releases.json();
+  if (process.env.ZOMBIE_TRACE) {
+    debug(`all releases: \n ${JSON.stringify(allReleases)}`);
+  }
+  return allReleases;
+};
+
 // Retrieve the latest release for polkadot
 const latestPolkadotReleaseURL = async (
   repo: string,
   name: string,
+  allReleases: any,
 ): Promise<[string, string]> => {
   try {
-    const release_url = `https://api.github.com/repos/paritytech/${repo}/releases`;
-    debug(`release url: ${release_url}`);
-    const releases = await fetch(
-      `https://api.github.com/repos/paritytech/${repo}/releases`,
-    );
-
     let obj: any;
 
-    const allReleases = await releases.json();
-    debug(`all releases: \n ${allReleases}`);
     const release = allReleases.find((r: any) => {
       obj = r?.assets?.find((a: any) => a.name === name);
       return Boolean(obj);
