@@ -39,3 +39,4 @@ jobs:
               cd /tmp/a
               DEBUG=zombie-cli::setup node $JS_DIR/packages/cli/dist/cli.js setup -y all
             working-directory: "./javascript"
+          - run: ls -ltr /tmp/a

@@ -55,22 +55,23 @@ export async function setup(params: any, opts?: any) {
   const arch_sufix = process.arch === "arm64" ? "aarch64-apple-darwin" : "";
 
   await new Promise<void>((resolve) => {
-    latestPolkadotReleaseURL(POLKADOT_SDK, `${POLKADOT}${arch_sufix ? '-' + arch_sufix : ''}`).then(
-      (res: [string, string]) => {
-        options[POLKADOT] = {
-          name: POLKADOT,
-          url: res[0],
-          size: res[1],
-        };
-        resolve();
-      },
-    );
+    latestPolkadotReleaseURL(
+      POLKADOT_SDK,
+      `${POLKADOT}${arch_sufix ? "-" + arch_sufix : ""}`,
+    ).then((res: [string, string]) => {
+      options[POLKADOT] = {
+        name: POLKADOT,
+        url: res[0],
+        size: res[1],
+      };
+      resolve();
+    });
   });
 
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
-      `${POLKADOT_PREPARE_WORKER}${arch_sufix ? '-' + arch_sufix : ''}`,
+      `${POLKADOT_PREPARE_WORKER}${arch_sufix ? "-" + arch_sufix : ""}`,
     ).then((res: [string, string]) => {
       options[POLKADOT_PREPARE_WORKER] = {
         name: POLKADOT_PREPARE_WORKER,
@@ -84,7 +85,7 @@ export async function setup(params: any, opts?: any) {
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
-      `${POLKADOT_EXECUTE_WORKER}${arch_sufix ? '-' + arch_sufix : ''}`,
+      `${POLKADOT_EXECUTE_WORKER}${arch_sufix ? "-" + arch_sufix : ""}`,
     ).then((res: [string, string]) => {
       options[POLKADOT_EXECUTE_WORKER] = {
         name: POLKADOT_EXECUTE_WORKER,
@@ -98,7 +99,7 @@ export async function setup(params: any, opts?: any) {
   await new Promise<void>((resolve) => {
     latestPolkadotReleaseURL(
       POLKADOT_SDK,
-      `${POLKADOT_PARACHAIN}${arch_sufix ? '-' + arch_sufix : ''}`,
+      `${POLKADOT_PARACHAIN}${arch_sufix ? "-" + arch_sufix : ""}`,
     ).then((res: [string, string]) => {
       options[POLKADOT_PARACHAIN] = {
         name: POLKADOT_PARACHAIN,
