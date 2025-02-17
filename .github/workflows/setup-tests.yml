@@ -33,11 +33,11 @@ jobs:
           - run: npm run build
             working-directory: "./javascript"
           - run: |
-              PWD=$(pwd)
-              echo "pwd: ${PWD}"
+              JS_DIR=$(pwd)
+              echo "javascript directory: ${JS_DIR}"
               mkdir /tmp/a
               cd /tmp/a
-              $PWD/packages/cli/dist/cli.js setup -y all
+              $JS_DIR/packages/cli/dist/cli.js setup -y all
             working-directory: "./javascript"
           - name: Clean
             run: rm -rf /tmp/a
