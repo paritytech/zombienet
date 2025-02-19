@@ -42,6 +42,7 @@ function main {
   create_isolated_dir
   copy_to_isolated
   set_instance_env
+  k8s_auth
   run_test
   log INFO "Exit status is ${EXIT_STATUS}"
   exit "${EXIT_STATUS}"
@@ -145,7 +146,7 @@ function set_instance_env {
   fi;
 }
 
-function run_test {
+function k8s_auth {
   # RUN_IN_CONTAINER is env var that is set in the dockerfile
   if  [[ -v RUN_IN_CONTAINER  ]]; then
     if [[ -v GHA_CLUSTER_SERVER_ADDR ]]; then
@@ -158,6 +159,9 @@ function run_test {
       gcloud container clusters get-credentials parity-zombienet --zone europe-west3-b --project parity-zombienet
     fi;
   fi
+}
+
+function run_test {
   cd "${OUTPUT_DIR}"
   set -x
   set +e
@@ -203,4 +207,10 @@ function log {
   fi
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    log INFO "Running main"
+    main "$@"
+else
+  log WARN "Script is being sourcing"
+fi
+
