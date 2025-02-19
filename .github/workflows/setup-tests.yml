@@ -18,6 +18,21 @@ env:
 permissions: {}
 
 jobs:
+    get_releases:
+      # get the releases from macos is hitting the rate limit on the api constantly
+      # so, we download the whole info here and we share as artifact.
+      runs-on: ubuntu-latest
+      steps:
+        - name: perform_request
+          run: |
+            curl -s https://api.github.com/repos/paritytech/polkadot-sdk/releases > releases.json
+        - name: upload_releases
+          uses: actions/upload-artifact@v4
+          with:
+            name: releases-${{ github.sha }}.json
+            path: |
+                releases.json
+
     setup_test:
         strategy:
           matrix:
@@ -32,6 +47,11 @@ jobs:
             uses: actions/setup-node@v4
             with:
               node-version: '20'
+          - name: Download request file
+            uses: actions/download-artifact@v4.1.8
+            with:
+              name: releases-${{ github.sha }}.json
+          - run: ls -l
           - run: npm install && npm update
             working-directory: "./javascript"
           - run: npm run build
