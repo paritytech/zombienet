@@ -208,8 +208,8 @@ function log {
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    log INFO "Running main"
-    main "$@"
+  log INFO "Running main"
+  main "$@"
 else
   log WARN "Script is being sourcing"
 fi
