@@ -14,6 +14,7 @@ concurrency:
 env:
   ZOMBIE_TRACE: 1
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ZOMBIE_RELEASES_FILE: ./releases.json
 
 permissions: {}
 
