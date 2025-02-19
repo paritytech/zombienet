@@ -35,6 +35,7 @@ jobs:
                 releases.json
 
     setup_test:
+        needs: [get_releases]
         strategy:
           matrix:
             target: [ubuntu-latest, macos-latest]
