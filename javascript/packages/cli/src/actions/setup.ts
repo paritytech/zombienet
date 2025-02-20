@@ -280,6 +280,14 @@ const downloadBinaries = async (binaries: string[]): Promise<void> => {
 };
 
 const getAllReleases = async (repo: string): Promise<any> => {
+  // allow to read releases from file
+  if (process.env.ZOMBIE_RELEASES_FILE) {
+    const content = await fs.promises.readFile(
+      process.env.ZOMBIE_RELEASES_FILE,
+    );
+    return JSON.parse(content.toString());
+  }
+
   const release_url = `https://api.github.com/repos/paritytech/${repo}/releases`;
   debug(`release url: ${release_url}`);
   const headers: any = {
