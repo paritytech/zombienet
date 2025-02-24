@@ -369,8 +369,12 @@ export class Network {
       [{ colSpan: 2, hAlign: "center", content: "Node Information" }],
       [decorators.cyan("Name"), decorators.green(node.name)],
       [
-        decorators.cyan("Direct Link"),
+        decorators.cyan("Direct Link (pjs)"),
         `https://polkadot.js.org/apps/?rpc=${wsUri}#/explorer`,
+      ],
+      [
+        decorators.cyan("Direct Link (papi)"),
+        `https://dev.papi.how/explorer#networkId=custom&endpoint=${wsUri}`,
       ],
       [decorators.cyan("Prometheus Link"), node.prometheusUri],
       [decorators.cyan("Log Cmd"), logCommand],
