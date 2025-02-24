@@ -119,6 +119,7 @@ ondemand
 onfinality
 opencensus
 otlp
+papi
 parachain
 parachains
 paritydb
