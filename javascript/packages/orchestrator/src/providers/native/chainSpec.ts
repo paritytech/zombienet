@@ -1,6 +1,6 @@
 import { sleep } from "@zombienet/utils";
 import { promises as fsPromises } from "fs";
-import { readAndParseChainSpec } from "../../chainSpec";
+import { readAndParseChainSpec, writeChainSpec } from "../../chainSpec";
 import { DEFAULT_CHAIN_SPEC, DEFAULT_CHAIN_SPEC_RAW } from "../../constants";
 import { getClient } from "../client";
 import { createTempNodeDef, genNodeDef } from "./dynResourceDefinition";
@@ -45,6 +45,11 @@ export async function setupChainSpec(
       await fsPromises.copyFile(plainChainSpecOutputFilePath, chainFullPath);
     }
   }
+
+  // customize chain id
+  let chainSpecContent = readAndParseChainSpec(chainFullPath);
+  chainSpecContent.id = `${chainSpecContent.id}_${namespace}`;
+  writeChainSpec(chainFullPath, chainSpecContent);
 }
 
 export async function getChainSpecRaw(
