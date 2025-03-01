@@ -46,10 +46,12 @@ export async function setupChainSpec(
     }
   }
 
-  // customize chain id
-  let chainSpecContent = readAndParseChainSpec(chainFullPath);
-  chainSpecContent.id = `${chainSpecContent.id}_${namespace}`;
-  writeChainSpec(chainFullPath, chainSpecContent);
+  if(chainConfig.maxNominations) {
+    // customize chain id
+    let chainSpecContent = readAndParseChainSpec(chainFullPath);
+    chainSpecContent.id = `${chainSpecContent.id}_${namespace}`;
+    writeChainSpec(chainFullPath, chainSpecContent);
+  }
 }
 
 export async function getChainSpecRaw(
