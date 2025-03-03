@@ -131,76 +131,62 @@ export async function run(
   });
 
   suite.afterAll("teardown", async function () {
-    this.timeout(180 * 1000);
-    // report metric
-    const testEnd = performance.now();
-    const elapsedSecs = Math.round((testEnd - testStart) / 1000);
-    debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
-    let success: boolean = false;
-    if (network && !network.wasRunning) {
-      let logsPath;
-      try {
-        logsPath = await network.dumpLogs(false);
-      } catch (e) {
-        console.log(`${decorators.red("❌ Error dumping logs!")}`);
-        console.log(`err: ${e}`);
-      }
-
-      const tests = this.test?.parent?.tests;
-
-      if (tests) {
-        const failed = tests.filter((test) => {
-          return test.state !== "passed";
-        });
-        if (failed.length) {
-          console.log(
-            `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
-          );
-        } else {
-          success = true;
-        }
-
-        // All test passed, just remove the network
-        console.log(`\n\t ${decorators.green("Deleting network")}`);
+    const timeout = 180 * 1000; // 3 mins
+    this.timeout(timeout + 10 * 1000); // just in case use mocha timeout after 10 secs of the teardown timeout.
+    const innerTearDown = async () => {
+      // report metric
+      const testEnd = performance.now();
+      const elapsedSecs = Math.round((testEnd - testStart) / 1000);
+      debug(`\t 🕰 [Test] elapsed time: ${elapsedSecs} secs`);
+      let success: boolean = false;
+      if (network && !network.wasRunning) {
+        let logsPath;
         try {
-          await network.stop();
+          logsPath = await network.dumpLogs(false);
         } catch (e) {
-          console.log(`${decorators.yellow("⚠️  Error deleting network")}`);
+          console.log(`${decorators.red("❌ Error dumping logs!")}`);
           console.log(`err: ${e}`);
         }
 
-        // show logs
-        console.log(
-          `\n\n\t${decorators.magenta(
-            "📓 To see the full logs of the nodes please go to:",
-          )}`,
-        );
-        switch (network.client.providerName) {
-          case "podman":
-          case "native":
-            console.log(`\n\t${decorators.magenta(logsPath)}`);
-            break;
-          case "kubernetes":
-            if (inCI) {
-              // show links to grafana and also we need to move the logs to artifacts
-              const networkEndtime = new Date().getTime();
-              for (const node of network.relay) {
-                const loki_url = getLokiUrl(
-                  network.namespace,
-                  node.name,
-                  network.networkStartTime!,
-                  networkEndtime,
-                );
-                console.log(
-                  `\t${decorators.magenta(node.name)}: ${decorators.green(
-                    loki_url,
-                  )}`,
-                );
-              }
+        const tests = this.test?.parent?.tests;
 
-              for (const [paraId, parachain] of Object.entries(network.paras)) {
-                console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
-                for (const node of parachain.nodes) {
+        if (tests) {
+          const failed = tests.filter((test) => {
+            return test.state !== "passed";
+          });
+          if (failed.length) {
+            console.log(
+              `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
+            );
+          } else {
+            success = true;
+          }
+
+          // All test passed, just remove the network
+          console.log(`\n\t ${decorators.green("Deleting network")}`);
+          try {
+            await network.stop();
+          } catch (e) {
+            console.log(`${decorators.yellow("⚠️  Error deleting network")}`);
+            console.log(`err: ${e}`);
+          }
+
+          // show logs
+          console.log(
+            `\n\n\t${decorators.magenta(
+              "📓 To see the full logs of the nodes please go to:",
+            )}`,
+          );
+          switch (network.client.providerName) {
+            case "podman":
+            case "native":
+              console.log(`\n\t${decorators.magenta(logsPath)}`);
+              break;
+            case "kubernetes":
+              if (inCI) {
+                // show links to grafana and also we need to move the logs to artifacts
+                const networkEndtime = new Date().getTime();
+                for (const node of network.relay) {
                   const loki_url = getLokiUrl(
                     network.namespace,
                     node.name,
@@ -208,28 +194,66 @@ export async function run(
                     networkEndtime,
                   );
                   console.log(
-                    `\t\t${decorators.magenta(node.name)}: ${decorators.green(
+                    `\t${decorators.magenta(node.name)}: ${decorators.green(
                       loki_url,
                     )}`,
                   );
                 }
-              }
 
-              // logs are also collected as artifacts
-              console.log(
-                `\n\n\t ${decorators.yellow(
-                  "📓 Logs are also available in the artifacts' pipeline in gitlab",
-                )}`,
-              );
-            } else {
-              console.log(`\n\t${decorators.magenta(logsPath)}`);
-            }
-            break;
+                for (const [paraId, parachain] of Object.entries(
+                  network.paras,
+                )) {
+                  console.log(`\n\tParaId: ${decorators.magenta(paraId)}`);
+                  for (const node of parachain.nodes) {
+                    const loki_url = getLokiUrl(
+                      network.namespace,
+                      node.name,
+                      network.networkStartTime!,
+                      networkEndtime,
+                    );
+                    console.log(
+                      `\t\t${decorators.magenta(node.name)}: ${decorators.green(
+                        loki_url,
+                      )}`,
+                    );
+                  }
+                }
+
+                // logs are also collected as artifacts
+                console.log(
+                  `\n\n\t ${decorators.yellow(
+                    "📓 Logs are also available in the artifacts' pipeline in gitlab",
+                  )}`,
+                );
+              } else {
+                console.log(`\n\t${decorators.magenta(logsPath)}`);
+              }
+              break;
+          }
         }
       }
+      // submit metric
+      if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs, success);
+    };
+
+    const resp = await Promise.race([
+      innerTearDown(),
+      new Promise((resolve) =>
+        setTimeout(() => {
+          const err = new Error(
+            `Timeout(${timeout}), in teardown process... continuing reporting the tests`,
+          );
+          return resolve(err);
+        }, timeout),
+      ),
+    ]);
+    console.log(resp);
+    if (resp instanceof Error) {
+      console.log(`${decorators.yellow("⚠️   Error in teardown process!")}`);
+      console.log(`err: ${resp}`);
     }
-    // submit metric
-    if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs, success);
+
+    // always return since we don't want to report errors in teardown
     return;
   });
 
