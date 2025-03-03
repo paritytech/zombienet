@@ -380,6 +380,8 @@ export async function start(
       local_ip: networkSpec.settings.local_ip,
     };
 
+    console.log("DEBUG: spawnOpts", spawnOpts);
+
     // Calculate chaos before start spawning the nodes
     const chaosSpecs: any[] = [];
     // network chaos is ONLY available in k8s for now

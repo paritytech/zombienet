@@ -49,6 +49,7 @@ export async function genCumulusCollatorCmd(
   dataPath = "/data",
   relayDataPath = "/relay-data",
   useWrapper = true,
+  local_ip = "0.0.0.0",
 ): Promise<string[]> {
   const { name, chain, parachainId, key, validator, commandWithArgs } =
     nodeSetup;
@@ -80,7 +81,7 @@ export async function genCumulusCollatorCmd(
     "--base-path",
     dataPath,
     "--listen-addr",
-    `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
+    `/ip4/${local_ip}/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
     "--prometheus-external",
     "--rpc-cors all",
     "--unsafe-rpc-external",
@@ -212,6 +213,18 @@ export async function genCumulusCollatorCmd(
     }
   }
 
+  if (local_ip != "0.0.0.0") {
+    //  need to transform full_node --port flag to listen addr
+    const flagIndex = fullCmd.findIndex((arg) => arg === "--port");
+    if (flagIndex >= 0) {
+      const port_to_use = fullCmd[flagIndex + 1];
+      fullCmd.splice(flagIndex, 2);
+      fullCmd.push(
+        ...["--listen-addr", `/ip4/${local_ip}/tcp/${port_to_use}/ws`],
+      );
+    }
+  }
+
   const resolvedCmd = [fullCmd.join(" ")];
   if (useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
   return resolvedCmd;
@@ -222,6 +235,7 @@ export async function genCmd(
   cfgPath = "/cfg",
   dataPath = "/data",
   useWrapper = true,
+  local_ip = "0.0.0.0",
 ): Promise<string[]> {
   const {
     name,
@@ -301,7 +315,9 @@ export async function genCmd(
     args[listenIndex + 1] = listenAddr;
   } else {
     // no --listen-add args
-    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+    args.push(
+      ...["--listen-addr", `/ip4/${local_ip}/tcp/${nodeSetup.p2pPort}/ws`],
+    );
   }
 
   // set our base path
