@@ -23,6 +23,7 @@ import {
   addParachainToGenesis,
   customizePlainRelayChain,
   readAndParseChainSpec,
+  writeChainSpec,
 } from "./chainSpec";
 import {
   generateBootnodeSpec,
@@ -236,6 +237,10 @@ export async function start(
     // see https://github.com/paritytech/substrate/pull/13384
     await setSubstrateCliArgsVersion(networkSpec, client);
 
+    const random_sufix_to_isolate = networkSpec.settings.isolate_env
+      ? generateNamespace(2)
+      : null;
+
     // create or copy relay chain spec
     await setupChainSpec(
       namespace,
@@ -265,6 +270,7 @@ export async function start(
         chainName,
         parachain,
         relayChainSpecIsRaw,
+        random_sufix_to_isolate,
       );
     };
 
@@ -307,6 +313,15 @@ export async function start(
         )} 🚧`,
       );
       await fs.promises.copyFile(chainSpecFullPathPlain, chainSpecFullPath);
+    }
+
+    // make chain unique if is set
+    if (random_sufix_to_isolate) {
+      // customize forkId/protocolId to make chain uniq
+      const chainSpecContent = readAndParseChainSpec(chainSpecFullPath);
+      chainSpecContent.forkId = `${chainSpecContent.protocolId}${random_sufix_to_isolate}`;
+      chainSpecContent.protocolId = `${chainSpecContent.protocolId}${random_sufix_to_isolate}`;
+      writeChainSpec(chainSpecFullPath, chainSpecContent);
     }
 
     // ensure chain raw is ok
