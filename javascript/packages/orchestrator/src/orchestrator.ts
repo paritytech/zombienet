@@ -237,7 +237,7 @@ export async function start(
     // see https://github.com/paritytech/substrate/pull/13384
     await setSubstrateCliArgsVersion(networkSpec, client);
 
-    const random_sufix_to_isolate = networkSpec.settings.isolate_env
+    const random_suffix_to_isolate = networkSpec.settings.isolate_env
       ? generateNamespace(2)
       : null;
 
@@ -270,7 +270,7 @@ export async function start(
         chainName,
         parachain,
         relayChainSpecIsRaw,
-        random_sufix_to_isolate,
+        random_suffix_to_isolate,
       );
     };
 
@@ -316,11 +316,11 @@ export async function start(
     }
 
     // make chain unique if is set
-    if (random_sufix_to_isolate) {
+    if (random_suffix_to_isolate) {
       // customize forkId/protocolId to make chain uniq
       const chainSpecContent = readAndParseChainSpec(chainSpecFullPath);
-      chainSpecContent.forkId = `${chainSpecContent.protocolId}${random_sufix_to_isolate}`;
-      chainSpecContent.protocolId = `${chainSpecContent.protocolId}${random_sufix_to_isolate}`;
+      chainSpecContent.forkId = `${chainSpecContent.protocolId}${random_suffix_to_isolate}`;
+      chainSpecContent.protocolId = `${chainSpecContent.protocolId}${random_suffix_to_isolate}`;
       writeChainSpec(chainSpecFullPath, chainSpecContent);
     }
 
