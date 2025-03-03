@@ -131,6 +131,8 @@ export async function run(
   });
 
   suite.afterAll("teardown", async function () {
+    const timeout = 180 * 1000; // 3 mins
+    this.timeout(timeout + 10 * 1000); // just in case use mocha timeout after 10 secs of the teardown timeout.
     const innerTearDown = async () => {
       // report metric
       const testEnd = performance.now();
@@ -234,7 +236,6 @@ export async function run(
       if (inCI) await registerTotalElapsedTimeSecs(elapsedSecs, success);
     };
 
-    const timeout = 180 * 1000; // 3 mins
     const resp = await Promise.race([
       innerTearDown(),
       new Promise((resolve) =>
@@ -246,6 +247,7 @@ export async function run(
         }, timeout),
       ),
     ]);
+    console.log(resp);
     if (resp instanceof Error) {
       console.log(`${decorators.yellow("⚠️   Error in teardown process!")}`);
       console.log(`err: ${resp}`);
