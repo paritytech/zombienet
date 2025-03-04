@@ -74,8 +74,9 @@ export function clearAuthorities(specPath: string) {
     if (runtimeConfig?.collatorSelection)
       runtimeConfig.collatorSelection.invulnerables = [];
 
-    // clear staking
-    if (runtimeConfig?.staking) {
+    // clear staking (IFF not a para)
+    // TODO: in the future we should add an option to override or not
+    if (runtimeConfig?.staking && !runtimeConfig.parachainInfo) {
       // Set `stakingBond` IFF there is at least one
       if (runtimeConfig.staking.stakers[0])
         stakingBond = BigInt(runtimeConfig.staking.stakers[0][2]);
