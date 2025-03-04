@@ -98,6 +98,9 @@ export interface Settings {
   // Allow to manage how we verify node readiness or disable (None)
   // Metric: query prometheus startProcess metric
   node_verifier?: "None" | "Metric";
+  // If true zombienet will add a random sufix to `protocolId` and use the same `protocolId`sufix
+  // as `forkId` to prevent other nodes to connect to this chain.
+  isolate_env?: boolean;
 }
 
 export interface GlobalVolume {

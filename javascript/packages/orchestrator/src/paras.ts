@@ -28,6 +28,7 @@ export async function generateParachainFiles(
   relayChainName: string,
   parachain: Parachain,
   relayChainSpecIsRaw: boolean,
+  random_sufix_to_isolate: string | null = null,
 ): Promise<void> {
   const [
     addAuraAuthority,
@@ -191,6 +192,14 @@ export async function generateParachainFiles(
       const paraSpecRaw = readAndParseChainSpec(chainSpecFullPath);
       if (paraSpecRaw.para_id) paraSpecRaw.para_id = parachain.id;
       if (paraSpecRaw.paraId) paraSpecRaw.paraId = parachain.id;
+
+      // make chain unique if is set
+      if (random_sufix_to_isolate) {
+        // customize forkId/protocolId to make chain uniq
+        paraSpecRaw.forkId = `${paraSpecRaw.protocolId}${random_sufix_to_isolate}`;
+        paraSpecRaw.protocolId = `${paraSpecRaw.protocolId}${random_sufix_to_isolate}`;
+      }
+
       writeChainSpec(chainSpecFullPath, paraSpecRaw);
     } catch (e: any) {
       if (e.code !== "ERR_FS_FILE_TOO_LARGE") throw e;
