@@ -24,6 +24,7 @@ export class NodeResource {
     client: Client,
     protected readonly namespace: string,
     protected readonly nodeSetupConfig: Node,
+    protected readonly local_ip: string | undefined = undefined,
   ) {
     const nodeRootPath = `${client.tmpDir}/${this.nodeSetupConfig.name}`;
     this.configPath = `${nodeRootPath}/cfg`;
@@ -97,6 +98,7 @@ export class NodeResource {
   }
 
   protected generateCommand() {
+    console.log("DEBUG this", this);
     if (this.nodeSetupConfig.zombieRole === ZombieRole.CumulusCollator) {
       return genCumulusCollatorCmd(
         this.nodeSetupConfig,
@@ -104,10 +106,17 @@ export class NodeResource {
         this.dataPath,
         this.relayDataPath,
         false,
+        this.local_ip,
       );
     }
 
-    return genCmd(this.nodeSetupConfig, this.configPath, this.dataPath, false);
+    return genCmd(
+      this.nodeSetupConfig,
+      this.configPath,
+      this.dataPath,
+      false,
+      this.local_ip,
+    );
   }
 
   protected getZombieRoleLabel(): ZombieRoleLabel {

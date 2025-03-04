@@ -22,8 +22,9 @@ export async function genBootnodeDef(
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
-  inCI: boolean = false,
+  opts: any = {},
 ): Promise<any> {
+  const inCI = opts.inCI || false;
   const nodeResource = new NodeResource(namespace, nodeSetup);
   return nodeResource.generateSpec(inCI);
 }
