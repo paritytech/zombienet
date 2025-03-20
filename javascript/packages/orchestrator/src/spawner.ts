@@ -54,9 +54,13 @@ export const spawnNode = async (
   if (opts.jaegerUrl) node.jaegerUrl = opts.jaegerUrl;
 
   debug(`creating node: ${node.name}`);
+  console.log("DEBUG opts", opts);
   const podDef = await (node.name === "bootnode"
     ? genBootnodeDef(namespace, node)
-    : genNodeDef(namespace, node, opts.inCI));
+    : genNodeDef(namespace, node, {
+        inCI: opts.inCI,
+        local_ip: opts.local_ip,
+      }));
 
   const finalFilesToCopyToNode = [...filesToCopy];
 
