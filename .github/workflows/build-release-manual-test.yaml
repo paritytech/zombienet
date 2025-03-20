@@ -7,11 +7,28 @@ on:
   workflow_dispatch
 
 jobs:
-  build_release_for_linux:
-    name: build_release_for_linux
+  create_release:
+    name: create_release
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        id: create_release
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: true
+
+  build_release_for_linux:
+    name: build_release_for_linux
+    needs: create_release
+    strategy:
+      matrix:
+        target:
+          - { runner: ubuntu-latest, arch: x64 }
+          - { runner: ubuntu-24.04-arm, arch: arm64 }
+    runs-on: ${{ matrix.target.runner }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -32,11 +49,20 @@ jobs:
       - run: ls ./bins
         working-directory: "./javascript"
       - name: Test if zombienet-linux runs
-        run: ./bins/zombienet-linux-x64 version
+        run: ./bins/zombienet-linux-${{ matrix.target.arch }} version
         working-directory: "./javascript"
+      - name: upload macos artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./javascript/bins/zombienet-linux-${{ matrix.target.arch }}
+          asset_name: zombienet-linux-${{ matrix.target.arch }}
+          asset_content_type: application/octet-stream
   build_release_for_mac:
     name: build_release_for_mac
-    needs: build_release_for_linux
+    needs: create_release
     strategy:
       matrix:
         target:
