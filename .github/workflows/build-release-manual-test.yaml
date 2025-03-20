@@ -19,6 +19,7 @@ jobs:
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: true
+          automatic_release_tag: "test-release"
 
   build_release_for_linux:
     name: build_release_for_linux
