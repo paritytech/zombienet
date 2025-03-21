@@ -45,6 +45,13 @@ jobs:
       #   with:
       #     name: package-cli-${{ github.sha }}
       #     path: "./javascript/packages/cli/*.tgz"
+      - name: ls
+        run: |
+          ls -ltr ./javascript
+          ls -ltr ./javascript/packages/utils
+          ls -ltr ./javascript/packages/orchestrator
+          ls -ltr ./javascript/packages/cli
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
