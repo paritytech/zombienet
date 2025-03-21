@@ -57,9 +57,9 @@ jobs:
         with:
           name: packages-${{ github.sha }}
           path: |
-            "./javascript/packages/utils/*.tgz"
-            "./javascript/packages/orchestrator/*.tgz"
-            "./javascript/packages/cli/*.tgz"
+            ./javascript/packages/utils/*.tgz
+            ./javascript/packages/orchestrator/*.tgz
+            ./javascript/packages/cli/*.tgz
 
 
       - name: NPM Publish automation
