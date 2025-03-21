@@ -45,21 +45,25 @@ jobs:
       #   with:
       #     name: package-cli-${{ github.sha }}
       #     path: "./javascript/packages/cli/*.tgz"
-      - name: ls
+      - name: move_to
         run: |
-          ls -ltr ./javascript
-          ls -ltr ./javascript/packages/utils
-          ls -ltr ./javascript/packages/orchestrator
-          ls -ltr ./javascript/packages/cli
+          mkdir -p packs
+          cp ./javascript/packages/utils/*.tgz packs/
+          cp ./javascript/packages/orchestrator/*.tgz packs/
+          cp ./javascript/packages/cli/*.tgz packs/
+          ls -ltr packs
+          # ls -ltr ./javascript/packages/utils
+          # ls -ltr ./javascript/packages/orchestrator
+          # ls -ltr ./javascript/packages/cli
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: packages-${{ github.sha }}
-          path: |
-            ./javascript/packages/utils/*.tgz
-            ./javascript/packages/orchestrator/*.tgz
-            ./javascript/packages/cli/*.tgz
+          path: packs
+            # ./javascript/packages/utils/*.tgz
+            # ./javascript/packages/orchestrator/*.tgz
+            # ./javascript/packages/cli/*.tgz
 
 
       - name: NPM Publish automation
