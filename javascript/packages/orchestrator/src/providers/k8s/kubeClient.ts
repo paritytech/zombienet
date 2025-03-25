@@ -67,8 +67,8 @@ export class KubeClient extends Client {
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
-    this.configPath = configPath;
-    this.namespace = namespace;
+    this.configPath = process.env.KUBECONFIG || configPath;
+    this.namespace = process.env.ZOMBIE_NAMESPACE || namespace;
     this.debug = true;
     this.timeout = 300; // secs
     this.tmpDir = tmpDir;
@@ -83,7 +83,7 @@ export class KubeClient extends Client {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this.runCommand(["cluster-info"], { scoped: false });
+      const result = await this.runCommand(["auth", "whoami"], { scoped: false });
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -91,6 +91,8 @@ export class KubeClient extends Client {
   }
 
   async createNamespace(): Promise<void> {
+    // skip if ZOMBIE_NAMESPACE is set
+    if (process.env.ZOMBIE_NAMESPACE) return;
     const namespaceDef = {
       apiVersion: "v1",
       kind: "Namespace",
@@ -537,31 +539,48 @@ export class KubeClient extends Client {
   }
 
   async staticSetup(settings: any) {
-    const storageFiles: string[] = (await this.runningOnMinikube())
-      ? [
-          "node-data-tmp-storage-class-minikube.yaml",
-          "node-data-persistent-storage-class-minikube.yaml",
-        ]
-      : [
-          "node-data-tmp-storage-class.yaml",
-          "node-data-persistent-storage-class.yaml",
-        ];
+    let resources: any[] = [];
 
-    const resources = [
-      { type: "data-storage-classes", files: storageFiles },
-      {
-        type: "services",
-        files: [
-          "bootnode-service.yaml",
-          settings.backchannel ? "backchannel-service.yaml" : null,
-          "fileserver-service.yaml",
-        ],
-      },
-      {
-        type: "deployment",
-        files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-      },
-    ];
+    if (await this.runningOnMinikube()) {
+      const storageFiles: string[] = [
+        "node-data-tmp-storage-class-minikube.yaml",
+        "node-data-persistent-storage-class-minikube.yaml",
+      ];
+      const resources = [
+        { type: "data-storage-classes", files: storageFiles },
+        {
+          type: "services",
+          files: [
+            "bootnode-service.yaml",
+            settings.backchannel ? "backchannel-service.yaml" : null,
+            "fileserver-service.yaml",
+          ],
+        },
+        {
+          type: "deployment",
+          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+        },
+      ];
+    } else {
+      const resources = [
+        {
+          type: "services",
+          files: [
+            "bootnode-service.yaml",
+            settings.backchannel ? "backchannel-service.yaml" : null,
+            "fileserver-service.yaml",
+          ],
+        },
+        {
+          type: "deployment",
+          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+        },
+      ];
+    }
+
+
+
+
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
@@ -628,7 +647,8 @@ export class KubeClient extends Client {
 
     // create CronJob cleaner for namespace
     await this.cronJobCleanerSetup();
-    await this.upsertCronJob();
+    // TODO: disabled for local debug
+    // await this.upsertCronJob();
 
     const cronInterval = setInterval(
       async () => await this.upsertCronJob(),
@@ -643,7 +663,8 @@ export class KubeClient extends Client {
         "job-delete-podmonitor-role.yaml",
         "monitoring",
       );
-    await this.createStaticResource("job-svc-account.yaml");
+    // TODO: comment for local debug
+    // await this.createStaticResource("job-svc-account.yaml");
   }
 
   async upsertCronJob(minutes = 10) {
@@ -960,6 +981,7 @@ export class KubeClient extends Client {
 
   async isPodMonitorAvailable() {
     let available = false;
+    if (process.env.ZOMBIE_PODMONITOR === "0") return available;
     try {
       const result = await execa.command("kubectl api-resources -o name");
       if (result.exitCode == 0) {

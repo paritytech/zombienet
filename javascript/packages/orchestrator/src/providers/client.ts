@@ -34,7 +34,7 @@ export abstract class Client {
     providerName: string,
   ) {
     this.configPath = configPath;
-    this.namespace = namespace;
+    this.namespace = process.env.ZOMBIE_NAMESPACE || namespace;
     this.debug = true;
     this.timeout = 30; // secs
     this.tmpDir = tmpDir;

@@ -44,6 +44,7 @@ function main {
   set_instance_env
   k8s_auth
   run_test
+  rm_isolated_dir
   log INFO "Exit status is ${EXIT_STATUS}"
   exit "${EXIT_STATUS}"
 }
@@ -53,6 +54,17 @@ function create_isolated_dir {
   ISOLATED=${OUTPUT_DIR}/${TS}
   mkdir -p ${ISOLATED}
   OUTPUT_DIR="${ISOLATED}"
+}
+
+function copy_to_isolated {
+  cd "${SCRIPT_PATH}"
+  echo $(pwd)
+  cp -r "${LOCAL_DIR}"/* "${OUTPUT_DIR}"
+}
+
+function rm_isolated_dir {
+  echo "Removing ${OUTPUT_DIR}"
+  rm -rf "${OUTPUT_DIR}"
 }
 
 function set_defaults_for_globals {
@@ -70,6 +82,11 @@ function set_defaults_for_globals {
   TEST_TO_RUN=""
   CONCURRENCY=2
 
+  if [[ -n ${ZOMBIE_LOCAL} ]]; then
+    ZOMBIE_COMMAND="npm run zombie"
+  else
+    ZOMBIE_COMMAND=zombie
+  fi;
 
   LAUNCH_ARGUMENTS=""
   USE_LOCAL_TESTS=false
@@ -109,12 +126,6 @@ function parse_args {
   done
   shift $((OPTIND-1)) # remove parsed options and args from $@ list
   check_args
-}
-
-function copy_to_isolated {
-  cd "${SCRIPT_PATH}"
-  echo $(pwd)
-  cp -r "${LOCAL_DIR}"/* "${OUTPUT_DIR}"
 }
 
 function set_instance_env {
@@ -174,7 +185,11 @@ function run_test {
     TEST_FOUND=0
     for i in $(find ${OUTPUT_DIR} -name "${TEST_TO_RUN}"| head -1); do
       TEST_FOUND=1
-      zombie -c $CONCURRENCY test $i
+      # copy files if env variable ZOMBIE_LOCAL is set
+      if [[ ! -z $ZOMBIE_LOCAL ]]; then
+        cp -r ../../../javascript/* .
+      fi;
+      ${ZOMBIE_COMMAND} -c $CONCURRENCY test $i
       EXIT_STATUS=$?
     done;
     if [[ $TEST_FOUND -lt 1 ]]; then
@@ -183,7 +198,7 @@ function run_test {
   else
     for i in $(find ${OUTPUT_DIR} -name *.zndsl | sort); do
       echo "running test: ${i}"
-      zombie -c $CONCURRENCY test $i
+      ${ZOMBIE_COMMAND} -c $CONCURRENCY test $i
       TEST_EXIT_STATUS=$?
       EXIT_STATUS=$((EXIT_STATUS+TEST_EXIT_STATUS))
     done;

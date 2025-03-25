@@ -130,10 +130,11 @@ jobs:
 
   zombienet-smoke:
     name: Zombienet Smoke
-    runs-on: zombienet-arc-runner
+    runs-on: parity-zombienet
     timeout-minutes: 30
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
+      options: -v "/data":"/data":ro -v "/var/run/secrets/kubernetes.io/serviceaccount":"/var/run/secrets/kubernetes.io/serviceaccount" -e "KUBECONFIG=/data/config"
     needs: [build_push_image, set-variables]
     env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
@@ -152,6 +153,7 @@ jobs:
           echo "${GH_DIR}"
           echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
           echo "col_image ${COL_IMAGE}"
+          export ZOMBIE_NAMESPACE=$(cat /data/namespace)
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests" --test="0001-smoke.zndsl"
 
