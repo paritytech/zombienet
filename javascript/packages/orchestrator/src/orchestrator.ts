@@ -123,7 +123,9 @@ export async function start(
 
     // set namespace
     const randomBytes = networkSpec.settings.provider === "podman" ? 4 : 16;
-    const namespace = process.env.ZOMBIE_NAMESPACE || `zombie-${generateNamespace(randomBytes)}`;
+    const namespace =
+      process.env.ZOMBIE_NAMESPACE ||
+      `zombie-${generateNamespace(randomBytes)}`;
 
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
@@ -223,7 +225,6 @@ export async function start(
     if (!process.env.ZOMBIE_NAMESPACE) {
       await client.createNamespace();
     }
-
 
     // setup cleaner
     if (!opts.monitor) {

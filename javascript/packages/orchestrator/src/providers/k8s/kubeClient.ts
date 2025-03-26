@@ -83,7 +83,9 @@ export class KubeClient extends Client {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this.runCommand(["auth", "whoami"], { scoped: false });
+      const result = await this.runCommand(["auth", "whoami"], {
+        scoped: false,
+      });
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -538,42 +540,41 @@ export class KubeClient extends Client {
     return [ip, port ? port : P2P_PORT];
   }
 
-
   async staticSetup(settings: any) {
-
     const storageFiles: string[] = [
       "node-data-tmp-storage-class-minikube.yaml",
       "node-data-persistent-storage-class-minikube.yaml",
     ];
-    const resources = await this.runningOnMinikube() ? [
-      { type: "data-storage-classes", files: storageFiles },
-      {
-        type: "services",
-        files: [
-          "bootnode-service.yaml",
-          settings.backchannel ? "backchannel-service.yaml" : null,
-          "fileserver-service.yaml",
-        ],
-      },
-      {
-        type: "deployment",
-        files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-      },
-    ] :
-      [
-        {
-          type: "services",
-          files: [
-            "bootnode-service.yaml",
-            settings.backchannel ? "backchannel-service.yaml" : null,
-            "fileserver-service.yaml",
-          ],
-        },
-        {
-          type: "deployment",
-          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-        },
-      ];
+    const resources = (await this.runningOnMinikube())
+      ? [
+          { type: "data-storage-classes", files: storageFiles },
+          {
+            type: "services",
+            files: [
+              "bootnode-service.yaml",
+              settings.backchannel ? "backchannel-service.yaml" : null,
+              "fileserver-service.yaml",
+            ],
+          },
+          {
+            type: "deployment",
+            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+          },
+        ]
+      : [
+          {
+            type: "services",
+            files: [
+              "bootnode-service.yaml",
+              settings.backchannel ? "backchannel-service.yaml" : null,
+              "fileserver-service.yaml",
+            ],
+          },
+          {
+            type: "deployment",
+            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+          },
+        ];
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
