@@ -68,7 +68,6 @@ export class KubeClient extends Client {
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
     this.configPath = process.env.KUBECONFIG || configPath;
-    // this.namespace = process.env.ZOMBIE_NAMESPACE || namespace;
     this.namespace = namespace;
     this.debug = true;
     this.timeout = 300; // secs
@@ -94,8 +93,6 @@ export class KubeClient extends Client {
   }
 
   async createNamespace(): Promise<void> {
-    // skip if ZOMBIE_NAMESPACE is set
-    // if (process.env.ZOMBIE_NAMESPACE) return;
     const namespaceDef = {
       apiVersion: "v1",
       kind: "Namespace",
@@ -548,34 +545,34 @@ export class KubeClient extends Client {
     ];
     const resources = (await this.runningOnMinikube())
       ? [
-          { type: "data-storage-classes", files: storageFiles },
-          {
-            type: "services",
-            files: [
-              "bootnode-service.yaml",
-              settings.backchannel ? "backchannel-service.yaml" : null,
-              "fileserver-service.yaml",
-            ],
-          },
-          {
-            type: "deployment",
-            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-          },
-        ]
+        { type: "data-storage-classes", files: storageFiles },
+        {
+          type: "services",
+          files: [
+            "bootnode-service.yaml",
+            settings.backchannel ? "backchannel-service.yaml" : null,
+            "fileserver-service.yaml",
+          ],
+        },
+        {
+          type: "deployment",
+          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+        },
+      ]
       : [
-          {
-            type: "services",
-            files: [
-              "bootnode-service.yaml",
-              settings.backchannel ? "backchannel-service.yaml" : null,
-              "fileserver-service.yaml",
-            ],
-          },
-          {
-            type: "deployment",
-            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-          },
-        ];
+        {
+          type: "services",
+          files: [
+            "bootnode-service.yaml",
+            settings.backchannel ? "backchannel-service.yaml" : null,
+            "fileserver-service.yaml",
+          ],
+        },
+        {
+          type: "deployment",
+          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+        },
+      ];
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
