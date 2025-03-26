@@ -227,8 +227,10 @@ export async function start(
 
     // setup cleaner
     if (!opts.monitor) {
-      cronInterval = await client.setupCleaner();
-      debug("Cleaner job configured");
+      if (!process.env.ZOMBIE_CLEANER_DISABLED) {
+        cronInterval = await client.setupCleaner();
+        debug("Cleaner job configured");
+      }
     }
 
     // Create bootnode and backchannel services

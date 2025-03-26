@@ -538,16 +538,29 @@ export class KubeClient extends Client {
     return [ip, port ? port : P2P_PORT];
   }
 
+
   async staticSetup(settings: any) {
-    let resources: any[] = [];
 
-    if (await this.runningOnMinikube()) {
-      const storageFiles: string[] = [
-        "node-data-tmp-storage-class-minikube.yaml",
-        "node-data-persistent-storage-class-minikube.yaml",
-      ];
-      const resources = [
-        { type: "data-storage-classes", files: storageFiles },
+    const storageFiles: string[] = [
+      "node-data-tmp-storage-class-minikube.yaml",
+      "node-data-persistent-storage-class-minikube.yaml",
+    ];
+    const resources = await this.runningOnMinikube() ? [
+      { type: "data-storage-classes", files: storageFiles },
+      {
+        type: "services",
+        files: [
+          "bootnode-service.yaml",
+          settings.backchannel ? "backchannel-service.yaml" : null,
+          "fileserver-service.yaml",
+        ],
+      },
+      {
+        type: "deployment",
+        files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+      },
+    ] :
+      [
         {
           type: "services",
           files: [
@@ -561,26 +574,6 @@ export class KubeClient extends Client {
           files: [settings.backchannel ? "backchannel-pod.yaml" : null],
         },
       ];
-    } else {
-      const resources = [
-        {
-          type: "services",
-          files: [
-            "bootnode-service.yaml",
-            settings.backchannel ? "backchannel-service.yaml" : null,
-            "fileserver-service.yaml",
-          ],
-        },
-        {
-          type: "deployment",
-          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-        },
-      ];
-    }
-
-
-
-
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
@@ -647,8 +640,7 @@ export class KubeClient extends Client {
 
     // create CronJob cleaner for namespace
     await this.cronJobCleanerSetup();
-    // TODO: disabled for local debug
-    // await this.upsertCronJob();
+    await this.upsertCronJob();
 
     const cronInterval = setInterval(
       async () => await this.upsertCronJob(),
@@ -663,8 +655,7 @@ export class KubeClient extends Client {
         "job-delete-podmonitor-role.yaml",
         "monitoring",
       );
-    // TODO: comment for local debug
-    // await this.createStaticResource("job-svc-account.yaml");
+    await this.createStaticResource("job-svc-account.yaml");
   }
 
   async upsertCronJob(minutes = 10) {
