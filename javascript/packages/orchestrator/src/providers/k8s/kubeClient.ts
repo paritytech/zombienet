@@ -545,34 +545,34 @@ export class KubeClient extends Client {
     ];
     const resources = (await this.runningOnMinikube())
       ? [
-        { type: "data-storage-classes", files: storageFiles },
-        {
-          type: "services",
-          files: [
-            "bootnode-service.yaml",
-            settings.backchannel ? "backchannel-service.yaml" : null,
-            "fileserver-service.yaml",
-          ],
-        },
-        {
-          type: "deployment",
-          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-        },
-      ]
+          { type: "data-storage-classes", files: storageFiles },
+          {
+            type: "services",
+            files: [
+              "bootnode-service.yaml",
+              settings.backchannel ? "backchannel-service.yaml" : null,
+              "fileserver-service.yaml",
+            ],
+          },
+          {
+            type: "deployment",
+            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+          },
+        ]
       : [
-        {
-          type: "services",
-          files: [
-            "bootnode-service.yaml",
-            settings.backchannel ? "backchannel-service.yaml" : null,
-            "fileserver-service.yaml",
-          ],
-        },
-        {
-          type: "deployment",
-          files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-        },
-      ];
+          {
+            type: "services",
+            files: [
+              "bootnode-service.yaml",
+              settings.backchannel ? "backchannel-service.yaml" : null,
+              "fileserver-service.yaml",
+            ],
+          },
+          {
+            type: "deployment",
+            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+          },
+        ];
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
