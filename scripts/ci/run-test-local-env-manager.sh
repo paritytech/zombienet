@@ -4,6 +4,12 @@
 
 set -eou pipefail
 
+# Moved here from set_defaults_for_globals in order to fix "unbound variable" error
+if [[ -n ${ZOMBIE_LOCAL} ]]; then
+  ZOMBIE_COMMAND="npm run zombie"
+else
+  ZOMBIE_COMMAND=zombie
+fi;
 
 function usage {
   cat << EOF
@@ -81,12 +87,6 @@ function set_defaults_for_globals {
   LOCAL_DIR=""
   TEST_TO_RUN=""
   CONCURRENCY=2
-
-  if [[ -n ${ZOMBIE_LOCAL} ]]; then
-    ZOMBIE_COMMAND="npm run zombie"
-  else
-    ZOMBIE_COMMAND=zombie
-  fi;
 
   LAUNCH_ARGUMENTS=""
   USE_LOCAL_TESTS=false
