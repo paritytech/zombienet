@@ -4,13 +4,6 @@
 
 set -eou pipefail
 
-# Moved here from set_defaults_for_globals in order to fix "unbound variable" error
-if [[ -n ${ZOMBIE_LOCAL} ]]; then
-  ZOMBIE_COMMAND="npm run zombie"
-else
-  ZOMBIE_COMMAND=zombie
-fi;
-
 function usage {
   cat << EOF
 DEPENDENCY 1: gcloud
@@ -80,6 +73,14 @@ function set_defaults_for_globals {
   SCRIPT_PATH=$(cd "${SCRIPT_PATH}" && pwd) # absolutized and normalized
 
   export GOOGLE_CREDENTIALS="/etc/zombie-net/sa-zombie.json"
+
+  ZOMBIE_LOCAL=${ZOMBIE_LOCAL:-""}
+
+  if [[ ${ZOMBIE_LOCAL} == "1" ]]; then
+    ZOMBIE_COMMAND="npm run zombie"
+  else
+    ZOMBIE_COMMAND=zombie
+  fi
 
   cd "${SCRIPT_PATH}"
 
