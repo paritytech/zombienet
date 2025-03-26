@@ -68,7 +68,8 @@ export class KubeClient extends Client {
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
     this.configPath = process.env.KUBECONFIG || configPath;
-    this.namespace = process.env.ZOMBIE_NAMESPACE || namespace;
+    // this.namespace = process.env.ZOMBIE_NAMESPACE || namespace;
+    this.namespace = namespace;
     this.debug = true;
     this.timeout = 300; // secs
     this.tmpDir = tmpDir;
@@ -94,7 +95,7 @@ export class KubeClient extends Client {
 
   async createNamespace(): Promise<void> {
     // skip if ZOMBIE_NAMESPACE is set
-    if (process.env.ZOMBIE_NAMESPACE) return;
+    // if (process.env.ZOMBIE_NAMESPACE) return;
     const namespaceDef = {
       apiVersion: "v1",
       kind: "Namespace",
