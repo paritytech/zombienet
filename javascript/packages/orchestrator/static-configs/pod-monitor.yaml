@@ -11,7 +11,7 @@ spec:
       port: prometheus
       metricRelabelings:
         - sourceLabels: [__name__]
-          regex: ".*_bucket"
+          regex: '^(?!polkadot_pvf_.*_bucket$).+_bucket$'
           action: drop
   namespaceSelector:
       matchNames:
