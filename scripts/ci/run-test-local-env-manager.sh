@@ -41,7 +41,9 @@ function main {
   create_isolated_dir
   copy_to_isolated
   set_instance_env
-  k8s_auth
+  if [[ $KUBECONFIG == "" ]]; then
+    k8s_auth
+  fi
   run_test
   rm_isolated_dir
   log INFO "Exit status is ${EXIT_STATUS}"
@@ -75,6 +77,7 @@ function set_defaults_for_globals {
   export GOOGLE_CREDENTIALS="/etc/zombie-net/sa-zombie.json"
 
   ZOMBIE_LOCAL=${ZOMBIE_LOCAL:-""}
+  KUBECONFIG=${KUBECONFIG:-""}
 
   if [[ ${ZOMBIE_LOCAL} == "1" ]]; then
     ZOMBIE_COMMAND="npm run zombie"
