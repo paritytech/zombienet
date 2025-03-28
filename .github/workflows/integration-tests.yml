@@ -134,7 +134,6 @@ jobs:
     timeout-minutes: 30
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
-      options: -v "/data":"/data":ro -v "/var/run/secrets/kubernetes.io/serviceaccount":"/var/run/secrets/kubernetes.io/serviceaccount" -e "KUBECONFIG=/data/config"
     needs: [build_push_image, set-variables]
     env:
       # LOCAL_DIR: "/builds/parity/mirrors/zombienet/tests"
@@ -142,6 +141,7 @@ jobs:
       ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
       COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
       CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
+      KUBECONFIG: "/data/config"
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
