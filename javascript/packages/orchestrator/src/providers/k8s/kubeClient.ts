@@ -971,9 +971,9 @@ export class KubeClient extends Client {
 
   async isPodMonitorAvailable() {
     let available = false;
-  const inCI =
-    process.env.RUN_IN_CONTAINER === "1" ||
-    process.env.ZOMBIENET_IMAGE !== undefined;
+    const inCI =
+      process.env.RUN_IN_CONTAINER === "1" ||
+      process.env.ZOMBIENET_IMAGE !== undefined;
     if (inCI) return available;
     try {
       const result = await execa.command("kubectl api-resources -o name");
