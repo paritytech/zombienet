@@ -9,6 +9,10 @@ spec:
     - interval: 5s
       path: /metrics
       port: prometheus
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: '^(?!polkadot_pvf_.*_bucket$).+_bucket$'
+          action: drop
   namespaceSelector:
       matchNames:
       - "{{namespace}}"
