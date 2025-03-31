@@ -19,10 +19,14 @@ export async function registerSpawnElapsedTimeSecs(elapsed: number) {
     const type = `# TYPE ${metricName} gauge`;
     const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"} ${elapsed}`;
     const body = [help, type, metricString, "\n"].join("\n");
-    await fetch(pushGatewayUrl!, {
-      method: "POST",
-      body,
-    });
+    try {
+      await fetch(pushGatewayUrl!, {
+        method: "POST",
+        body,
+      });
+    } catch (e) {
+      console.log("Error sending spawn elapsed time...", e);
+    }
   }
 }
 
@@ -38,9 +42,13 @@ export async function registerTotalElapsedTimeSecs(
     const type = `# TYPE ${metricName} gauge`;
     const metricString = `${metricName}{job_id="${jobId}", job_name="${jobName}", project_name="${projectName}"}, status="${status}" ${elapsed}`;
     const body = [help, type, metricString, "\n"].join("\n");
-    await fetch(pushGatewayUrl!, {
-      method: "POST",
-      body,
-    });
+    try {
+      await fetch(pushGatewayUrl!, {
+        method: "POST",
+        body,
+      });
+    } catch (e) {
+      console.log("Error sending total elapsed time...", e);
+    }
   }
 }
