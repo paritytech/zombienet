@@ -19,6 +19,8 @@ env:
   RUN_IN_CONTAINER: 1
   FF_DISABLE_UMASK_FOR_DOCKER_EXECUTOR: 1
   GHA_CLUSTER_SERVER_ADDR: "https://kubernetes.default:443"
+  KUBECONFIG: "/data/config"
+  ZOMBIE_CLEANER_DISABLED: 1
 
 jobs:
   build_push_image_master:
@@ -141,9 +143,6 @@ jobs:
       ZOMBIENET_INTEGRATION_TEST_IMAGE: ${{ needs.set-variables.outputs.ZOMBIENET_INTEGRATION_TEST_IMAGE }}
       COL_IMAGE: ${{ needs.set-variables.outputs.COL_IMAGE }}
       CUMULUS_TEST_IMAGE: ${{ needs.set-variables.outputs.CUMULUS_TEST_IMAGE }}
-      KUBECONFIG: "/data/config"
-      ZOMBIE_PODMONITOR: 0
-      ZOMBIE_CLEANER_DISABLED: 1
     steps:
       - name: Check out the repo
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
@@ -168,7 +167,7 @@ jobs:
 
   zombienet-scale-net-config:
     name: Zombienet Scale net
-    runs-on: zombienet-arc-runner
+    runs-on: parity-zombienet
     timeout-minutes: 30
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
@@ -190,6 +189,7 @@ jobs:
           echo "${GH_DIR}"
           echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
           echo "col_image ${COL_IMAGE}"
+          export ZOMBIE_NAMESPACE=$(cat /data/namespace)
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/scale-net" --test="0001-scale-net.zndsl"
 
@@ -202,7 +202,7 @@ jobs:
 
   zombienet-upgrade-node:
     name: Zombienet Upgrade Node
-    runs-on: zombienet-arc-runner
+    runs-on: parity-zombienet
     timeout-minutes: 30
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
@@ -225,6 +225,7 @@ jobs:
           export COL_IMAGE="docker.io/paritypr/colander:4519"
           echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
           echo "col_image ${COL_IMAGE}"
+          export ZOMBIE_NAMESPACE=$(cat /data/namespace)
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/k8s" --test="0001-upgrade-node.zndsl"
 
@@ -237,7 +238,7 @@ jobs:
 
   zombienet-chaos-delay:
     name: Zombienet Chaos Delay
-    runs-on: zombienet-arc-runner
+    runs-on: parity-zombienet
     timeout-minutes: 30
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
@@ -259,6 +260,7 @@ jobs:
           echo "${GH_DIR}"
           echo "relay_image ${ZOMBIENET_INTEGRATION_TEST_IMAGE}"
           echo "col_image ${COL_IMAGE}"
+          export ZOMBIE_NAMESPACE=$(cat /data/namespace)
 
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/chaos" --test="0001-delay.zndsl"
 
