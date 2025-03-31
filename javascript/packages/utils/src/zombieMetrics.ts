@@ -24,7 +24,7 @@ export async function registerSpawnElapsedTimeSecs(elapsed: number) {
         method: "POST",
         body,
       });
-    } catch(e) {
+    } catch (e) {
       console.log("Error sending spawn elapsed time...", e);
     }
   }
@@ -47,7 +47,7 @@ export async function registerTotalElapsedTimeSecs(
         method: "POST",
         body,
       });
-    } catch(e) {
+    } catch (e) {
       console.log("Error sending total elapsed time...", e);
     }
   }
