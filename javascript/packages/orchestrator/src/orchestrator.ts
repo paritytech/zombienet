@@ -123,7 +123,9 @@ export async function start(
 
     // set namespace
     const randomBytes = networkSpec.settings.provider === "podman" ? 4 : 16;
-    const namespace = `zombie-${generateNamespace(randomBytes)}`;
+    const namespace =
+      process.env.ZOMBIE_NAMESPACE ||
+      `zombie-${generateNamespace(randomBytes)}`;
 
     // get user defined types
     const userDefinedTypes: any = loadTypeDef(networkSpec.types);
@@ -219,13 +221,17 @@ export async function start(
       },
     );
 
-    // create namespace
-    await client.createNamespace();
+    // create namespace if ZOMBIE_NAMESPACE is not set
+    if (!process.env.ZOMBIE_NAMESPACE) {
+      await client.createNamespace();
+    }
 
     // setup cleaner
     if (!opts.monitor) {
-      cronInterval = await client.setupCleaner();
-      debug("Cleaner job configured");
+      if (!process.env.ZOMBIE_CLEANER_DISABLED) {
+        cronInterval = await client.setupCleaner();
+        debug("Cleaner job configured");
+      }
     }
 
     // Create bootnode and backchannel services

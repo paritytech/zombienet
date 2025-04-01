@@ -67,7 +67,7 @@ export class KubeClient extends Client {
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "kubectl", "kubernetes");
-    this.configPath = configPath;
+    this.configPath = process.env.KUBECONFIG || configPath;
     this.namespace = namespace;
     this.debug = true;
     this.timeout = 300; // secs
@@ -83,7 +83,9 @@ export class KubeClient extends Client {
 
   async validateAccess(): Promise<boolean> {
     try {
-      const result = await this.runCommand(["cluster-info"], { scoped: false });
+      const result = await this.runCommand(["auth", "whoami"], {
+        scoped: false,
+      });
       return result.exitCode === 0;
     } catch (e) {
       return false;
@@ -537,31 +539,40 @@ export class KubeClient extends Client {
   }
 
   async staticSetup(settings: any) {
-    const storageFiles: string[] = (await this.runningOnMinikube())
+    const storageFiles: string[] = [
+      "node-data-tmp-storage-class-minikube.yaml",
+      "node-data-persistent-storage-class-minikube.yaml",
+    ];
+    const resources = (await this.runningOnMinikube())
       ? [
-          "node-data-tmp-storage-class-minikube.yaml",
-          "node-data-persistent-storage-class-minikube.yaml",
+          { type: "data-storage-classes", files: storageFiles },
+          {
+            type: "services",
+            files: [
+              "bootnode-service.yaml",
+              settings.backchannel ? "backchannel-service.yaml" : null,
+              "fileserver-service.yaml",
+            ],
+          },
+          {
+            type: "deployment",
+            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+          },
         ]
       : [
-          "node-data-tmp-storage-class.yaml",
-          "node-data-persistent-storage-class.yaml",
+          {
+            type: "services",
+            files: [
+              "bootnode-service.yaml",
+              settings.backchannel ? "backchannel-service.yaml" : null,
+              "fileserver-service.yaml",
+            ],
+          },
+          {
+            type: "deployment",
+            files: [settings.backchannel ? "backchannel-pod.yaml" : null],
+          },
         ];
-
-    const resources = [
-      { type: "data-storage-classes", files: storageFiles },
-      {
-        type: "services",
-        files: [
-          "bootnode-service.yaml",
-          settings.backchannel ? "backchannel-service.yaml" : null,
-          "fileserver-service.yaml",
-        ],
-      },
-      {
-        type: "deployment",
-        files: [settings.backchannel ? "backchannel-pod.yaml" : null],
-      },
-    ];
 
     for (const resourceType of resources) {
       for (const file of resourceType.files) {
@@ -960,6 +971,10 @@ export class KubeClient extends Client {
 
   async isPodMonitorAvailable() {
     let available = false;
+    const inCI =
+      process.env.RUN_IN_CONTAINER === "1" ||
+      process.env.ZOMBIENET_IMAGE !== undefined;
+    if (inCI) return available;
     try {
       const result = await execa.command("kubectl api-resources -o name");
       if (result.exitCode == 0) {
