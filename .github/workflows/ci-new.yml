@@ -17,12 +17,12 @@ env:
 
 jobs:
   zombienet-1-2:
+    if: ${{ ! contains(github.env.FLAKY_TESTS, github.job) }}
     runs-on: parity-zombienet
     container:
       image: docker.io/paritytech/zombienet:v1.3.126
       options: -v "/data":"/data":ro -v "/var/run/secrets/kubernetes.io/serviceaccount":"/var/run/secrets/kubernetes.io/serviceaccount" -e "KUBECONFIG=/data/config"
     steps:
-      if: ${{ ! contains(github.env.FLAKY_TESTS, github.job) }}
       - run: |
           # zombienet job goes here
           echo ${{ github.job }}
