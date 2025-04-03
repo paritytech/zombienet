@@ -21,4 +21,5 @@ jobs:
     steps:
       - run: |
           # zombienet job goes here
-          sleep 600
+          echo ${{ github.job.name }}
+          sleep 5
