@@ -25,5 +25,6 @@ jobs:
     steps:
       - run: |
           # zombienet job goes here
+          echo ${{ github.env.FLAKY_TESTS }}
           echo ${{ github.job }}
           sleep 5
