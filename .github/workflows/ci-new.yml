@@ -35,4 +35,5 @@ jobs:
           # zombienet job goes here
           echo ${{ needs.f.outputs.FLAKY_TESTS }}
           echo ${{ github.job }}
+          echo ${{  contains(needs.f.outputs.FLAKY_TESTS, github.job) }}
           sleep 5
