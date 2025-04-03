@@ -13,7 +13,7 @@ concurrency:
 permissions: {}
 
 env:
-  FLAKY_TESTS: "zombienet-1-2"
+  FLAKY_TESTS: "zombienet-2"
 
 jobs:
   zombienet-1-2:
