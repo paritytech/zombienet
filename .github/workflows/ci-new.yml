@@ -12,6 +12,9 @@ concurrency:
 
 permissions: {}
 
+env:
+  FLAKY_TESTS: "zombienet-1-2"
+
 jobs:
   zombienet-1-2:
     runs-on: parity-zombienet
@@ -19,6 +22,7 @@ jobs:
       image: docker.io/paritytech/zombienet:v1.3.126
       options: -v "/data":"/data":ro -v "/var/run/secrets/kubernetes.io/serviceaccount":"/var/run/secrets/kubernetes.io/serviceaccount" -e "KUBECONFIG=/data/config"
     steps:
+      if: ${{ ! contains(github.env.FLAKY_TESTS, github.job) }}
       - run: |
           # zombienet job goes here
           echo ${{ github.job }}
