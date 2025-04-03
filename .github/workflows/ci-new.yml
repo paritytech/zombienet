@@ -25,7 +25,7 @@ jobs:
           echo "FLAKY_TESTS=zombienet-polkadot-coretime-revenue" >> $GITHUB_OUTPUT
   zombienet-1-2:
     needs: ["f"]
-    if: ${{  contains(needs.f.outputs.FLAKY_TESTS, 'zombienet-1-2') }}
+    if: ${{  ! contains(needs.f.outputs.FLAKY_TESTS, 'zombienet-1-2') }}
     runs-on: parity-zombienet
     container:
       image: docker.io/paritytech/zombienet:v1.3.126
