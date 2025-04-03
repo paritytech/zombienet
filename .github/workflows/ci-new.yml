@@ -12,9 +12,6 @@ concurrency:
 
 permissions: {}
 
-env:
-  FLAKY_TESTS: "zombienet-2"
-
 jobs:
   f:
     outputs:
@@ -36,6 +33,6 @@ jobs:
     steps:
       - run: |
           # zombienet job goes here
-          echo ${{ env.FLAKY_TESTS }}
+          echo ${{ needs.f.outputs.FLAKY_TESTS }}
           echo ${{ github.job }}
           sleep 5
