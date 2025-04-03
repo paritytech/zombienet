@@ -16,8 +16,19 @@ env:
   FLAKY_TESTS: "zombienet-2"
 
 jobs:
+  f:
+    outputs:
+      FLAKY_TESTS: ${{ steps.set_vars.outputs.FLAKY_TESTS }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set vars
+        id: set_vars
+        shell: bash
+        run: |
+          echo "FLAKY_TESTS=zombienet-polkadot-coretime-revenue" >> $GITHUB_OUTPUT
   zombienet-1-2:
-    if: ${{ ! contains(github.env.FLAKY_TESTS, github.job) }}
+    needs: ["f"]
+    if: ${{ ! contains(needs.f.outputs.FLAKY_TESTS, github.job) }}
     runs-on: parity-zombienet
     container:
       image: docker.io/paritytech/zombienet:v1.3.126
@@ -25,6 +36,6 @@ jobs:
     steps:
       - run: |
           # zombienet job goes here
-          echo ${{ github.env.FLAKY_TESTS }}
+          echo ${{ env.FLAKY_TESTS }}
           echo ${{ github.job }}
           sleep 5
