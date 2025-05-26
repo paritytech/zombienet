@@ -18,9 +18,16 @@ export async function genBootnodeDef(
 export async function genNodeDef(
   namespace: string,
   nodeSetup: Node,
+  opts: any = {},
 ): Promise<any> {
   const client = getClient();
-  const nodeResource = new NodeResource(client, namespace, nodeSetup);
+  console.log("DEBUG opts", opts);
+  const nodeResource = new NodeResource(
+    client,
+    namespace,
+    nodeSetup,
+    opts.local_ip,
+  );
 
   return nodeResource.generateSpec();
 }
