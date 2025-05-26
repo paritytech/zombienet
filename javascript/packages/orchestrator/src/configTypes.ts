@@ -35,6 +35,7 @@ export interface RelayChainConfig {
   default_substrate_cli_args_version?: SubstrateCliArgsVersion;
   default_keystore_key_types?: string[];
   chain: string;
+  force_decorator?: string;
   chain_spec_path?: string;
   chain_spec_command?: string;
   default_args?: string[];
@@ -66,6 +67,7 @@ export interface ComputedNetwork {
     genesis?: JSON | ObjectJSON;
     defaultResources?: Resources;
     delayNetworkSettings?: DelayNetworkSettings;
+    force_decorator?: string;
   };
   parachains: Parachain[];
   types: any;
