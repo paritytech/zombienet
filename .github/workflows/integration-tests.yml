@@ -132,7 +132,7 @@ jobs:
 
   zombienet-smoke:
     name: Zombienet Smoke
-    runs-on: parity-zombienet
+    runs-on: parity-zombienet-new
     timeout-minutes: 30
     container:
       image: ${{ needs.set-variables.outputs.VERSION }}
