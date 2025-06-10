@@ -83,7 +83,8 @@ export async function genCumulusCollatorCmd(
     `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
     "--prometheus-external",
     "--rpc-cors all",
-    "--unsafe-rpc-external",
+    // Do not add `--unsafe-rpc-external` in native provider
+    useWrapper ? "--unsafe-rpc-external" : "",
     "--rpc-methods unsafe",
   ];
 
@@ -320,7 +321,8 @@ export async function genCmd(
     name,
     "--rpc-cors",
     "all",
-    "--unsafe-rpc-external",
+    // Do not add `--unsafe-rpc-external` in native provider
+    useWrapper ? "--unsafe-rpc-external" : "",
     "--rpc-methods",
     "unsafe",
     ...args,
