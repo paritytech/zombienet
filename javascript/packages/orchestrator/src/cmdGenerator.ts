@@ -84,7 +84,7 @@ export async function genCumulusCollatorCmd(
     "--prometheus-external",
     "--rpc-cors all",
     // Do not add `--unsafe-rpc-external` in native provider
-    useWrapper ? "--unsafe-rpc-external": "",
+    useWrapper ? "--unsafe-rpc-external" : "",
     "--rpc-methods unsafe",
   ];
 
@@ -322,7 +322,7 @@ export async function genCmd(
     "--rpc-cors",
     "all",
     // Do not add `--unsafe-rpc-external` in native provider
-    useWrapper ? "--unsafe-rpc-external": "",
+    useWrapper ? "--unsafe-rpc-external" : "",
     "--rpc-methods",
     "unsafe",
     ...args,
