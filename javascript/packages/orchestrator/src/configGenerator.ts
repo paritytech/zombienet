@@ -489,7 +489,7 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: ["--rpc-external", "--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
+    args: ["--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
     env: [],
     bootnodes: [],
     telemetryUrl: "",
@@ -500,6 +500,8 @@ export async function generateBootnodeSpec(
     ...ports,
     externalPorts,
   };
+
+  if(provider != "native") nodeSetup.args.push("--rpc-external");
 
   return nodeSetup;
 }
