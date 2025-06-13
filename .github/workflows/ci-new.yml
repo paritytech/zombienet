@@ -1,0 +1,39 @@
+name: CI new
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  f:
+    outputs:
+      FLAKY_TESTS: ${{ steps.set_vars.outputs.FLAKY_TESTS }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set vars
+        id: set_vars
+        shell: bash
+        run: |
+          echo "FLAKY_TESTS=zombienet-polkadot-coretime-revenue" >> $GITHUB_OUTPUT
+  zombienet-1-2:
+    needs: ["f"]
+    if: ${{  ! contains(needs.f.outputs.FLAKY_TESTS, 'zombienet-1-2') }}
+    runs-on: parity-zombienet
+    container:
+      image: docker.io/paritytech/zombienet:v1.3.126
+      options: -v "/data":"/data":ro -v "/var/run/secrets/kubernetes.io/serviceaccount":"/var/run/secrets/kubernetes.io/serviceaccount" -e "KUBECONFIG=/data/config"
+    steps:
+      - run: |
+          # zombienet job goes here
+          echo ${{ needs.f.outputs.FLAKY_TESTS }}
+          echo ${{ github.job }}
+          echo ${{  contains(needs.f.outputs.FLAKY_TESTS, github.job) }}
+          sleep 5
