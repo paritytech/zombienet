@@ -501,7 +501,7 @@ export async function generateBootnodeSpec(
     externalPorts,
   };
 
-  if(provider != "native") nodeSetup.args.push("--rpc-external");
+  if (provider != "native") nodeSetup.args.push("--rpc-external");
 
   return nodeSetup;
 }

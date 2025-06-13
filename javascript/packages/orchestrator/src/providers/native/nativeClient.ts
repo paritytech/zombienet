@@ -63,7 +63,7 @@ export class NativeClient extends Client {
     };
   };
   dbSnapshotCache: {
-    [filename: string]: string
+    [filename: string]: string;
   };
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
@@ -302,13 +302,10 @@ export class NativeClient extends Client {
 
       // check if we need to download the dbSnapshot or is already in the fs
       const dstPath = `${podDef.spec.dataPath}/db.tgz`;
-      if(this.dbSnapshotCache[dbSnapshot]) {
-      const srcPath = this.dbSnapshotCache[dbSnapshot];
-      debug(`copying snapshot from path: ${srcPath}`);
-      await this.runCommand([
-        "-c",
-        `cp ${srcPath} ${podDef.spec.dataPath}`,
-      ]);
+      if (this.dbSnapshotCache[dbSnapshot]) {
+        const srcPath = this.dbSnapshotCache[dbSnapshot];
+        debug(`copying snapshot from path: ${srcPath}`);
+        await this.runCommand(["-c", `cp ${srcPath} ${podDef.spec.dataPath}`]);
       } else {
         // download and cache
         debug(`downloading snapshot from url: ${dbSnapshot}`);
