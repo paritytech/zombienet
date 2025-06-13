@@ -72,7 +72,11 @@ export async function getHostIp(): Promise<string> {
 
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
-    const { body } = await fetch(url);
+    const response = await fetch(url);
+    if(!response.ok) {
+      console.warn(`Fail to download file from url: ${url}, response: ${response.statusText}`);
+    }
+    const { body } = response;
     const writable = fs.createWriteStream(dest);
     const readable = Readable.fromWeb(body as ReadableStream);
     await finished(readable.pipe(writable));
