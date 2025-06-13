@@ -500,6 +500,9 @@ export class KubeClient extends Client {
   }
 
   async runningOnMinikube(): Promise<boolean> {
+    // If we are in CI we know that we are not not in miniKube
+    if (process.env.ZOMBIE_NAMESPACE) return false;
+
     const result = await this.runCommand([
       "get",
       "sc",
@@ -519,9 +522,12 @@ export class KubeClient extends Client {
       );
     }
 
-    await this.runCommand(["delete", "namespace", this.namespace], {
-      scoped: false,
-    });
+    // Only delete the namespace if we created (e.g not injected by CI)
+    if (!process.env.ZOMBIE_NAMESPACE) {
+      await this.runCommand(["delete", "namespace", this.namespace], {
+        scoped: false,
+      });
+    }
   }
 
   async getNodeIP(identifier: string): Promise<string> {
