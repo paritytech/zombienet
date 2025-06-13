@@ -62,6 +62,9 @@ export class NativeClient extends Client {
       cmd?: string[];
     };
   };
+  dbSnapshotCache: {
+    [filename: string]: string;
+  };
 
   constructor(configPath: string, namespace: string, tmpDir: string) {
     super(configPath, namespace, tmpDir, "bash", "native");
@@ -74,6 +77,7 @@ export class NativeClient extends Client {
     this.processMap = {};
     this.remoteDir = `${tmpDir}${DEFAULT_REMOTE_DIR}`;
     this.dataDir = `${tmpDir}${DEFAULT_DATA_DIR}`;
+    this.dbSnapshotCache = {};
   }
 
   async validateAccess(): Promise<boolean> {
@@ -296,7 +300,19 @@ export class NativeClient extends Client {
       // and extract to /data
       await makeDir(`${podDef.spec.dataPath}`, true);
 
-      await downloadFile(dbSnapshot, `${podDef.spec.dataPath}/db.tgz`);
+      // check if we need to download the dbSnapshot or is already in the fs
+      const dstPath = `${podDef.spec.dataPath}/db.tgz`;
+      if (this.dbSnapshotCache[dbSnapshot]) {
+        const srcPath = this.dbSnapshotCache[dbSnapshot];
+        debug(`copying snapshot from path: ${srcPath}`);
+        await this.runCommand(["-c", `cp ${srcPath} ${podDef.spec.dataPath}`]);
+      } else {
+        // download and cache
+        debug(`downloading snapshot from url: ${dbSnapshot}`);
+        await downloadFile(dbSnapshot, dstPath);
+        this.dbSnapshotCache[dbSnapshot] = dstPath;
+      }
+
       await this.runCommand([
         "-c",
         `cd ${podDef.spec.dataPath}/.. && tar -xzvf data/db.tgz`,
