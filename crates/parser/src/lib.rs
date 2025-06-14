@@ -181,7 +181,7 @@ fn parse_custom_script_rule(
     let node_name = parse_name(get_pair(&mut pairs, "name")?)?;
     let file_path_str = get_pair(&mut pairs, "file_path")?.as_str();
     let file_path: PathBuf = file_path_str
-        .try_into()
+        .into()
         .map_err(|_| errors::ParserError::ParseError(format!("Invalid path: {file_path_str}")))?;
 
     let mut args: Option<String> = None;
