@@ -481,6 +481,12 @@ export async function generateBootnodeSpec(
   const ports = await getPorts(provider, {});
   const externalPorts = await getExternalPorts(provider, ports, {});
 
+  // In native provider bind only localhost and not use --rpc-external
+  const args =
+    provider != "native"
+      ? ["--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws", "--rpc-external"]
+      : ["--listen-addr", "/ip4/127.0.0.1/tcp/30333/ws"];
+
   const nodeSetup: Node = {
     name: "bootnode",
     key: "0000000000000000000000000000000000000000000000000000000000000001",
@@ -489,7 +495,7 @@ export async function generateBootnodeSpec(
     chain: config.relaychain.chain,
     validator: false,
     invulnerable: false,
-    args: ["--listen-addr", "/ip4/0.0.0.0/tcp/30333/ws"],
+    args,
     env: [],
     bootnodes: [],
     telemetryUrl: "",
@@ -500,8 +506,6 @@ export async function generateBootnodeSpec(
     ...ports,
     externalPorts,
   };
-
-  if (provider != "native") nodeSetup.args.push("--rpc-external");
 
   return nodeSetup;
 }
