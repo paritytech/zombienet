@@ -78,6 +78,9 @@ export async function start(
   options?: OrcOptionsInterface,
 ) {
   const spawnStart = performance.now();
+  const namespaceInjectedByCI = !!(
+    process.env.ZOMBIE_K8S_CI_NAMESPACE || process.env.ZOMBIE_NAMESPACE
+  );
 
   const opts = {
     ...{
@@ -125,6 +128,7 @@ export async function start(
     const randomBytes = networkSpec.settings.provider === "podman" ? 4 : 16;
     const namespace =
       process.env.ZOMBIE_NAMESPACE ||
+      process.env.ZOMBIE_K8S_CI_NAMESPACE ||
       `zombie-${generateNamespace(randomBytes)}`;
 
     // get user defined types
@@ -221,8 +225,8 @@ export async function start(
       },
     );
 
-    // create namespace if ZOMBIE_NAMESPACE is not set
-    if (!process.env.ZOMBIE_NAMESPACE) {
+    // Only create the namespace if isn't injected by CI
+    if (!namespaceInjectedByCI) {
       await client.createNamespace();
     }
 
