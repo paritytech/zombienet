@@ -69,6 +69,9 @@ export async function genCumulusCollatorCmd(
     "--prometheus-port": true,
   };
 
+  // bind localhost only in native provider
+  const ip_to_bind = useWrapper ? "0.0.0.0" : "127.0.01";
+
   let fullCmd: string[] = [
     nodeSetup.command || DEFAULT_COMMAND,
     "--name",
@@ -80,7 +83,7 @@ export async function genCumulusCollatorCmd(
     "--base-path",
     dataPath,
     "--listen-addr",
-    `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
+    `/ip4/${ip_to_bind}/tcp/${nodeSetup.p2pPort ? nodeSetup.p2pPort : P2P_PORT}/ws`,
     "--prometheus-external",
     "--rpc-cors all",
     // Do not add `--unsafe-rpc-external` in native provider
@@ -302,7 +305,11 @@ export async function genCmd(
     args[listenIndex + 1] = listenAddr;
   } else {
     // no --listen-add args
-    args.push(...["--listen-addr", `/ip4/0.0.0.0/tcp/${nodeSetup.p2pPort}/ws`]);
+    // bind localhost only in native provider
+    const ip_to_bind = useWrapper ? "0.0.0.0" : "127.0.01";
+    args.push(
+      ...["--listen-addr", `/ip4/${ip_to_bind}/tcp/${nodeSetup.p2pPort}/ws`],
+    );
   }
 
   // set our base path
