@@ -70,7 +70,7 @@ export async function genCumulusCollatorCmd(
   };
 
   // bind localhost only in native provider
-  const ip_to_bind = useWrapper ? "0.0.0.0" : "127.0.01";
+  const ip_to_bind = useWrapper ? "0.0.0.0" : "127.0.0.1";
 
   let fullCmd: string[] = [
     nodeSetup.command || DEFAULT_COMMAND,
@@ -306,7 +306,7 @@ export async function genCmd(
   } else {
     // no --listen-add args
     // bind localhost only in native provider
-    const ip_to_bind = useWrapper ? "0.0.0.0" : "127.0.01";
+    const ip_to_bind = useWrapper ? "0.0.0.0" : "127.0.0.1";
     args.push(
       ...["--listen-addr", `/ip4/${ip_to_bind}/tcp/${nodeSetup.p2pPort}/ws`],
     );
