@@ -59,6 +59,25 @@ Then you should be able to access the binary:
 ./zombienet help
 ```
 
+### 🐧 Using Binaries on Linux
+
+After you have downloaded `zombienet-linux-x64` (or the appropriate binary for your architecture), you will need to:
+
+- Move the binary to your working directory.**
+
+- Rename the binary to just `zombienet`** without any `linux-<version>` extension for convenience.
+
+- Enable the binary to be executable:**
+   ```bash
+   chmod +x ./zombienet
+   ```
+   
+Then you should be able to access the binary:
+
+```bash
+./zombienet help
+```
+
 ### Install from NPM
 
 If you have `Node.js`, you can install `zombienet` locally via NPM:
