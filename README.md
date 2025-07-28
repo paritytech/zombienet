@@ -63,11 +63,11 @@ Then you should be able to access the binary:
 
 After you have downloaded `zombienet-linux-x64` (or the appropriate binary for your architecture), you will need to:
 
-- Move the binary to your working directory.**
+- Move the binary to your working directory.
 
-- Rename the binary to just `zombienet`** without any `linux-<version>` extension for convenience.
+- Rename the binary to just `zombienet` without any `linux-<version>` extension for convenience.
 
-- Enable the binary to be executable:**
+- Enable the binary to be executable:
    ```bash
    chmod +x ./zombienet
    ```
