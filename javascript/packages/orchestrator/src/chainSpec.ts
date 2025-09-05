@@ -373,6 +373,16 @@ export async function generateNominators(
     const runtimeConfig = getRuntimeConfig(chainSpec);
     if (!runtimeConfig?.staking) return;
 
+    // ensure maxNominations doesn't exceed available validators
+    const actualMaxNominations = Math.min(maxNominations, validators.length);
+    if (actualMaxNominations < maxNominations) {
+      console.warn(
+        decorators.yellow(
+          `⚠️  Adjusting max_nominations from ${maxNominations} to ${actualMaxNominations} to match validator count.`,
+        ),
+      );
+    }
+
     let logLine = `👤 Generating random Nominators (${decorators.green(
       randomNominatorsCount,
     )})`;
@@ -388,7 +398,7 @@ export async function generateNominators(
       const balanceToAdd = stakingBond! + BigInt(1);
       runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
       // random nominations
-      const count = crypto.randomInt(maxForRandom) % maxNominations;
+      const count = crypto.randomInt(maxForRandom) % actualMaxNominations;
       const nominations = getRandom(validators, count || count + 1);
       // push to stakers
       runtimeConfig.staking.stakers.push([

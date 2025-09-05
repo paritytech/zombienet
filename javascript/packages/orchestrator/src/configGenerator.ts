@@ -244,6 +244,16 @@ export async function generateNetworkSpec(
     throw new Error("No NODE defined in config, please review.");
   }
 
+  const validatorCount = networkSpec.relaychain.nodes.filter(
+    (node: any) => node.validator,
+  ).length;
+  if (
+    networkSpec.relaychain.maxNominations > validatorCount &&
+    networkSpec.relaychain.randomNominatorsCount > 0
+  ) {
+    networkSpec.relaychain.maxNominations = validatorCount;
+  }
+
   if (config.parachains && config.parachains.length) {
     for (const parachain of config.parachains) {
       const para: CHAIN = whichChain(
