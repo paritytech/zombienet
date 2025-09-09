@@ -129,6 +129,7 @@ export interface ParachainConfig extends CommonParachainConfig {
   collators?: NodeConfig[];
   collator_groups?: NodeGroupConfig[];
   default_args: string[];
+  runtime_path?: string;
 }
 
 export interface NodeGroupConfig extends NodeCommonTypes {
