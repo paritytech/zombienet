@@ -17,15 +17,15 @@ This simple config exists only in order to show how the same configuration exist
 
 The configuration files are:
 
-- [0000-test-config-small-network.json](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.json);
-- [0000-test-config-small-network.yaml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml);
-- [0000-test-config-small-network.toml](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml);
+- [0000-test-config-small-network.json](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-config-small-network.json);
+- [0000-test-config-small-network.yaml](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-config-small-network.yaml);
+- [0000-test-config-small-network.toml](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-config-small-network.toml);
 
 and the test files for running each configuration are:
 
-- [0000-test-json-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl);
-- [0000-test-yaml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl);
-- [0000-test-toml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/main/examples/0000-test-toml-config-small-network.zndsl);
+- [0000-test-json-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-json-config-small-network.zndsl);
+- [0000-test-yaml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-yaml-config-small-network.zndsl);
+- [0000-test-toml-config-small-network.zndsl](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-toml-config-small-network.zndsl);
 
 respectively.
 
@@ -59,7 +59,7 @@ To run the three tests (assuming the native provider is used) just execute the f
 
 ---
 
-In this example [small-network](https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml), we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the _default_ image, command and args.
+In this example [small-network](https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0001-small-network.toml), we define a network (`rococo-local`) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the _default_ image, command and args.
 
 ```toml
 [relaychain]
