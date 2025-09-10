@@ -186,15 +186,15 @@
 This simple config exists only in order to show how the same configuration exists in 3 different formats, and thus uses only 1 relay chain (<code>rococo-local</code>) with 2 nodes (<code>alice</code> and <code>bob</code>);</p>
 <p>The configuration files are:</p>
 <ul>
-<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.json">0000-test-config-small-network.json</a>;</li>
-<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.yaml">0000-test-config-small-network.yaml</a>;</li>
-<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-config-small-network.toml">0000-test-config-small-network.toml</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-config-small-network.json">0000-test-config-small-network.json</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-config-small-network.yaml">0000-test-config-small-network.yaml</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-config-small-network.toml">0000-test-config-small-network.toml</a>;</li>
 </ul>
 <p>and the test files for running each configuration are:</p>
 <ul>
-<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-json-config-small-network.zndsl">0000-test-json-config-small-network.zndsl</a>;</li>
-<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-yaml-config-small-network.zndsl">0000-test-yaml-config-small-network.zndsl</a>;</li>
-<li><a href="https://github.com/paritytech/zombienet/blob/main/examples/0000-test-toml-config-small-network.zndsl">0000-test-toml-config-small-network.zndsl</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-json-config-small-network.zndsl">0000-test-json-config-small-network.zndsl</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-yaml-config-small-network.zndsl">0000-test-yaml-config-small-network.zndsl</a>;</li>
+<li><a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0000-test-toml-config-small-network.zndsl">0000-test-toml-config-small-network.zndsl</a>;</li>
 </ul>
 <p>respectively.</p>
 <p>Each <code>.zndsl</code> file contains at the <code>header</code> part of the file the:</p>
@@ -214,7 +214,7 @@ This simple config exists only in order to show how the same configuration exist
 <hr />
 <h3 id="example-1---small-network-2-validators-1-parachain"><a class="header" href="#example-1---small-network-2-validators-1-parachain">Example 1 - Small network (2 validators/ 1 parachain)</a></h3>
 <hr />
-<p>In this example <a href="https://github.com/paritytech/zombienet/blob/main/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
+<p>In this example <a href="https://github.com/paritytech/zombienet/blob/0b93308e7054ae87f08e9f0faff37abdaa992d18/examples/0001-small-network.toml">small-network</a>, we define a network (<code>rococo-local</code>) with two validators (alice/bob) and a parachain (paraId 100). Both of the validators are using the <em>default</em> image, command and args.</p>
 <pre><code class="language-toml">[relaychain]
 default_image = "docker.io/parity/polkadot:latest"
 default_command = "polkadot"
