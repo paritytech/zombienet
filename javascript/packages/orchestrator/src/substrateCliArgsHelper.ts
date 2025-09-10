@@ -11,6 +11,23 @@ export const setSubstrateCliArgsVersion = async (
   network: ComputedNetwork,
   client: Client,
 ) => {
+  const nodesNeedingVersion = network.relaychain.nodes.filter(
+    (node) => !node.substrateCliArgsVersion,
+  );
+  const collatorsNeedingVersion = network.parachains.flatMap((parachain) =>
+    parachain.collators.filter((collator) => !collator.substrateCliArgsVersion),
+  );
+
+  if (
+    nodesNeedingVersion.length === 0 &&
+    collatorsNeedingVersion.length === 0
+  ) {
+    debug(
+      "All nodes already have substrate_cli_args_version configured, skipping detection",
+    );
+    return;
+  }
+
   const { getCliArgsHelp } = getProvider(client.providerName);
   // Calculate substrate cli version for each node
   // and set in the node to use later when we build the cmd.

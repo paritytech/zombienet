@@ -57,6 +57,7 @@ export interface ComputedNetwork {
     defaultArgs: string[];
     defaultDbSnapshot?: string;
     defaultPrometheusPrefix: string;
+    defaultSubstrateCliArgsVersion?: SubstrateCliArgsVersion;
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
@@ -124,6 +125,7 @@ export interface ParachainConfig extends CommonParachainConfig {
   cumulus_based?: boolean;
   bootnodes?: string[];
   prometheus_prefix?: string;
+  default_substrate_cli_args_version?: SubstrateCliArgsVersion;
   // backward compatibility
   collator?: NodeConfig;
   collators?: NodeConfig[];
