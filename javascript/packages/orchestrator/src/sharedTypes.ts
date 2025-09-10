@@ -36,6 +36,13 @@ export interface ObjectJSON {
   [key: string]: ObjectJSON | number | string;
 }
 
+export interface BuildWithChainSpecBuilderOpts {
+  runtimePath: string;
+  buildWithPresetCommand: string;
+  buildDefaultCommand: string;
+  listPresetsCommand: string;
+}
+
 export interface Parachain extends CommonParachainConfig {
   name: string;
   para: CHAIN;
@@ -54,6 +61,8 @@ export interface Parachain extends CommonParachainConfig {
   statePath?: string;
   collators: Node[];
   defaultArgs: string[];
+  buildWithChainSpecBuilderOpts?: BuildWithChainSpecBuilderOpts;
+  buildRawCommand?: string;
 }
 
 export interface Node extends NodeCommonTypes, Ports {

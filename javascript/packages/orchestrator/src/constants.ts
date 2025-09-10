@@ -40,6 +40,16 @@ const DEFAULT_CHAIN_SPEC = "{{chainName}}-plain.json";
 const DEFAULT_CHAIN_SPEC_RAW = "{{chainName}}-raw.json";
 const DEFAULT_CHAIN_SPEC_COMMAND =
   "{{DEFAULT_COMMAND}} build-spec --chain {{chainName}} --disable-default-bootnode";
+const DEFAULT_CHAIN_SPEC_USING_RUNTIME_NAMED_PRESET_COMMAND =
+  "{{mainCommand}} chain-spec-builder -c {{outputPath}} create --relay-chain {{relayChain}} --para-id {{paraId}} --chain-name {{chainName}} --runtime {{runtimePath}} named-preset {{chainName}}";
+const DEFAULT_CHAIN_SPEC_USING_RUNTIME_DEFAULT_COMMAND =
+  "{{mainCommand}} chain-spec-builder -c {{outputPath}} create --relay-chain {{relayChain}} --para-id {{paraId}} --chain-name {{chainName}} --runtime {{runtimePath}} default";
+const DEFAULT_LIST_PRESETS_COMMAND =
+  "{{mainCommand}} chain-spec-builder list-presets --runtime {{runtimePath}}";
+const CHAIN_SPEC_BUILDER_COMPATIBLE_COMMANDS = [
+  "polkadot-parachain",
+  "polkadot-omni-node",
+];
 const DEFAULT_GENESIS_GENERATE_SUBCOMMAND = "export-genesis-state";
 const DEFAULT_GENESIS_HEAD_GENERATE_SUBCOMMAND = "export-genesis-head";
 const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
@@ -143,6 +153,10 @@ export {
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_COMMAND,
+  DEFAULT_CHAIN_SPEC_USING_RUNTIME_NAMED_PRESET_COMMAND,
+  DEFAULT_CHAIN_SPEC_USING_RUNTIME_DEFAULT_COMMAND,
+  DEFAULT_LIST_PRESETS_COMMAND,
+  CHAIN_SPEC_BUILDER_COMPATIBLE_COMMANDS,
   DEFAULT_CHAIN_SPEC_RAW,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,

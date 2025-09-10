@@ -87,6 +87,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `genesis_state_path`: (String) Path to the state file to use.
   - `genesis_state_generator`: (String) Command to generate the state file.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to all parachain nodes/collators; Defaults to 'substrate'.
+  - `runtime_path`: A path to wasm runtime, which will be used for chain spec generation, if applicable. [See chain spec generation for more details](#chain-spec-generation)
   - `collator`:
 
     - `*name`: (String) Name of the collator. *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -> 'new-alice').
@@ -115,6 +116,17 @@ The network config can be provided both in `json` or `toml` format and each sect
 
   - `onboard_as_parachain`: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread
   - `register_para`: (Boolean, default true) flag to specify whether the para should be registered. The `add_to_genesis` flag **must** be set to false for this flag to have any effect.
+
+### `chain spec generation`
+
+For cumulus based parachains, the chain spec will be generated in this order:
+
+- If `chain_spec_path` is set, it will be used as the source.
+- Else if `chain_spec_command` is set, it will be used to generate the chain spec.
+- Else if `runtime_path` is set, and the command is compatible with `chain-spec-builder`  
+  e.g. `polkadot-parachain` or `polkadot-omni-node`, `chain-spec-builder` subcommand will be used with `runtime_path` as source.
+- Else `"{{DEFAULT_COMMAND}} build-spec --chain {{chainName}} --disable-default-bootnode"` will be used.
+
 
 ## `hrmp_channels`: (Array of objects)
 

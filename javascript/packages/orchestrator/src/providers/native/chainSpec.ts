@@ -13,9 +13,10 @@ export async function setupChainSpec(
   chainName: string,
   chainFullPath: string,
 ): Promise<any> {
-  // We have two options to get the chain-spec file, neither should use the `raw` file/argument
+  // We have three options to get the chain-spec file, neither should use the `raw` file/argument
   // 1: User provide the file (we DON'T expect the raw file)
   // 2: User provide the chainSpecCommand (without the --raw option)
+  // 3: User provide the runtimePath, and we use chain-spec-builder
   const client = getClient();
 
   if (chainConfig.chainSpecPath) {
@@ -33,6 +34,67 @@ export async function setupChainSpec(
         /{{chainName}}/gi,
         chainName,
       )} > ${plainChainSpecOutputFilePath}`;
+      const node = await createTempNodeDef(
+        "temp",
+        defaultImage,
+        chainName,
+        fullCommand,
+      );
+
+      const podDef = await genNodeDef(namespace, node);
+      await client.spawnFromDef(podDef);
+      await fsPromises.copyFile(plainChainSpecOutputFilePath, chainFullPath);
+    } else if (chainConfig.buildWithChainSpecBuilderOpts) {
+      const { defaultImage } = chainConfig;
+      const {
+        runtimePath,
+        buildWithPresetCommand,
+        buildDefaultCommand,
+        listPresetsCommand,
+      } = chainConfig.buildWithChainSpecBuilderOpts;
+      const plainChainSpecOutputFilePath =
+        client.remoteDir +
+        "/" +
+        DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
+
+      // copy runtime
+      const runtimeRemotePath = `${client.remoteDir}/${chainName}-runtime.wasm`;
+      await fsPromises.copyFile(runtimePath, runtimeRemotePath);
+
+      // list presets
+      const listPresetsResultPath = `${client.remoteDir}/list-presets-result-${chainName}`;
+      const listPresetsNode = await createTempNodeDef(
+        "temp-presets",
+        defaultImage,
+        chainName,
+        `${listPresetsCommand} > ${listPresetsResultPath}`.replace(
+          /{{runtimePath}}/gi,
+          runtimeRemotePath,
+        ),
+      );
+      const listPresetsPodDef = await genNodeDef(namespace, listPresetsNode);
+      await client.spawnFromDef(listPresetsPodDef);
+
+      // read presets
+      const presetsFile = await fsPromises.readFile(
+        listPresetsResultPath,
+        "utf-8",
+      );
+      const presetsResult = JSON.parse(presetsFile) as { presets: string[] };
+      const matches = presetsResult.presets.includes(chainName);
+
+      const chainSpecCommand = matches
+        ? buildWithPresetCommand
+            .replace(/{{outputPath}}/gi, plainChainSpecOutputFilePath)
+            .replace(/{{runtimePath}}/gi, runtimeRemotePath)
+        : buildDefaultCommand
+            .replace(/{{outputPath}}/gi, plainChainSpecOutputFilePath)
+            .replace(/{{runtimePath}}/gi, runtimeRemotePath);
+
+      const fullCommand = `${chainSpecCommand.replace(
+        /{{chainName}}/gi,
+        chainName,
+      )}`;
       const node = await createTempNodeDef(
         "temp",
         defaultImage,

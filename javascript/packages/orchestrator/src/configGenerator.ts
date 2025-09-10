@@ -9,16 +9,20 @@ import {
 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
+  CHAIN_SPEC_BUILDER_COMPATIBLE_COMMANDS,
   DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_BALANCE,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC_COMMAND,
+  DEFAULT_CHAIN_SPEC_USING_RUNTIME_DEFAULT_COMMAND,
+  DEFAULT_CHAIN_SPEC_USING_RUNTIME_NAMED_PRESET_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
   DEFAULT_CUMULUS_COLLATOR_BIN,
   DEFAULT_GLOBAL_TIMEOUT,
   DEFAULT_IMAGE,
   DEFAULT_KEYSTORE_KEY_TYPES,
+  DEFAULT_LIST_PRESETS_COMMAND,
   DEFAULT_MAX_NOMINATIONS,
   DEFAULT_PORTS,
   DEFAULT_PROMETHEUS_PREFIX,
@@ -39,6 +43,7 @@ import {
   envVars,
   Node,
   ZombieRole,
+  BuildWithChainSpecBuilderOpts,
 } from "./sharedTypes";
 
 const debug = require("debug")("zombie::config-manager");
@@ -451,13 +456,49 @@ export async function generateNetworkSpec(
         }
       }
 
-      // even if we have a chain_spec_path we need to set
-      // the command to generate the raw version
-      parachainSetup.chainSpecCommand = parachain.chain_spec_command
-        ? parachain.chain_spec_command
-        : `${collatorBinary} build-spec ${
-            parachain.chain ? "--chain {{chainName}}" : ""
-          } --disable-default-bootnode`;
+      const isChainSpecBuilderCompatible =
+        CHAIN_SPEC_BUILDER_COMPATIBLE_COMMANDS.some((s) =>
+          collatorBinary.endsWith(s),
+        );
+      const defaultCommand = `${collatorBinary} build-spec ${
+        parachain.chain ? "--chain {{chainName}}" : ""
+      } --disable-default-bootnode`;
+
+      if (parachain.chain_spec_command) {
+        parachainSetup.chainSpecCommand = parachain.chain_spec_command;
+        parachainSetup.buildRawCommand = parachain.chain_spec_command;
+      } else if (!(parachain.runtime_path && isChainSpecBuilderCompatible)) {
+        parachainSetup.chainSpecCommand = defaultCommand;
+        parachainSetup.buildRawCommand = defaultCommand;
+      } else {
+        const buildWithPresetCommand =
+          DEFAULT_CHAIN_SPEC_USING_RUNTIME_NAMED_PRESET_COMMAND.replace(
+            /{{mainCommand}}/gi,
+            collatorBinary,
+          )
+            .replace(/{{relayChain}}/gi, config.relaychain.chain)
+            .replace(/{{paraId}}/gi, parachain.id.toString());
+        const buildDefaultCommand =
+          DEFAULT_CHAIN_SPEC_USING_RUNTIME_DEFAULT_COMMAND.replace(
+            /{{mainCommand}}/gi,
+            collatorBinary,
+          )
+            .replace(/{{relayChain}}/gi, config.relaychain.chain)
+            .replace(/{{paraId}}/gi, parachain.id.toString());
+        const listPresetsCommand = DEFAULT_LIST_PRESETS_COMMAND.replace(
+          /{{mainCommand}}/gi,
+          collatorBinary,
+        );
+
+        const opts: BuildWithChainSpecBuilderOpts = {
+          runtimePath: parachain.runtime_path,
+          buildWithPresetCommand,
+          buildDefaultCommand,
+          listPresetsCommand,
+        };
+        parachainSetup.buildWithChainSpecBuilderOpts = opts;
+        parachainSetup.buildRawCommand = defaultCommand;
+      }
 
       parachainSetup = {
         ...parachainSetup,

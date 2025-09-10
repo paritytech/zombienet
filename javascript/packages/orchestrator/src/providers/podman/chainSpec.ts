@@ -15,6 +15,7 @@ export async function setupChainSpec(
   // We have two options to get the chain-spec file, neither should use the `raw` file/argument
   // 1: User provide the file (we DON'T expect the raw file)
   // 2: User provide the chainSpecCommand (without the --raw option)
+  // 3: User provide the runtimePath, and we use chain-spec-builder
   const client = getClient();
   if (chainConfig.chainSpecPath) {
     // copy file to temp to use
@@ -41,6 +42,81 @@ export async function setupChainSpec(
       const podDef = await genNodeDef(namespace, node);
       const podName = podDef.metadata.name;
       await client.spawnFromDef(podDef);
+
+      debug("copy file from pod");
+
+      const podChainPath = `${client.tmpDir}/${podName}${plainChainSpecOutputFilePath}`;
+      copyFileSync(podChainPath, chainFullPath);
+    } else if (chainConfig.buildWithChainSpecBuilderOpts) {
+      const { defaultImage, tmpDir } = chainConfig;
+      const {
+        runtimePath,
+        buildWithPresetCommand,
+        buildDefaultCommand,
+        listPresetsCommand,
+      } = chainConfig.buildWithChainSpecBuilderOpts;
+      const plainChainSpecOutputFilePath =
+        client.remoteDir +
+        "/" +
+        DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
+      const runtimeRemotePath = `${client.remoteDir}/${chainName}-runtime.wasm`;
+
+      // list presets
+      const listPresetsResultPath = `${client.remoteDir}/list-presets-result-${chainName}`;
+      const listPresetsResultPathLocal = `${tmpDir}/list-presets-result-${chainName}`;
+      const listPresetsNode = await createTempNodeDef(
+        "temp-presets",
+        defaultImage,
+        chainName,
+        `${listPresetsCommand} > ${listPresetsResultPath}`.replace(
+          /{{runtimePath}}/gi,
+          runtimeRemotePath,
+        ),
+      );
+      const listPresetsPodDef = await genNodeDef(namespace, listPresetsNode);
+      const listPresetsPodName = listPresetsPodDef.metadata.name;
+      await client.spawnFromDef(listPresetsPodDef, [
+        {
+          localFilePath: runtimePath,
+          remoteFilePath: runtimeRemotePath,
+        },
+      ]);
+
+      debug("Getting the presets file from pod to the local environment.");
+      const podPresetsPath = `${client.tmpDir}/${listPresetsPodName}${listPresetsResultPath}`;
+      copyFileSync(podPresetsPath, listPresetsResultPathLocal);
+
+      const presetsFile = readFileSync(listPresetsResultPathLocal);
+      const presetsResult = JSON.parse(presetsFile) as { presets: string[] };
+      const matches = presetsResult.presets.includes(chainName);
+
+      const chainSpecCommand = matches
+        ? buildWithPresetCommand
+            .replace(/{{outputPath}}/gi, plainChainSpecOutputFilePath)
+            .replace(/{{runtimePath}}/gi, runtimeRemotePath)
+        : buildDefaultCommand
+            .replace(/{{outputPath}}/gi, plainChainSpecOutputFilePath)
+            .replace(/{{runtimePath}}/gi, runtimeRemotePath);
+
+      const fullCommand = `${chainSpecCommand.replace(
+        /{{chainName}}/gi,
+        chainName,
+      )}`;
+
+      const node = await createTempNodeDef(
+        "temp",
+        defaultImage,
+        chainName,
+        fullCommand,
+      );
+      const podDef = await genNodeDef(namespace, node);
+      const podName = podDef.metadata.name;
+      await client.spawnFromDef(podDef, [
+        {
+          localFilePath: runtimePath,
+          remoteFilePath: runtimeRemotePath,
+        },
+      ]);
 
       debug("copy file from pod");
 

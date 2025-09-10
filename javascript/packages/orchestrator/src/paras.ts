@@ -93,6 +93,9 @@ export async function generateParachainFiles(
           chainSpecPath: parachain.chainSpecPath,
           chainSpecCommand: parachain.chainSpecCommand!,
           defaultImage: parachain.collators[0].image,
+          buildWithChainSpecBuilderOpts:
+            parachain.buildWithChainSpecBuilderOpts,
+          tmpDir,
         },
         parachain.chain,
         chainSpecFullPathPlain,
@@ -166,7 +169,7 @@ export async function generateParachainFiles(
 
       // Make sure we include the plain chain-spec
       const chainSpecRawCommand = getChainSpecCmdRaw(
-        parachain.chainSpecCommand!,
+        parachain.buildRawCommand!,
       );
 
       await getChainSpecRaw(
