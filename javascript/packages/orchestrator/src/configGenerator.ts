@@ -132,6 +132,8 @@ export async function generateNetworkSpec(
       defaultPrometheusPrefix:
         config.relaychain.default_prometheus_prefix ||
         DEFAULT_PROMETHEUS_PREFIX,
+      defaultSubstrateCliArgsVersion:
+        config.relaychain.default_substrate_cli_args_version,
       delayNetworkSettings:
         config.relaychain.default_delay_network_settings ||
         config.settings?.global_delay_network_global_settings,
@@ -226,7 +228,7 @@ export async function generateNetworkSpec(
           networkSpec.relaychain.defaultPrometheusPrefix,
         substrate_cli_args_version:
           nodeGroup.substrate_cli_args_version ||
-          networkSpec.relaychain.default_substrate_cli_args_version,
+          networkSpec.relaychain.defaultSubstrateCliArgsVersion,
       };
 
       const nodeSetup = await getNodeFromConfig(
@@ -419,6 +421,8 @@ export async function generateNetworkSpec(
         para,
         cumulusBased: isCumulusBased,
         defaultArgs: parachain.default_args || [],
+        defaultSubstrateCliArgsVersion:
+          parachain.default_substrate_cli_args_version,
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
@@ -644,6 +648,16 @@ async function getCollatorNodeFromConfig(
   };
 
   if (group) node.group = group;
+
+  if (
+    collatorConfig.substrate_cli_args_version ||
+    parachain.default_substrate_cli_args_version
+  )
+    node.substrateCliArgsVersion =
+      collatorConfig.substrate_cli_args_version ||
+      parachain.default_substrate_cli_args_version ||
+      undefined; // will be detected as part of the bootstrap process
+
   return node;
 }
 
@@ -740,11 +754,12 @@ async function getNodeFromConfig(
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
   if (
     node.substrate_cli_args_version ||
-    networkSpec.default_substrate_cli_args_version
+    networkSpec.relaychain.defaultSubstrateCliArgsVersion
   )
     nodeSetup.substrateCliArgsVersion =
       node.substrate_cli_args_version ||
-      networkSpec.default_substrate_cli_args_version;
+      networkSpec.relaychain.defaultSubstrateCliArgsVersion ||
+      undefined; // will be detected as part of the bootstrap process
   return nodeSetup;
 }
 
