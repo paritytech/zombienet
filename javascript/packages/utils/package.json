@@ -31,7 +31,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "cli-table3": "^0.6.3",
-    "debug": "^4.3.4",
+    "debug": "^4.4.3",
     "mocha": "^10.4.0",
     "nunjucks": "^3.2.4",
     "toml": "github:pepoviola/toml-node",
