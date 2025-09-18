@@ -384,9 +384,14 @@ export class Network {
   replaceWithNetworInfo(placeholder: string): string {
     return placeholder.replace(
       TOKEN_PLACEHOLDER,
-      (_substring, nodeName, key: keyof NetworkNode) => {
-        const node = this.getNodeByName(nodeName);
-        return node[key];
+      (_substring, nodeNameOrNetwork, key: keyof NetworkNode) => {
+        if (nodeNameOrNetwork === "network") {
+          const key_to_use = (key as string) == "base_path" ? "tmpDir" : key;
+          return this[key_to_use as keyof Network];
+        } else {
+          const node = this.getNodeByName(nodeNameOrNetwork);
+          return node[key as keyof NetworkNode];
+        }
       },
     );
   }
