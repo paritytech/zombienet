@@ -1,3 +1,15 @@
+# Network Token Replacement Example: Custom Base Path
+#
+# This example demonstrates how to use network token replacement to customize
+# the --base-path argument while reusing zombienet's auto-generated base directory.
+#
+# The token {{'network'|zombie('base_path')}} gets replaced with the network's
+# temporary directory path at runtime (e.g., /tmp/zombie-abc123/alice/data),
+# allowing you to append custom suffixes like "/alice-custom-data".
+#
+# Available network token:
+# - {{'network'|zombie('base_path')}}  - Node-specific data path (tmpDir + /custom_data_path)
+
 [relaychain]
 default_image = "docker.io/paritypr/polkadot-debug:master"
 default_command = "polkadot"
