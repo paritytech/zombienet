@@ -312,11 +312,13 @@ export async function genCmd(
     );
   }
 
-  // set our base path
-  const basePathFlagIndex = args.findIndex((arg) => arg === "--base-path");
-  if (basePathFlagIndex >= 0) args.splice(basePathFlagIndex, 2);
-  args.push(...["--base-path", dataPath]);
-
+  // set our base path - only if user hasn't provided one
+  const hasUserBasePath = args.some(
+    (arg) => arg === "--base-path" || arg.startsWith("--base-path="),
+  );
+  if (!hasUserBasePath) {
+    args.push(...["--base-path", dataPath]);
+  }
   if (nodeSetup.substrateCliArgsVersion === SubstrateCliArgsVersion.V0)
     args.push("--unsafe-ws-external");
 

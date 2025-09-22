@@ -161,8 +161,9 @@ export function readNetworkConfig(filepath: string): LaunchConfig {
   const configBasePath = path.dirname(filepath);
   const env = new Environment(new RelativeLoader([configBasePath]));
 
-  env.addFilter("zombie", function (nodeName, key) {
-    return `{{ZOMBIE:${nodeName}:${key}}}`;
+  // 'network' or 'node name' replacement keywords
+  env.addFilter("zombie", function (networkOrNodeName, key) {
+    return `{{ZOMBIE:${networkOrNodeName}:${key}}}`;
   });
 
   const temmplateContent = fs.readFileSync(filepath).toString();
