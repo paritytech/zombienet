@@ -20,7 +20,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `node_spawn_timeout`: (Number, default per provider) timeout to spawn pod/process.
 - `local_ip`: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).
 - `node_verifier`: (String, "None" or "Metric"), Allow to manage how we verify node readiness or disable (None). The default value is `Metric`.
-- `isolate_env`: (boolean, default falce), If true, zombienet will add a random suffix to `protocolId` (in the chain-spec) and will add the `forkId` field with the same value of the `protocolId` (plus the suffix). This will _isolate_ the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).
+- `isolate_env`: (boolean, default false), If true, zombienet will add a random suffix to `protocolId` (in the chain-spec) and will add the `forkId` field with the same value of the `protocolId` (plus the suffix). This will _isolate_ the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).
 
 ## `relaychain`
 
