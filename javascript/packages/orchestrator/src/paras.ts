@@ -203,8 +203,8 @@ export async function generateParachainFiles(
       if (random_sufix_to_isolate) {
         const updatedSpec = readAndParseChainSpec(chainSpecFullPath);
         // customize forkId/protocolId to make chain uniq
-        updatedSpec.forkId = `${updatedSpec.protocolId}${random_sufix_to_isolate}`;
-        updatedSpec.protocolId = `${updatedSpec.protocolId}${random_sufix_to_isolate}`;
+        updatedSpec.forkId = `${updatedSpec.protocolId}-${random_sufix_to_isolate}`;
+        updatedSpec.protocolId = `${updatedSpec.protocolId}-${random_sufix_to_isolate}`;
         writeChainSpec(chainSpecFullPath, updatedSpec);
       } else {
         writeChainSpec(chainSpecFullPath, paraSpecRaw);

@@ -810,8 +810,8 @@ export function customizeParachainRawSpec(
     const paraSpecRaw = readAndParseChainSpec(specPath);
 
     // Customize the chain-spec fields
-    // name: <para_id>-[parachain-name]-
-    paraSpecRaw.name = `${parachain.id}-${parachain.name}-`;
+    // name: <para_id>-[parachain-name]
+    paraSpecRaw.name = `${parachain.id}-${parachain.name}`;
 
     // id: <para_id>_testnet
     paraSpecRaw.id = `${parachain.id}_testnet`;
