@@ -1,0 +1,28 @@
+# Example demonstrating HTTP/HTTPS URL support for chain_spec_path
+# This shows how to use remote chain specs instead of local files
+
+[relaychain]
+default_image = "docker.io/paritypr/polkadot-debug:master"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+
+chain = "rococo-local"
+# Example using HTTPS URL for relaychain chain spec
+chain_spec_path = "https://raw.githubusercontent.com/paritytech/zombienet/27b5da08e12184c0a3502b48e9279a7521ba338f/chain-specs/rococo-local.json"
+
+  [[relaychain.nodes]]
+  name = "alice"
+
+  [[relaychain.nodes]]
+  name = "bob"
+
+[[parachains]]
+id = 100
+# Example using HTTPS URL for parachain chain spec
+chain_spec_path = "https://raw.githubusercontent.com/paritytech/zombienet/27b5da08e12184c0a3502b48e9279a7521ba338f/chain-specs/asset-rococo-local.json"
+
+  [parachains.collator]
+  name = "collator01"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]

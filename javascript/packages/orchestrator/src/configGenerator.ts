@@ -1,11 +1,13 @@
 import fs from "fs";
 import path, { resolve } from "path";
+import os from "os";
 
 import {
   decorators,
   getRandomPort,
   getSha256,
   validateImageUrl,
+  downloadFile,
 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
@@ -42,6 +44,46 @@ import {
 } from "./sharedTypes";
 
 const debug = require("debug")("zombie::config-manager");
+
+/**
+ * Resolves a chain spec path which can be either a local file path or HTTP/HTTPS URL
+ * If it's a URL, downloads it to a temporary file and returns the local path
+ * @param chainSpecPath - The path or URL to the chain spec
+ * @param context - Context for error messages (e.g., "relaychain" or "parachain id: 1000")
+ * @returns The resolved local file path
+ */
+async function resolveChainSpecPath(
+  chainSpecPath: string,
+  context: string,
+): Promise<string> {
+  if (/^https?:\/\//i.test(chainSpecPath)) {
+    const tmpFile = path.join(
+      os.tmpdir(),
+      `zombienet-${context.replace(/[^a-zA-Z0-9]/g, "-")}-spec-${getSha256(chainSpecPath)}.json`,
+    );
+    await downloadFile(chainSpecPath, tmpFile);
+    if (!fs.existsSync(tmpFile)) {
+      console.error(
+        decorators.red(
+          `Failed to download ${context} chain spec from URL: ${chainSpecPath}`,
+        ),
+      );
+      process.exit(1);
+    }
+    return tmpFile;
+  } else {
+    const resolvedPath = resolve(process.cwd(), chainSpecPath);
+    if (!fs.existsSync(resolvedPath)) {
+      console.error(
+        decorators.red(
+          `Chain spec provided for ${context} does not exist: ${resolvedPath}`,
+        ),
+      );
+      process.exit(1);
+    }
+    return resolvedPath;
+  }
+}
 
 // get the path of the zombie wrapper
 export const zombieWrapperPath = resolve(__dirname, `../${ZOMBIE_WRAPPER}`);
@@ -166,20 +208,10 @@ export async function generateNetworkSpec(
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {
-    const chainSpecPath = resolve(
-      process.cwd(),
+    networkSpec.relaychain.chainSpecPath = await resolveChainSpecPath(
       config.relaychain.chain_spec_path,
+      "relaychain",
     );
-    if (!fs.existsSync(chainSpecPath)) {
-      console.error(
-        decorators.red(
-          `Genesis spec provided does not exist: ${chainSpecPath}`,
-        ),
-      );
-      process.exit(1);
-    } else {
-      networkSpec.relaychain.chainSpecPath = chainSpecPath;
-    }
   }
 
   // even if we have a chain_spec_path we need to set
@@ -442,17 +474,10 @@ export async function generateNetworkSpec(
 
       // if we don't have a path to the chain-spec leave undefined to create
       if (parachain.chain_spec_path) {
-        const chainSpecPath = resolve(process.cwd(), parachain.chain_spec_path);
-        if (!fs.existsSync(chainSpecPath)) {
-          console.error(
-            decorators.red(
-              `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
-            ),
-          );
-          process.exit(1);
-        } else {
-          parachainSetup.chainSpecPath = chainSpecPath;
-        }
+        parachainSetup.chainSpecPath = await resolveChainSpecPath(
+          parachain.chain_spec_path,
+          `parachain id: ${parachain.id}`,
+        );
       }
 
       // even if we have a chain_spec_path we need to set
