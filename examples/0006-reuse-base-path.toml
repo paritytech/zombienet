@@ -20,7 +20,6 @@ chain = "rococo-local"
 
   [[relaychain.nodes]]
   name = "alice"
-  validator = true
   args = [
     "--database=paritydb-experimental", 
     "--base-path={{'network'|zombie('base_path')}}/alice-custom-data",

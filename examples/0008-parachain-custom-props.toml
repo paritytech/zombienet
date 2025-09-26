@@ -1,0 +1,69 @@
+# This example demonstrates the with_custom_props feature for parachains
+# which allows controlling whether parachain chain-spec properties (name, id, protocolId) are customized
+
+[settings]
+timeout = 1000
+
+[relaychain]
+default_image = "docker.io/parity/polkadot:latest"
+default_command = "polkadot"
+default_args = [ "-lparachain=debug" ]
+
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+
+  [[relaychain.nodes]]
+  name = "bob"
+
+  [[relaychain.nodes]]
+  name = "charlie"
+
+# Parachain with default behavior (with_custom_props = false by default)
+# This parachain will preserve the original chain-spec properties
+[[parachains]]
+id = 2000
+# with_custom_props = false  # This is the default
+
+  [parachains.collator]
+  name = "collator-2000"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+
+# Parachain with custom properties enabled explicitly
+# This parachain will have its chain-spec properties customized:
+# - name: "2001-adder"
+# - id: "2001_testnet" 
+# - protocolId: "2001-adder"
+[[parachains]]
+id = 2001
+with_custom_props = true
+
+  [parachains.collator]
+  name = "collator-2001"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+
+[[parachains]]
+id = 2002
+with_custom_props = false
+
+  [parachains.collator]
+  name = "collator-2002"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+
+[[parachains]]
+id = 2003
+with_custom_props = false
+
+  [[parachains.collator_groups]]
+  name = "collator-group"
+  count = 2
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
