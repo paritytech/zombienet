@@ -810,21 +810,23 @@ export function customizeParachainRawSpec(
     const paraSpecRaw = readAndParseChainSpec(specPath);
 
     // Customize the chain-spec fields
-    // name: <para_id>-[parachain-name]
-    paraSpecRaw.name = `${parachain.id}-${parachain.name}`;
+    if (parachain.withCustomProps) {
+      // name: <para_id>-[parachain-name]
+      paraSpecRaw.name = `${parachain.id}-${parachain.name}`;
 
-    // id: <para_id>_testnet
-    paraSpecRaw.id = `${parachain.id}_testnet`;
+      // id: <para_id>_testnet
+      paraSpecRaw.id = `${parachain.id}_testnet`;
 
-    // protocolId: <para_id>-[parachain-name]
-    paraSpecRaw.protocolId = `${parachain.id}-${parachain.name}`;
+      // protocolId: <para_id>-[parachain-name]
+      paraSpecRaw.protocolId = `${parachain.id}-${parachain.name}`;
+
+      debug(`Customized parachain chain-spec for ${parachain.name}:`);
+      debug(`  name: ${paraSpecRaw.name}`);
+      debug(`  id: ${paraSpecRaw.id}`);
+      debug(`  protocolId: ${paraSpecRaw.protocolId}`);
+    }
 
     writeChainSpec(specPath, paraSpecRaw);
-
-    debug(`Customized parachain chain-spec for ${parachain.name}:`);
-    debug(`  name: ${paraSpecRaw.name}`);
-    debug(`  id: ${paraSpecRaw.id}`);
-    debug(`  protocolId: ${paraSpecRaw.protocolId}`);
   } catch (err) {
     console.log(
       `\n ${decorators.red("Error customizing parachain chain-spec: ")} \t ${decorators.bright(

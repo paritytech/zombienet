@@ -467,6 +467,10 @@ export async function generateNetworkSpec(
           parachain.onboard_as_parachain !== undefined
             ? parachain.onboard_as_parachain
             : true, // onboard by default
+        withCustomProps:
+          parachain.with_custom_props !== undefined
+            ? parachain.with_custom_props
+            : false, // don't customize by default
         collators,
       };
 
