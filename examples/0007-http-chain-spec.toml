@@ -8,7 +8,7 @@ default_args = [ "-lparachain=debug" ]
 
 chain = "rococo-local"
 # Example using HTTPS URL for relaychain chain spec
-chain_spec_path = "https://raw.githubusercontent.com/paritytech/polkadot/refs/tags/v1.0.0/node/service/chain-specs/rococo.json"
+chain_spec_path = "https://raw.githubusercontent.com/paritytech/zombienet/27b5da08e12184c0a3502b48e9279a7521ba338f/chain-specs/rococo-local.json"
 
   [[relaychain.nodes]]
   name = "alice"
@@ -19,7 +19,7 @@ chain_spec_path = "https://raw.githubusercontent.com/paritytech/polkadot/refs/ta
 [[parachains]]
 id = 100
 # Example using HTTPS URL for parachain chain spec
-chain_spec_path = "https://raw.githubusercontent.com/paritytech/cumulus/refs/heads/master/parachains/chain-specs/asset-hub-rococo.json"
+chain_spec_path = "https://raw.githubusercontent.com/paritytech/zombienet/27b5da08e12184c0a3502b48e9279a7521ba338f/chain-specs/asset-rococo-local.json"
 
   [parachains.collator]
   name = "collator01"
