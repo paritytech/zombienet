@@ -10,7 +10,6 @@ default_command = "polkadot"
 default_args = ["-lparachain=debug"]
 chain = "rococo-local"
 
-  # Secure validator mode, exclude the default insecure validator flag
   [[relaychain.nodes]]
   name = "alice"
   args = ["-:--insecure-validator-i-know-what-i-do", "--log=info"]

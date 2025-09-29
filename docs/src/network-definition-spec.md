@@ -43,7 +43,8 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `image`: (String) Override default docker image to use for this node.
   - `command`: (String) Override default command.
   - `command_with_args`: (String) Override default command and args.
-  - `args`: (Array of strings) Arguments to be passed to the `command`.
+  - `args`: (Array of strings) Arguments to be passed to the `command`. 
+    - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--insecure-validator-i-know-what-i-do` will exclude the default `--insecure-validator-i-know-what-i-do` flag that is normally added to validator nodes. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
   - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
   - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
   - `invulnerable`: (Boolean, default false) If true, the node will be added to `invulnerables` in the chain spec.
@@ -93,6 +94,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+      - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--prometheus-external` will exclude the default `--prometheus-external` flag. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
     - `packages/orchestrator/src/providers/k8s/index.ts`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
     - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
@@ -107,6 +109,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+      - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--prometheus-external` will exclude the default `--prometheus-external` flag. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
     - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.
