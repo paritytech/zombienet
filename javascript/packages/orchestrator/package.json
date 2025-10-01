@@ -50,7 +50,7 @@
     "JSONStream": "^1.3.5",
     "libp2p-crypto": "^0.21.2",
     "minimatch": "^9.0.4",
-    "mocha": "^10.4.0",
+    "mocha": "^11.7.3",
     "napi-maybe-compressed-blob": "^0.0.11",
     "peer-id": "^0.16.0",
     "tmp-promise": "^3.0.3",
