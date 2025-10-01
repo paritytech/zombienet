@@ -731,7 +731,7 @@ For example:</p>
 <li><code>node_spawn_timeout</code>: (Number, default per provider) timeout to spawn pod/process.</li>
 <li><code>local_ip</code>: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).</li>
 <li><code>node_verifier</code>: (String, "None" or "Metric"), Allow to manage how we verify node readiness or disable (None). The default value is <code>Metric</code>.</li>
-<li><code>isolate_env</code>: (boolean, default falce), If true, zombienet will add a random suffix to <code>protocolId</code> (in the chain-spec) and will add the <code>forkId</code> field with the same value of the <code>protocolId</code> (plus the suffix). This will <em>isolate</em> the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).</li>
+<li><code>isolate_env</code>: (boolean, default false), If true, zombienet will add a random suffix to <code>protocolId</code> (in the chain-spec) and will add the <code>forkId</code> field with the same value of the <code>protocolId</code> (plus the suffix). This will <em>isolate</em> the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).</li>
 </ul>
 <h2 id="relaychain"><a class="header" href="#relaychain"><code>relaychain</code></a></h2>
 <ul>
@@ -813,6 +813,9 @@ For example:</p>
 </li>
 <li>
 <p><code>cumulus_based</code>: (Boolean, default true) flag to use <code>cumulus</code> command generation.</p>
+</li>
+<li>
+<p><code>with_custom_props</code>: (Boolean, default false) flag to enable customization of parachain chain-spec properties (name, id, protocolId). When true, the chain-spec will be customized with parachain-specific identifiers. When false, the original chain-spec properties are preserved.</p>
 </li>
 <li>
 <p><code>default_args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code> side. <em>NOTE</em>: this args will be passed to the collator side and shouldn't include <em>args</em> to the full node.</p>
