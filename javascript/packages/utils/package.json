@@ -32,7 +32,7 @@
   "dependencies": {
     "cli-table3": "^0.6.3",
     "debug": "^4.4.3",
-    "mocha": "^10.4.0",
+    "mocha": "^11.7.3",
     "nunjucks": "^3.2.4",
     "toml": "github:pepoviola/toml-node",
     "ts-node": "^10.9.2"
