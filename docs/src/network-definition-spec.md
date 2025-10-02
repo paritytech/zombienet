@@ -20,7 +20,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `node_spawn_timeout`: (Number, default per provider) timeout to spawn pod/process.
 - `local_ip`: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).
 - `node_verifier`: (String, "None" or "Metric"), Allow to manage how we verify node readiness or disable (None). The default value is `Metric`.
-- `isolate_env`: (boolean, default falce), If true, zombienet will add a random suffix to `protocolId` (in the chain-spec) and will add the `forkId` field with the same value of the `protocolId` (plus the suffix). This will _isolate_ the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).
+- `isolate_env`: (boolean, default false), If true, zombienet will add a random suffix to `protocolId` (in the chain-spec) and will add the `forkId` field with the same value of the `protocolId` (plus the suffix). This will _isolate_ the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).
 
 ## `relaychain`
 
@@ -82,6 +82,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `*id`: (Number) The id to assign to this parachain. Must be unique.
   - `add_to_genesis`: (Boolean, default true) flag to add parachain to genesis or register in runtime.
   - `cumulus_based`: (Boolean, default true) flag to use `cumulus` command generation.
+  - `with_custom_props`: (Boolean, default false) flag to enable customization of parachain chain-spec properties (name, id, protocolId). When true, the chain-spec will be customized with parachain-specific identifiers. When false, the original chain-spec properties are preserved.
   - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command` side. _NOTE_: this args will be passed to the collator side and shouldn't include _args_ to the full node.
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
