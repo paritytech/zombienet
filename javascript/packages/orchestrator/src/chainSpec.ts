@@ -10,7 +10,7 @@ import crypto from "crypto";
 import fs from "fs";
 import { generateKeyFromSeed } from "./keys";
 import { ChainSpec } from "./types";
-import { HrmpChannelsConfig, Node } from "./sharedTypes";
+import { HrmpChannelsConfig, Node, Parachain } from "./sharedTypes";
 import { ComputedNetwork } from "./configTypes";
 import { decorate, whichChain } from "./chain-decorators";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
@@ -801,6 +801,42 @@ export async function customizePlainRelayChain(
     );
   }
 }
+
+export function customizeParachainRawSpec(
+  specPath: string,
+  parachain: Parachain,
+) {
+  try {
+    const paraSpecRaw = readAndParseChainSpec(specPath);
+
+    // Customize the chain-spec fields
+    if (parachain.withCustomProps) {
+      // name: <para_id>-[parachain-name]
+      paraSpecRaw.name = `${parachain.id}-${parachain.name}`;
+
+      // id: <para_id>_testnet
+      paraSpecRaw.id = `${parachain.id}_testnet`;
+
+      // protocolId: <para_id>-[parachain-name]
+      paraSpecRaw.protocolId = `${parachain.id}-${parachain.name}`;
+
+      debug(`Customized parachain chain-spec for ${parachain.name}:`);
+      debug(`  name: ${paraSpecRaw.name}`);
+      debug(`  id: ${paraSpecRaw.id}`);
+      debug(`  protocolId: ${paraSpecRaw.protocolId}`);
+    }
+
+    writeChainSpec(specPath, paraSpecRaw);
+  } catch (err) {
+    console.log(
+      `\n ${decorators.red("Error customizing parachain chain-spec: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
+    );
+    throw err;
+  }
+}
+
 export default {
   addAuraAuthority,
   addAuthority,
@@ -815,4 +851,5 @@ export default {
   isRawSpec,
   getChainIdFromSpec,
   customizePlainRelayChain,
+  customizeParachainRawSpec,
 };

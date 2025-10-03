@@ -116,6 +116,7 @@ export interface ParachainConfig extends CommonParachainConfig {
   add_to_genesis?: boolean;
   register_para?: boolean;
   onboard_as_parachain?: boolean;
+  with_custom_props?: boolean;
   genesis_wasm_path?: string;
   genesis_wasm_generator?: string;
   genesis_state_path?: string;

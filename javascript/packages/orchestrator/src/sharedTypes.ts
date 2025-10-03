@@ -55,6 +55,7 @@ export interface Parachain extends CommonParachainConfig {
   collators: Node[];
   defaultArgs: string[];
   defaultSubstrateCliArgsVersion?: SubstrateCliArgsVersion;
+  withCustomProps?: boolean;
 }
 
 export interface Node extends NodeCommonTypes, Ports {
