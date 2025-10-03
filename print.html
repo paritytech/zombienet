@@ -758,7 +758,24 @@ For example:</p>
 <li><code>image</code>: (String) Override default docker image to use for this node.</li>
 <li><code>command</code>: (String) Override default command.</li>
 <li><code>command_with_args</code>: (String) Override default command and args.</li>
-<li><code>args</code>: (Array of strings) Arguments to be passed to the <code>command</code>.</li>
+<li><code>args</code>: (Array of strings) Arguments to be passed to the <code>command</code>.
+<ul>
+<li><strong>Flag Exclusion</strong>: You can exclude default flags by prefixing them with <code>-:</code>. For example, <code>-:--insecure-validator-i-know-what-i-do</code> will exclude the default <code>--insecure-validator-i-know-what-i-do</code> flag that is normally added to validator nodes. Both full flag names (e.g., <code>-:--flag-name</code>) and short names (e.g., <code>-:flag-name</code>) are supported.</li>
+<li><strong>Default flags added by Zombienet</strong>:
+<ul>
+<li><code>--no-mdns</code>: Always added to all nodes</li>
+<li><code>--no-telemetry</code>: Added when telemetry is disabled (default)</li>
+<li><code>--prometheus-external</code>: Added when prometheus is enabled</li>
+<li><code>--validator</code>: Added to validator nodes</li>
+<li><code>--insecure-validator-i-know-what-i-do</code>: Added to validators (substrate CLI v2+)</li>
+<li><code>--unsafe-rpc-external</code>: Added in containerized environments</li>
+<li><code>--rpc-methods unsafe</code>: Added by default</li>
+<li><code>--rpc-cors all</code>: Added by default</li>
+<li>Port flags: <code>--prometheus-port</code>, <code>--rpc-port</code></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><code>substrate_cli_args_version</code>: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>validator</code>: (Boolean, default true) Pass the <code>--validator</code> flag to the <code>command</code>.</li>
 <li><code>invulnerable</code>: (Boolean, default false) If true, the node will be added to <code>invulnerables</code> in the chain spec.</li>
@@ -841,7 +858,11 @@ For example:</p>
 <li><code>*name</code>: (String) Name of the collator. <em>Note</em>: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -&gt; 'new-alice').</li>
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
-<li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
+<li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.
+<ul>
+<li><strong>Flag Exclusion</strong>: You can exclude default flags by prefixing them with <code>-:</code>. For example, <code>-:--prometheus-external</code> will exclude the default <code>--prometheus-external</code> flag. Both full flag names (e.g., <code>-:--flag-name</code>) and short names (e.g., <code>-:flag-name</code>) are supported.</li>
+</ul>
+</li>
 <li><code>packages/orchestrator/src/providers/k8s/index.ts</code>: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.</li>
 <li><code>command_with_args</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
@@ -860,7 +881,11 @@ For example:</p>
 <li><code>*count</code>: (Number) Number of <code>collators</code> to launch for this group.</li>
 <li><code>image</code>: (String) Image to use.</li>
 <li><code>command</code>: (String, default <code>polkadot-parachain</code>) Command to run.</li>
-<li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.</li>
+<li><code>args</code>: (Array of strings) An array of arguments to use as default to pass to the <code>command</code>.
+<ul>
+<li><strong>Flag Exclusion</strong>: You can exclude default flags by prefixing them with <code>-:</code>. For example, <code>-:--prometheus-external</code> will exclude the default <code>--prometheus-external</code> flag. Both full flag names (e.g., <code>-:--flag-name</code>) and short names (e.g., <code>-:flag-name</code>) are supported.</li>
+</ul>
+</li>
 <li><code>command_with_args</code>: (String) Overrides <code>command</code> and <code>args</code>.</li>
 <li><code>env</code>: Array of env vars Object to set in the container.
 <ul>
