@@ -1,0 +1,50 @@
+# This example demonstrates how to exclude default flags from validator nodes and collators
+# using the new -:<flag> syntax introduced to solve the insecure validator flag issue
+
+[settings]
+timeout = 1000
+
+[relaychain]
+default_image = "docker.io/paritypr/polkadot-debug:master"
+default_command = "polkadot"
+default_args = ["-lparachain=debug"]
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  args = ["-:--insecure-validator-i-know-what-i-do", "--log=info"]
+
+  [[relaychain.nodes]]
+  name = "bob"
+  args = [
+    "-:insecure-validator-i-know-what-i-do",
+    "-:--no-telemetry",
+    "--log=runtime=debug"
+  ]
+
+  [[relaychain.nodes]]
+  name = "charlie"
+  args = ["--log=debug"]
+
+  [[relaychain.nodes]]
+  name = "dave"
+  validator = false
+  args = [
+    "-:--no-telemetry",
+    "--prometheus-port", "9616",
+    "--log=sync=debug"
+  ]
+
+[[parachains]]
+id = 2001
+
+  [[parachains.collator_groups]]
+  name = "collator-group"
+  count = 2
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = [
+    "-:--rpc-methods unsafe",  # Exclude unsafe RPC for security
+    "-:--prometheus-external",  # Exclude prometheus
+    "--log=parachain=info"
+  ]

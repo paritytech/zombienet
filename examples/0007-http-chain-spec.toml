@@ -5,8 +5,8 @@
 default_image = "docker.io/paritypr/polkadot-debug:master"
 default_command = "polkadot"
 default_args = [ "-lparachain=debug" ]
-
 chain = "rococo-local"
+
 # Example using HTTPS URL for relaychain chain spec
 chain_spec_path = "https://raw.githubusercontent.com/paritytech/zombienet/27b5da08e12184c0a3502b48e9279a7521ba338f/chain-specs/rococo-local.json"
 

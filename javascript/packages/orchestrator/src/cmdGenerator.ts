@@ -10,6 +10,85 @@ import { Node, ZombieRole, SubstrateCliArgsVersion } from "./sharedTypes";
 
 const debug = require("debug")("zombie::cmdGenerator");
 
+/**
+ * Parses exclusion flags from args array and returns both exclusions and filtered args
+ * Exclusion syntax: -:<flag> (e.g., -:--insecure-validator-i-know-what-i-do or -:insecure-validator-i-know-what-i-do)
+ * @param args - Array of command line arguments
+ * @returns Object containing exclusions set and filtered args array
+ */
+function parseExclusionFlags(args: string[]): {
+  exclusions: Set<string>;
+  filteredArgs: string[];
+} {
+  const exclusions = new Set<string>();
+  const filteredArgs: string[] = [];
+
+  for (const arg of args) {
+    if (arg.startsWith("-:")) {
+      // Extract the flag to exclude (remove -: prefix)
+      let flagToExclude = arg.substring(2);
+
+      // Normalize flag format - ensure it starts with --
+      if (!flagToExclude.startsWith("--")) {
+        flagToExclude = `--${flagToExclude}`;
+      }
+
+      exclusions.add(flagToExclude);
+    } else {
+      filteredArgs.push(arg);
+    }
+  }
+
+  return { exclusions, filteredArgs };
+}
+
+/**
+ * Filters out excluded flags from a command arguments array
+ * @param cmdArgs - Array of command arguments to filter
+ * @param exclusions - Set of flags to exclude
+ * @returns Filtered array with excluded flags removed
+ */
+function filterExcludedFlags(
+  cmdArgs: string[],
+  exclusions: Set<string>,
+): string[] {
+  if (exclusions.size === 0) return cmdArgs;
+
+  const filtered: string[] = [];
+  let skipNext = false;
+
+  for (let i = 0; i < cmdArgs.length; i++) {
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+
+    const arg = cmdArgs[i];
+
+    let shouldExclude = false;
+    for (const excludedFlag of exclusions) {
+      if (arg === excludedFlag || arg.startsWith(`${excludedFlag}=`)) {
+        shouldExclude = true;
+        // If the flag doesn't contain '=' and has a separate value, skip the next argument too
+        if (
+          !arg.includes("=") &&
+          i + 1 < cmdArgs.length &&
+          !cmdArgs[i + 1].startsWith("-")
+        ) {
+          skipNext = true;
+        }
+        break;
+      }
+    }
+
+    if (!shouldExclude) {
+      filtered.push(arg);
+    }
+  }
+
+  return filtered;
+}
+
 interface ParachainArgsInterface {
   [key: string]: boolean;
 }
@@ -124,15 +203,30 @@ export async function genCumulusCollatorCmd(
       argsFullNode = nodeSetup.args.slice(splitIndex + 1);
     }
 
+    // Parse exclusion flags from parachain args
+    const {
+      exclusions: parachainExclusions,
+      filteredArgs: filteredParachainArgs,
+    } = parseExclusionFlags(argsParachain || []);
+    argsParachain = filteredParachainArgs;
+
+    // Parse exclusion flags from full node args if they exist
+    let fullNodeExclusions = new Set<string>();
+    if (argsFullNode) {
+      const { exclusions, filteredArgs } = parseExclusionFlags(argsFullNode);
+      fullNodeExclusions = exclusions;
+      argsFullNode = filteredArgs;
+    }
+
     if (argsParachain) {
       for (const arg of argsParachain) {
         if (parachainAddedArgs[arg]) continue;
-
-        // add
-        debug(`adding ${arg}`);
         fullCmd.push(arg);
       }
     }
+
+    // Apply parachain exclusions to the current fullCmd
+    fullCmd = filterExcludedFlags(fullCmd, parachainExclusions);
 
     // Arguments for the relay chain node part of the collator binary.
     fullCmd.push(
@@ -187,6 +281,8 @@ export async function genCumulusCollatorCmd(
 
       fullCmd = fullCmd.concat(argsFullNode);
       debug(`Added ${argsFullNode} to collator`);
+
+      fullCmd = filterExcludedFlags(fullCmd, fullNodeExclusions);
     } else {
       // ensure ports
       for (const portArg of Object.keys(collatorPorts)) {
@@ -256,7 +352,8 @@ export async function genCmd(
 
   if (!command) command = DEFAULT_COMMAND;
 
-  args = [...args];
+  const { exclusions, filteredArgs } = parseExclusionFlags(args);
+  args = [...filteredArgs];
   args.push("--no-mdns");
 
   if (key) args.push(...["--node-key", key]);
@@ -337,7 +434,9 @@ export async function genCmd(
     ...args,
   ];
 
-  const resolvedCmd = [finalArgs.join(" ")];
+  const filteredFinalArgs = filterExcludedFlags(finalArgs, exclusions);
+
+  const resolvedCmd = [filteredFinalArgs.join(" ")];
   if (useWrapper) resolvedCmd.unshift("/cfg/zombie-wrapper.sh");
   return resolvedCmd;
 }
