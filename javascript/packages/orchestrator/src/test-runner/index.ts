@@ -63,7 +63,7 @@ export async function run(
 
   // find creds file
   const configFromEnv = process.env.KUBECONFIG || "config";
-  const credsFile = inCI ? configFromEnv : testDef.creds;
+  const credsFile = inCI ? configFromEnv : (testDef.creds ?? "config");
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {

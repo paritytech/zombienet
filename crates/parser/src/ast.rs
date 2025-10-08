@@ -165,7 +165,7 @@ pub struct Assertion {
 pub struct TestDefinition {
     pub description: Option<String>,
     pub network: String,
-    pub creds: String,
+    pub creds: Option<String>,
     pub assertions: Vec<Assertion>,
 }
 
