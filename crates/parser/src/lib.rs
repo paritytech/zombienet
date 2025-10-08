@@ -672,9 +672,9 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
         }
     }
 
-    if network.is_none() || creds.is_none() {
+    if network.is_none() {
         return Err(errors::ParserError::MissingFields(String::from(
-            "Missing Network/Creds field",
+            "Missing Network",
         )));
     }
 
@@ -682,7 +682,7 @@ pub fn parse(unparsed_file: &str) -> Result<ast::TestDefinition, errors::ParserE
     let test_def = TestDefinition {
         description,
         network: network.unwrap(),
-        creds: creds.unwrap(),
+        creds,
         assertions,
     };
 
