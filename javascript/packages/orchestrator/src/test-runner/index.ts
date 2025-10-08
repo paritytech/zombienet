@@ -62,33 +62,28 @@ export async function run(
   else config.settings.provider = provider;
 
   // find creds file
+  const configFromEnv = process.env.KUBECONFIG || "config";
+  const credsFile = inCI ? configFromEnv : (testDef.creds ?? "config");
   let creds: string | undefined;
-  if (config.settings.provider === "kubernetes") {
-    if (!testDef.creds) {
-      throw new Error(`Missing credential file`);
-    }
-    const configFromEnv = process.env.KUBECONFIG || "config";
-    const credsFile = inCI ? configFromEnv : testDef.creds;
-    if (fs.existsSync(credsFile)) creds = credsFile;
-    else {
-      const possiblePaths = [
-        ".",
-        "..",
-        `${process.env.HOME}/.kube`,
-        "/etc/zombie-net",
-      ];
-      const credsFileExistInPath: string | undefined = possiblePaths.find(
-        (path) => {
-          const t = `${path}/${credsFile}`;
-          return fs.existsSync(t);
-        },
-      );
-      if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
-    }
-
-    if (!creds && config.settings.provider === "kubernetes")
-      throw new Error(`Invalid credential file path: ${credsFile}`);
+  if (fs.existsSync(credsFile)) creds = credsFile;
+  else {
+    const possiblePaths = [
+      ".",
+      "..",
+      `${process.env.HOME}/.kube`,
+      "/etc/zombie-net",
+    ];
+    const credsFileExistInPath: string | undefined = possiblePaths.find(
+      (path) => {
+        const t = `${path}/${credsFile}`;
+        return fs.existsSync(t);
+      },
+    );
+    if (credsFileExistInPath) creds = credsFileExistInPath + "/" + credsFile;
   }
+
+  if (!creds && config.settings.provider === "kubernetes")
+    throw new Error(`Invalid credential file path: ${credsFile}`);
 
   // create suite
   const suite = Suite.create(mocha.suite, suiteName);
