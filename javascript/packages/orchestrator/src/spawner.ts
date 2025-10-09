@@ -101,6 +101,8 @@ export const spawnNode = async (
   // replace all network references in command
   replaceNetworkRef(podDef, network);
 
+  const keystorePath = node.keystorePath ? network.replaceWithNetworInfo(node.keystorePath) : node.keystorePath
+
   await client.spawnFromDef(
     podDef,
     finalFilesToCopyToNode,
@@ -108,7 +110,7 @@ export const spawnNode = async (
     parachainSpecId || network.chainId,
     node.dbSnapshot,
     true, // long running
-    node.keystorePath,
+    keystorePath,
   );
 
   const [nodeIp, nodePort] = await client.getNodeInfo(podDef.metadata.name);
