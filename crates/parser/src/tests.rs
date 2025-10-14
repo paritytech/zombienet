@@ -758,6 +758,36 @@ fn commented_line_empty_parse_ok() {
 }
 
 #[test]
+fn no_creds_parse_ok() {
+    let line: &str = r#"
+    alice: run ./0008-custom.sh within 200 seconds
+    #
+    "#;
+    let data = r#"{
+        "description": null,
+        "network": "./a.toml",
+        "assertions": [
+            {
+                "original_line": "alice: run ./0008-custom.sh within 200 seconds",
+                "parsed": {
+                    "fn": "CustomSh",
+                    "args": {
+                        "node_name": "alice",
+                        "file_path": "./0008-custom.sh",
+                        "custom_args": null,
+                        "timeout": 200
+                    }
+                }
+            }
+        ]
+    }"#;
+    let t: TestDefinition = serde_json::from_str(data).unwrap();
+
+    let result = parse(&[NETWORK, line].join("\n")).unwrap();
+    assert_eq!(result, t);
+}
+
+#[test]
 fn is_up_parse_err() {
     let result = parse("alice: is upp");
     assert!(result.is_err());
