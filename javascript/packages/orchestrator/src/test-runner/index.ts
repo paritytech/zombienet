@@ -160,7 +160,7 @@ export async function run(
             console.log(
               `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
             );
-            
+
             // Show network-wide error logs link for kubernetes in CI when tests fail
             if (network.client.providerName === "kubernetes" && inCI) {
               const networkEndtime = new Date().getTime();
@@ -172,7 +172,9 @@ export async function run(
               console.log(
                 `\n\t${decorators.red("🔍 View error logs for all nodes in the network:")}`,
               );
-              console.log(`\t${decorators.bright(decorators.red(networkLokiUrl))}`);
+              console.log(
+                `\t${decorators.bright(decorators.red(networkLokiUrl))}`,
+              );
             }
           } else {
             success = true;

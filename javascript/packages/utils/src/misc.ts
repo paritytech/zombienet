@@ -125,7 +125,10 @@ export function getLokiUrlForNetworkErrors(
   from: number | string,
   to?: number | string,
 ): string {
-  const loki_url = LOKI_URL_FOR_NETWORK_ERRORS.replace(/{{namespace}}/, namespace)
+  const loki_url = LOKI_URL_FOR_NETWORK_ERRORS.replace(
+    /{{namespace}}/,
+    namespace,
+  )
     .replace(/{{from}}/, from.toString())
     .replace(/{{to}}/, to?.toString() || "now");
 
