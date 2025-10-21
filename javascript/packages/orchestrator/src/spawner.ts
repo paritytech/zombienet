@@ -101,7 +101,9 @@ export const spawnNode = async (
   // replace all network references in command
   replaceNetworkRef(podDef, network);
 
-  const keystorePath = node.keystorePath ? network.replaceWithNetworInfo(node.keystorePath) : node.keystorePath
+  const keystorePath = node.keystorePath
+    ? network.replaceWithNetworInfo(node.keystorePath)
+    : node.keystorePath;
 
   await client.spawnFromDef(
     podDef,

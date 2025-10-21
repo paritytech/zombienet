@@ -323,7 +323,9 @@ export class NativeClient extends Client {
 
     if (keystore) {
       // initialize keystore
-      const keystoreRemoteDir = keystorePathOverride ?? `${podDef.spec.dataPath}/chains/${chainSpecId}/keystore`;
+      const keystoreRemoteDir =
+        keystorePathOverride ??
+        `${podDef.spec.dataPath}/chains/${chainSpecId}/keystore`;
       await makeDir(keystoreRemoteDir, true);
       // inject keys
       await fseCopy(keystore, keystoreRemoteDir);
