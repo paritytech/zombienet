@@ -198,7 +198,6 @@ export class KubeClient extends Client {
     }
 
     if (keystore) {
-      // TODO
       // initialize keystore
       await this.runCommand([
         "exec",
