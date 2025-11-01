@@ -2,6 +2,7 @@ import {
   CreateLogTable,
   TimeoutAbortController,
   decorators,
+  getLokiUrlForNetworkErrors,
 } from "@zombienet/utils";
 import fs from "fs";
 import {
@@ -340,6 +341,33 @@ export class Network {
         this.showNodeInfo(node, provider, logTable);
       }
     }
+
+    // Add network-wide error logs link for kubernetes provider
+    if (this.client.providerName === "kubernetes" && this.networkStartTime) {
+      const inCI = process.env.RUN_IN_CONTAINER === "1";
+      if (inCI) {
+        const networkLokiUrl = getLokiUrlForNetworkErrors(
+          this.namespace,
+          this.networkStartTime,
+        );
+        logTable.pushTo([
+          [
+            {
+              colSpan: 2,
+              hAlign: "center",
+              content: decorators.cyan("🌐 All nodes logs (Grafana)"),
+            },
+          ],
+          [
+            {
+              colSpan: 2,
+              content: decorators.bright(networkLokiUrl),
+            },
+          ],
+        ]);
+      }
+    }
+
     logTable.print();
   }
 
