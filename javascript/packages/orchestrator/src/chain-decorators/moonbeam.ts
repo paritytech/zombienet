@@ -1,4 +1,5 @@
 import { Keyring } from "@polkadot/api";
+import type { KeyringPair } from "@polkadot/keyring/types";
 import { u8aToHex } from "@polkadot/util";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { CreateLogTable, decorators } from "@zombienet/utils";
@@ -9,7 +10,10 @@ import {
   readAndParseChainSpec,
   writeChainSpec,
 } from "../chainSpec";
-import { generateKeyForNode as _generateKeyForNode } from "../keys";
+import {
+  type NodeAccounts,
+  generateKeyForNode as _generateKeyForNode,
+} from "../keys";
 import { ChainSpec } from "../types";
 import { Node } from "../sharedTypes";
 
@@ -96,22 +100,41 @@ async function clearAuthorities(specPath: string) {
   writeChainSpec(specPath, chainSpec);
 }
 
-async function generateKeyForNode(nodeName?: string): Promise<any> {
+async function generateKeyForNode(
+  nodeName?: string,
+  overrideEthKey?: string,
+): Promise<NodeAccounts> {
   const keys = await _generateKeyForNode(nodeName);
 
   await cryptoWaitReady();
 
   const eth_keyring = new Keyring({ type: "ethereum" });
-  const eth_account = eth_keyring.createFromUri(
-    nodeName && nodeName.toLocaleLowerCase() in KNOWN_MOONBEAM_KEYS
-      ? KNOWN_MOONBEAM_KEYS[nodeName.toLocaleLowerCase()]
-      : `${keys.mnemonic}/m/44'/60'/0'/0/0`,
-  );
+  const lowerName = nodeName?.toLocaleLowerCase();
+  const knownKey = lowerName ? KNOWN_MOONBEAM_KEYS[lowerName] : undefined;
+  const uri = knownKey
+    ? knownKey
+    : overrideEthKey
+      ? overrideEthKey
+      : `${keys.mnemonic ?? ""}/m/44'/60'/0'/0/0`;
+
+  let eth_account: KeyringPair;
+  try {
+    eth_account = eth_keyring.createFromUri(uri);
+  } catch (error) {
+    throw new Error(
+      `Failed to create ethereum session key for ${nodeName ?? "collator"}: ${error}`,
+    );
+  }
 
   keys.eth_account = {
     address: eth_account.address,
     publicKey: u8aToHex(eth_account.publicKey),
   };
+
+  if (overrideEthKey) {
+    keys.ethKeyOverrideUsed = true;
+    delete keys.mnemonic;
+  }
 
   return keys;
 }

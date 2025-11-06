@@ -616,7 +616,10 @@ async function getCollatorNodeFromConfig(
 
   const collatorName = getUniqueName(collatorConfig.name || "collator");
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
-  const accountsForNode = await decoratedKeysGenerator(collatorName);
+  const accountsForNode = await decoratedKeysGenerator(
+    collatorName,
+    collatorConfig.override_eth_key,
+  );
 
   const provider = networkSpec.settings.provider;
   const ports = await getPorts(provider, collatorConfig);
