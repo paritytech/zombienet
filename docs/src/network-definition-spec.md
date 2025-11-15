@@ -112,6 +112,7 @@ The network config can be provided both in `json` or `toml` format and each sect
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
     - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
+    - `override_eth_key`: (String) Overrides the auto-generated ethereum session key for EVM-based paras. When set, the provided key is used and Zombienet omits the random seed from the resulting `zombie.json`.
 
   - `collator_groups`:
 
@@ -126,6 +127,7 @@ The network config can be provided both in `json` or `toml` format and each sect
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
       - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
+    - `override_eth_key`: (String) Same as above, lets you provide the ethereum session key.
 
   - `onboard_as_parachain`: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread
   - `register_para`: (Boolean, default true) flag to specify whether the para should be registered. The `add_to_genesis` flag **must** be set to false for this flag to have any effect.

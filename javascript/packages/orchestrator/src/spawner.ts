@@ -96,6 +96,14 @@ export const spawnNode = async (
       isAssetHubPolkadot,
     );
     keystoreLocalDir = path.dirname(keystoreFiles[0]);
+
+    // When we have `override_eth_key` option
+    // seeds/mnemonics that should not leak into `zombie.json`;
+    if (node.accounts.ethKeyOverrideUsed) {
+      delete node.accounts.seed;
+      delete node.accounts.mnemonic;
+      delete node.accounts.ethKeyOverrideUsed;
+    }
   }
 
   // replace all network references in command

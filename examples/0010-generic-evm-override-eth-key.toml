@@ -1,0 +1,26 @@
+[settings]
+timeout = 1000
+
+[relaychain]
+default_image = "docker.io/paritypr/polkadot-debug:master"
+default_command = "polkadot"
+default_args = ["-lparachain=debug"]
+
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+
+  [[relaychain.nodes]]
+  name = "bob"
+
+[[parachains]]
+id = 2000
+chain = "generic-evm"
+
+  [parachains.collator]
+  name = "evm-collator"
+  image = "docker.io/parity/polkadot-parachain:latest"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+  override_eth_key = "0xf2b3f8c5c3d9e2f1a4b6c8d0e3f5a7b9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6"
