@@ -1,0 +1,62 @@
+[relaychain]
+default_command = "polkadot"
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+[[parachains]]
+id = 1000
+addToGenesis = true
+cumulus_based = true
+chain = "asset-hub-rococo-local"
+
+  [parachains.collator]
+  name = "collator01"
+  command = "polkadot-parachain"
+  args = ["-lparachain=debug"]
+
+
+    [parachains.genesis.runtimeGenesis.patch.balances]
+    balances = [
+        ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 3000000000000]
+    ]
+
+    [parachains.genesis.runtimeGenesis.patch.assets]
+    accounts = [
+        [1984, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", 30000000000000]
+    ]
+    assets = [
+        [
+            1984,
+            "1jMhfSJv5MkSQmEq97UmXCmMV63SHoQ3ednwkRSKETrCREU",
+            true,
+            1
+        ]
+    ]
+    metadata = [
+        [
+            1984,
+            [84, 101, 116, 104, 101, 114, 32, 85, 83, 68], # "Tether USD" as ASCII array
+            [85, 83, 68, 84], # "USDT" as ASCII array
+            6
+        ]
+    ]
+
+    [parachains.genesis.runtimeGenesis.patch.foreignAssets]
+    accounts = [
+        [
+            { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
+            "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+            30000000000000
+        ]
+    ]
+    assets = [
+        [# USDC on ethereum: 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
+            { parents = 2, interior = { X2 = [{ GlobalConsensus = { Ethereum = { chain_id = 1 } } }, { AccountKey20 = { key = [160, 184, 105, 145, 198, 33, 139, 54, 193, 209, 157, 74, 46, 158, 176, 206, 54, 6, 235, 72] } }] } },
+            "1jMhfSJv5MkSQmEq97UmXCmMV63SHoQ3ednwkRSKETrCREU",
+            true,
+            1
+        ]
+    ]
