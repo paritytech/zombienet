@@ -60,7 +60,7 @@
     "@zombienet/orchestrator": "^0.0.112",
     "@zombienet/utils": "^0.0.30",
     "cli-progress": "^3.12.0",
-    "commander": "^11.1.0",
+    "commander": "^14.0.2",
     "debug": "^4.4.3",
     "nunjucks": "^3.2.4",
     "typescript": "^5.3.3"
