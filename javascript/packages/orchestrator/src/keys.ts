@@ -1,4 +1,5 @@
 import { Keyring } from "@polkadot/api";
+import type { KeyringPair } from "@polkadot/keyring/types";
 import { u8aToHex } from "@polkadot/util";
 import {
   cryptoWaitReady,
@@ -13,14 +14,34 @@ function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-export async function generateKeyFromSeed(seed: string): Promise<any> {
+export interface SigningAccount {
+  address: string;
+  publicKey: string;
+}
+
+export interface NodeAccounts {
+  seed?: string;
+  mnemonic?: string;
+  sr_account: SigningAccount;
+  sr_stash: SigningAccount;
+  ed_account: SigningAccount;
+  ec_account: {
+    publicKey: string;
+  };
+  eth_account?: SigningAccount;
+  ethKeyOverrideUsed?: boolean;
+}
+
+export async function generateKeyFromSeed(seed: string): Promise<KeyringPair> {
   await cryptoWaitReady();
 
   const sr_keyring = new Keyring({ type: "sr25519" });
   return sr_keyring.createFromUri(`//${seed}`);
 }
 
-export async function generateKeyForNode(nodeName?: string): Promise<any> {
+export async function generateKeyForNode(
+  nodeName?: string,
+): Promise<NodeAccounts> {
   await cryptoWaitReady();
 
   const mnemonic = mnemonicGenerate();
@@ -38,7 +59,6 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
   const ec_keyring = new Keyring({ type: "ecdsa" });
   const ec_account = ec_keyring.createFromUri(`${seed}`);
 
-  // return the needed info
   return {
     seed,
     mnemonic,

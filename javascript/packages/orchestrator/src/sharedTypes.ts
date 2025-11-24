@@ -115,6 +115,7 @@ export interface NodeConfig extends NodeCommonTypes {
   prometheus_port?: number;
   p2p_cert_hash?: string; // libp2p certhash to use with webrtc transport.
   delay_network_settings?: DelayNetworkSettings;
+  override_eth_key?: string;
 }
 
 export interface NodeCommonTypes {
