@@ -22,3 +22,4 @@ export function getNodeKey(node: Node): GenesisNodeKey {
 export default {
   getNodeKey,
 };
+
