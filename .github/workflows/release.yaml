@@ -66,7 +66,7 @@ jobs:
       matrix:
         target:
           - { runner: macos-13, arch: x64 }
-          - { runner: macos-14, arch: arm64 }
+          - { runner: parity-macos, arch: arm64 }
     runs-on: ${{ matrix.target.runner }}
     steps:
       - name: checkout
