@@ -558,12 +558,20 @@ interface UsedNames {
 }
 
 const mUsedNames: UsedNames = {};
+const mParasUsedNames: { [paraId: number]: UsedNames } = {};
 
-export function getUniqueName(name: string): string {
+function sanitizeName(name: string): string {
   // Transform whitespaces to dashes in name, since
   // whitespaces in names are not supported
   // see https://github.com/paritytech/zombienet/issues/1659
-  name = name.replaceAll(" ", "-");
+  return name.replaceAll(" ", "-");
+}
+
+export function getUniqueName(name: string, paraId?: number): string {
+  // Transform whitespaces to dashes in name, since
+  // whitespaces in names are not supported
+  // see https://github.com/paritytech/zombienet/issues/1659
+  name = sanitizeName(name);
   let uniqueName;
   if (!mUsedNames[name]) {
     mUsedNames[name] = 1;
@@ -573,7 +581,30 @@ export function getUniqueName(name: string): string {
     mUsedNames[name] += 1;
   }
 
+  if (paraId) {
+    if (mParasUsedNames[paraId]) {
+      if (mParasUsedNames[paraId][name]) {
+        mParasUsedNames[paraId][name] += 1;
+      } else {
+        // first one
+        mParasUsedNames[paraId][name] = 1;
+      }
+    } else {
+      mParasUsedNames[paraId] = { [name]: 1 };
+    }
+  }
+
   return uniqueName;
+}
+
+function canUseSanitizedNameAsSeed(paraId: number, name: string): boolean {
+  if (mParasUsedNames[paraId] && mParasUsedNames[paraId][name] > 1) {
+    console.warn(
+      `⚠️ Can't use '${name}' as seed since is already in use for paraId: ${paraId}`,
+    );
+    return false;
+  }
+  return true;
 }
 
 async function getLocalOverridePath(
@@ -614,9 +645,15 @@ async function getCollatorNodeFromConfig(
     ? collatorConfig.command_with_args.split(" ")[0]
     : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
-  const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const sanitizedName = sanitizeName(collatorConfig.name || "collator");
+  const collatorName = getUniqueName(sanitizedName, parachain.id);
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
-  const accountsForNode = await decoratedKeysGenerator(collatorName);
+
+  // Allow collators to use the same name (and seed) of validators in the RC
+  const seed = canUseSanitizedNameAsSeed(parachain.id, sanitizedName)
+    ? sanitizedName
+    : collatorName;
+  const accountsForNode = await decoratedKeysGenerator(seed);
 
   const provider = networkSpec.settings.provider;
   const ports = await getPorts(provider, collatorConfig);
