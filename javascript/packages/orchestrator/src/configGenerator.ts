@@ -575,22 +575,23 @@ export function getUniqueName(name: string, paraId?: number): string {
   let uniqueName;
   if (!mUsedNames[name]) {
     mUsedNames[name] = 1;
-    if (paraId) {
-      if (mParasUsedNames[paraId]) {
-        if (mParasUsedNames[paraId][name]) {
-          mParasUsedNames[paraId][name] += 1;
-        } else {
-          // first one
-          mParasUsedNames[paraId][name] = 1;
-        }
-      } else {
-        mParasUsedNames[paraId] = { [name]: 1 };
-      }
-    }
     uniqueName = name;
   } else {
     uniqueName = `${name}-${mUsedNames[name]}`;
     mUsedNames[name] += 1;
+  }
+
+  if (paraId) {
+    if (mParasUsedNames[paraId]) {
+      if (mParasUsedNames[paraId][name]) {
+        mParasUsedNames[paraId][name] += 1;
+      } else {
+        // first one
+        mParasUsedNames[paraId][name] = 1;
+      }
+    } else {
+      mParasUsedNames[paraId] = { [name]: 1 };
+    }
   }
 
   return uniqueName;
@@ -599,7 +600,7 @@ export function getUniqueName(name: string, paraId?: number): string {
 function canUseSanitizedNameAsSeed(paraId: number, name: string): boolean {
   if (mParasUsedNames[paraId] && mParasUsedNames[paraId][name] > 1) {
     console.warn(
-      `Can't use ${name} as seed since is already in use for paraId: ${paraId}`,
+      `⚠️ Can't use '${name}' as seed since is already in use for paraId: ${paraId}`,
     );
     return false;
   }
