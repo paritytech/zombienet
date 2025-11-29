@@ -71,6 +71,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `prometheus_port`: (number) Prometheus port to use.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
   - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
+  - `keystore_path`: Allows to override keystore path. For example `"{{'network'|zombie('base_path')}}/alice/path/to/keystore"`.
 - `node_groups`:
   - `*name`: (String) Group name, used for naming the nodes (e.g name-1) *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new group' -> 'new-group').
   - `*count` (Number), Number of `nodes` to launch for this group.
@@ -112,6 +113,7 @@ The network config can be provided both in `json` or `toml` format and each sect
       - name: (String) name of the `env` var.
       - value: (String| number) Value of the env var.
     - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
+    - `keystore_path`: Allows to override keystore path. For example `"{{'network'|zombie('base_path')}}/collator/path/to/keystore"`.
 
   - `collator_groups`:
 

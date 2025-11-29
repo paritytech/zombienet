@@ -711,6 +711,7 @@ async function getCollatorNodeFromConfig(
       collatorConfig.delay_network_settings ||
       parachain.delayNetworkSettings ||
       networkSpec.settings.delayNetworkSettings,
+    keystorePath: collatorConfig.keystore_path,
   };
 
   if (group) node.group = group;
@@ -809,6 +810,7 @@ async function getNodeFromConfig(
     delayNetworkSettings:
       node.delay_network_settings ||
       networkSpec.relaychain.delayNetworkSettings,
+    keystorePath: node.keystore_path,
   };
 
   if (group) nodeSetup.group = group;
