@@ -179,6 +179,8 @@ export async function generateNetworkSpec(
       delayNetworkSettings:
         config.relaychain.default_delay_network_settings ||
         config.settings?.global_delay_network_global_settings,
+      useStashForValidators:
+        config.relaychain.use_stash_for_validators != false, // false IFF is explicit false
     },
     parachains: [],
   };

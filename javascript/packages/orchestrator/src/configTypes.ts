@@ -47,6 +47,7 @@ export interface RelayChainConfig {
   total_node_in_groups?: number;
   genesis?: JSON | ObjectJSON;
   default_delay_network_settings?: DelayNetworkSettings;
+  use_stash_for_validators?: boolean;
 }
 
 export interface ComputedNetwork {
@@ -69,6 +70,7 @@ export interface ComputedNetwork {
     defaultResources?: Resources;
     delayNetworkSettings?: DelayNetworkSettings;
     force_decorator?: string;
+    useStashForValidators: boolean;
   };
   parachains: Parachain[];
   types: any;

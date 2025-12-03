@@ -770,7 +770,10 @@ export async function customizePlainRelayChain(
             networkSpec.relaychain.force_decorator,
           );
           const [decoratedGetNodeKey] = decorate(chain, [getNodeKey]);
-          const key = decoratedGetNodeKey(node);
+          const key = decoratedGetNodeKey(
+            node,
+            networkSpec.relaychain.useStashForValidators,
+          );
           await addAuthority(specPath, node, key);
         } else {
           await addAuraAuthority(specPath, node.name, node.accounts!);
