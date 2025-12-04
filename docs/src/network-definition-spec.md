@@ -38,12 +38,13 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `default_prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
+- `use_stash_for_validators`: (boolean, default true) Allow to set if the _stash_ derivation (//<name>/stash) will be used for the validator set or not.
 - `nodes`:
   - `*name`: (String) Name of the node. *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -> 'new-alice').
   - `image`: (String) Override default docker image to use for this node.
   - `command`: (String) Override default command.
   - `command_with_args`: (String) Override default command and args.
-  - `args`: (Array of strings) Arguments to be passed to the `command`. 
+  - `args`: (Array of strings) Arguments to be passed to the `command`.
     - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--insecure-validator-i-know-what-i-do` will exclude the default `--insecure-validator-i-know-what-i-do` flag that is normally added to validator nodes. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
     - **Default flags added by Zombienet**:
       - `--no-mdns`: Always added to all nodes
