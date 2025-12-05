@@ -91,6 +91,7 @@ export interface Node extends NodeCommonTypes, Ports {
   substrateCliArgsVersion?: SubstrateCliArgsVersion;
   delayNetworkSettings?: DelayNetworkSettings;
   keystoreKeyTypes?: string[];
+  keystorePath?: string;
 }
 
 export interface Ports {
@@ -128,6 +129,7 @@ export interface NodeCommonTypes {
   substrate_cli_args_version?: SubstrateCliArgsVersion;
   resources?: Resources;
   keystore_key_types?: string[];
+  keystore_path?: string;
 }
 
 export interface envVars {
