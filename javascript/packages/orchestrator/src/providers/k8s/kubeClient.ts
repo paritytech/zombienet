@@ -124,6 +124,7 @@ export class KubeClient extends Client {
     chainSpecId?: string,
     dbSnapshot?: string,
     longRunning?: boolean,
+    keystorePathOverride?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
     writeLocalJsonFile(this.tmpDir, `${name}.json`, podDef);
@@ -206,14 +207,14 @@ export class KubeClient extends Client {
         "--",
         "mkdir",
         "-p",
-        `/data/chains/${chainSpecId}/keystore`,
+        keystorePathOverride ?? `/data/chains/${chainSpecId}/keystore`,
       ]);
 
       // inject keys
       await this.copyFileToPod(
         name,
         keystore,
-        `/data/chains/${chainSpecId}`,
+        keystorePathOverride ?? `/data/chains/${chainSpecId}`,
         TRANSFER_CONTAINER_NAME,
         true,
       );
