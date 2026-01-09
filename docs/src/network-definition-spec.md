@@ -67,8 +67,9 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `overrides`: Array of `overrides` definitions.
   - `add_to_bootnodes`: (Boolean, default false) Add this node to the bootnode list.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
-  - `ws_port`: (number), WS port to use.
   - `rpc_port`: (number) RPC port to use.
+  - `ws_port` (drepecated, use `rpc_port` instead): (number), WS port to use.
+  - `p2p_port`: (number) Port to use in p2p protocols.
   - `prometheus_port`: (number) Prometheus port to use.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
   - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
