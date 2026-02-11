@@ -49,7 +49,7 @@ export interface fileMap {
 
 export interface TestDefinition {
   network: string;
-  creds: string;
+  creds?: string;
   description?: string;
   assertions: Assertion[];
 }

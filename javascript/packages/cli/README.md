@@ -1,4 +1,4 @@
-![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)  [![GitLab Status](https://gitlab.parity.io/parity/zombienet/pipelines/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)
 
 # Zombienet
 
@@ -394,5 +394,4 @@ Commands:
 ## Acknowledgement
 
 This project take inspiration and some patterns from
-[polkadot-launch](https://github.com/paritytech/polkadot-launch) and
-[simnet](https://gitlab.parity.io/parity/simnet/-/tree/master).
+[polkadot-launch](https://github.com/paritytech/polkadot-launch).

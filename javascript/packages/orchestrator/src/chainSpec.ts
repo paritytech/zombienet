@@ -10,7 +10,7 @@ import crypto from "crypto";
 import fs from "fs";
 import { generateKeyFromSeed } from "./keys";
 import { ChainSpec } from "./types";
-import { HrmpChannelsConfig, Node } from "./sharedTypes";
+import { HrmpChannelsConfig, Node, Parachain } from "./sharedTypes";
 import { ComputedNetwork } from "./configTypes";
 import { decorate, whichChain } from "./chain-decorators";
 const JSONbig = require("json-bigint")({ useNativeBigInt: true });
@@ -373,6 +373,16 @@ export async function generateNominators(
     const runtimeConfig = getRuntimeConfig(chainSpec);
     if (!runtimeConfig?.staking) return;
 
+    // ensure maxNominations doesn't exceed available validators
+    const actualMaxNominations = Math.min(maxNominations, validators.length);
+    if (actualMaxNominations < maxNominations) {
+      console.warn(
+        decorators.yellow(
+          `⚠️  Adjusting max_nominations from ${maxNominations} to ${actualMaxNominations} to match validator count.`,
+        ),
+      );
+    }
+
     let logLine = `👤 Generating random Nominators (${decorators.green(
       randomNominatorsCount,
     )})`;
@@ -388,7 +398,7 @@ export async function generateNominators(
       const balanceToAdd = stakingBond! + BigInt(1);
       runtimeConfig.balances.balances.push([nom.address, balanceToAdd]);
       // random nominations
-      const count = crypto.randomInt(maxForRandom) % maxNominations;
+      const count = crypto.randomInt(maxForRandom) % actualMaxNominations;
       const nominations = getRandom(validators, count || count + 1);
       // push to stakers
       runtimeConfig.staking.stakers.push([
@@ -760,7 +770,10 @@ export async function customizePlainRelayChain(
             networkSpec.relaychain.force_decorator,
           );
           const [decoratedGetNodeKey] = decorate(chain, [getNodeKey]);
-          const key = decoratedGetNodeKey(node);
+          const key = decoratedGetNodeKey(
+            node,
+            networkSpec.relaychain.useStashForValidators,
+          );
           await addAuthority(specPath, node, key);
         } else {
           await addAuraAuthority(specPath, node.name, node.accounts!);
@@ -791,6 +804,42 @@ export async function customizePlainRelayChain(
     );
   }
 }
+
+export function customizeParachainRawSpec(
+  specPath: string,
+  parachain: Parachain,
+) {
+  try {
+    const paraSpecRaw = readAndParseChainSpec(specPath);
+
+    // Customize the chain-spec fields
+    if (parachain.withCustomProps) {
+      // name: <para_id>-[parachain-name]
+      paraSpecRaw.name = `${parachain.id}-${parachain.name}`;
+
+      // id: <para_id>_testnet
+      paraSpecRaw.id = `${parachain.id}_testnet`;
+
+      // protocolId: <para_id>-[parachain-name]
+      paraSpecRaw.protocolId = `${parachain.id}-${parachain.name}`;
+
+      debug(`Customized parachain chain-spec for ${parachain.name}:`);
+      debug(`  name: ${paraSpecRaw.name}`);
+      debug(`  id: ${paraSpecRaw.id}`);
+      debug(`  protocolId: ${paraSpecRaw.protocolId}`);
+    }
+
+    writeChainSpec(specPath, paraSpecRaw);
+  } catch (err) {
+    console.log(
+      `\n ${decorators.red("Error customizing parachain chain-spec: ")} \t ${decorators.bright(
+        err,
+      )}\n`,
+    );
+    throw err;
+  }
+}
+
 export default {
   addAuraAuthority,
   addAuthority,
@@ -805,4 +854,5 @@ export default {
   isRawSpec,
   getChainIdFromSpec,
   customizePlainRelayChain,
+  customizeParachainRawSpec,
 };

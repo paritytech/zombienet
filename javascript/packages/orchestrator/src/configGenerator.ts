@@ -1,11 +1,13 @@
 import fs from "fs";
 import path, { resolve } from "path";
+import os from "os";
 
 import {
   decorators,
   getRandomPort,
   getSha256,
   validateImageUrl,
+  downloadFile,
 } from "@zombienet/utils";
 import {
   ARGS_TO_REMOVE,
@@ -42,6 +44,46 @@ import {
 } from "./sharedTypes";
 
 const debug = require("debug")("zombie::config-manager");
+
+/**
+ * Resolves a chain spec path which can be either a local file path or HTTP/HTTPS URL
+ * If it's a URL, downloads it to a temporary file and returns the local path
+ * @param chainSpecPath - The path or URL to the chain spec
+ * @param context - Context for error messages (e.g., "relaychain" or "parachain id: 1000")
+ * @returns The resolved local file path
+ */
+async function resolveChainSpecPath(
+  chainSpecPath: string,
+  context: string,
+): Promise<string> {
+  if (/^https?:\/\//i.test(chainSpecPath)) {
+    const tmpFile = path.join(
+      os.tmpdir(),
+      `zombienet-${context.replace(/[^a-zA-Z0-9]/g, "-")}-spec-${getSha256(chainSpecPath)}.json`,
+    );
+    await downloadFile(chainSpecPath, tmpFile);
+    if (!fs.existsSync(tmpFile)) {
+      console.error(
+        decorators.red(
+          `Failed to download ${context} chain spec from URL: ${chainSpecPath}`,
+        ),
+      );
+      process.exit(1);
+    }
+    return tmpFile;
+  } else {
+    const resolvedPath = resolve(process.cwd(), chainSpecPath);
+    if (!fs.existsSync(resolvedPath)) {
+      console.error(
+        decorators.red(
+          `Chain spec provided for ${context} does not exist: ${resolvedPath}`,
+        ),
+      );
+      process.exit(1);
+    }
+    return resolvedPath;
+  }
+}
 
 // get the path of the zombie wrapper
 export const zombieWrapperPath = resolve(__dirname, `../${ZOMBIE_WRAPPER}`);
@@ -132,9 +174,13 @@ export async function generateNetworkSpec(
       defaultPrometheusPrefix:
         config.relaychain.default_prometheus_prefix ||
         DEFAULT_PROMETHEUS_PREFIX,
+      defaultSubstrateCliArgsVersion:
+        config.relaychain.default_substrate_cli_args_version,
       delayNetworkSettings:
         config.relaychain.default_delay_network_settings ||
         config.settings?.global_delay_network_global_settings,
+      useStashForValidators:
+        config.relaychain.use_stash_for_validators != false, // false IFF is explicit false
     },
     parachains: [],
   };
@@ -164,20 +210,10 @@ export async function generateNetworkSpec(
 
   // if we don't have a path to the chain-spec leave undefined to create
   if (config.relaychain.chain_spec_path) {
-    const chainSpecPath = resolve(
-      process.cwd(),
+    networkSpec.relaychain.chainSpecPath = await resolveChainSpecPath(
       config.relaychain.chain_spec_path,
+      "relaychain",
     );
-    if (!fs.existsSync(chainSpecPath)) {
-      console.error(
-        decorators.red(
-          `Genesis spec provided does not exist: ${chainSpecPath}`,
-        ),
-      );
-      process.exit(1);
-    } else {
-      networkSpec.relaychain.chainSpecPath = chainSpecPath;
-    }
   }
 
   // even if we have a chain_spec_path we need to set
@@ -226,7 +262,7 @@ export async function generateNetworkSpec(
           networkSpec.relaychain.defaultPrometheusPrefix,
         substrate_cli_args_version:
           nodeGroup.substrate_cli_args_version ||
-          networkSpec.relaychain.default_substrate_cli_args_version,
+          networkSpec.relaychain.defaultSubstrateCliArgsVersion,
       };
 
       const nodeSetup = await getNodeFromConfig(
@@ -242,6 +278,16 @@ export async function generateNetworkSpec(
 
   if (networkSpec.relaychain.nodes.length < 1) {
     throw new Error("No NODE defined in config, please review.");
+  }
+
+  const validatorCount = networkSpec.relaychain.nodes.filter(
+    (node: any) => node.validator,
+  ).length;
+  if (
+    networkSpec.relaychain.maxNominations > validatorCount &&
+    networkSpec.relaychain.randomNominatorsCount > 0
+  ) {
+    networkSpec.relaychain.maxNominations = validatorCount;
   }
 
   if (config.parachains && config.parachains.length) {
@@ -409,6 +455,8 @@ export async function generateNetworkSpec(
         para,
         cumulusBased: isCumulusBased,
         defaultArgs: parachain.default_args || [],
+        defaultSubstrateCliArgsVersion:
+          parachain.default_substrate_cli_args_version,
         addToGenesis:
           parachain.add_to_genesis === undefined
             ? true
@@ -421,6 +469,10 @@ export async function generateNetworkSpec(
           parachain.onboard_as_parachain !== undefined
             ? parachain.onboard_as_parachain
             : true, // onboard by default
+        withCustomProps:
+          parachain.with_custom_props !== undefined
+            ? parachain.with_custom_props
+            : false, // don't customize by default
         collators,
       };
 
@@ -428,17 +480,10 @@ export async function generateNetworkSpec(
 
       // if we don't have a path to the chain-spec leave undefined to create
       if (parachain.chain_spec_path) {
-        const chainSpecPath = resolve(process.cwd(), parachain.chain_spec_path);
-        if (!fs.existsSync(chainSpecPath)) {
-          console.error(
-            decorators.red(
-              `Chain spec provided for parachain id: ${parachain.id} does not exist: ${chainSpecPath}`,
-            ),
-          );
-          process.exit(1);
-        } else {
-          parachainSetup.chainSpecPath = chainSpecPath;
-        }
+        parachainSetup.chainSpecPath = await resolveChainSpecPath(
+          parachain.chain_spec_path,
+          `parachain id: ${parachain.id}`,
+        );
       }
 
       // even if we have a chain_spec_path we need to set
@@ -515,12 +560,20 @@ interface UsedNames {
 }
 
 const mUsedNames: UsedNames = {};
+const mParasUsedNames: { [paraId: number]: UsedNames } = {};
 
-export function getUniqueName(name: string): string {
+function sanitizeName(name: string): string {
   // Transform whitespaces to dashes in name, since
   // whitespaces in names are not supported
   // see https://github.com/paritytech/zombienet/issues/1659
-  name = name.replaceAll(" ", "-");
+  return name.replaceAll(" ", "-");
+}
+
+export function getUniqueName(name: string, paraId?: number): string {
+  // Transform whitespaces to dashes in name, since
+  // whitespaces in names are not supported
+  // see https://github.com/paritytech/zombienet/issues/1659
+  name = sanitizeName(name);
   let uniqueName;
   if (!mUsedNames[name]) {
     mUsedNames[name] = 1;
@@ -530,7 +583,30 @@ export function getUniqueName(name: string): string {
     mUsedNames[name] += 1;
   }
 
+  if (paraId) {
+    if (mParasUsedNames[paraId]) {
+      if (mParasUsedNames[paraId][name]) {
+        mParasUsedNames[paraId][name] += 1;
+      } else {
+        // first one
+        mParasUsedNames[paraId][name] = 1;
+      }
+    } else {
+      mParasUsedNames[paraId] = { [name]: 1 };
+    }
+  }
+
   return uniqueName;
+}
+
+function canUseSanitizedNameAsSeed(paraId: number, name: string): boolean {
+  if (mParasUsedNames[paraId] && mParasUsedNames[paraId][name] > 1) {
+    console.warn(
+      `⚠️ Can't use '${name}' as seed since is already in use for paraId: ${paraId}`,
+    );
+    return false;
+  }
+  return true;
 }
 
 async function getLocalOverridePath(
@@ -571,9 +647,15 @@ async function getCollatorNodeFromConfig(
     ? collatorConfig.command_with_args.split(" ")[0]
     : collatorConfig.command || DEFAULT_CUMULUS_COLLATOR_BIN;
 
-  const collatorName = getUniqueName(collatorConfig.name || "collator");
+  const sanitizedName = sanitizeName(collatorConfig.name || "collator");
+  const collatorName = getUniqueName(sanitizedName, parachain.id);
   const [decoratedKeysGenerator] = decorate(para, [generateKeyForNode]);
-  const accountsForNode = await decoratedKeysGenerator(collatorName);
+
+  // Allow collators to use the same name (and seed) of validators in the RC
+  const seed = canUseSanitizedNameAsSeed(parachain.id, sanitizedName)
+    ? sanitizedName
+    : collatorName;
+  const accountsForNode = await decoratedKeysGenerator(seed);
 
   const provider = networkSpec.settings.provider;
   const ports = await getPorts(provider, collatorConfig);
@@ -634,6 +716,16 @@ async function getCollatorNodeFromConfig(
   };
 
   if (group) node.group = group;
+
+  if (
+    collatorConfig.substrate_cli_args_version ||
+    parachain.default_substrate_cli_args_version
+  )
+    node.substrateCliArgsVersion =
+      collatorConfig.substrate_cli_args_version ||
+      parachain.default_substrate_cli_args_version ||
+      undefined; // will be detected as part of the bootstrap process
+
   return node;
 }
 
@@ -730,11 +822,12 @@ async function getNodeFromConfig(
   if (dbSnapshot) nodeSetup.dbSnapshot = dbSnapshot;
   if (
     node.substrate_cli_args_version ||
-    networkSpec.default_substrate_cli_args_version
+    networkSpec.relaychain.defaultSubstrateCliArgsVersion
   )
     nodeSetup.substrateCliArgsVersion =
       node.substrate_cli_args_version ||
-      networkSpec.default_substrate_cli_args_version;
+      networkSpec.relaychain.defaultSubstrateCliArgsVersion ||
+      undefined; // will be detected as part of the bootstrap process
   return nodeSetup;
 }
 

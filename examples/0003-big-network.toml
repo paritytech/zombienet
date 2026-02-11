@@ -19,7 +19,6 @@ id = 100
 
   [[parachains.collator_groups]]
     count = 2
-    [parachains.collator_groups.collator]
     name = "collator"
     command = "polkadot-parachain"
     image = "docker.io/parity/polkadot-parachain:latest"

@@ -1,5 +1,5 @@
 
-![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)  [![GitLab Status](https://gitlab.parity.io/parity/zombienet/pipelines/pipeline.svg)](https://gitlab.parity.io/parity/zombienet/pipelines)
+![ci](https://github.com/paritytech/zombienet/actions/workflows/ci.yml/badge.svg)
 
 # Zombienet
 
@@ -459,7 +459,7 @@ Below can be found some of the projects that are currently using Zombienet as in
 **In Parity:**
 
 - [Cumulus](https://github.com/paritytech/cumulus/tree/master/zombienet/tests)
-- [Polkadot](https://polkadot.network/) in the [testing pipeline](https://github.com/paritytech/polkadot/blob/eafdfc36492384e16e1c253be9d5097fb3f33c60/scripts/ci/gitlab/pipeline/zombienet.yml);
+- [Polkadot](https://polkadot.com) in the [testing pipeline](https://github.com/paritytech/polkadot/blob/eafdfc36492384e16e1c253be9d5097fb3f33c60/scripts/ci/gitlab/pipeline/zombienet.yml);
 - [Substrate](https://github.com/paritytech/substrate/tree/master/zombienet)
 
 **In the Polkadot ecosystem:**
@@ -469,7 +469,7 @@ Below can be found some of the projects that are currently using Zombienet as in
 - [Gossamer](https://github.com/ChainSafe/gossamer/issues/2843)
 - [Oak/Turing/Neumann](https://github.com/OAK-Foundation/OAK-blockchain/tree/master/zombienets)
 - [Hydradx](https://github.com/galacticcouncil/HydraDX-node/tree/master/launch-configs/zombienet)
-- [InvArch](https://github.com/InvArch/InvArch-Node/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
+- [InvArch](https://github.com/AbstractedCo/InvArch/blob/34a6e2216bc79c9bcee2f2f4c0cd8243fe4dfc93/zombienet/rococo-and-tinkernet+basilisk.toml)
 - [Mangata](https://github.com/mangata-finance/mangata-node/tree/develop/devops/zombienet)
 - [Manta/Phala](https://github.com/Manta-Network/manta-indexer/pull/30)
 - [Moonbeam](https://github.com/moonbeam-foundation/moonbeam/tree/master/test)
@@ -479,5 +479,4 @@ Below can be found some of the projects that are currently using Zombienet as in
 ## Acknowledgement
 
 This project takes inspiration and some patterns from
-[polkadot-launch](https://github.com/paritytech/polkadot-launch) and
-[simnet](https://gitlab.parity.io/parity/simnet/-/tree/master).
+[polkadot-launch](https://github.com/paritytech/polkadot-launch).

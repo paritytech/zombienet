@@ -20,7 +20,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `node_spawn_timeout`: (Number, default per provider) timeout to spawn pod/process.
 - `local_ip`: (String, default "127.0.0.1") ip used for expose local services (rpc/metrics/monitors).
 - `node_verifier`: (String, "None" or "Metric"), Allow to manage how we verify node readiness or disable (None). The default value is `Metric`.
-- `isolate_env`: (boolean, default falce), If true, zombienet will add a random suffix to `protocolId` (in the chain-spec) and will add the `forkId` field with the same value of the `protocolId` (plus the suffix). This will _isolate_ the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).
+- `isolate_env`: (boolean, default false), If true, zombienet will add a random suffix to `protocolId` (in the chain-spec) and will add the `forkId` field with the same value of the `protocolId` (plus the suffix). This will _isolate_ the network since the prefix used in p2p protocols will not match with other networks (mostly used to run multiple networks in native provider).
 
 ## `relaychain`
 
@@ -38,12 +38,24 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `default_prometheus_prefix`: A parameter for customizing the metric's prefix. If parameter is placed in `relaychain` level, it will be "passed" to all `relaychain` nodes. Defaults to 'substrate'.
 - `random_nominators_count`: (number, optional), if is set _and the stacking pallet is enabled_ zombienet will generate `x` nominators and will be injected in the genesis.
 - `max_nominations`: (number, default 24), the max allowed number of nominations by a nominator. This should match the value set in the runtime (e.g Kusama is 24 and Polkadot 16).
+- `use_stash_for_validators`: (boolean, default true) Allow to set if the _stash_ derivation (//<name>/stash) will be used for the validator set or not.
 - `nodes`:
   - `*name`: (String) Name of the node. *Note*: Any whitespace in the name will be replaced with a dash (e.g 'new alice' -> 'new-alice').
   - `image`: (String) Override default docker image to use for this node.
   - `command`: (String) Override default command.
   - `command_with_args`: (String) Override default command and args.
   - `args`: (Array of strings) Arguments to be passed to the `command`.
+    - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--insecure-validator-i-know-what-i-do` will exclude the default `--insecure-validator-i-know-what-i-do` flag that is normally added to validator nodes. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
+    - **Default flags added by Zombienet**:
+      - `--no-mdns`: Always added to all nodes
+      - `--no-telemetry`: Added when telemetry is disabled (default)
+      - `--prometheus-external`: Added when prometheus is enabled
+      - `--validator`: Added to validator nodes
+      - `--insecure-validator-i-know-what-i-do`: Added to validators (substrate CLI v2+)
+      - `--unsafe-rpc-external`: Added in containerized environments
+      - `--rpc-methods unsafe`: Added by default
+      - `--rpc-cors all`: Added by default
+      - Port flags: `--prometheus-port`, `--rpc-port`
   - `substrate_cli_args_version`: (0|1|2) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
   - `validator`: (Boolean, default true) Pass the `--validator` flag to the `command`.
   - `invulnerable`: (Boolean, default false) If true, the node will be added to `invulnerables` in the chain spec.
@@ -55,8 +67,9 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `overrides`: Array of `overrides` definitions.
   - `add_to_bootnodes`: (Boolean, default false) Add this node to the bootnode list.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.
-  - `ws_port`: (number), WS port to use.
   - `rpc_port`: (number) RPC port to use.
+  - `ws_port` (drepecated, use `rpc_port` instead): (number), WS port to use.
+  - `p2p_port`: (number) Port to use in p2p protocols.
   - `prometheus_port`: (number) Prometheus port to use.
   - `prometheus_prefix`: A parameter for customizing the metric's prefix for the specific node. Will apply only to this node; Defaults to 'substrate'.
   - `keystore_key_types`: Defines which keystore keys should be created, for more details checkout details below.
@@ -81,6 +94,7 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `*id`: (Number) The id to assign to this parachain. Must be unique.
   - `add_to_genesis`: (Boolean, default true) flag to add parachain to genesis or register in runtime.
   - `cumulus_based`: (Boolean, default true) flag to use `cumulus` command generation.
+  - `with_custom_props`: (Boolean, default false) flag to enable customization of parachain chain-spec properties (name, id, protocolId). When true, the chain-spec will be customized with parachain-specific identifiers. When false, the original chain-spec properties are preserved.
   - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command` side. _NOTE_: this args will be passed to the collator side and shouldn't include _args_ to the full node.
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
@@ -93,6 +107,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+      - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--prometheus-external` will exclude the default `--prometheus-external` flag. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
     - `packages/orchestrator/src/providers/k8s/index.ts`: (0|1) By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
     - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
@@ -107,6 +122,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - `image`: (String) Image to use.
     - `command`: (String, default `polkadot-parachain`) Command to run.
     - `args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
+      - **Flag Exclusion**: You can exclude default flags by prefixing them with `-:`. For example, `-:--prometheus-external` will exclude the default `--prometheus-external` flag. Both full flag names (e.g., `-:--flag-name`) and short names (e.g., `-:flag-name`) are supported.
     - `command_with_args`: (String) Overrides `command` and `args`.
     - `env`: Array of env vars Object to set in the container.
       - name: (String) name of the `env` var.

@@ -11,3 +11,4 @@ bins
 # nix
 result
 *.log
+.idea

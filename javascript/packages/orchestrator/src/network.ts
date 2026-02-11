@@ -2,6 +2,7 @@ import {
   CreateLogTable,
   TimeoutAbortController,
   decorators,
+  getLokiUrlForNetworkErrors,
 } from "@zombienet/utils";
 import fs from "fs";
 import {
@@ -340,6 +341,33 @@ export class Network {
         this.showNodeInfo(node, provider, logTable);
       }
     }
+
+    // Add network-wide error logs link for kubernetes provider
+    if (this.client.providerName === "kubernetes" && this.networkStartTime) {
+      const inCI = process.env.RUN_IN_CONTAINER === "1";
+      if (inCI) {
+        const networkLokiUrl = getLokiUrlForNetworkErrors(
+          this.namespace,
+          this.networkStartTime,
+        );
+        logTable.pushTo([
+          [
+            {
+              colSpan: 2,
+              hAlign: "center",
+              content: decorators.cyan("🌐 All nodes logs (Grafana)"),
+            },
+          ],
+          [
+            {
+              colSpan: 2,
+              content: decorators.bright(networkLokiUrl),
+            },
+          ],
+        ]);
+      }
+    }
+
     logTable.print();
   }
 
@@ -384,9 +412,14 @@ export class Network {
   replaceWithNetworInfo(placeholder: string): string {
     return placeholder.replace(
       TOKEN_PLACEHOLDER,
-      (_substring, nodeName, key: keyof NetworkNode) => {
-        const node = this.getNodeByName(nodeName);
-        return node[key];
+      (_substring, nodeNameOrNetwork, key: keyof NetworkNode) => {
+        if (nodeNameOrNetwork === "network") {
+          const key_to_use = (key as string) == "base_path" ? "tmpDir" : key;
+          return this[key_to_use as keyof Network];
+        } else {
+          const node = this.getNodeByName(nodeNameOrNetwork);
+          return node[key as keyof NetworkNode];
+        }
       },
     );
   }

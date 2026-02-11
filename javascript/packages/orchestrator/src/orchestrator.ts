@@ -245,6 +245,9 @@ export async function start(
 
     // Set substrate client argument version, needed from breaking change.
     // see https://github.com/paritytech/substrate/pull/13384
+    // This will only spawn detection processes for nodes that don't have
+    // substrate_cli_args_version configured via default_substrate_cli_args_version
+    // or individual node substrate_cli_args_version settings
     await setSubstrateCliArgsVersion(networkSpec, client);
 
     const random_suffix_to_isolate = networkSpec.settings.isolate_env

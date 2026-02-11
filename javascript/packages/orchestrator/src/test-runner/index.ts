@@ -1,6 +1,7 @@
 import {
   decorators,
   getLokiUrl,
+  getLokiUrlForNetworkErrors,
   readNetworkConfig,
   setLogType,
   sleep,
@@ -63,7 +64,7 @@ export async function run(
 
   // find creds file
   const configFromEnv = process.env.KUBECONFIG || "config";
-  const credsFile = inCI ? configFromEnv : testDef.creds;
+  const credsFile = inCI ? configFromEnv : (testDef.creds ?? "config");
   let creds: string | undefined;
   if (fs.existsSync(credsFile)) creds = credsFile;
   else {
@@ -159,6 +160,22 @@ export async function run(
             console.log(
               `\n\n\t${decorators.red("❌ One or more of your test failed...")}`,
             );
+
+            // Show network-wide error logs link for kubernetes in CI when tests fail
+            if (network.client.providerName === "kubernetes" && inCI) {
+              const networkEndtime = new Date().getTime();
+              const networkLokiUrl = getLokiUrlForNetworkErrors(
+                network.namespace,
+                network.networkStartTime!,
+                networkEndtime,
+              );
+              console.log(
+                `\n\t${decorators.red("🔍 View error logs for all nodes in the network:")}`,
+              );
+              console.log(
+                `\t${decorators.bright(decorators.red(networkLokiUrl))}`,
+              );
+            }
           } else {
             success = true;
           }
@@ -219,6 +236,18 @@ export async function run(
                     );
                   }
                 }
+
+                // Add network-wide errors logs link
+                const networkLokiUrl = getLokiUrlForNetworkErrors(
+                  network.namespace,
+                  network.networkStartTime!,
+                  networkEndtime,
+                );
+                console.log(
+                  `\n\t${decorators.cyan("🌐 All nodes (relaychain + parachains) error logs:")} ${decorators.bright(
+                    networkLokiUrl,
+                  )}`,
+                );
 
                 // logs are also collected as artifacts
                 console.log(
