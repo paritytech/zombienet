@@ -31,7 +31,7 @@ export async function generateKeyForNode(
     ? `//${nameCase(nodeName)}`
     : u8aToHex(mnemonicToMiniSecret(mnemonic));
 
-  // Create keyrings
+  // Create keyring for each schema
   const sr_keyring = new Keyring({ type: "sr25519" });
   const ed_keyring = new Keyring({ type: "ed25519" });
   const ec_keyring = new Keyring({ type: "ecdsa" });
