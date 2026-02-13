@@ -1,4 +1,5 @@
 import { CHAIN } from "./chain-decorators";
+import { KeyTypesMap } from "./keys";
 
 export enum SubstrateCliArgsVersion {
   V0 = 0,
@@ -91,6 +92,7 @@ export interface Node extends NodeCommonTypes, Ports {
   substrateCliArgsVersion?: SubstrateCliArgsVersion;
   delayNetworkSettings?: DelayNetworkSettings;
   keystoreKeyTypes?: string[];
+  keyMap?: KeyTypesMap;
 }
 
 export interface Ports {
