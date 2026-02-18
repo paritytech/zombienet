@@ -9,6 +9,8 @@ import { makeDir } from "@zombienet/utils";
 import fs from "fs";
 import { Node } from "./sharedTypes";
 
+const debug = require("debug")("zombie::orchestrator::keys");
+
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -82,7 +84,7 @@ export async function generateKeyForNode(
     }
   }
 
-  console.log("keysForNode", keysForNode);
+  debug("keysForNode", keysForNode);
   return keysForNode;
 }
 
