@@ -9,6 +9,8 @@ import { makeDir } from "@zombienet/utils";
 import fs from "fs";
 import { Node } from "./sharedTypes";
 
+const debug = require("debug")("zombie::orchestrator::keys");
+
 function nameCase(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -20,7 +22,10 @@ export async function generateKeyFromSeed(seed: string): Promise<any> {
   return sr_keyring.createFromUri(`//${seed}`);
 }
 
-export async function generateKeyForNode(nodeName?: string): Promise<any> {
+export async function generateKeyForNode(
+  nodeName?: string,
+  keyMap?: KeyTypesMap,
+): Promise<any> {
   await cryptoWaitReady();
 
   const mnemonic = mnemonicGenerate();
@@ -28,18 +33,18 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
     ? `//${nameCase(nodeName)}`
     : u8aToHex(mnemonicToMiniSecret(mnemonic));
 
+  // Create keyring for each schema
   const sr_keyring = new Keyring({ type: "sr25519" });
+  const ed_keyring = new Keyring({ type: "ed25519" });
+  const ec_keyring = new Keyring({ type: "ecdsa" });
+
   const sr_account = sr_keyring.createFromUri(`${seed}`);
   const sr_stash = sr_keyring.createFromUri(`${seed}//stash`);
-
-  const ed_keyring = new Keyring({ type: "ed25519" });
   const ed_account = ed_keyring.createFromUri(`${seed}`);
-
-  const ec_keyring = new Keyring({ type: "ecdsa" });
   const ec_account = ec_keyring.createFromUri(`${seed}`);
 
-  // return the needed info
-  return {
+  // create the base info
+  const keysForNode: any = {
     seed,
     mnemonic,
     sr_account: {
@@ -58,72 +63,92 @@ export async function generateKeyForNode(nodeName?: string): Promise<any> {
       publicKey: u8aToHex(ec_account.publicKey),
     },
   };
+
+  // and customize
+  if (keyMap) {
+    for (const [key, schema] of Object.entries(keyMap)) {
+      const key_seed = `${seed}//${key}`;
+      const acc =
+        schema == "ec"
+          ? ec_keyring.createFromUri(`${key_seed}`)
+          : schema == "ed"
+            ? ed_keyring.createFromUri(`${key_seed}`)
+            : sr_keyring.createFromUri(`${key_seed}`);
+
+      keysForNode[key] = {
+        address: acc.address,
+        publicKey: u8aToHex(acc.publicKey),
+        seed: key_seed,
+        schema,
+      };
+    }
+  }
+
+  debug("keysForNode", keysForNode);
+  return keysForNode;
 }
 
-export async function generateKeystoreFiles(
-  node: Node,
-  path: string,
+export interface DefaultKeystoreKeyTypes {
+  [key: string]: string;
+}
+
+// map short name with key schema (e.g "aura" -> "ed")
+export interface KeyTypesMap {
+  [key: string]: string;
+}
+
+export function generateKeyTypeMap(
+  keystoreKeyTypes: string[] | undefined,
   isAssetHubPolkadot = false,
-): Promise<string[]> {
-  const keystoreDir = `${path}/keystore`;
-  await makeDir(keystoreDir);
-
-  const paths: string[] = [];
-
-  interface DefaultKeystoreKeyTypes {
-    [key: string]: string;
-  }
-  let keystore_key_types: DefaultKeystoreKeyTypes = {};
-
-  const default_keystore_key_types: DefaultKeystoreKeyTypes = {
-    aura: isAssetHubPolkadot
-      ? node.accounts.ed_account.publicKey
-      : node.accounts.sr_account.publicKey,
-    babe: node.accounts.sr_account.publicKey,
-    imon: node.accounts.sr_account.publicKey,
-    gran: node.accounts.ed_account.publicKey,
-    audi: node.accounts.sr_account.publicKey,
-    asgn: node.accounts.sr_account.publicKey,
-    para: node.accounts.sr_account.publicKey,
-    beef: node.accounts.ec_account.publicKey,
-    nmbs: node.accounts.sr_account.publicKey, // Nimbus
-    rand: node.accounts.sr_account.publicKey, // Randomness (Moonbeam)
-    rate: node.accounts.ed_account.publicKey, // Equilibrium rate module
-    mixn: node.accounts.sr_account.publicKey, // Mixnet
-    bcsv: node.accounts.sr_account.publicKey, // BlockchainSrvc (StorageHub)
-    ftsv: node.accounts.ed_account.publicKey, // FileTransferSrvc (StorageHub)
-  };
+): KeyTypesMap {
+  const keyMap: KeyTypesMap = {};
 
   // 2 ways keys can be defined:
-  node.keystoreKeyTypes?.forEach((key_spec) => {
-    // short: by only 4 letter key type with defaulted scheme e.g. "audi", if default scheme doesn't exist it is "ed"
+  keystoreKeyTypes?.forEach((key_spec) => {
+    // short: by only 4 letter key type with defaulted scheme e.g. "audi", default schema is "sr"
     if (key_spec.length === 4) {
-      keystore_key_types[key_spec] =
-        default_keystore_key_types[key_spec] ||
-        node.accounts.sr_account.publicKey;
+      keyMap[key_spec] = "sr";
     }
 
     // long: 4 letter key type with scheme separated by underscore e.g. "audi_sr"
     const [key_type, key_scheme] = key_spec.split("_");
     if (key_type.length === 4) {
       if (key_scheme === "ed") {
-        keystore_key_types[key_type] = node.accounts.ed_account.publicKey;
+        keyMap[key_type] = "ed";
       } else if (key_scheme === "ec") {
-        keystore_key_types[key_type] = node.accounts.ec_account.publicKey;
+        keyMap[key_type] = "ec";
       } else if (key_scheme === "sr") {
-        keystore_key_types[key_type] = node.accounts.sr_account.publicKey;
+        keyMap[key_type] = "sr";
       }
     }
   });
 
-  if (Object.keys(keystore_key_types).length === 0)
-    keystore_key_types = default_keystore_key_types;
+  // ensure aura has the correct key
+  keyMap["aura"] = isAssetHubPolkadot ? "ed" : "sr";
 
-  for (const [k, v] of Object.entries(keystore_key_types)) {
-    const filename = Buffer.from(k).toString("hex") + v.replace(/^0x/, "");
+  return keyMap;
+}
+export async function generateKeystoreFiles(
+  node: Node,
+  path: string,
+  keyMap: KeyTypesMap,
+  // isAssetHubPolkadot = false,
+): Promise<string[]> {
+  const keystoreDir = `${path}/keystore`;
+  await makeDir(keystoreDir);
+
+  const paths: string[] = [];
+
+  for (const [k, v] of Object.entries(keyMap)) {
+    // check if we have the account to use by  key or by schema
+    const acc = node.accounts[k]
+      ? node.accounts[k]
+      : node.accounts[`${v}_account`];
+    const filename =
+      Buffer.from(k).toString("hex") + acc.publicKey.replace(/^0x/, "");
     const keystoreFilePath = `${keystoreDir}/${filename}`;
     paths.push(keystoreFilePath);
-    await fs.promises.writeFile(keystoreFilePath, `"${node.accounts.seed}"`);
+    await fs.promises.writeFile(keystoreFilePath, `"${acc.seed}"`);
   }
 
   return paths;
