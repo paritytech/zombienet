@@ -233,8 +233,8 @@
           nativeBuildInputs = with pkgs;
             [
               python3
-              nodePackages.node-gyp-build
-              nodePackages.node-gyp
+              node-gyp-build
+              node-gyp
             ]
             ++ pkgs.lib.optional pkgs.stdenv.isDarwin (with pkgs;
               with darwin.apple_sdk.frameworks; [
