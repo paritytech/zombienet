@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 19.x, 20.x]
+        node-version: [22.x, 24.x, 25.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
         working-directory: "./javascript"
 
       - name: Upload build artifacts
-        if: ${{ matrix.node-version == '18.x' }}
+        if: ${{ matrix.node-version == '22.x' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-build-${{ github.sha }}
@@ -44,18 +44,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-         
+
       - name: Install fmt and clippy
         run: |
           rustup component add rustfmt
           rustup component add clippy
-          
+
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
-        
+
       - name: Run clippy
         run: cargo clippy --all-features -- -D warnings
-        
+
       - name: Build
         run: cargo build
 

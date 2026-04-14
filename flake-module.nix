@@ -8,7 +8,7 @@
     ...
   }: let
     # this change on each change of dependencies, unfortunately this hash not yet automatically updated from SRI of package.lock
-    npmDepsHash = "sha256-H9ZRFUgNyrUAxlwCzLabLTnxbpVMtdrNfzFwP284C3M=";
+    npmDepsHash = "sha256-5Ch63Uqkp8BIo2aYNsm4G5Gi624sTnZalPehZUZiFoY=";
     ####
 
     # there is officia polkadot on nixpkgs, but it has no local rococo wasm to run
@@ -246,6 +246,8 @@
           npmFlags = ["--logs-dir=$HOME" "--verbose" "--legacy-peer-deps"];
           makeCacheWritable = true;
         };
+
+        zombienet = default;
 
         update = pkgs.writeShellApplication {
           name = "update";
