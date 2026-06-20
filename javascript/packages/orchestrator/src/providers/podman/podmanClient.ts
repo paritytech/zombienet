@@ -356,6 +356,8 @@ export class PodmanClient extends Client {
     keystore?: string,
     chainSpecId?: string,
     dbSnapshot?: string,
+    longRunning?: boolean,
+    keystorePathOverride?: string,
   ): Promise<void> {
     const name = podDef.metadata.name;
 
@@ -397,7 +399,9 @@ export class PodmanClient extends Client {
     }
 
     if (keystore && chainSpecId) {
-      const keystoreRemoteDir = `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
+      const keystoreRemoteDir =
+        keystorePathOverride ??
+        `${dataPath.hostPath.path}/chains/${chainSpecId}/keystore`;
       await makeDir(keystoreRemoteDir, true);
       const keystoreIsEmpty =
         (await fs.readdir(keystoreRemoteDir).length) === 0;
