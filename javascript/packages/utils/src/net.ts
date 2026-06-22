@@ -5,6 +5,7 @@ import os from "os";
 import { Readable } from "stream";
 import { finished } from "stream/promises";
 import { ReadableStream } from "stream/web";
+import { fileURLToPath } from "url";
 import { decorators } from "./colors";
 
 const usedPorts = new Map<number, number>();
@@ -72,6 +73,10 @@ export async function getHostIp(): Promise<string> {
 
 export async function downloadFile(url: string, dest: string): Promise<void> {
   try {
+    if (url.startsWith("file://")) {
+      await fs.promises.copyFile(fileURLToPath(url), dest);
+      return;
+    }
     const response = await fetch(url);
     if (!response.ok) {
       console.warn(

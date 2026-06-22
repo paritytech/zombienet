@@ -29,6 +29,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `chain`: (String, default `rococo-local`) The chain name.
 - `chain_spec_path`: (String) Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
 - `chain_spec_command`: (String) Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
+- `default_db_snapshot`: (String) Source of a `.tgz` database snapshot to restore into every node of the `relaychain` before it starts. Accepts an `http(s)` URL or a local `file://` URL (absolute path).
 - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
 - `default_substrate_cli_args_version`: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 - `default_overrides`: (Array of objects) An array of overrides to upload to the nodes, objects with:
@@ -64,6 +65,7 @@ The network config can be provided both in `json` or `toml` format and each sect
     - name: (String) name of the `env` var.
     - value: (String| number) Value of the env var.
   - `bootnodes`: Array of bootnodes to use.
+  - `db_snapshot`: (String) Source of a `.tgz` database snapshot to restore into this node before it starts (overrides `default_db_snapshot`). Accepts an `http(s)` URL or a local `file://` URL (absolute path).
   - `overrides`: Array of `overrides` definitions.
   - `add_to_bootnodes`: (Boolean, default false) Add this node to the bootnode list.
   - `resources`: (Object) **Only** available in `kubernetes`, represent the resources `limits`/`reservations` needed by the node.

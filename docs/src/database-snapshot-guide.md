@@ -37,3 +37,10 @@ tar -C parachain-snapshot/charlie/ -czf parachain.tgz data relay-data
 # Restoring a snapshot
 Zombienet will automatically download the `*.tgz` file to the respective folder for a run. However you can also download it manually, just ensure you extract the tar file in the correct directory, i.e. the root directory
 `chain-data/charlie/`
+
+The snapshot source is set with `default_db_snapshot` (at the `relaychain` level) or `db_snapshot` (per node), and can be either an `http(s)` URL or a local `file://` URL, e.g.:
+
+```
+[relaychain]
+default_db_snapshot = "file:///absolute/path/to/relaychain.tgz"
+```
