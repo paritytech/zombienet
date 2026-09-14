@@ -76,8 +76,8 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-      - run: npm install && npm update
+          node-version: '22'
+      - run: npm install
         working-directory: "./javascript"
       - run: npm run build
         working-directory: "./javascript"
