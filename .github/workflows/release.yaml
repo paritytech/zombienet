@@ -99,7 +99,7 @@ jobs:
   build_push_image:
     name: Build and Push Docker image to Docker Hub
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     environment: tags
     env:
       IMAGE_NAME: paritytech/zombienet
