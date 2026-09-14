@@ -3,6 +3,9 @@
   "ignorePatterns": [
     {
       "pattern": "https://polkadot.com"
+    },
+    {
+      "pattern": "^https://nixos.wiki/wiki/Flakes"
     }
   ]
 }
