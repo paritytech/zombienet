@@ -170,7 +170,7 @@ jobs:
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests" --test="0001-smoke.zndsl"
 
       - name: upload logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: zombienet-logs-smoke
           path: |
@@ -205,7 +205,7 @@ jobs:
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/scale-net" --test="0001-scale-net.zndsl"
 
       - name: upload logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: zombienet-logs-scale-net
           path: |
@@ -241,7 +241,7 @@ jobs:
           /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/k8s" --test="0001-upgrade-node.zndsl"
 
       - name: upload logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: zombienet-logs-upgrade
           path: |
@@ -276,7 +276,7 @@ jobs:
   #         /home/nonroot/zombie-net/scripts/ci/run-test-local-env-manager.sh --local-dir="$(pwd)/tests/chaos" --test="0001-delay.zndsl"
 
   #     - name: upload logs
-  #       uses: actions/upload-artifact@v4
+  #       uses: actions/upload-artifact@v7
   #       with:
   #         name: zombienet-logs-chaos
   #         path: |
