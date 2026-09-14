@@ -1,4 +1,4 @@
-FROM docker.io/library/node:22-bullseye-slim
+FROM docker.io/library/node:24-bookworm-slim
 
 LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.vendor="Parity Technologies" \
@@ -9,7 +9,7 @@ LABEL io.parity.image.authors="devops-team@parity.io" \
     io.parity.image.created="${BUILD_DATE}"
 
 RUN apt-get update && \
-    apt-get install -y curl gnupg lsb-release jq tini vim procps build-essential && \
+    apt-get install -y curl gnupg lsb-release jq tini vim procps build-essential python3 && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

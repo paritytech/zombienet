@@ -56,7 +56,7 @@ jobs:
           - run: |
               ls -l
               mv releases.json /tmp
-          - run: npm install && npm update
+          - run: npm install
             working-directory: "./javascript"
           - run: npm run build
             working-directory: "./javascript"
