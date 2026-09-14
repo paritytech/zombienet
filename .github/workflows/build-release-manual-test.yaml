@@ -78,3 +78,45 @@ jobs:
       #     asset_path: ./javascript/bins/zombienet-macos-${{ matrix.target.arch }}
       #     asset_name: zombienet-macos-${{ matrix.target.arch }}
       #     asset_content_type: application/octet-stream
+
+  build_push_image:
+    name: Build and Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: tags
+    env:
+      IMAGE_NAME: paritytech/zombienet
+      VERSION: v1.3.140
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v.4.2.0
+
+      - name: npm build
+        run: |
+          cd javascript
+          npm install
+          npm dedupe
+          npm run clean
+          npm run build
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build and push multi-arch Docker image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355 # v6.10.0
+        with:
+          file: ./scripts/ci/docker/zombienet_injected.Dockerfile
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+            ${{ env.IMAGE_NAME }}:latest
