@@ -115,19 +115,20 @@ const ARGS_TO_REMOVE: { [key: string]: number } = {
 const TOKEN_PLACEHOLDER = /{{ZOMBIE:(.*?):(.*?)}}/gi;
 
 const DEFAULT_KEYSTORE_KEY_TYPES: string[] = [
-  "aura",
-  "babe",
-  "imon",
-  "gran",
-  "audi",
-  "asgn",
-  "para",
-  "beef",
-  "nmbs",
-  "rand",
-  "rate",
-  "bcsv",
-  "ftsv",
+  "aura_sr",
+  "babe_sr",
+  "imon_sr",
+  "gran_ed",
+  "audi_sr",
+  "asgn_sr",
+  "para_sr",
+  "beef_ec",
+  "nmbs_sr", // Nimbus
+  "rand_sr", // Randomness (Moonbeam)
+  "rate_ed", // Equilibrium rate module
+  "mixn_sr", // Mixnet
+  "bcsv_sr", // BlockchainSrvc (StorageHub)
+  "ftsv_ed", // FileTransferSrvc (StorageHub)
 ];
 
 export {
