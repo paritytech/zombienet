@@ -49,6 +49,7 @@ import { Client } from "./providers/client";
 import { KubeClient } from "./providers/k8s/kubeClient";
 import { spawnNode } from "./spawner";
 import { setSubstrateCliArgsVersion } from "./substrateCliArgsHelper";
+import { detectChainSpecCommand } from "./chainSpecCommand";
 import { ComputedNetwork, LaunchConfig } from "./configTypes";
 import { Node, Parachain } from "./sharedTypes";
 import { performance } from "perf_hooks";
@@ -112,8 +113,13 @@ export async function start(
     debug("Concurrency:", opts.spawnConcurrency);
     debug(JSON.stringify(networkSpec, null, 4));
 
-    const { initClient, setupChainSpec, getChainSpecRaw, genChaosDef } =
-      getProvider(networkSpec.settings.provider);
+    const {
+      initClient,
+      setupChainSpec,
+      getChainSpecRaw,
+      genChaosDef,
+      getCliArgsHelp,
+    } = getProvider(networkSpec.settings.provider);
 
     // global timeout to spin the network
     const timeoutTimer = setTimeout(() => {
@@ -253,6 +259,16 @@ export async function start(
     const random_suffix_to_isolate = networkSpec.settings.isolate_env
       ? generateNamespace(2)
       : null;
+
+    if (networkSpec.relaychain.chainSpecBinary) {
+      const chainSpecCommand = await detectChainSpecCommand(
+        getCliArgsHelp,
+        networkSpec.relaychain.defaultImage,
+        networkSpec.relaychain.chainSpecBinary,
+      );
+      if (chainSpecCommand)
+        networkSpec.relaychain.chainSpecCommand = chainSpecCommand;
+    }
 
     // create or copy relay chain spec
     await setupChainSpec(

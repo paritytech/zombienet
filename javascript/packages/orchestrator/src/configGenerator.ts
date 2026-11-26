@@ -14,7 +14,6 @@ import {
   DEFAULT_ADDER_COLLATOR_BIN,
   DEFAULT_BALANCE,
   DEFAULT_CHAIN,
-  DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
   DEFAULT_CUMULUS_COLLATOR_BIN,
@@ -33,6 +32,7 @@ import {
 } from "./constants";
 import { generateKeyForNode } from "./keys";
 import { CHAIN, decorate, whichChain } from "./chain-decorators";
+import { defaultChainSpecCommand } from "./chainSpecCommand";
 import { ComputedNetwork, LaunchConfig, ParachainConfig } from "./configTypes";
 import {
   NodeConfig,
@@ -218,13 +218,18 @@ export async function generateNetworkSpec(
 
   // even if we have a chain_spec_path we need to set
   // the command to generate the raw version
-
-  networkSpec.relaychain.chainSpecCommand = config.relaychain.chain_spec_command
-    ? config.relaychain.chain_spec_command
-    : DEFAULT_CHAIN_SPEC_COMMAND.replace(
-        "{{DEFAULT_COMMAND}}",
-        networkSpec.relaychain.defaultCommand,
-      );
+  if (config.relaychain.chain_spec_command) {
+    networkSpec.relaychain.chainSpecCommand =
+      config.relaychain.chain_spec_command;
+  } else {
+    // adjusted to the subcommands of the binary when spawning
+    networkSpec.relaychain.chainSpecCommand = defaultChainSpecCommand(
+      networkSpec.relaychain.defaultCommand,
+      "build-spec",
+    );
+    networkSpec.relaychain.chainSpecBinary =
+      networkSpec.relaychain.defaultCommand;
+  }
 
   const relayChainBootnodes: string[] = [];
 
@@ -488,11 +493,17 @@ export async function generateNetworkSpec(
 
       // even if we have a chain_spec_path we need to set
       // the command to generate the raw version
-      parachainSetup.chainSpecCommand = parachain.chain_spec_command
-        ? parachain.chain_spec_command
-        : `${collatorBinary} build-spec ${
-            parachain.chain ? "--chain {{chainName}}" : ""
-          } --disable-default-bootnode`;
+      if (parachain.chain_spec_command) {
+        parachainSetup.chainSpecCommand = parachain.chain_spec_command;
+      } else {
+        // adjusted to the subcommands of the binary when spawning
+        parachainSetup.chainSpecCommand = defaultChainSpecCommand(
+          collatorBinary,
+          "build-spec",
+          !!parachain.chain,
+        );
+        parachainSetup.chainSpecBinary = collatorBinary;
+      }
 
       parachainSetup = {
         ...parachainSetup,

@@ -38,8 +38,6 @@ const DEFAULT_REMOTE_DIR = "/cfg";
 const DEFAULT_DATA_DIR = "/data";
 const DEFAULT_CHAIN_SPEC = "{{chainName}}-plain.json";
 const DEFAULT_CHAIN_SPEC_RAW = "{{chainName}}-raw.json";
-const DEFAULT_CHAIN_SPEC_COMMAND =
-  "{{DEFAULT_COMMAND}} build-spec --chain {{chainName}} --disable-default-bootnode";
 const DEFAULT_GENESIS_GENERATE_SUBCOMMAND = "export-genesis-state";
 const DEFAULT_GENESIS_HEAD_GENERATE_SUBCOMMAND = "export-genesis-head";
 const DEFAULT_WASM_GENERATE_SUBCOMMAND = "export-genesis-wasm";
@@ -142,7 +140,6 @@ export {
   DEFAULT_BOOTNODE_PEER_ID,
   DEFAULT_CHAIN,
   DEFAULT_CHAIN_SPEC,
-  DEFAULT_CHAIN_SPEC_COMMAND,
   DEFAULT_CHAIN_SPEC_RAW,
   DEFAULT_COLLATOR_IMAGE,
   DEFAULT_COMMAND,
