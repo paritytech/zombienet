@@ -30,7 +30,7 @@ import {
   UNDYING_COLLATOR_BIN,
   ZOMBIE_WRAPPER,
 } from "./constants";
-import { generateKeyForNode } from "./keys";
+import { generateKeyForNode, generateKeyTypeMap } from "./keys";
 import { CHAIN, decorate, whichChain } from "./chain-decorators";
 import { defaultChainSpecCommand } from "./chainSpecCommand";
 import { ComputedNetwork, LaunchConfig, ParachainConfig } from "./configTypes";
@@ -666,7 +666,15 @@ async function getCollatorNodeFromConfig(
   const seed = canUseSanitizedNameAsSeed(parachain.id, sanitizedName)
     ? sanitizedName
     : collatorName;
-  const accountsForNode = await decoratedKeysGenerator(seed);
+
+  const keystoreKeyTypes =
+    collatorConfig.keystore_key_types || DEFAULT_KEYSTORE_KEY_TYPES;
+  const keyMap = generateKeyTypeMap(
+    keystoreKeyTypes,
+    para == CHAIN.AssetHubPolkadot,
+  );
+
+  const accountsForNode = await decoratedKeysGenerator(seed, keyMap);
 
   const provider = networkSpec.settings.provider;
   const ports = await getPorts(provider, collatorConfig);
@@ -701,8 +709,8 @@ async function getCollatorNodeFromConfig(
     image: collatorConfig.image || DEFAULT_COLLATOR_IMAGE,
     command: collatorBinary,
     commandWithArgs: collatorConfig.command_with_args,
-    keystoreKeyTypes:
-      collatorConfig.keystore_key_types || DEFAULT_KEYSTORE_KEY_TYPES,
+    keystoreKeyTypes,
+    keyMap,
     args: args || [],
     chain,
     bootnodes,
@@ -776,7 +784,14 @@ async function getNodeFromConfig(
   const isValidator = node.validator !== false;
 
   const nodeName = getUniqueName(node.name);
-  const accountsForNode = await generateKeyForNode(nodeName);
+
+  const keystoreKeyTypes =
+    node.keystore_key_types ||
+    networkSpec.relaychain.defaultKeystoreKeyTypes ||
+    DEFAULT_KEYSTORE_KEY_TYPES;
+  const keyMap = generateKeyTypeMap(keystoreKeyTypes);
+
+  const accountsForNode = await generateKeyForNode(nodeName, keyMap);
 
   const provider = networkSpec.settings.provider;
   const ports = await getPorts(provider, node);
@@ -798,10 +813,8 @@ async function getNodeFromConfig(
     invulnerable: node.invulnerable,
     balance: node.balance || DEFAULT_BALANCE,
     args: uniqueArgs,
-    keystoreKeyTypes:
-      node.keystore_key_types ||
-      networkSpec.relaychain.defaultKeystoreKeyTypes ||
-      DEFAULT_KEYSTORE_KEY_TYPES,
+    keystoreKeyTypes,
+    keyMap,
     env,
     bootnodes: relayChainBootnodes,
     telemetryUrl: networkSpec.settings?.telemetry

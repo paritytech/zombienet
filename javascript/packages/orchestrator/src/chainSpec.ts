@@ -165,20 +165,48 @@ export function getNodeKey(node: Node, useStash = true): GenesisNodeKey {
       address,
       address,
       {
-        grandpa: ed_account.address,
-        babe: sr_account.address,
-        im_online: sr_account.address,
-        parachain_validator: sr_account.address,
-        authority_discovery: sr_account.address,
-        para_validator: sr_account.address,
-        para_assignment: sr_account.address,
-        beefy: encodeAddress(ec_account.publicKey),
-        aura: sr_account.address,
-        nimbus: sr_account.address,
+        grandpa: node.accounts["gran"]
+          ? node.accounts["gran"].address
+          : ed_account.address,
+        babe: node.accounts["babe"]
+          ? node.accounts["babe"].address
+          : sr_account.address,
+        im_online: node.accounts["imon"]
+          ? node.accounts["imon"].address
+          : sr_account.address,
+        parachain_validator: node.accounts["para"]
+          ? node.accounts["para"].address
+          : sr_account.address,
+        authority_discovery: node.accounts["audi"]
+          ? node.accounts["audi"].address
+          : sr_account.address,
+        para_validator: node.accounts["para"]
+          ? node.accounts["para"].address
+          : sr_account.address,
+        para_assignment: node.accounts["asgn"]
+          ? node.accounts["asgn"].address
+          : sr_account.address,
+        beefy: encodeAddress(
+          node.accounts["beef"]
+            ? node.accounts["beef"].publicKey
+            : ec_account.publicKey,
+        ),
+        aura: node.accounts["aura"]
+          ? node.accounts["aura"].address
+          : sr_account.address,
+        nimbus: node.accounts["nmbs"]
+          ? node.accounts["nmbs"].address
+          : sr_account.address,
         vrf: sr_account.address,
-        mixnet: sr_account.address,
-        bcsv: sr_account.address,
-        ftsv: ed_account.address,
+        mixnet: node.accounts["mixn"]
+          ? node.accounts["mixn"].address
+          : sr_account.address,
+        bcsv: node.accounts["bcsv"]
+          ? node.accounts["bcsv"].address
+          : sr_account.address,
+        ftsv: node.accounts["ftsv"]
+          ? node.accounts["ftsv"].address
+          : ed_account.address,
       },
     ];
 
