@@ -75,6 +75,7 @@ export abstract class Client {
     chainSpecId?: string,
     dbSnapshot?: string, //delay?: DelayNetworkSettings,
     longRunning?: boolean,
+    keystorePathOverride?: string,
   ): Promise<void>;
   abstract copyFileFromPod(
     identifier: string,
