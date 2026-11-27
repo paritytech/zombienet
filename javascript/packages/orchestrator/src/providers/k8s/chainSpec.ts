@@ -1,5 +1,9 @@
 import { promises as fsPromises, writeFileSync } from "fs";
 import {
+  plainChainSpecCommand,
+  rawChainSpecCommand,
+} from "../../chainSpecCommand";
+import {
   DEFAULT_CHAIN_SPEC,
   DEFAULT_CHAIN_SPEC_RAW,
   NODE_CONTAINER_WAIT_LOG,
@@ -30,10 +34,11 @@ export async function setupChainSpec(
         "/" +
         DEFAULT_CHAIN_SPEC.replace(/{{chainName}}/gi, chainName);
 
-      const fullCommand = `${chainSpecCommand.replace(
-        /{{chainName}}/gi,
+      const fullCommand = plainChainSpecCommand(
+        chainSpecCommand,
         chainName,
-      )} > ${plainChainSpecOutputFilePath}`;
+        plainChainSpecOutputFilePath,
+      );
       const node = await createTempNodeDef(
         "temp",
         defaultImage,
@@ -79,12 +84,11 @@ export async function getChainSpecRaw(
     client.remoteDir +
     "/" +
     DEFAULT_CHAIN_SPEC_RAW.replace(/{{chainName}}/, chainName);
-  const chainSpecCommandRaw = chainSpecCommand.replace(
-    /{{chainName}}/gi,
+  const fullCommand = rawChainSpecCommand(
+    chainSpecCommand,
     remoteChainSpecFullPath,
+    remoteChainSpecRawFullPath,
   );
-
-  const fullCommand = `${chainSpecCommandRaw}  --raw > ${remoteChainSpecRawFullPath}`;
   const node = await createTempNodeDef("temp", image, chainName, fullCommand);
 
   const podDef = await genNodeDef(namespace, node);

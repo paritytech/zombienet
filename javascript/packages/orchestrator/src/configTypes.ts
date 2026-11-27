@@ -62,6 +62,8 @@ export interface ComputedNetwork {
     chain: string;
     chainSpecPath?: string;
     chainSpecCommand?: string;
+    // set when `chainSpecCommand` is the default for this binary
+    chainSpecBinary?: string;
     randomNominatorsCount: number;
     maxNominations: number;
     nodes: Node[];

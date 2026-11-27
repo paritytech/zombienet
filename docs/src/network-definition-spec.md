@@ -28,7 +28,7 @@ The network config can be provided both in `json` or `toml` format and each sect
 - `default_image` : (String, default polkadot-debug:master) The default image to use for the nodes of the `relaychain`.
 - `chain`: (String, default `rococo-local`) The chain name.
 - `chain_spec_path`: (String) Path to the chain spec file, **NOTE** should be the `plain` version to allow customizations.
-- `chain_spec_command`: (String) Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`.
+- `chain_spec_command`: (String) Command to generate the chain spec, **NOTE** can't be used in combination with `chain_spec_path`. If unset, zombienet uses the first of `export-chain-spec`, `build-spec` and `chain-spec-builder` that `default_command --help` lists. See [chain spec commands](#chain-spec-commands).
 - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command`.
 - `default_substrate_cli_args_version`: (0|1|2) Allow to set the substrate cli args version (see: https://github.com/paritytech/substrate/pull/13384). By default zombienet will evaluate your binary and set the correct version, but that produces a small overhead that could be skipped if you set directly with this key.
 - `default_overrides`: (Array of objects) An array of overrides to upload to the nodes, objects with:
@@ -96,6 +96,8 @@ The network config can be provided both in `json` or `toml` format and each sect
   - `cumulus_based`: (Boolean, default true) flag to use `cumulus` command generation.
   - `with_custom_props`: (Boolean, default false) flag to enable customization of parachain chain-spec properties (name, id, protocolId). When true, the chain-spec will be customized with parachain-specific identifiers. When false, the original chain-spec properties are preserved.
   - `default_args`: (Array of strings) An array of arguments to use as default to pass to the `command` side. _NOTE_: this args will be passed to the collator side and shouldn't include _args_ to the full node.
+  - `chain_spec_path`: (String) Path to the plain chain spec file.
+  - `chain_spec_command`: (String) Command to generate the chain spec and to convert it to raw. If unset, zombienet uses the first of `export-chain-spec`, `build-spec` and `chain-spec-builder` that the collator command's `--help` lists. See [chain spec commands](#chain-spec-commands).
   - `genesis_wasm_path`: (String) Path to the wasm file to use.
   - `genesis_wasm_generator`: (String) Command to generate the wasm file.
   - `genesis_state_path`: (String) Path to the state file to use.
@@ -131,6 +133,23 @@ The network config can be provided both in `json` or `toml` format and each sect
 
   - `onboard_as_parachain`: (Boolean, default true) flag to specify whether the para should be onboarded as a parachain or stay a parathread
   - `register_para`: (Boolean, default true) flag to specify whether the para should be registered. The `add_to_genesis` flag **must** be set to false for this flag to have any effect.
+
+## Chain spec commands
+
+A `chain_spec_command` runs as `<command> > <plain file>` to create the plain chain spec (`{{chainName}}` is the chain name), and as `<command> --raw > <raw file>` to convert it (`{{chainName}}` is the plain file).
+
+- A command containing `{{outputPath}}` writes the file itself, so no redirect is added.
+- A `chain-spec-builder` command (the standalone binary, or the subcommand of `polkadot-omni-node` and `polkadot-parachain`) converts with `chain-spec-builder -c <raw file> convert-to-raw <plain file>`. It needs `-c {{outputPath}}` to create the plain spec.
+- The network file is rendered with nunjucks first, so wrap placeholders in `{% raw %}...{% endraw %}`.
+
+For example, converting the provided spec of a `polkadot-omni-node` parachain:
+
+```toml
+[[parachains]]
+id = 1000
+chain_spec_path = "./chain-spec-plain.json"
+chain_spec_command = "polkadot-omni-node chain-spec-builder"
+```
 
 ## `hrmp_channels`: (Array of objects)
 

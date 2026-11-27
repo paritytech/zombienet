@@ -4,6 +4,7 @@ import chainSpecFns, {
   customizeParachainRawSpec,
   isRawSpec,
 } from "./chainSpec";
+import { detectChainSpecCommand, withChainArg } from "./chainSpecCommand";
 import { getUniqueName } from "./configGenerator";
 import {
   DEFAULT_COLLATOR_IMAGE,
@@ -63,7 +64,7 @@ export async function generateParachainFiles(
   const wasmLocalFilePath = `${parachainFilesPath}/${GENESIS_WASM_FILENAME}`;
   const client = getClient();
 
-  const { setupChainSpec, getChainSpecRaw } = Providers.get(
+  const { setupChainSpec, getChainSpecRaw, getCliArgsHelp } = Providers.get(
     client.providerName,
   );
 
@@ -76,6 +77,16 @@ export async function generateParachainFiles(
   const chainSpecFullPathPlain = `${tmpDir}/${chainName}-plain.json`;
 
   if (parachain.cumulusBased) {
+    if (parachain.chainSpecBinary) {
+      const chainSpecCommand = await detectChainSpecCommand(
+        getCliArgsHelp,
+        parachain.collators[0].image,
+        parachain.chainSpecBinary,
+        !!parachain.chain,
+      );
+      if (chainSpecCommand) parachain.chainSpecCommand = chainSpecCommand;
+    }
+
     // need to create the parachain spec
     // file name template is [para chain-]<para name>-<relay chain>
     const relayChainSpecFullPathPlain = `${tmpDir}/${relayChainName}-plain.json`;
@@ -168,9 +179,7 @@ export async function generateParachainFiles(
       // Generate the raw chain-spec logic
 
       // Make sure we include the plain chain-spec
-      const chainSpecRawCommand = getChainSpecCmdRaw(
-        parachain.chainSpecCommand!,
-      );
+      const chainSpecRawCommand = withChainArg(parachain.chainSpecCommand!);
 
       await getChainSpecRaw(
         namespace,
@@ -367,19 +376,6 @@ export async function generateParachainFiles(
   parachain.statePath = stateLocalFilePath;
 
   return;
-}
-
-function getChainSpecCmdRaw(chainSpecCommand: string) {
-  // Default to the provided cmd, will work for custom generator.
-  let returnCmd = chainSpecCommand;
-  const parts = chainSpecCommand!
-    .split(" ")
-    .filter((part: string) => part.length);
-  if (parts.includes("build-spec") && !parts.includes("--chain")) {
-    returnCmd = `${chainSpecCommand} --chain {{chainName}}`;
-  }
-
-  return returnCmd;
 }
 
 // Inject the chain (e.g. --chain <chain path>) before the output file or the
